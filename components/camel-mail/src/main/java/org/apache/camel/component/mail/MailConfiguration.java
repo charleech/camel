@@ -43,7 +43,7 @@ public class MailConfiguration implements Cloneable {
 
     private ClassLoader applicationClassLoader;
     private Properties javaMailProperties;
-    private Map<Message.RecipientType, String> recipients = new HashMap<Message.RecipientType, String>();
+    private Map<Message.RecipientType, String> recipients = new HashMap<>();
 
     // protocol is implied by component name so it should not be in UriPath
     private String protocol;
@@ -109,6 +109,8 @@ public class MailConfiguration implements Cloneable {
     private boolean skipFailedMessage;
     @UriParam @Metadata(label = "consumer")
     private boolean handleFailedMessage;
+    @UriParam(defaultValue = "false") @Metadata(label = "consumer")
+    private boolean mimeDecodeHeaders;
     @UriParam(label = "security")
     private SSLContextParameters sslContextParameters;
     @UriParam(label = "advanced", prefix = "mail.", multiValue = true)
@@ -118,7 +120,7 @@ public class MailConfiguration implements Cloneable {
 
     public MailConfiguration() {
     }
-    
+
     public MailConfiguration(CamelContext context) {
         this.applicationClassLoader = context.getApplicationContextClassLoader();
     }
@@ -130,7 +132,7 @@ public class MailConfiguration implements Cloneable {
         try {
             MailConfiguration copy = (MailConfiguration) clone();
             // must set a new recipients map as clone just reuse the same reference
-            copy.recipients = new HashMap<Message.RecipientType, String>();
+            copy.recipients = new HashMap<>();
             copy.recipients.putAll(this.recipients);
             return copy;
         } catch (CloneNotSupportedException e) {
@@ -165,7 +167,7 @@ public class MailConfiguration implements Cloneable {
         int port = uri.getPort();
         if (port > 0) {
             setPort(port);
-        } else if (port <= 0 && this.port <= 0) {
+        } else if (this.port <= 0) {
             // resolve default port if no port number was provided, and not already configured with a port number
             setPort(MailUtils.getDefaultPortForProtocol(uri.getScheme()));
         }
@@ -508,7 +510,7 @@ public class MailConfiguration implements Cloneable {
      * Sets the To email address. Separate multiple email addresses with comma.
      */
     public void setTo(String address) {
-        this.to = to;
+        this.to = address;
         recipients.put(Message.RecipientType.TO, address);
     }
 
@@ -747,5 +749,16 @@ public class MailConfiguration implements Cloneable {
      */
     public void setAttachmentsContentTransferEncodingResolver(AttachmentsContentTransferEncodingResolver attachmentsContentTransferEncodingResolver) {
         this.attachmentsContentTransferEncodingResolver = attachmentsContentTransferEncodingResolver;
+    }
+
+    /**
+     * This option enables transparent MIME decoding and unfolding for mail headers.
+     */
+    public void setMimeDecodeHeaders(boolean mimeDecodeHeaders) {
+        this.mimeDecodeHeaders = mimeDecodeHeaders;
+    }
+
+    public boolean isMimeDecodeHeaders() {
+        return mimeDecodeHeaders;
     }
 }

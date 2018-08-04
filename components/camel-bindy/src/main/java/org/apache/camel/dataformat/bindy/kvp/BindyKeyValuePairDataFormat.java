@@ -80,7 +80,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
                 row = Collections.singletonMap(model.getClass().getName(), model);
             }
 
-            String result = factory.unbind(row);
+            String result = factory.unbind(getCamelContext(), row);
 
             outputStream.write(converter.convertTo(byte[].class, exchange, result));
             outputStream.write(crlf);
@@ -91,13 +91,13 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         BindyKeyValuePairFactory factory = (BindyKeyValuePairFactory)getFactory();
 
         // List of Pojos
-        List<Map<String, Object>> models = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> models = new ArrayList<>();
 
         // Pojos of the model
         Map<String, Object> model;
         
         // Map to hold the model @OneToMany classes while binding
-        Map<String, List<Object>> lists = new HashMap<String, List<Object>>();
+        Map<String, List<Object>> lists = new HashMap<>();
 
         InputStreamReader in = new InputStreamReader(inputStream, IOHelper.getCharsetName(exchange));
 
@@ -136,7 +136,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
                 if (result.size() > 0) {
                     // Bind data from message with model classes
                     // Counter is used to detect line where error occurs
-                    factory.bind(result, model, count, lists);
+                    factory.bind(getCamelContext(), result, model, count, lists);
 
                     // Link objects together
                     factory.link(model);

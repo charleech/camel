@@ -40,6 +40,7 @@ import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.language.bean.RuntimeBeanExpressionException;
 import org.apache.camel.language.simple.types.SimpleIllegalSyntaxException;
 import org.apache.camel.spi.Language;
+
 /**
  * @version
  */
@@ -154,6 +155,19 @@ public class SimpleTest extends LanguageTestSupport {
         assertNotNull(exp);
     }
 
+    public void testBodyOgnlExpression() throws Exception {
+        Expression exp = SimpleLanguage.simple("${body.xxx}");
+        assertNotNull(exp);
+        
+        // must start with a dot
+        try {
+            SimpleLanguage.simple("${bodyxxx}");
+            fail("Should throw exception");
+        } catch (SimpleIllegalSyntaxException e) {
+            // expected
+        }
+    }
+
     public void testBodyExpressionUsingAlternativeStartToken() throws Exception {
         Expression exp = SimpleLanguage.simple("$simple{body}");
         assertNotNull(exp);
@@ -238,18 +252,25 @@ public class SimpleTest extends LanguageTestSupport {
             assertExpression("sysenv.PATH", path);
         }
     }
+    
+    public void testSimpleSystemEnvironmentExpressionsIfLowercase() throws Exception {
+        String path = System.getenv("PATH");
+        if (path != null) {
+            assertExpression("sysenv.path", path);
+        }
+    }
 
     public void testSimpleCamelId() throws Exception {
         assertExpression("camelId", context.getName());
     }
 
     public void testOGNLBodyListAndMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cool", "Camel rocks");
         map.put("dude", "Hey dude");
         map.put("code", 4321);
 
-        List<Map<String, Object>> lines = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> lines = new ArrayList<>();
         lines.add(map);
 
         exchange.getIn().setBody(lines);
@@ -261,7 +282,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLBodyEmptyList() throws Exception {
-        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        Map<String, List<String>> map = new HashMap<>();
         map.put("list", new ArrayList<String>());
 
         exchange.getIn().setBody(map);
@@ -316,7 +337,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLCallReplace() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cool", "Camel rocks");
         map.put("dude", "Hey dude");
         exchange.getIn().setHeaders(map);
@@ -325,11 +346,11 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLBodyListAndMapAndMethod() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("camel", new OrderLine(123, "Camel in Action"));
         map.put("amq", new OrderLine(456, "ActiveMQ in Action"));
 
-        List<Map<String, Object>> lines = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> lines = new ArrayList<>();
         lines.add(map);
 
         exchange.getIn().setBody(lines);
@@ -345,7 +366,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLPropertyList() throws Exception {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         lines.add("Camel in Action");
         lines.add("ActiveMQ in Action");
         exchange.setProperty("wicket", lines);
@@ -368,7 +389,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLPropertyLinesList() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         exchange.setProperty("wicket", lines);
@@ -390,7 +411,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLPropertyMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cool", "Camel rocks");
         map.put("dude", "Hey dude");
         map.put("code", 4321);
@@ -406,7 +427,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLExchangePropertyMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cool", "Camel rocks");
         map.put("dude", "Hey dude");
         map.put("code", 4321);
@@ -422,7 +443,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLPropertyMapWithDot() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("this.code", "This code");
         exchange.setProperty("wicket", map);
 
@@ -479,13 +500,33 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testDateExpressions() throws Exception {
-        Calendar cal = Calendar.getInstance();
-        cal.set(1974, Calendar.APRIL, 20);
-        exchange.getIn().setHeader("birthday", cal.getTime());
+        Calendar inHeaderCalendar = Calendar.getInstance();
+        inHeaderCalendar.set(1974, Calendar.APRIL, 20);
+        exchange.getIn().setHeader("birthday", inHeaderCalendar.getTime());
+        
+        Calendar outHeaderCalendar = Calendar.getInstance();
+        outHeaderCalendar.set(1975, Calendar.MAY, 21);
+        exchange.getOut().setHeader("birthday", outHeaderCalendar.getTime());
 
-        assertExpression("date:header.birthday", cal.getTime());
+        Calendar propertyCalendar = Calendar.getInstance();
+        propertyCalendar.set(1976, Calendar.JUNE, 22);
+        exchange.setProperty("birthday", propertyCalendar.getTime());
+
+        assertExpression("date:header.birthday", inHeaderCalendar.getTime());
         assertExpression("date:header.birthday:yyyyMMdd", "19740420");
         assertExpression("date:header.birthday+24h:yyyyMMdd", "19740421");
+        
+        assertExpression("date:in.header.birthday", inHeaderCalendar.getTime());
+        assertExpression("date:in.header.birthday:yyyyMMdd", "19740420");
+        assertExpression("date:in.header.birthday+24h:yyyyMMdd", "19740421");
+        
+        assertExpression("date:out.header.birthday", outHeaderCalendar.getTime());
+        assertExpression("date:out.header.birthday:yyyyMMdd", "19750521");
+        assertExpression("date:out.header.birthday+24h:yyyyMMdd", "19750522");
+
+        assertExpression("date:property.birthday", propertyCalendar.getTime());
+        assertExpression("date:property.birthday:yyyyMMdd", "19760622");
+        assertExpression("date:property.birthday+24h:yyyyMMdd", "19760623");
 
         try {
             assertExpression("date:yyyyMMdd", "19740420");
@@ -514,6 +555,11 @@ public class SimpleTest extends LanguageTestSupport {
 
         assertExpression("date-with-timezone:header.birthday:GMT+8:yyyy-MM-dd'T'HH:mm:ss:SSS", "1974-04-20T08:55:47:123");
         assertExpression("date-with-timezone:header.birthday:GMT:yyyy-MM-dd'T'HH:mm:ss:SSS", "1974-04-20T00:55:47:123");
+    }
+
+    public void testDateNow() throws Exception {
+        Object out = evaluateExpression("${date:now:hh:mm:ss a}", null);
+        assertNotNull(out);
     }
 
     public void testDatePredicates() throws Exception {
@@ -781,7 +827,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLHeaderList() throws Exception {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         lines.add("Camel in Action");
         lines.add("ActiveMQ in Action");
         exchange.getIn().setHeader("wicket", lines);
@@ -803,7 +849,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLHeaderLinesList() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         exchange.getIn().setHeader("wicket", lines);
@@ -825,7 +871,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLHeaderMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("cool", "Camel rocks");
         map.put("dude", "Hey dude");
         map.put("code", 4321);
@@ -841,7 +887,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testOGNLHeaderMapWithDot() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("this.code", "This code");
         exchange.getIn().setHeader("wicket", map);
 
@@ -868,7 +914,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLAsMap() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("foo", "Camel");
         map.put("bar", 6);
         exchange.getIn().setBody(map);
@@ -878,7 +924,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLAsMapWithDot() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("foo.bar", "Camel");
         exchange.getIn().setBody(map);
 
@@ -886,7 +932,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLAsMapShorthand() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("foo", "Camel");
         map.put("bar", 6);
         exchange.getIn().setBody(map);
@@ -983,7 +1029,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderList() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1004,7 +1050,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListShorthand() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1027,13 +1073,13 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLListMap() throws Exception {
-        List<Map<String, String>> grid = new ArrayList<Map<String, String>>();
-        Map<String, String> cells = new LinkedHashMap<String, String>();
+        List<Map<String, String>> grid = new ArrayList<>();
+        Map<String, String> cells = new LinkedHashMap<>();
         cells.put("ABC", "123");
         cells.put("DEF", "456");
         grid.add(cells);
 
-        Map<String, String> cells2 = new LinkedHashMap<String, String>();
+        Map<String, String> cells2 = new LinkedHashMap<>();
         cells2.put("HIJ", "789");
         grid.add(cells2);
 
@@ -1048,7 +1094,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLList() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
 
@@ -1062,7 +1108,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLListShorthand() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
 
@@ -1104,7 +1150,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListOutOfBounds() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1137,7 +1183,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListOutOfBoundsShorthand() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1170,7 +1216,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListOutOfBoundsWithNullSafe() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1181,7 +1227,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListOutOfBoundsWithNullSafeShorthand() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1192,7 +1238,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListNoMethodNameWithNullSafe() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1209,7 +1255,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testBodyOGNLOrderListNoMethodNameWithNullSafeShorthand() throws Exception {
-        List<OrderLine> lines = new ArrayList<OrderLine>();
+        List<OrderLine> lines = new ArrayList<>();
         lines.add(new OrderLine(123, "Camel in Action"));
         lines.add(new OrderLine(456, "ActiveMQ in Action"));
         Order order = new Order(lines);
@@ -1524,7 +1570,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testSimpleMapBoolean() throws Exception {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         exchange.getIn().setBody(map);
 
         map.put("isCredit", true);
@@ -1562,7 +1608,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testCollateEven() throws Exception {
-        List<Object> data = new ArrayList<Object>();
+        List<Object> data = new ArrayList<>();
         data.add("A");
         data.add("B");
         data.add("C");
@@ -1588,7 +1634,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testCollateOdd() throws Exception {
-        List<Object> data = new ArrayList<Object>();
+        List<Object> data = new ArrayList<>();
         data.add("A");
         data.add("B");
         data.add("C");
@@ -1656,7 +1702,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testListRemoveByInstance() throws Exception {
-        List<Object> data = new ArrayList<Object>();
+        List<Object> data = new ArrayList<>();
         data.add("A");
         data.add("B");
         exchange.getIn().setBody(data);
@@ -1671,7 +1717,7 @@ public class SimpleTest extends LanguageTestSupport {
     }
 
     public void testListRemoveIndex() throws Exception {
-        List<Object> data = new ArrayList<Object>();
+        List<Object> data = new ArrayList<>();
         data.add("A");
         data.add("B");
         exchange.getIn().setBody(data);

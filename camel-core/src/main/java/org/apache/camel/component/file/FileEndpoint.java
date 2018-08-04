@@ -20,12 +20,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.camel.Component;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.PollingConsumer;
 import org.apache.camel.Processor;
 import org.apache.camel.processor.idempotent.MemoryIdempotentRepository;
 import org.apache.camel.spi.Metadata;
@@ -65,14 +67,10 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
     private String chmodDirectory;
 
     public FileEndpoint() {
-        // use marker file as default exclusive read locks
-        this.readLock = "markerFile";
     }
 
     public FileEndpoint(String endpointUri, Component component) {
         super(endpointUri, component);
-        // use marker file as default exclusive read locks
-        this.readLock = "markerFile";
     }
 
     public FileConsumer createConsumer(Processor processor) throws Exception {
@@ -107,8 +105,18 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
 
         // if idempotent and no repository set then create a default one
         if (isIdempotentSet() && isIdempotent() && idempotentRepository == null) {
-            log.info("Using default memory based idempotent repository with cache max size: " + DEFAULT_IDEMPOTENT_CACHE_SIZE);
+            log.info("Using default memory based idempotent repository with cache max size: {}", DEFAULT_IDEMPOTENT_CACHE_SIZE);
             idempotentRepository = MemoryIdempotentRepository.memoryIdempotentRepository(DEFAULT_IDEMPOTENT_CACHE_SIZE);
+        }
+
+        if (ObjectHelper.isNotEmpty(getReadLock())) {
+            // check if its a valid
+            String valid = "none,markerFile,fileLock,rename,changed,idempotent,idempotent-changed,idempotent-rename";
+            String[] arr = valid.split(",");
+            boolean matched = Arrays.stream(arr).anyMatch(n -> n.equals(getReadLock()));
+            if (!matched) {
+                throw new IllegalArgumentException("ReadLock invalid: " + getReadLock() + ", must be one of: " + valid);
+            }
         }
 
         // set max messages per poll
@@ -116,6 +124,23 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
         result.setEagerLimitMaxMessagesPerPoll(isEagerMaxMessagesPerPoll());
 
         configureConsumer(result);
+        return result;
+    }
+
+    @Override
+    public PollingConsumer createPollingConsumer() throws Exception {
+        ObjectHelper.notNull(operations, "operations");
+        ObjectHelper.notNull(file, "file");
+
+        if (log.isDebugEnabled()) {
+            log.debug("Creating GenericFilePollingConsumer with queueSize: {} blockWhenFull: {} blockTimeout: {}",
+                getPollingConsumerQueueSize(), isPollingConsumerBlockWhenFull(), getPollingConsumerBlockTimeout());
+        }
+        GenericFilePollingConsumer result = new GenericFilePollingConsumer(this);
+        // should not call configurePollingConsumer when its GenericFilePollingConsumer
+        result.setBlockWhenFull(isPollingConsumerBlockWhenFull());
+        result.setBlockTimeout(getPollingConsumerBlockTimeout());
+
         return result;
     }
 
@@ -134,13 +159,13 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
             throw new IllegalArgumentException("You must configure fileExist=Move when moveExisting has been set");
         }
 
-        return new GenericFileProducer<File>(this, operations);
+        return new GenericFileProducer<>(this, operations);
     }
 
     public Exchange createExchange(GenericFile<File> file) {
         Exchange exchange = createExchange();
         if (file != null) {
-            file.bindToExchange(exchange);
+            file.bindToExchange(exchange, probeContentType);
         }
         return exchange;
     }
@@ -153,7 +178,7 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
      * @return the created consumer
      */
     protected FileConsumer newFileConsumer(Processor processor, GenericFileOperations<File> operations) {
-        return new FileConsumer(this, processor, operations);
+        return new FileConsumer(this, processor, operations, processStrategy != null ? processStrategy : createGenericFileStrategy());
     }
 
     public File getFile() {
@@ -269,7 +294,7 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
     }
 
     public Set<PosixFilePermission> getPermissions() {
-        Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
+        Set<PosixFilePermission> permissions = new HashSet<>();
         if (ObjectHelper.isEmpty(chmod)) {
             return permissions;
         }
@@ -330,7 +355,7 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
     }
 
     public Set<PosixFilePermission> getDirectoryPermissions() {
-        Set<PosixFilePermission> permissions = new HashSet<PosixFilePermission>();
+        Set<PosixFilePermission> permissions = new HashSet<>();
         if (ObjectHelper.isEmpty(chmodDirectory)) {
             return permissions;
         }

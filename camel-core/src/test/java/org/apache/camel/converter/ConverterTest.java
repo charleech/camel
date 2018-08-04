@@ -52,7 +52,7 @@ public class ConverterTest extends TestCase {
     private static final Logger LOG = LoggerFactory.getLogger(ConverterTest.class);
 
     protected TypeConverter converter = new DefaultTypeConverter(new DefaultPackageScanClassResolver(),
-            new ReflectionInjector(), new DefaultFactoryFinderResolver().resolveDefaultFactoryFinder(new DefaultClassResolver()));
+            new ReflectionInjector(), new DefaultFactoryFinderResolver().resolveDefaultFactoryFinder(new DefaultClassResolver()), true);
 
     public static class IntegerPropertyEditor extends PropertyEditorSupport {
         public void setAsText(String text) throws IllegalArgumentException {
@@ -125,7 +125,7 @@ public class ConverterTest extends TestCase {
 
 
     public void testCollectionToArrayConversion() throws Exception {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         list.add("one");
         list.add("two");
 
@@ -137,7 +137,7 @@ public class ConverterTest extends TestCase {
     }
 
     public void testCollectionToPrimitiveArrayConversion() throws Exception {
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
         list.add(5);
         list.add(6);
 
@@ -242,7 +242,7 @@ public class ConverterTest extends TestCase {
             converter.mandatoryConvertTo(char.class, "ABC");
             fail("Should have thrown an exception");
         } catch (TypeConversionException e) {
-            assertEquals("java.lang.IllegalArgumentException: String must have exactly a length of 1: ABC", e.getCause().getMessage());
+            assertEquals("String must have exactly a length of 1: ABC", e.getCause().getMessage());
         }
     }
 

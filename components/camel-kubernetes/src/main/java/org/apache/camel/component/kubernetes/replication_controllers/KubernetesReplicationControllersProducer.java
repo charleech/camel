@@ -23,7 +23,9 @@ import io.fabric8.kubernetes.api.model.ReplicationController;
 import io.fabric8.kubernetes.api.model.ReplicationControllerBuilder;
 import io.fabric8.kubernetes.api.model.ReplicationControllerList;
 import io.fabric8.kubernetes.api.model.ReplicationControllerSpec;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.FilterWatchListMultiDeletable;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
 
@@ -105,7 +107,7 @@ public class KubernetesReplicationControllersProducer extends DefaultProducer {
                     .replicationControllers().inNamespace(namespaceName).list();
         } else {
             rcList = getEndpoint().getKubernetesClient()
-                    .replicationControllers().list();
+                    .replicationControllers().inAnyNamespace().list();
         }
         
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
@@ -131,9 +133,8 @@ public class KubernetesReplicationControllersProducer extends DefaultProducer {
             }
             rcList = replicationControllers.list();
         } else {
-            MixedOperation<ReplicationController, ReplicationControllerList, DoneableReplicationController, 
-            RollableScalableResource<ReplicationController, DoneableReplicationController>> replicationControllers = getEndpoint().getKubernetesClient()
-                    .replicationControllers();
+            FilterWatchListMultiDeletable<ReplicationController, ReplicationControllerList, Boolean, Watch, Watcher<ReplicationController>> replicationControllers = getEndpoint().getKubernetesClient()
+                    .replicationControllers().inAnyNamespace();
             for (Map.Entry<String, String> entry : labels.entrySet()) {
                 replicationControllers.withLabel(entry.getKey(),
                         entry.getValue());
@@ -261,7 +262,7 @@ public class KubernetesReplicationControllersProducer extends DefaultProducer {
         }
         ReplicationController rcScaled = getEndpoint().getKubernetesClient()
                 .replicationControllers().inNamespace(namespaceName)
-                .withName(rcName).scale(replicasNumber, true);
+                .withName(rcName).scale(replicasNumber, false);
         
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(rcScaled.getStatus().getReplicas());

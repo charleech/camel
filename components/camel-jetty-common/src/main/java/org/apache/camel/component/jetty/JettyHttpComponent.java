@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -104,7 +105,7 @@ import org.slf4j.LoggerFactory;
 public abstract class JettyHttpComponent extends HttpCommonComponent implements RestConsumerFactory, RestApiConsumerFactory, RestProducerFactory, SSLContextParametersAware {
     public static final String TMP_DIR = "CamelJettyTempDir";
 
-    protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<String, ConnectorRef>();
+    protected static final HashMap<String, ConnectorRef> CONNECTORS = new HashMap<>();
 
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpComponent.class);
     private static final String JETTY_SSL_KEYSTORE = "org.eclipse.jetty.ssl.keystore";
@@ -277,7 +278,7 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
         if (enableCors) {
             endpoint.setEnableCORS(enableCors);
             if (filters == null) {
-                filters = new ArrayList<Filter>(1);
+                filters = new ArrayList<>(1);
             }
             filters.add(new CrossOriginFilter());
         }
@@ -346,12 +347,20 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
                 CONNECTORS.put(connectorKey, connectorRef);
 
             } else {
-
+                // check if there are any new handlers, and if so then we need to re-start the server
                 if (endpoint.getHandlers() != null && !endpoint.getHandlers().isEmpty()) {
-                    // As the server is started, we need to stop the server for a while to add the new handler
-                    connectorRef.server.stop();
-                    addJettyHandlers(connectorRef.server, endpoint.getHandlers());
-                    connectorRef.server.start();
+                    List<Handler> existingHandlers = new ArrayList<>();
+                    if (connectorRef.server.getHandlers() != null && connectorRef.server.getHandlers().length > 0) {
+                        existingHandlers = Arrays.asList(connectorRef.server.getHandlers());
+                    }
+                    List<Handler> newHandlers = new ArrayList<>(endpoint.getHandlers());
+                    boolean changed = !existingHandlers.containsAll(newHandlers) && !newHandlers.containsAll(existingHandlers);
+                    if (changed) {
+                        LOG.debug("Restarting Jetty server due to adding new Jetty Handlers: {}", newHandlers);
+                        connectorRef.server.stop();
+                        addJettyHandlers(connectorRef.server, endpoint.getHandlers());
+                        connectorRef.server.start();
+                    }
                 }
                 // ref track the connector
                 connectorRef.increment();
@@ -621,6 +630,41 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
         if (ssl != null) {
             answer.setSslContext(ssl.createSSLContext(getCamelContext()));
         }
+
+        // jetty default is
+        // addExcludeProtocols("SSL", "SSLv2", "SSLv2Hello", "SSLv3");
+        // setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$");
+
+        // configure include/exclude ciphers and protocols
+        if (ssl != null && ssl.getCipherSuitesFilter() != null)  {
+            List<String> includeCiphers = ssl.getCipherSuitesFilter().getInclude();
+            if (includeCiphers != null && !includeCiphers.isEmpty()) {
+                String[] arr = includeCiphers.toArray(new String[includeCiphers.size()]);
+                answer.setIncludeCipherSuites(arr);
+            } else {
+                answer.setIncludeCipherSuites(".*");
+            }
+            List<String> excludeCiphers = ssl.getCipherSuitesFilter().getExclude();
+            if (excludeCiphers != null && !excludeCiphers.isEmpty()) {
+                String[] arr = excludeCiphers.toArray(new String[excludeCiphers.size()]);
+                answer.setExcludeCipherSuites(arr);
+            }
+        }
+        if (ssl != null && ssl.getSecureSocketProtocolsFilter() != null) {
+            List<String> includeProtocols = ssl.getSecureSocketProtocolsFilter().getInclude();
+            if (includeProtocols != null && !includeProtocols.isEmpty()) {
+                String[] arr = includeProtocols.toArray(new String[includeProtocols.size()]);
+                answer.setIncludeProtocols(arr);
+            } else {
+                answer.setIncludeProtocols(".*");
+            }
+            List<String> excludeProtocols = ssl.getSecureSocketProtocolsFilter().getExclude();
+            if (excludeProtocols != null && !excludeProtocols.isEmpty()) {
+                String[] arr = excludeProtocols.toArray(new String[excludeProtocols.size()]);
+                answer.setExcludeProtocols(arr);
+            }
+        }
+
         return answer;
     }
 
@@ -896,14 +940,14 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
 
     public void addSocketConnectorProperty(String key, Object value) {
         if (socketConnectorProperties == null) {
-            socketConnectorProperties = new HashMap<String, Object>();
+            socketConnectorProperties = new HashMap<>();
         }
         socketConnectorProperties.put(key, value);
     }
 
     public void addSslSocketConnectorProperty(String key, Object value) {
         if (sslSocketConnectorProperties == null) {
-            sslSocketConnectorProperties = new HashMap<String, Object>();
+            sslSocketConnectorProperties = new HashMap<>();
         }
         sslSocketConnectorProperties.put(key, value);
     }
@@ -1134,7 +1178,7 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
             }
         }
 
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         // build query string, and append any endpoint configuration properties
         if (config.getComponent() == null || config.getComponent().equals("jetty")) {
             // setup endpoint options
@@ -1195,7 +1239,7 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
     @Override
     public Producer createProducer(CamelContext camelContext, String host,
                                    String verb, String basePath, String uriTemplate, String queryParameters,
-                                   String consumes, String produces, Map<String, Object> parameters) throws Exception {
+                                   String consumes, String produces, RestConfiguration configuration, Map<String, Object> parameters) throws Exception {
 
         // avoid leading slash
         basePath = FileUtil.stripLeadingSeparator(basePath);
@@ -1208,6 +1252,26 @@ public abstract class JettyHttpComponent extends HttpCommonComponent implements 
         }
         if (!ObjectHelper.isEmpty(uriTemplate)) {
             url += "/" + uriTemplate;
+        }
+
+        RestConfiguration config = configuration;
+        if (config == null) {
+            config = camelContext.getRestConfiguration("jetty", true);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        // build query string, and append any endpoint configuration properties
+        if (config.getComponent() == null || config.getComponent().equals("jetty")) {
+            // setup endpoint options
+            if (config.getEndpointProperties() != null && !config.getEndpointProperties().isEmpty()) {
+                map.putAll(config.getEndpointProperties());
+            }
+        }
+
+        // get the endpoint
+        String query = URISupport.createQueryString(map);
+        if (!query.isEmpty()) {
+            url = url + "?" + query;
         }
 
         JettyHttpEndpoint endpoint = camelContext.getEndpoint(url, JettyHttpEndpoint.class);

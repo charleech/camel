@@ -48,6 +48,8 @@ import org.apache.camel.util.EndpointHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.camel.swagger.SwaggerHelper.clearVendorExtensions;
+
 /**
  * A support class for that allows SPI to plugin
  * and offer Swagger API service listings as part of the Camel component. This allows rest-dsl components
@@ -207,6 +209,10 @@ public class RestSwaggerSupport {
                 // read the rest-dsl into swagger model
                 Swagger swagger = reader.read(rests, route, swaggerConfig, contextId, classResolver);
 
+                if (!configuration.isApiVendorExtension()) {
+                    clearVendorExtensions(swagger);
+                }
+
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.enable(SerializationFeature.INDENT_OUTPUT);
                 mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -221,6 +227,10 @@ public class RestSwaggerSupport {
 
                 // read the rest-dsl into swagger model
                 Swagger swagger = reader.read(rests, route, swaggerConfig, contextId, classResolver);
+
+                if (!configuration.isApiVendorExtension()) {
+                    clearVendorExtensions(swagger);
+                }
 
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.enable(SerializationFeature.INDENT_OUTPUT);

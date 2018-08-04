@@ -50,7 +50,7 @@ public class ActiveMQPropagateSerializableHeadersTest extends CamelTestSupport {
     @Before
     public void setup() {
         calValue = Calendar.getInstance();
-        mapValue = new LinkedHashMap<String, Object>();
+        mapValue = new LinkedHashMap<>();
         mapValue.put("myStringEntry", "stringValue");
         mapValue.put("myCalEntry", Calendar.getInstance());
         mapValue.put("myIntEntry", 123);
@@ -93,6 +93,9 @@ public class ActiveMQPropagateSerializableHeadersTest extends CamelTestSupport {
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
         camelContext.addComponent("activemq", jmsComponentAutoAcknowledge(connectionFactory));
         // END SNIPPET: example
+
+        // prevent java.io.NotSerializableException: org.apache.camel.impl.DefaultMessageHistory
+        camelContext.setMessageHistory(false);
 
         return camelContext;
     }

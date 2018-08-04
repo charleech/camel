@@ -18,13 +18,13 @@ package org.apache.camel.component.kubernetes.pods;
 
 import java.util.Map;
 
-import io.fabric8.kubernetes.api.model.DoneablePod;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.PodResource;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.FilterWatchListMultiDeletable;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
@@ -92,7 +92,7 @@ public class KubernetesPodsProducer extends DefaultProducer {
     }
 
     protected void doList(Exchange exchange, String operation) throws Exception {
-        PodList podList = getEndpoint().getKubernetesClient().pods().list();
+        PodList podList = getEndpoint().getKubernetesClient().pods().inAnyNamespace().list();
         
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(podList.getItems());
@@ -107,7 +107,7 @@ public class KubernetesPodsProducer extends DefaultProducer {
                     "Get pods by labels require specify a labels set");
         }
         
-        MixedOperation<Pod, PodList, DoneablePod, PodResource<Pod, DoneablePod>> pods = getEndpoint().getKubernetesClient().pods();
+        FilterWatchListMultiDeletable<Pod, PodList, Boolean, Watch, Watcher<Pod>> pods = getEndpoint().getKubernetesClient().pods().inAnyNamespace();
         for (Map.Entry<String, String> entry : labels.entrySet()) {
             pods.withLabel(entry.getKey(), entry.getValue());
         }

@@ -87,6 +87,11 @@ public class MulticastDefinition extends OutputDefinition<MulticastDefinition> i
     }
 
     @Override
+    public String getShortName() {
+        return "multicast";
+    }
+
+    @Override
     public String getLabel() {
         return "multicast";
     }
@@ -97,7 +102,7 @@ public class MulticastDefinition extends OutputDefinition<MulticastDefinition> i
 
         // force the answer as a multicast processor even if there is only one child processor in the multicast
         if (!(answer instanceof MulticastProcessor)) {
-            List<Processor> list = new ArrayList<Processor>(1);
+            List<Processor> list = new ArrayList<>(1);
             list.add(answer);
             answer = createCompositeProcessor(routeContext, list);
         }

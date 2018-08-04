@@ -18,10 +18,8 @@ package org.apache.camel.component.restlet.springboot;
 
 import java.util.List;
 import javax.annotation.Generated;
-import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * Component for consuming and producing Restful resources using Restlet.
@@ -35,6 +33,11 @@ public class RestletComponentConfiguration
             ComponentConfigurationPropertiesCommon {
 
     /**
+     * Whether to enable auto configuration of the restlet component. This is
+     * enabled by default.
+     */
+    private Boolean enabled;
+    /**
      * Indicates if the controller thread should be a daemon (not blocking JVM
      * exit).
      */
@@ -43,6 +46,12 @@ public class RestletComponentConfiguration
      * Time for the controller thread to sleep between each control.
      */
     private Integer controllerSleepTimeMs;
+    /**
+     * To use a custom org.apache.camel.spi.HeaderFilterStrategy to filter
+     * header to and from Camel message. The option is a
+     * org.apache.camel.spi.HeaderFilterStrategy type.
+     */
+    private String headerFilterStrategy;
     /**
      * The size of the buffer when reading messages.
      */
@@ -99,19 +108,19 @@ public class RestletComponentConfiguration
     private Boolean reuseAddress;
     /**
      * Maximum number of calls that can be queued if there aren't any worker
-     * thread available to service them. If the value is '0' then no queue is
+     * thread available to service them. If the value is '0', then no queue is
      * used and calls are rejected if no worker thread is immediately available.
-     * If the value is '-1' then an unbounded queue is used and calls are never
+     * If the value is '-1', then an unbounded queue is used and calls are never
      * rejected.
      */
     private Integer maxQueued;
     /**
      * Determines whether or not the raw input stream from Restlet is cached or
-     * not (Camel will read the stream into a in memory/overflow to file Stream
+     * not (Camel will read the stream into a in memory/overflow to file, Stream
      * caching) cache. By default Camel will cache the Restlet input stream to
      * support reading it multiple times to ensure Camel can retrieve all data
      * from the stream. However you can set this option to true when you for
-     * example need to access the raw stream such as streaming it directly to a
+     * example need to access the raw stream, such as streaming it directly to a
      * file or other persistent store. DefaultRestletBinding will copy the
      * request input stream into a stream cache and put it into message body if
      * this option is false to support reading the stream multiple times.
@@ -138,12 +147,6 @@ public class RestletComponentConfiguration
      */
     private Boolean useGlobalSslContextParameters = false;
     /**
-     * To use a custom org.apache.camel.spi.HeaderFilterStrategy to filter
-     * header to and from Camel message.
-     */
-    @NestedConfigurationProperty
-    private HeaderFilterStrategy headerFilterStrategy;
-    /**
      * Whether the component should resolve property placeholders on itself when
      * starting. Only properties which are of String type can use property
      * placeholders.
@@ -164,6 +167,14 @@ public class RestletComponentConfiguration
 
     public void setControllerSleepTimeMs(Integer controllerSleepTimeMs) {
         this.controllerSleepTimeMs = controllerSleepTimeMs;
+    }
+
+    public String getHeaderFilterStrategy() {
+        return headerFilterStrategy;
+    }
+
+    public void setHeaderFilterStrategy(String headerFilterStrategy) {
+        this.headerFilterStrategy = headerFilterStrategy;
     }
 
     public Integer getInboundBufferSize() {
@@ -309,15 +320,6 @@ public class RestletComponentConfiguration
     public void setUseGlobalSslContextParameters(
             Boolean useGlobalSslContextParameters) {
         this.useGlobalSslContextParameters = useGlobalSslContextParameters;
-    }
-
-    public HeaderFilterStrategy getHeaderFilterStrategy() {
-        return headerFilterStrategy;
-    }
-
-    public void setHeaderFilterStrategy(
-            HeaderFilterStrategy headerFilterStrategy) {
-        this.headerFilterStrategy = headerFilterStrategy;
     }
 
     public Boolean getResolvePropertyPlaceholders() {

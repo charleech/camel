@@ -67,6 +67,10 @@ class RabbitConsumer implements com.rabbitmq.client.Consumer {
             }
             //Channel might be open because while we were waiting for the lock, stop() has been succesfully called.
             if (!channel.isOpen()) {
+                // we could not open the channel so release the lock
+                if (!consumer.getEndpoint().isAutoAck()) {
+                    lock.release();
+                }
                 return;
             }
 
@@ -170,7 +174,7 @@ class RabbitConsumer implements com.rabbitmq.client.Consumer {
         if (channel == null) {
             throw new IOException("The RabbitMQ channel is not open");
         }
-        tag = channel.basicConsume(consumer.getEndpoint().getQueue(), consumer.getEndpoint().isAutoAck(), this);
+        tag = channel.basicConsume(consumer.getEndpoint().getQueue(), consumer.getEndpoint().isAutoAck(), "", false, consumer.getEndpoint().isExclusiveConsumer(), null, this);
     }
 
     /**
@@ -237,8 +241,16 @@ class RabbitConsumer implements com.rabbitmq.client.Consumer {
      *            the defined consumer tag (client- or server-generated)
      */
     public void handleCancel(String consumerTag) throws IOException {
-        // no work to do
-        log.debug("Received cancel signal on the rabbitMQ channel");
+        log.debug("Received cancel signal on the rabbitMQ channel.");
+
+        try {
+            channel.basicCancel(tag);
+        } catch (Exception e) {
+            //no-op
+        }
+
+        this.consumer.getEndpoint().declareExchangeAndQueue(channel);
+        this.start();
     }
 
     /**
@@ -256,7 +268,9 @@ class RabbitConsumer implements com.rabbitmq.client.Consumer {
                     reconnect();
                     connected = true;
                 } catch (IOException | TimeoutException e) {
-                    log.warn("Unable to obtain a RabbitMQ channel. Will try again");
+                    log.warn("Unable to obtain a RabbitMQ channel. Will try again. Caused by: " + e.getMessage() + ". Stacktrace logged at DEBUG logging level.");
+                    // include stacktrace in DEBUG logging
+                    log.debug(e.getMessage(), e);
 
                     Integer networkRecoveryInterval = consumer.getEndpoint().getNetworkRecoveryInterval();
                     final long connectionRetryInterval = networkRecoveryInterval != null && networkRecoveryInterval > 0
@@ -287,12 +301,21 @@ class RabbitConsumer implements com.rabbitmq.client.Consumer {
         if (isChannelOpen()) {
             // The connection is good, so nothing to do
             return;
+        } else if (channel != null && !channel.isOpen() && isAutomaticRecoveryEnabled()) {
+            // Still need to wait for channel to re-open
+            throw new IOException("Waiting for channel to re-open.");
+        } else if (channel == null || !isAutomaticRecoveryEnabled()) {
+            log.info("Attempting to open a new rabbitMQ channel");
+            Connection conn = consumer.getConnection();
+            channel = openChannel(conn);
+            // Register the channel to the tag
+            start();
         }
-        log.info("Attempting to open a new rabbitMQ channel");
-        Connection conn = consumer.getConnection();
-        channel = openChannel(conn);
-        // Register the channel to the tag
-        start();
+    }
+
+    private boolean isAutomaticRecoveryEnabled() {
+        return this.consumer.getEndpoint().getAutomaticRecoveryEnabled() != null
+            && this.consumer.getEndpoint().getAutomaticRecoveryEnabled();
     }
 
     private boolean isChannelOpen() {

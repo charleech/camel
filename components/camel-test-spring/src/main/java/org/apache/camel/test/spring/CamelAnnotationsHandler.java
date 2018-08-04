@@ -23,14 +23,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
+import org.apache.camel.api.management.mbean.ManagedCamelContextMBean;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.impl.DefaultDebugger;
 import org.apache.camel.impl.InterceptSendToMockEndpointStrategy;
 import org.apache.camel.management.JmxSystemPropertyKeys;
 import org.apache.camel.spi.Breakpoint;
 import org.apache.camel.spi.Debugger;
+import org.apache.camel.spi.EventNotifier;
 import org.apache.camel.spring.SpringCamelContext;
+import org.apache.camel.test.junit4.CamelTestSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -69,9 +73,62 @@ public final class CamelAnnotationsHandler {
         }
     }
 
+    /**
+     * Handles disabling of JMX on Camel contexts based on {@link DisableJmx}.
+     *
+     * @param context the initialized Spring context
+     * @param testClass the test class being executed
+     */
+    public static void handleRouteCoverage(ConfigurableApplicationContext context, Class<?> testClass, Function testMethod) throws Exception {
+        if (testClass.isAnnotationPresent(EnableRouteCoverage.class)) {
+            System.setProperty(CamelTestSupport.ROUTE_COVERAGE_ENABLED, "true");
+
+            CamelSpringTestHelper.doToSpringCamelContexts(context, new CamelSpringTestHelper.DoToSpringCamelContextsStrategy() {
+
+                @Override
+                public void execute(String contextName, SpringCamelContext camelContext) throws Exception {
+                    LOGGER.info("Enabling RouteCoverage");
+                    EventNotifier notifier = new RouteCoverageEventNotifier(testClass.getName(), testMethod);
+                    camelContext.addService(notifier, true);
+                    camelContext.getManagementStrategy().addEventNotifier(notifier);
+                }
+            });
+        }
+    }
+
+    public static void handleRouteCoverageDump(ConfigurableApplicationContext context, Class<?> testClass, Function testMethod) throws Exception {
+        if (testClass.isAnnotationPresent(EnableRouteCoverage.class)) {
+            CamelSpringTestHelper.doToSpringCamelContexts(context, new CamelSpringTestHelper.DoToSpringCamelContextsStrategy() {
+
+                @Override
+                public void execute(String contextName, SpringCamelContext camelContext) throws Exception {
+                    LOGGER.debug("Dumping RouteCoverage");
+
+                    String testMethodName = (String) testMethod.apply(this);
+                    RouteCoverageDumper.dumpRouteCoverage(camelContext, testClass.getName(), testMethodName);
+
+                    // reset JMX statistics
+                    ManagedCamelContextMBean managedCamelContext = camelContext.getManagedCamelContext();
+                    if (managedCamelContext != null) {
+                        LOGGER.debug("Resetting JMX statistics for RouteCoverage");
+                        managedCamelContext.reset(true);
+                    }
+
+                    // turn off dumping one more time by removing the event listener (which would dump as well when Camel is stopping)
+                    // but this method was explict invoked to dump such as from afterTest callbacks from JUnit.
+                    RouteCoverageEventNotifier eventNotifier = camelContext.hasService(RouteCoverageEventNotifier.class);
+                    if (eventNotifier != null) {
+                        camelContext.getManagementStrategy().removeEventNotifier(eventNotifier);
+                        camelContext.removeService(eventNotifier);
+                    }
+                }
+            });
+        }
+    }
+
     public static void handleProvidesBreakpoint(ConfigurableApplicationContext context, Class<?> testClass) throws Exception {
         Collection<Method> methods = getAllMethods(testClass);
-        final List<Breakpoint> breakpoints = new LinkedList<Breakpoint>();
+        final List<Breakpoint> breakpoints = new LinkedList<>();
 
         for (Method method : methods) {
             if (AnnotationUtils.findAnnotation(method, ProvidesBreakpoint.class) != null) {
@@ -198,7 +255,7 @@ public final class CamelAnnotationsHandler {
      */
     public static void handleUseOverridePropertiesWithPropertiesComponent(ConfigurableApplicationContext context, Class<?> testClass) throws Exception {
         Collection<Method> methods = getAllMethods(testClass);
-        final List<Properties> properties = new LinkedList<Properties>();
+        final List<Properties> properties = new LinkedList<>();
 
         for (Method method : methods) {
             if (AnnotationUtils.findAnnotation(method, UseOverridePropertiesWithPropertiesComponent.class) != null) {

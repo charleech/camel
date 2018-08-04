@@ -35,8 +35,10 @@ import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.KubernetesTestSupport;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.util.ObjectHelper;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Requires a running Kubernetes Cluster")
 public class KubernetesPodsConsumerTest extends KubernetesTestSupport {
 
     @EndpointInject(uri = "mock:result")
@@ -57,7 +59,7 @@ public class KubernetesPodsConsumerTest extends KubernetesTestSupport {
             public void process(Exchange exchange) throws Exception {
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, "default");
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_POD_NAME, "test");
-                Map<String, String> labels = new HashMap<String, String>();
+                Map<String, String> labels = new HashMap<>();
                 labels.put("this", "rocks");
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_PODS_LABELS, labels);
                 PodSpec podSpec = new PodSpec();
@@ -66,7 +68,7 @@ public class KubernetesPodsConsumerTest extends KubernetesTestSupport {
                 cont.setImage("docker.io/jboss/wildfly:latest");
                 cont.setName("pippo");
 
-                List<ContainerPort> containerPort = new ArrayList<ContainerPort>();
+                List<ContainerPort> containerPort = new ArrayList<>();
                 ContainerPort port = new ContainerPort();
                 port.setHostIP("0.0.0.0");
                 port.setHostPort(8080);
@@ -76,7 +78,7 @@ public class KubernetesPodsConsumerTest extends KubernetesTestSupport {
 
                 cont.setPorts(containerPort);
 
-                List<Container> list = new ArrayList<Container>();
+                List<Container> list = new ArrayList<>();
                 list.add(cont);
 
                 podSpec.setContainers(list);

@@ -33,8 +33,10 @@ import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.KubernetesTestSupport;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.util.ObjectHelper;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Requires a running Kubernetes Cluster")
 public class KubernetesReplicationControllersConsumerTest extends KubernetesTestSupport {
 
     @EndpointInject(uri = "mock:result")
@@ -54,7 +56,7 @@ public class KubernetesReplicationControllersConsumerTest extends KubernetesTest
             public void process(Exchange exchange) throws Exception {
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, "default");
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_REPLICATION_CONTROLLER_NAME, "test");
-                Map<String, String> labels = new HashMap<String, String>();
+                Map<String, String> labels = new HashMap<>();
                 labels.put("this", "rocks");
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_REPLICATION_CONTROLLERS_LABELS, labels);
                 ReplicationControllerSpec rcSpec = new ReplicationControllerSpec();
@@ -65,7 +67,7 @@ public class KubernetesReplicationControllersConsumerTest extends KubernetesTest
                         .withName("wildfly").withImage("jboss/wildfly").addNewPort().withContainerPort(80).endPort()
                         .endContainer().endSpec().build();
                 rcSpec.setTemplate(t);
-                Map<String, String> selectorMap = new HashMap<String, String>();
+                Map<String, String> selectorMap = new HashMap<>();
                 selectorMap.put("server", "nginx");
                 rcSpec.setSelector(selectorMap);
                 exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_REPLICATION_CONTROLLER_SPEC, rcSpec);

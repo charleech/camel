@@ -76,11 +76,11 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
         assertEquals(10, completed.longValue());
 
         Long timePeriod = (Long) mbeanServer.getAttribute(throttlerName, "TimePeriodMillis");
-        assertEquals(1000, timePeriod.longValue());
+        assertEquals(250, timePeriod.longValue());
 
         Long total = (Long) mbeanServer.getAttribute(routeName, "TotalProcessingTime");
 
-        assertTrue("Should take at most 2.0 sec: was " + total, total < 2000);
+        assertTrue("Should take at most 1.0 sec: was " + total, total < 1000);
 
         // change the throttler using JMX
         mbeanServer.setAttribute(throttlerName, new Attribute("MaximumRequestsPerPeriod", (long) 2));
@@ -101,7 +101,7 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
         assertEquals(10, completed.longValue());
         total = (Long) mbeanServer.getAttribute(routeName, "TotalProcessingTime");
 
-        assertTrue("Should be around 5 sec now: was " + total, total > 3500);
+        assertTrue("Should be around 1 sec now: was " + total, total > 1000);
     }
 
     public void testThrottleVisableViaJmx() throws Exception {
@@ -116,8 +116,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
 
         // get the stats for the route
         MBeanServer mbeanServer = getMBeanServer();
-        // get the object name for the delayer
-        ObjectName throttlerName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=processors,name=\"mythrottler2\"");
 
         // use route to get the total time
         ObjectName routeName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=routes,name=\"route2\"");
@@ -153,8 +151,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
 
         // get the stats for the route
         MBeanServer mbeanServer = getMBeanServer();
-        // get the object name for the delayer
-        ObjectName throttlerName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=processors,name=\"mythrottler3\"");
 
         // use route to get the total time
         ObjectName routeName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=routes,name=\"route3\"");
@@ -192,8 +188,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
 
         // get the stats for the route
         MBeanServer mbeanServer = getMBeanServer();
-        // get the object name for the delayer
-        ObjectName throttlerName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=processors,name=\"mythrottler4\"");
 
         // use route to get the total time
         ObjectName routeName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=routes,name=\"route4\"");
@@ -233,8 +227,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
 
         // get the stats for the route
         MBeanServer mbeanServer = getMBeanServer();
-        // get the object name for the delayer
-        ObjectName throttlerName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=processors,name=\"mythrottler2\"");
 
         // use route to get the total time
         ObjectName routeName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=routes,name=\"route2\"");
@@ -268,8 +260,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
 
         // get the stats for the route
         MBeanServer mbeanServer = getMBeanServer();
-        // get the object name for the delayer
-        ObjectName throttlerName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=processors,name=\"mythrottler2\"");
 
         // use route to get the total time
         ObjectName routeName = ObjectName.getInstance("org.apache.camel:context=camel-1,type=routes,name=\"route2\"");
@@ -305,7 +295,7 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
             public void configure() throws Exception {
                 from("direct:start")
                         .to("log:foo")
-                        .throttle(10).id("mythrottler")
+                        .throttle(10).timePeriodMillis(250).id("mythrottler")
                         .to("mock:result");
 
                 from("seda:throttleCount")
@@ -320,7 +310,6 @@ public class ManagedThrottlerTest extends ManagementTestSupport {
                         .throttle(1).asyncDelayed().timePeriodMillis(250).id("mythrottler4")
                         .to("mock:endAsyncException")
                         .process(new Processor() {
-
                             @Override
                             public void process(Exchange exchange) throws Exception {
                                 throw new RuntimeException("Fail me");

@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.camel</groupId>
     <artifactId>camel-parent</artifactId>
-    <version>2.20.0-SNAPSHOT</version>
+    <version>2.23.0-SNAPSHOT</version>
     <relativePath>../parent</relativePath>
   </parent>
 
@@ -72,6 +72,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-asn1</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-asterisk</artifactId>
     </dependency>
     <dependency>
@@ -88,7 +92,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-atomix</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-aws</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-aws-xray</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -156,6 +168,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-caffeine</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-cassandraql</artifactId>
     </dependency>
     <dependency>
@@ -216,6 +232,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-crypto-cms</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-csv</artifactId>
     </dependency>
     <dependency>
@@ -272,6 +292,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-elasticsearch-rest</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-elasticsearch5</artifactId>
     </dependency>
     <dependency>
@@ -293,6 +317,14 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-facebook</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-fastjson</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-fhir</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -341,6 +373,10 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-google-mail</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-google-bigquery</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -400,6 +436,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-headersmap</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-hessian</artifactId>
     </dependency>
     <dependency>
@@ -433,6 +473,10 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-ical</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-iec60870</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -552,6 +596,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-json-validator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-jsonpath</artifactId>
     </dependency>
     <dependency>
@@ -599,6 +647,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-ldif</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-leveldb</artifactId>
     </dependency>
     <dependency>
@@ -608,6 +660,10 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-linkedin</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-lra</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -627,7 +683,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-master</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-metrics</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-micrometer</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -787,6 +851,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-rxjava2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-rest-swagger</artifactId>
     </dependency>
     <dependency>
@@ -844,6 +912,10 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-script</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-service</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -927,11 +999,15 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-spring-cloud-consul</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-spring-cloud-netflix</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-spring-dm</artifactId>
+      <artifactId>camel-spring-cloud-zookeeper</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -1027,11 +1103,27 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-testcontainers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-testcontainers-spring</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-testng</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-thrift</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-tika</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-twilio</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -1063,7 +1155,19 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-web3j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-websocket</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-wordpress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-xchange</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -1092,6 +1196,10 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-yammer</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-yql</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
@@ -1137,6 +1245,16 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-asn1-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-asterisk-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-atmosphere-websocket-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -1152,12 +1270,27 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-atomix-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-avro-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-aws-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-aws-xray-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-azure-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1218,6 +1351,11 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-cache-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-caffeine-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1292,6 +1430,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-crypto-cms-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-csv-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -1356,6 +1499,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-elasticsearch-rest-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-elasticsearch5-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -1379,6 +1527,16 @@
       <artifactId>camel-facebook-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-fastjson-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-fhir-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>    
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-flatpack-starter</artifactId>
@@ -1422,6 +1580,11 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-git-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-google-bigquery-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1496,12 +1659,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-hdfs-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-hdfs2-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-hdfs-starter</artifactId>
+      <artifactId>camel-headersmap-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1542,6 +1710,11 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-ical-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-iec60870-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1686,6 +1859,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-json-validator-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-jsonpath-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -1736,12 +1914,22 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-ldif-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-leveldb-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-linkedin-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-lra-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1766,7 +1954,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-master-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-metrics-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-micrometer-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -1976,6 +2174,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-rxjava2-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-rest-swagger-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -2007,6 +2210,11 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-script-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-service-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -2101,7 +2309,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-spring-cloud-consul-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-spring-cloud-netflix-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-spring-cloud-zookeeper-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -2196,6 +2414,21 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-thrift-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-tika-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-twilio-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-twitter-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -2236,6 +2469,21 @@
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>
+      <artifactId>camel-web3j-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-wordpress-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-xchange-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
       <artifactId>camel-xmlbeans-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -2267,6 +2515,11 @@
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-yammer-starter</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-yql-starter</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -2343,10 +2596,6 @@
     <dependency>
       <groupId>org.apache.camel.karaf</groupId>
       <artifactId>camel-karaf-commands</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.camel</groupId>
-      <artifactId>camel-commands-spring-boot</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.camel</groupId>

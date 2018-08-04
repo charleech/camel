@@ -139,7 +139,7 @@ public class MimeMultipartDataFormat implements DataFormat {
             }
             mm.saveChanges();
             Enumeration<?> hl = mm.getAllHeaders();
-            List<String> headers = new ArrayList<String>();
+            List<String> headers = new ArrayList<>();
             if (!headersInline) {
                 while (hl.hasMoreElements()) {
                     Object ho = hl.nextElement();
@@ -218,7 +218,7 @@ public class MimeMultipartDataFormat implements DataFormat {
                     return stream;
                 }
             } catch (ParseException e) {
-                LOG.warn("Invalid Content-Type " + contentType + " ignored");
+                LOG.warn("Invalid Content-Type {} ignored", contentType);
                 return stream;
             }
             camelMessage = exchange.getOut();

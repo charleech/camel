@@ -32,7 +32,7 @@ import org.junit.Test;
 
 public class WebsocketTwoRoutesToSameEndpointExampleTest extends CamelTestSupport {
 
-    private static List<String> received = new ArrayList<String>();
+    private static List<String> received = new ArrayList<>();
     private static CountDownLatch latch;
     private int port;
 
@@ -94,7 +94,7 @@ public class WebsocketTwoRoutesToSameEndpointExampleTest extends CamelTestSuppor
             public void configure() {
                 WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("websocket");
                 websocketComponent.setMinThreads(1);
-                websocketComponent.setMaxThreads(20);
+                websocketComponent.setMaxThreads(25);
                 
                 from("websocket://localhost:" + port + "/bar")
                         .log(">>> Message received from BAR WebSocket Client : ${body}")

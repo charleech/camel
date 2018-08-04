@@ -17,10 +17,14 @@
 package org.apache.camel.component.cxf.jaxrs;
 
 import org.apache.camel.Processor;
+import org.apache.camel.component.cxf.interceptors.UnitOfWorkCloserInterceptor;
+import org.apache.camel.component.cxf.util.CxfUtils;
 import org.apache.camel.impl.DefaultConsumer;
 import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
+import org.apache.cxf.phase.Phase;
+import org.apache.cxf.transport.MessageObserver;
 
 /**
  * A Consumer of exchanges for a JAXRS service in CXF.  CxfRsConsumer acts a CXF
@@ -41,12 +45,30 @@ public class CxfRsConsumer extends DefaultConsumer {
         CxfRsInvoker cxfRsInvoker = new CxfRsInvoker(endpoint, this);
         JAXRSServerFactoryBean svrBean = endpoint.createJAXRSServerFactoryBean();
         Bus bus = endpoint.getBus();
+
         // We need to apply the bus setting from the CxfRsEndpoint which does not use the default bus
         if (bus != null) {
             svrBean.setBus(bus);
+
         }
+
         svrBean.setInvoker(cxfRsInvoker);
-        return svrBean.create();
+        // setup the UnitOfWorkCloserInterceptor for OneWayMessageProcessor
+        svrBean.getInInterceptors().add(new UnitOfWorkCloserInterceptor(Phase.POST_INVOKE, true));
+        // close the UnitOfWork normally
+        svrBean.getOutInterceptors().add(new UnitOfWorkCloserInterceptor());
+
+
+        Server server = svrBean.create();
+
+        final MessageObserver originalOutFaultObserver = server.getEndpoint().getOutFaultObserver();
+        //proxy OutFaultObserver so we can close org.apache.camel.spi.UnitOfWork in case of error
+        server.getEndpoint().setOutFaultObserver(message -> {
+            CxfUtils.closeCamelUnitOfWork(message);
+            originalOutFaultObserver.onMessage(message);
+        });
+
+        return server;
     }
 
     @Override

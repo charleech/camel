@@ -50,6 +50,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
  * Parses the source code and validates the Camel routes has valid endpoint uris and simple expressions.
  *
  * @goal validate
+ * @threadSafe
  */
 public class ValidateMojo extends AbstractExecMojo {
 
@@ -183,6 +184,11 @@ public class ValidateMojo extends AbstractExecMojo {
         // enable caching
         catalog.enableCache();
 
+        String detectedVersion = findCamelVersion(project);
+        if (detectedVersion != null) {
+            getLog().info("Detected Camel version used in project: " + detectedVersion);
+        }
+
         if (downloadVersion) {
             String catalogVersion = catalog.getCatalogVersion();
             String version = findCamelVersion(project);
@@ -196,23 +202,17 @@ public class ValidateMojo extends AbstractExecMojo {
             }
         }
 
-        // if using the same version as the camel-maven-plugin we must still load it
-        if (catalog.getLoadedVersion() == null) {
-            catalog.loadVersion(catalog.getCatalogVersion());
-        }
-
         if (catalog.getLoadedVersion() != null) {
-            getLog().info("Using Camel version: " + catalog.getLoadedVersion());
+            getLog().info("Validating using downloaded Camel version: " + catalog.getLoadedVersion());
         } else {
-            // force load version from the camel-maven-plugin
-            getLog().info("Using Camel version: " + catalog.getCatalogVersion());
+            getLog().info("Validating using Camel version: " + catalog.getCatalogVersion());
         }
 
         List<CamelEndpointDetails> endpoints = new ArrayList<>();
         List<CamelSimpleExpressionDetails> simpleExpressions = new ArrayList<>();
         List<CamelRouteDetails> routeIds = new ArrayList<>();
-        Set<File> javaFiles = new LinkedHashSet<File>();
-        Set<File> xmlFiles = new LinkedHashSet<File>();
+        Set<File> javaFiles = new LinkedHashSet<>();
+        Set<File> xmlFiles = new LinkedHashSet<>();
 
         // find all java route builder classes
         if (includeJava) {
@@ -258,7 +258,7 @@ public class ValidateMojo extends AbstractExecMojo {
                     String baseDir = ".";
                     JavaType out = Roaster.parse(file);
                     // we should only parse java classes (not interfaces and enums etc)
-                    if (out != null && out instanceof JavaClassSource) {
+                    if (out instanceof JavaClassSource) {
                         JavaClassSource clazz = (JavaClassSource) out;
                         RouteBuilderParser.parseRouteBuilderEndpoints(clazz, baseDir, fqn, fileEndpoints, unparsable, includeTest);
                         RouteBuilderParser.parseRouteBuilderSimpleExpressions(clazz, baseDir, fqn, fileSimpleExpressions);

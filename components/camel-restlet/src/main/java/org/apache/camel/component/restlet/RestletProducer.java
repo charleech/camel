@@ -17,11 +17,9 @@
 package org.apache.camel.component.restlet;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,10 +211,6 @@ public class RestletProducer extends DefaultAsyncProducer {
         if (uri == null) {
             uri = endpoint.getProtocol() + "://" + endpoint.getHost() + ":" + endpoint.getPort() + endpoint.getUriPattern();
         }
-        // include any query parameters if needed
-        if (endpoint.getQueryParameters() != null) {
-            uri = URISupport.appendParametersToURI(uri, endpoint.getQueryParameters());
-        }
 
         // substitute { } placeholders in uri and use mandatory headers
         LOG.trace("Substituting '{value}' placeholders in uri: {}", uri);
@@ -236,6 +230,11 @@ public class RestletProducer extends DefaultAsyncProducer {
             uri = matcher.replaceFirst(header);
             // we replaced uri so reset and go again
             matcher.reset(uri);
+        }
+        
+        // include any query parameters if needed
+        if (endpoint.getQueryParameters() != null) {
+            uri = URISupport.appendParametersToURI(uri, endpoint.getQueryParameters());
         }
 
         // rest producer may provide an override query string to be used which we should discard if using (hence the remove)
@@ -310,7 +309,7 @@ public class RestletProducer extends DefaultAsyncProducer {
     }
 
     protected Map<String, String> parseResponseHeaders(Object response, Exchange camelExchange) {
-        Map<String, String> answer = new HashMap<String, String>();
+        Map<String, String> answer = new HashMap<>();
         if (response instanceof Response) {
 
             for (Map.Entry<String, Object> entry : ((Response) response).getAttributes().entrySet()) {

@@ -49,11 +49,11 @@ import com.amazonaws.services.sqs.model.SetQueueAttributesResult;
 
 public class AmazonSQSClientMock extends AmazonSQSClient {
 
-    List<Message> messages = new ArrayList<Message>();
-    Map<String, Map<String, String>> queueAttributes = new HashMap<String, Map<String, String>>();
-    List<ChangeMessageVisibilityRequest> changeMessageVisibilityRequests = new CopyOnWriteArrayList<ChangeMessageVisibilityRequest>();
-    private Map<String, CreateQueueRequest> queues = new LinkedHashMap<String, CreateQueueRequest>();
-    private Map<String, ScheduledFuture> inFlight = new LinkedHashMap<String, ScheduledFuture>();
+    List<Message> messages = new ArrayList<>();
+    Map<String, Map<String, String>> queueAttributes = new HashMap<>();
+    List<ChangeMessageVisibilityRequest> changeMessageVisibilityRequests = new CopyOnWriteArrayList<>();
+    private Map<String, CreateQueueRequest> queues = new LinkedHashMap<>();
+    private Map<String, ScheduledFuture<?>> inFlight = new LinkedHashMap<>();
     private ScheduledExecutorService scheduler;
 
     public AmazonSQSClientMock() {
@@ -98,7 +98,7 @@ public class AmazonSQSClientMock extends AmazonSQSClient {
     public ReceiveMessageResult receiveMessage(ReceiveMessageRequest receiveMessageRequest) throws AmazonServiceException, AmazonClientException {
         Integer maxNumberOfMessages = receiveMessageRequest.getMaxNumberOfMessages() != null ? receiveMessageRequest.getMaxNumberOfMessages() : Integer.MAX_VALUE;
         ReceiveMessageResult result = new ReceiveMessageResult();
-        Collection<Message> resultMessages = new ArrayList<Message>();
+        Collection<Message> resultMessages = new ArrayList<>();
         
         synchronized (messages) {
             int fetchSize = 0;
@@ -122,7 +122,7 @@ public class AmazonSQSClientMock extends AmazonSQSClient {
         if (scheduler != null) {
             int visibility = getVisibilityForQueue(queueUrl);
             if (visibility > 0) {
-                ScheduledFuture task = scheduler.schedule(new Runnable() {
+                ScheduledFuture<?> task = scheduler.schedule(new Runnable() {
                     @Override
                     public void run() {
                         synchronized (messages) {
@@ -157,7 +157,7 @@ public class AmazonSQSClientMock extends AmazonSQSClient {
     public DeleteMessageResult deleteMessage(DeleteMessageRequest deleteMessageRequest) throws AmazonClientException {
         String receiptHandle = deleteMessageRequest.getReceiptHandle();
         if (inFlight.containsKey(receiptHandle)) {
-            ScheduledFuture inFlightTask = inFlight.get(receiptHandle);
+            ScheduledFuture<?> inFlightTask = inFlight.get(receiptHandle);
             inFlightTask.cancel(true);
         }
         return new DeleteMessageResult();

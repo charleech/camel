@@ -75,7 +75,7 @@ public class ShutdownDeferTest extends ContextTestSupport {
                 // use file component to transfer files from route 1 -> route 2 as it
                 // will normally suspend, but by deferring this we can let route 1
                 // complete while shutting down
-                MyDeferFileEndpoint defer = new MyDeferFileEndpoint("file://target/deferred", getContext().getComponent("file"));
+                MyDeferFileEndpoint defer = new MyDeferFileEndpoint("file://target/deferred?initialDelay=0&delay=10", getContext().getComponent("file"));
                 defer.setFile(new File("target/deferred"));
 
                 from(defer)
@@ -95,7 +95,7 @@ public class ShutdownDeferTest extends ContextTestSupport {
 
         @Override
         protected FileConsumer newFileConsumer(Processor processor, GenericFileOperations<File> operations) {
-            return new FileConsumer(this, processor, operations) {
+            return new FileConsumer(this, processor, operations, createGenericFileStrategy()) {
                 @Override
                 protected void doSuspend() throws Exception {
                     CONSUMER_SUSPENDED.set(true);

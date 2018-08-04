@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ContextTestSupport;
-import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.management.event.ExchangeCompletedEvent;
@@ -34,7 +33,7 @@ import org.apache.camel.support.EventNotifierSupport;
  */
 public class EventNotifierExchangeCompletedTest extends ContextTestSupport {
 
-    private static List<EventObject> events = new ArrayList<EventObject>();
+    private static List<EventObject> events = new ArrayList<>();
 
     @Override
     public void setUp() throws Exception {

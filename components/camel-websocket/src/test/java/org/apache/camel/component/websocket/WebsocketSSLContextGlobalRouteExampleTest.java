@@ -52,7 +52,7 @@ import org.junit.Test;
 public class WebsocketSSLContextGlobalRouteExampleTest extends CamelTestSupport {
 
     private static final String NULL_VALUE_MARKER = CamelTestSupport.class.getCanonicalName();
-    private static List<String> received = new ArrayList<String>();
+    private static List<String> received = new ArrayList<>();
     private static CountDownLatch latch = new CountDownLatch(10);
     private Properties originalValues = new Properties();
     private String pwd = "changeit";
@@ -175,7 +175,7 @@ public class WebsocketSSLContextGlobalRouteExampleTest extends CamelTestSupport 
             public void configure() {
                 WebsocketComponent websocketComponent = (WebsocketComponent) context.getComponent("websocket");
                 websocketComponent.setMinThreads(1);
-                websocketComponent.setMaxThreads(20);
+                websocketComponent.setMaxThreads(25);
                 from(uri)
                      .log(">>> Message received from WebSocket Client : ${body}")
                      .to("mock:client")

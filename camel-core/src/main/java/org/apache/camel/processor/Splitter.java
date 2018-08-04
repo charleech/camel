@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.camel.AsyncCallback;
@@ -42,7 +41,6 @@ import org.apache.camel.spi.RouteContext;
 import org.apache.camel.util.ExchangeHelper;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
-
 import static org.apache.camel.util.ObjectHelper.notNull;
 
 /**
@@ -99,6 +97,14 @@ public class Splitter extends MulticastProcessor implements AsyncProcessor, Trac
     @Override
     public boolean process(Exchange exchange, final AsyncCallback callback) {
         final AggregationStrategy strategy = getAggregationStrategy();
+
+        // set original exchange if not already pre-configured
+        if (strategy instanceof UseOriginalAggregationStrategy) {
+            UseOriginalAggregationStrategy original = (UseOriginalAggregationStrategy) strategy;
+            if (original.getOriginal() == null) {
+                original.setOriginal(exchange);
+            }
+        }
 
         // if no custom aggregation strategy is being used then fallback to keep the original
         // and propagate exceptions which is done by a per exchange specific aggregation strategy
@@ -222,24 +228,13 @@ public class Splitter extends MulticastProcessor implements AsyncProcessor, Trac
 
         @Override
         public void close() throws IOException {
-            if (value instanceof Scanner) {
-                // special for Scanner which implement the Closeable since JDK7 
-                Scanner scanner = (Scanner) value;
-                scanner.close();
-                IOException ioException = scanner.ioException();
-                if (ioException != null) {
-                    throw ioException;
-                }
-            } else if (value instanceof Closeable) {
-                // we should throw out the exception here   
-                IOHelper.closeWithException((Closeable) value);
-            }
+            IOHelper.closeIterator(value);
         }
        
     }
 
     private Iterable<ProcessorExchangePair> createProcessorExchangePairsList(Exchange exchange, Object value) {
-        List<ProcessorExchangePair> result = new ArrayList<ProcessorExchangePair>();
+        List<ProcessorExchangePair> result = new ArrayList<>();
 
         // reuse iterable and add it to the result list
         Iterable<ProcessorExchangePair> pairs = createProcessorExchangePairsIterable(exchange, value);

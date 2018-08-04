@@ -1,7 +1,7 @@
 # Camel Salesforce component #
 
 This component supports producer and consumer endpoints to communicate with Salesforce using Java DTOs. 
-There is a companion maven plugin [camel-salesforce-plugin](https://github.com/dhirajsb/camel-salesforce-maven-plugin) that generates these DTOs. 
+There is a companion maven plugin [camel-salesforce-plugin](https://github.com/apache/camel/tree/master/components/camel-salesforce/camel-salesforce-maven-plugin) that generates these DTOs. 
 
 The component supports the following Salesforce APIs
 
@@ -87,7 +87,7 @@ Before running the tests for the first time run the migration by invoking Maven 
 
     $ mvn -Pintegration antrun:run@setup-salesforce-instance
 
-This will create a _Connected App_ with predefined Consumer Key (the one mentioned in the comment one in `test-salesforce-login.properties.sample`) and a name of `CamelSalesforceIntegrationTests`. After running the migration access your Salesforce instance and provide _Consumer Secret_ (`clientSecret`) property to `test-salesforce-login.properties.sample`.
+This will create a _Connected App_ with predefined Consumer Key (the one mentioned in the comment one in `test-salesforce-login.properties.sample`) and _Consumer Secret_ (`clientSecret`) with the name of `CamelSalesforceIntegrationTests`.
 
 This however is run every time when you run the integration tests by issuing from the `camel-salesforce-component` Maven module directory:
 

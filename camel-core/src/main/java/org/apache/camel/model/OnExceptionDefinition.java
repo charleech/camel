@@ -58,7 +58,7 @@ import org.apache.camel.util.ObjectHelper;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefinition> {
     @XmlElement(name = "exception", required = true)
-    private List<String> exceptions = new ArrayList<String>();
+    private List<String> exceptions = new ArrayList<>();
     @XmlElement(name = "onWhen") @AsPredicate
     private WhenDefinition onWhen;
     @XmlElement(name = "retryWhile") @AsPredicate
@@ -78,7 +78,7 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
     @XmlAttribute(name = "useOriginalMessage")
     private Boolean useOriginalMessagePolicy;
     @XmlElementRef
-    private List<ProcessorDefinition<?>> outputs = new ArrayList<ProcessorDefinition<?>>();
+    private List<ProcessorDefinition<?>> outputs = new ArrayList<>();
     @XmlTransient
     private List<Class<? extends Throwable>> exceptionClasses;
     @XmlTransient
@@ -95,7 +95,7 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
     private Boolean routeScoped;
     // TODO: in Camel 3.0 the OnExceptionDefinition should not contain state and ErrorHandler processors
     @XmlTransient
-    private final Map<String, Processor> errorHandlers = new HashMap<String, Processor>();
+    private final Map<String, Processor> errorHandlers = new HashMap<>();
     @XmlTransient
     private RedeliveryPolicy redeliveryPolicy;
 
@@ -107,7 +107,7 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
     }
 
     public OnExceptionDefinition(Class<? extends Throwable> exceptionType) {
-        exceptionClasses = new ArrayList<Class<? extends Throwable>>();
+        exceptionClasses = new ArrayList<>();
         exceptionClasses.add(exceptionType);
     }
 
@@ -127,6 +127,11 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
     
     protected String description() {
         return getExceptionClasses() + (onWhen != null ? " " + onWhen : "");
+    }
+
+    @Override
+    public String getShortName() {
+        return "onException";
     }
 
     @Override
@@ -707,7 +712,7 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
     }
 
     /**
-     * Turn on exponential backk off
+     * Turn on exponential back off
      *
      * @return the builder
      */
@@ -786,8 +791,8 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
      * <p/>
      * <b>Notice:</b> this only applies when all redeliveries attempt have failed and the {@link org.apache.camel.Exchange} is doomed for failure.
      * <br/>
-     * Instead of using the current inprogress {@link org.apache.camel.Exchange} IN body we use the original IN body instead. This allows
-     * you to store the original input in the dead letter queue instead of the inprogress snapshot of the IN body.
+     * Instead of using the current in-progress {@link org.apache.camel.Exchange} IN body we use the original IN body instead. This allows
+     * you to store the original input in the dead letter queue instead of the in-progress snapshot of the IN body.
      * For instance if you route transform the IN body during routing and then failed. With the original exchange
      * store in the dead letter queue it might be easier to manually re submit the {@link org.apache.camel.Exchange} again as the IN body
      * is the same as when Camel received it. So you should be able to send the {@link org.apache.camel.Exchange} to the same input.
@@ -1028,7 +1033,7 @@ public class OnExceptionDefinition extends ProcessorDefinition<OnExceptionDefini
 
     protected List<Class<? extends Throwable>> createExceptionClasses(ClassResolver resolver) throws ClassNotFoundException {
         List<String> list = getExceptions();
-        List<Class<? extends Throwable>> answer = new ArrayList<Class<? extends Throwable>>(list.size());
+        List<Class<? extends Throwable>> answer = new ArrayList<>(list.size());
         for (String name : list) {
             Class<? extends Throwable> type = resolver.resolveMandatoryClass(name, Throwable.class);
             answer.add(type);

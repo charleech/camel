@@ -92,6 +92,11 @@ public class SplitDefinition extends ExpressionNode implements ExecutorServiceAw
     }
 
     @Override
+    public String getShortName() {
+        return "split";
+    }
+
+    @Override
     public String getLabel() {
         return "split[" + getExpression() + "]";
     }
@@ -143,7 +148,7 @@ public class SplitDefinition extends ExpressionNode implements ExecutorServiceAw
             }
         }
 
-        if (strategy != null && strategy instanceof CamelContextAware) {
+        if (strategy instanceof CamelContextAware) {
             ((CamelContextAware) strategy).setCamelContext(routeContext.getCamelContext());
         }
 

@@ -33,7 +33,7 @@ import org.apache.camel.spi.DataTypeAware;
  * Unless a specific provider wishes to do something particularly clever with
  * headers you probably want to just derive from {@link DefaultMessage}
  *
- * @version 
+ * @version
  */
 public abstract class MessageSupport implements Message, CamelContextAware, DataTypeAware {
     private CamelContext camelContext;
@@ -48,6 +48,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return String.format("Message[%s]", messageId == null ? "" : messageId);
     }
 
+    @Override
     public Object getBody() {
         if (body == null) {
             body = createBody();
@@ -55,10 +56,12 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return body;
     }
 
+    @Override
     public <T> T getBody(Class<T> type) {
         return getBody(type, getBody());
     }
 
+    @Override
     public Object getMandatoryBody() throws InvalidPayloadException {
         Object answer = getBody();
         if (answer == null) {
@@ -97,6 +100,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return null;
     }
 
+    @Override
     public <T> T getMandatoryBody(Class<T> type) throws InvalidPayloadException {
         // eager same instance type test to avoid the overhead of invoking the type converter
         // if already same type
@@ -116,11 +120,16 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         throw new InvalidPayloadException(e, type, this);
     }
 
+    @Override
     public void setBody(Object body) {
         this.body = body;
-        this.dataType = body != null ? new DataType(body.getClass()) : null;
+        // set data type if in use
+        if (body != null && camelContext != null && camelContext.isUseDataType()) {
+            this.dataType = new DataType(body.getClass());
+        }
     }
 
+    @Override
     public <T> void setBody(Object value, Class<T> type) {
         Exchange e = getExchange();
         if (e != null) {
@@ -140,9 +149,6 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
 
     @Override
     public DataType getDataType() {
-        if (this.dataType == null) {
-            this.dataType = body != null ? new DataType(body.getClass()) : null;
-        }
         return this.dataType;
     }
 
@@ -151,6 +157,12 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         this.dataType = type;
     }
 
+    @Override
+    public boolean hasDataType() {
+        return dataType != null;
+    }
+
+    @Override
     public Message copy() {
         Message answer = newInstance();
         // must copy over CamelContext
@@ -161,6 +173,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return answer;
     }
 
+    @Override
     public void copyFrom(Message that) {
         if (that == this) {
             // the same instance so do not need to copy
@@ -171,13 +184,14 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         if (that instanceof CamelContextAware) {
             setCamelContext(((CamelContextAware) that).getCamelContext());
         }
-        if (that instanceof DataTypeAware) {
+        if (that instanceof DataTypeAware && ((DataTypeAware) that).hasDataType()) {
             setDataType(((DataTypeAware)that).getDataType());
         }
 
         copyFromWithNewBody(that, that.getBody());
     }
 
+    @Override
     public void copyFromWithNewBody(Message that, Object newBody) {
         if (that == this) {
             // the same instance so do not need to copy
@@ -214,6 +228,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         copyAttachments(that);
     }
 
+    @Override
     public Exchange getExchange() {
         return exchange;
     }
@@ -222,14 +237,17 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         this.exchange = exchange;
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
 
+    @Override
     public void copyAttachments(Message that) {
         // the attachments may be the same instance if the end user has made some mistake
         // and set the OUT message with the same attachment instance of the IN message etc
@@ -265,6 +283,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return null;
     }
 
+    @Override
     public String getMessageId() {
         if (messageId == null) {
             messageId = createMessageId();
@@ -272,6 +291,7 @@ public abstract class MessageSupport implements Message, CamelContextAware, Data
         return this.messageId;
     }
 
+    @Override
     public void setMessageId(String messageId) {
         this.messageId = messageId;
     }

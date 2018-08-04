@@ -35,15 +35,16 @@ public class ComponentModel {
     private String firstVersion;
     private String label;
     private String deprecated;
+    private String deprecationNote;
     private String consumerOnly;
     private String producerOnly;
     private String javaType;
     private String groupId;
     private String artifactId;
     private String version;
-    private final List<ComponentOptionModel> componentOptions = new ArrayList<ComponentOptionModel>();
-    private final List<EndpointOptionModel> endpointPathOptions = new ArrayList<EndpointOptionModel>();
-    private final List<EndpointOptionModel> endpointOptions = new ArrayList<EndpointOptionModel>();
+    private final List<ComponentOptionModel> componentOptions = new ArrayList<>();
+    private final List<EndpointOptionModel> endpointPathOptions = new ArrayList<>();
+    private final List<EndpointOptionModel> endpointOptions = new ArrayList<>();
 
     public ComponentModel(boolean coreOnly) {
         this.coreOnly = coreOnly;
@@ -127,6 +128,14 @@ public class ComponentModel {
 
     public void setDeprecated(String deprecated) {
         this.deprecated = deprecated;
+    }
+
+    public String getDeprecationNote() {
+        return deprecationNote;
+    }
+
+    public void setDeprecationNote(String deprecationNote) {
+        this.deprecationNote = deprecationNote;
     }
 
     public String getConsumerOnly() {
@@ -219,7 +228,9 @@ public class ComponentModel {
 
     public String getDocLink() {
         // special for these components
-        if ("camel-box".equals(artifactId)) {
+        if ("camel-as2".equals(artifactId)) {
+            return "camel-as2/camel-as2-component/src/main/docs";
+        } else if ("camel-box".equals(artifactId)) {
             return "camel-box/camel-box-component/src/main/docs";
         } else if ("camel-linkedin".equals(artifactId)) {
             return "camel-linkedin/camel-linkedin-component/src/main/docs";
@@ -229,6 +240,8 @@ public class ComponentModel {
             return "camel-olingo4/camel-olingo4-component/src/main/docs";
         } else if ("camel-salesforce".equals(artifactId)) {
             return "camel-salesforce/camel-salesforce-component/src/main/docs";
+        } else if ("camel-servicenow".equals(artifactId)) {
+            return "camel-servicenow/camel-servicenow-component/src/main/docs";
         }
 
         if ("camel-core".equals(artifactId)) {

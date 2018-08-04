@@ -23,9 +23,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.apache.camel</groupId>
+    <groupId>org.apache.camel.example</groupId>
     <artifactId>examples</artifactId>
-    <version>2.20.0-SNAPSHOT</version>
+    <version>2.23.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>camel-example-kotlin</artifactId>
@@ -35,7 +35,7 @@
 
   <properties>
     <category>Other Languages</category>
-    <kotlin.version>1.1.2</kotlin.version>
+    <kotlin.version>1.2.31</kotlin.version>
   </properties>
 
   <dependencies>

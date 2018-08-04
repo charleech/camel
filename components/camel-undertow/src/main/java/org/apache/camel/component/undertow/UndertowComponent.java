@@ -23,6 +23,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.net.ssl.SSLContext;
+
+import io.undertow.server.HttpHandler;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.ComponentVerifier;
 import org.apache.camel.Consumer;
@@ -31,6 +35,7 @@ import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.SSLContextParametersAware;
 import org.apache.camel.VerifiableComponent;
+import org.apache.camel.component.extension.ComponentVerifierExtension;
 import org.apache.camel.impl.DefaultComponent;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.RestApiConsumerFactory;
@@ -55,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public class UndertowComponent extends DefaultComponent implements RestConsumerFactory, RestApiConsumerFactory, RestProducerFactory, VerifiableComponent, SSLContextParametersAware {
     private static final Logger LOG = LoggerFactory.getLogger(UndertowEndpoint.class);
 
-    private Map<UndertowHostKey, UndertowHost> undertowRegistry = new ConcurrentHashMap<UndertowHostKey, UndertowHost>();
+    private Map<UndertowHostKey, UndertowHost> undertowRegistry = new ConcurrentHashMap<>();
 
     @Metadata(label = "advanced")
     private UndertowHttpBinding undertowHttpBinding;
@@ -67,10 +72,13 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
     private UndertowHostOptions hostOptions;
 
     public UndertowComponent() {
+        this(null);
     }
 
     public UndertowComponent(CamelContext context) {
         super(context);
+
+        registerExtension(UndertowComponentVerifierExtension::new);
     }
 
     @Override
@@ -155,7 +163,7 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
 
         RestConfiguration config = configuration;
         if (config == null) {
-            config = camelContext.getRestConfiguration("undertow", true);
+            config = camelContext.getRestConfiguration(getComponentName(), true);
         }
         if (config.getScheme() != null) {
             scheme = config.getScheme();
@@ -189,9 +197,9 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
             }
         }
 
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         // build query string, and append any endpoint configuration properties
-        if (config.getComponent() == null || config.getComponent().equals("undertow")) {
+        if (config.getComponent() == null || config.getComponent().equals(getComponentName())) {
             // setup endpoint options
             if (config.getEndpointProperties() != null && !config.getEndpointProperties().isEmpty()) {
                 map.putAll(config.getEndpointProperties());
@@ -221,9 +229,9 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
 
         String url;
         if (api) {
-            url = "undertow:%s://%s:%s/%s?httpMethodRestrict=%s";
+            url = getComponentName() + ":%s://%s:%s/%s?matchOnUriPrefix=true&httpMethodRestrict=%s";
         } else {
-            url = "undertow:%s://%s:%s/%s?matchOnUriPrefix=false&httpMethodRestrict=%s";
+            url = getComponentName() + ":%s://%s:%s/%s?matchOnUriPrefix=false&httpMethodRestrict=%s";
         }
 
         // get the endpoint
@@ -253,19 +261,39 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
     @Override
     public Producer createProducer(CamelContext camelContext, String host,
                                    String verb, String basePath, String uriTemplate, String queryParameters,
-                                   String consumes, String produces, Map<String, Object> parameters) throws Exception {
+                                   String consumes, String produces, RestConfiguration configuration, Map<String, Object> parameters) throws Exception {
 
         // avoid leading slash
         basePath = FileUtil.stripLeadingSeparator(basePath);
         uriTemplate = FileUtil.stripLeadingSeparator(uriTemplate);
 
         // get the endpoint
-        String url = "undertow:" + host;
+        String url = getComponentName() + ":" + host;
         if (!ObjectHelper.isEmpty(basePath)) {
             url += "/" + basePath;
         }
         if (!ObjectHelper.isEmpty(uriTemplate)) {
             url += "/" + uriTemplate;
+        }
+        
+        RestConfiguration config = configuration;
+        if (config == null) {
+            config = camelContext.getRestConfiguration(getComponentName(), true);
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        // build query string, and append any endpoint configuration properties
+        if (config.getComponent() == null || config.getComponent().equals(getComponentName())) {
+            // setup endpoint options
+            if (config.getEndpointProperties() != null && !config.getEndpointProperties().isEmpty()) {
+                map.putAll(config.getEndpointProperties());
+            }
+        }
+
+        // get the endpoint
+        String query = URISupport.createQueryString(map);
+        if (!query.isEmpty()) {
+            url = url + "?" + query;
         }
 
         UndertowEndpoint endpoint = camelContext.getEndpoint(url, UndertowEndpoint.class);
@@ -285,30 +313,27 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
     protected void doStart() throws Exception {
         super.doStart();
 
-        RestConfiguration config = getCamelContext().getRestConfiguration("undertow", true);
+        RestConfiguration config = getCamelContext().getRestConfiguration(getComponentName(), true);
         // configure additional options on undertow configuration
         if (config.getComponentProperties() != null && !config.getComponentProperties().isEmpty()) {
             setProperties(this, config.getComponentProperties());
         }
     }
 
-    public void registerConsumer(UndertowConsumer consumer) {
-        URI uri = consumer.getEndpoint().getHttpURI();
-        UndertowHostKey key = new UndertowHostKey(uri.getHost(), uri.getPort(), consumer.getEndpoint().getSslContext());
-        UndertowHost host = undertowRegistry.get(key);
-        if (host == null) {
-            host = createUndertowHost(key);
-            undertowRegistry.put(key, host);
-        }
+    public HttpHandler registerEndpoint(HttpHandlerRegistrationInfo registrationInfo, SSLContext sslContext, HttpHandler handler) {
+        final URI uri = registrationInfo.getUri();
+        final UndertowHostKey key = new UndertowHostKey(uri.getHost(), uri.getPort(), sslContext);
+        final UndertowHost host = undertowRegistry.computeIfAbsent(key, k -> createUndertowHost(k));
+
         host.validateEndpointURI(uri);
-        host.registerHandler(consumer.getHttpHandlerRegistrationInfo(), consumer.getHttpHandler());
+        return host.registerHandler(registrationInfo, handler);
     }
 
-    public void unregisterConsumer(UndertowConsumer consumer) {
-        URI uri = consumer.getEndpoint().getHttpURI();
-        UndertowHostKey key = new UndertowHostKey(uri.getHost(), uri.getPort(), consumer.getEndpoint().getSslContext());
-        UndertowHost host = undertowRegistry.get(key);
-        host.unregisterHandler(consumer.getHttpHandlerRegistrationInfo());
+    public void unregisterEndpoint(HttpHandlerRegistrationInfo registrationInfo, SSLContext sslContext) {
+        final URI uri = registrationInfo.getUri();
+        final UndertowHostKey key = new UndertowHostKey(uri.getHost(), uri.getPort(), sslContext);
+        final UndertowHost host = undertowRegistry.get(key);
+        host.unregisterHandler(registrationInfo);
     }
 
     protected UndertowHost createUndertowHost(UndertowHostKey key) {
@@ -361,11 +386,12 @@ public class UndertowComponent extends DefaultComponent implements RestConsumerF
         this.hostOptions = hostOptions;
     }
 
-    /**
-     *
-     */
+    @Override
     public ComponentVerifier getVerifier() {
-        return new UndertowComponentVerifier(this);
+        return (scope, parameters) -> getExtension(ComponentVerifierExtension.class).orElseThrow(UnsupportedOperationException::new).verify(scope, parameters);
     }
 
+    protected String getComponentName() {
+        return "undertow";
+    }
 }

@@ -16,20 +16,21 @@
  */
 package org.apache.camel.opentracing;
 
-import java.net.URI;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import io.opentracing.NoopTracerFactory;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.contrib.tracerresolver.TracerResolver;
+import io.opentracing.noop.NoopTracerFactory;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.Endpoint;
@@ -49,8 +50,10 @@ import org.apache.camel.support.EventNotifierSupport;
 import org.apache.camel.support.RoutePolicySupport;
 import org.apache.camel.support.ServiceSupport;
 import org.apache.camel.util.CamelLogger;
+import org.apache.camel.util.EndpointHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.ServiceHelper;
+import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +75,7 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
     private final OpenTracingLogListener logListener = new OpenTracingLogListener();
     private Tracer tracer;
     private CamelContext camelContext;
+    private Set<String> excludePatterns = new HashSet<>();
 
     static {
         ServiceLoader.load(SpanDecorator.class).forEach(d -> {
@@ -119,6 +123,23 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
     @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
+    }
+
+    public Set<String> getExcludePatterns() {
+        return excludePatterns;
+    }
+
+    public void setExcludePatterns(Set<String> excludePatterns) {
+        this.excludePatterns = excludePatterns;
+    }
+
+    /**
+     * Adds an exclude pattern that will disable tracing for Camel messages that matches the pattern.
+     *
+     * @param pattern  the pattern such as route id, endpoint url
+     */
+    public void addExcludePattern(String pattern) {
+        excludePatterns.add(pattern);
     }
 
     public Tracer getTracer() {
@@ -169,11 +190,28 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
     }
 
     protected SpanDecorator getSpanDecorator(Endpoint endpoint) {
-        SpanDecorator sd = decorators.get(URI.create(endpoint.getEndpointUri()).getScheme());
-        if (sd == null) {
-            return SpanDecorator.DEFAULT;
+        SpanDecorator sd = SpanDecorator.DEFAULT;
+
+        String uri = endpoint.getEndpointUri();
+        String splitURI[] = StringHelper.splitOnCharacter(uri, ":", 2);
+        if (splitURI[1] != null) {
+            String scheme = splitURI[0];
+            sd = decorators.getOrDefault(scheme, sd);
         }
+
         return sd;
+    }
+
+    private boolean isExcluded(Exchange exchange, Endpoint endpoint) {
+        String url = endpoint.getEndpointUri();
+        if (url != null && !excludePatterns.isEmpty()) {
+            for (String pattern : excludePatterns) {
+                if (EndpointHelper.matchEndpoint(exchange.getContext(), url, pattern)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private final class OpenTracingEventNotifier extends EventNotifierSupport {
@@ -184,7 +222,7 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
                 if (event instanceof ExchangeSendingEvent) {
                     ExchangeSendingEvent ese = (ExchangeSendingEvent) event;
                     SpanDecorator sd = getSpanDecorator(ese.getEndpoint());
-                    if (!sd.newSpan()) {
+                    if (!sd.newSpan() || isExcluded(ese.getExchange(), ese.getEndpoint())) {
                         return;
                     }
                     Span parent = ActiveSpanManager.getSpan(ese.getExchange());
@@ -206,7 +244,7 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
                 } else if (event instanceof ExchangeSentEvent) {
                     ExchangeSentEvent ese = (ExchangeSentEvent) event;
                     SpanDecorator sd = getSpanDecorator(ese.getEndpoint());
-                    if (!sd.newSpan()) {
+                    if (!sd.newSpan() || isExcluded(ese.getExchange(), ese.getEndpoint())) {
                         return;
                     }
                     Span span = ActiveSpanManager.getSpan(ese.getExchange());
@@ -247,6 +285,9 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
         @Override
         public void onExchangeBegin(Route route, Exchange exchange) {
             try {
+                if (isExcluded(exchange, route.getEndpoint())) {
+                    return;
+                }
                 SpanDecorator sd = getSpanDecorator(route.getEndpoint());
                 Span span = tracer.buildSpan(sd.getOperationName(exchange, route.getEndpoint()))
                     .asChildOf(tracer.extract(Format.Builtin.TEXT_MAP,
@@ -267,6 +308,9 @@ public class OpenTracingTracer extends ServiceSupport implements RoutePolicyFact
         @Override
         public void onExchangeDone(Route route, Exchange exchange) {
             try {
+                if (isExcluded(exchange, route.getEndpoint())) {
+                    return;
+                }
                 Span span = ActiveSpanManager.getSpan(exchange);
                 if (span != null) {
                     if (LOG.isTraceEnabled()) {

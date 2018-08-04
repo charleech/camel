@@ -24,6 +24,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.olingo4.api.Olingo4ResponseHandler;
 import org.apache.camel.component.olingo4.internal.Olingo4ApiName;
+import org.apache.camel.component.olingo4.internal.Olingo4Constants;
 import org.apache.camel.component.olingo4.internal.Olingo4PropertiesHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.component.AbstractApiProducer;
@@ -45,7 +46,7 @@ public class Olingo4Producer extends AbstractApiProducer<Olingo4ApiName, Olingo4
     @Override
     public boolean process(final Exchange exchange, final AsyncCallback callback) {
         // properties for method arguments
-        final Map<String, Object> properties = new HashMap<String, Object>();
+        final Map<String, Object> properties = new HashMap<>();
         properties.putAll(endpoint.getEndpointProperties());
         propertiesHelper.getExchangeProperties(exchange, properties);
 
@@ -56,12 +57,15 @@ public class Olingo4Producer extends AbstractApiProducer<Olingo4ApiName, Olingo4
         // create response handler
         properties.put(Olingo4Endpoint.RESPONSE_HANDLER_PROPERTY, new Olingo4ResponseHandler<Object>() {
             @Override
-            public void onResponse(Object response) {
+            public void onResponse(Object response, Map<String, String> responseHeaders) {
                 // producer returns a single response, even for methods with
                 // List return types
                 exchange.getOut().setBody(response);
                 // copy headers
                 exchange.getOut().setHeaders(exchange.getIn().getHeaders());
+                
+                // Add http response headers
+                exchange.getOut().setHeader(Olingo4Constants.PROPERTY_PREFIX + Olingo4Constants.RESPONSE_HTTP_HEADERS, responseHeaders);
 
                 interceptResult(response, exchange);
 

@@ -23,7 +23,9 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.ServiceSpec;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.dsl.FilterWatchListMultiDeletable;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 
@@ -32,6 +34,7 @@ import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.KubernetesOperations;
 import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.util.MessageHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,9 +102,10 @@ public class KubernetesServicesProducer extends DefaultProducer {
             servicesList = getEndpoint().getKubernetesClient().services()
                     .inNamespace(namespaceName).list();
         } else {
-            servicesList = getEndpoint().getKubernetesClient().services()
+            servicesList = getEndpoint().getKubernetesClient().services().inAnyNamespace()
                     .list();
         }
+        MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(servicesList.getItems());
     }
 
@@ -121,13 +125,14 @@ public class KubernetesServicesProducer extends DefaultProducer {
             }
             servicesList = services.list();
         } else {
-            MixedOperation<Service, ServiceList, DoneableService, Resource<Service, DoneableService>> services; 
-            services = getEndpoint().getKubernetesClient().services();
+            FilterWatchListMultiDeletable<Service, ServiceList, Boolean, Watch, Watcher<Service>> services; 
+            services = getEndpoint().getKubernetesClient().services().inAnyNamespace();
             for (Map.Entry<String, String> entry : labels.entrySet()) {
                 services.withLabel(entry.getKey(), entry.getValue());
             }
             servicesList = services.list();
         }
+        MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(servicesList.getItems());
     }
 
@@ -150,6 +155,7 @@ public class KubernetesServicesProducer extends DefaultProducer {
         }
         service = getEndpoint().getKubernetesClient().services()
                 .inNamespace(namespaceName).withName(serviceName).get();
+        MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(service);
     }
 
@@ -184,6 +190,7 @@ public class KubernetesServicesProducer extends DefaultProducer {
                 .endMetadata().withSpec(serviceSpec).build();
         service = getEndpoint().getKubernetesClient().services()
                 .inNamespace(namespaceName).create(serviceCreating);
+        MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(service);
     }
 
@@ -205,6 +212,7 @@ public class KubernetesServicesProducer extends DefaultProducer {
         }
         boolean serviceDeleted = getEndpoint().getKubernetesClient().services()
                 .inNamespace(namespaceName).withName(serviceName).delete();
+        MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(serviceDeleted);
     }
 }

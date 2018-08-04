@@ -104,6 +104,11 @@ public class RecipientListDefinition<Type extends ProcessorDefinition<Type>> ext
     }
 
     @Override
+    public String getShortName() {
+        return "recipientList";
+    }
+
+    @Override
     public String getLabel() {
         return "recipientList[" + getExpression() + "]";
     }
@@ -159,7 +164,7 @@ public class RecipientListDefinition<Type extends ProcessorDefinition<Type>> ext
         // create a pipeline with two processors
         // the first is the eval processor which evaluates the expression to use
         // the second is the recipient list
-        List<Processor> pipe = new ArrayList<Processor>(2);
+        List<Processor> pipe = new ArrayList<>(2);
 
         // the eval processor must be wrapped in error handler, so in case there was an
         // error during evaluation, the error handler can deal with it

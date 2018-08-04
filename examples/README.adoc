@@ -11,11 +11,15 @@ View the individual example READMEs for details.
 ### Examples
 
 // examples: START
-Number of Examples: 92 (9 deprecated)
+Number of Examples: 107 (8 deprecated)
 
 [width="100%",cols="4,2,4",options="header"]
-|=======================================================================
+|===
 | Example | Category | Description
+
+| link:camel-example-fhir/README.md[FHIR] (camel-example-fhir) |  | An example running Camel FHIR using Camel CDI 
+
+| link:camel-example-micrometer/README.md[Micrometer] (camel-example-micrometer) | Advanced | An example showing how to work with Camel, Spring Java Config and Micrometer monitoring
 
 | link:camel-example-cdi/README.md[CDI] (camel-example-cdi) | Beginner | An example showing how to work with Camel and CDI for dependency injection
 
@@ -24,6 +28,8 @@ Number of Examples: 92 (9 deprecated)
 | link:camel-example-cdi-xml/README.md[CDI Camel XML] (camel-example-cdi-xml) | Beginner | CDI and Camel XML example
 
 | link:camel-example-console/README.md[Console] (camel-example-console) | Beginner | An example that reads input from the console
+
+| link:camel-example-fhir-spring-boot/readme.adoc[Fhir Spring Boot] (camel-example-fhir-spring-boot) | Beginner | An example showing how to work with Camel, Fhir and Spring Boot
 
 | link:camel-example-ftp/README.md[FTP] (camel-example-ftp) | Beginner | An example for showing Camel FTP integration
 
@@ -34,7 +40,7 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-reload/Readme.md[Reload] (camel-example-reload) | Beginner | An example that live reloads routes when the XML file is updated
 
-| link:camel-example-rest-swagger/README.md[Rest Swagger] (camel-example-rest-swagger) | Beginner | This example shows how to call a REST service defined using Swagger specification
+| link:camel-example-rest-swagger/README.md[REST Swagger] (camel-example-rest-swagger) | Beginner | This example shows how to call a REST service defined using Swagger specification
 
 | link:camel-example-servlet-tomcat/README.md[Servlet Tomcat] (camel-example-servlet-tomcat) | Beginner | An example using Camel Servlet with Apache Tomcat
 
@@ -44,7 +50,11 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-spring-boot/readme.adoc[Spring Boot] (camel-example-spring-boot) | Beginner | An example showing how to work with Camel and Spring Boot
 
-| link:camel-example-spring-boot-live-reload/readme.adoc[Spring Boot Live Reload] (camel-example-spring-boot-live-reload) | Beginner | An example showing how to use the live reload feature of Spring Boot with Camel
+| link:camel-example-spring-boot-health-checks/readme.adoc[Spring Boot Health Checks] (camel-example-spring-boot-health-checks) | Beginner | An example showing how to work with Camel's Health Checks and Spring Boot
+
+| link:camel-example-spring-boot-pojo/README.adoc[Spring Boot Pojo] (camel-example-spring-boot-pojo) | Beginner | An example showing how to work with Camel POJO routing with Spring Boot
+
+| link:camel-example-spring-boot-xml/readme.adoc[Spring Boot XML] (camel-example-spring-boot-xml) | Beginner | An example showing how to work with Camel routes in XML files and Spring Boot
 
 | link:camel-example-spring-javaconfig/README.md[Spring Java Config] (camel-example-spring-javaconfig) | Beginner | An example showing how to work with Camel and Spring Java Config
 
@@ -62,11 +72,23 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-cdi-kubernetes/README.md[CDI Kubernetes] (camel-example-cdi-kubernetes) | Cloud | An example running Camel CDI on Kubernetes
 
+| link:camel-example-grpc-kubernetes/README.adoc[gRPC Kubernetes] (camel-example-grpc-kubernetes) | Cloud | An example showing the Camel gRPC component with Spring Boot running on Kubernetes
+
 | link:camel-example-hazelcast-kubernetes/ReadMe.md[Hazelcast Kubernetes] (camel-example-hazelcast-kubernetes) | Cloud | An example with Camel and Hazelcast running on Kubernetes
 
-| link:camel-example-spring-boot-servicecall/README.adoc[Spring Boot Servicecall] (camel-example-spring-boot-servicecall) | Cloud | An example showing how to work with Camel ServiceCall EIP and Spring Boot
+| link:camel-example-spring-boot-grpc/README.adoc[gRPC Spring Boot] (camel-example-spring-boot-grpc) | Cloud | An example showing the Camel gRPC component with Spring Boot
+
+| link:camel-example-spring-boot-infinispan/README.adoc[Spring Boot Infinispan] (camel-example-spring-boot-infinispan) | Cloud | An example showing the Camel Infinispan component with Spring Boot
+
+| link:camel-example-spring-boot-servicecall/README.adoc[Spring Boot ServiceCall] (camel-example-spring-boot-servicecall) | Cloud | An example showing how to work with Camel ServiceCall EIP and Spring Boot
 
 | link:camel-example-spring-cloud-servicecall/README.adoc[Spring Cloud Servicecall] (camel-example-spring-cloud-servicecall) | Cloud | An example showing how to work with Camel ServiceCall EIP and Spring Cloud
+
+| link:camel-example-spring-cloud-serviceregistry/README.adoc[Spring Cloud ServiceRegistry] (camel-example-spring-cloud-serviceregistry) | Cloud | An example showing how to work with Camel Service registry and Spring Cloud
+
+| link:camel-example-spring-boot-clustered-route-controller/readme.adoc[Spring Boot Clustered Route Controller] (camel-example-spring-boot-clustered-route-controller) | Clustering | An example showing how to work with Camel's Clustered Route Controller and Spring Boot
+
+| link:camel-example-spring-boot-master/readme.adoc[Spring Boot Master] (camel-example-spring-boot-master) | Clustering | An example showing how to work with Camel's Master component and Spring Boot
 
 | link:camel-example-cdi-cassandraql/README.md[CDI Cassandra] (camel-example-cdi-cassandraql) | Database | Cassandraql CDI example
 
@@ -76,13 +98,9 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-spring-boot-rest-jpa/README.md[Spring Boot REST JPA] (camel-example-spring-boot-rest-jpa) | Database | An example demonstrating how to use Camel REST DSL with JPA to expose a RESTful API that performs CRUD operations on a database
 
-| link:camel-example-sql/README.md[SQL] (camel-example-sql) | Database | An example for showing Camel using SQL component
-
 | link:camel-example-aggregate/README.md[Aggregate] (camel-example-aggregate) | EIP | Demonstrates the persistent support for the Camel aggregator
 
 | link:camel-example-cafe/README.md[Cafe] (camel-example-cafe) | EIP | A cafe example showing how to work with Camel
-
-| link:camel-example-etl/README.md[ETL] (camel-example-etl) | EIP | An example showing how to use Camel as an Extract Transform and Load (ETL) tool
 
 | link:camel-example-hystrix/README.md[Hystrix] (camel-example-hystrix) | EIP | An example showing how to use Hystrix EIP as circuit breaker in Camel routes
 
@@ -119,17 +137,31 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-spring-boot-metrics/README.md[Spring Boot Metrics] (camel-example-spring-boot-metrics) | Management and Monitoring | An example showing how to work with Camel and Spring Boot and report metrics to Graphite
 
+| link:camel-example-spring-boot-supervising-route-controller/readme.adoc[Spring Boot Supervising Route Controller] (camel-example-spring-boot-supervising-route-controller) | Management and Monitoring | An example showing how to work with Camel's Supervising Route Controller and Spring Boot
+
 | link:camel-example-tracer/README.md[Tracer] (camel-example-tracer) | Management and Monitoring | *deprecated* An example showing how to persist Camel trace event messages using JPA
 
 | link:camel-example-zipkin/README.md[Zipkin] (camel-example-zipkin) | Management and Monitoring | An example showing how to trace incoming and outgoing messages from Camel with Zipkin
 
 | link:camel-example-activemq-tomcat/README.md[ActiveMQ Tomcat] (camel-example-activemq-tomcat) | Messaging | An example using ActiveMQ Broker and Camel with Apache Tomcat
 
+| link:camel-example-artemis-amqp-blueprint/README.md[Artemis Amqp Blueprint] (camel-example-artemis-amqp-blueprint) | Messaging | Demonstrates ActiveMQ Artemis using Camel's AMQP component. The example includes a JUnit showcasing how
+    to embed for testing an AMQP enabled Artemis broker.
+  
+
+| link:camel-example-artemis-large-messages/README.md[Artemis Large Messages] (camel-example-artemis-large-messages) | Messaging | Demonstrates sending large messages (handles GBs in size) between Apache Camel and ActiveMQ Artemis in streaming mode
+
+| link:camel-example-google-pubsub/README.adoc[Google Pubsub] (camel-example-google-pubsub) | Messaging | An example for Google Pubsub
+
 | link:camel-example-guice-jms/README.md[Guice JMS] (camel-example-guice-jms) | Messaging | *deprecated* An example showing how to work with Camel, Guice and JMS
 
 | link:camel-example-jms-file/README.md[JMS-File] (camel-example-jms-file) | Messaging | An example that persists messages from JMS to files
 
 | link:camel-example-kafka/README.adoc[Kafka] (camel-example-kafka) | Messaging | An example for Kafka
+
+| link:camel-example-netty-custom-correlation/readme.adoc[Netty Custom Correlation] (camel-example-netty-custom-correlation) | Messaging | An example for showing Camel Netty with custom codec and correlation id
+
+| link:camel-example-rabbitmq/readme.adoc[Rabbitmq] (camel-example-rabbitmq) | Messaging | An example showing how to work with Camel and RabbitMQ
 
 | link:camel-example-spring-boot-activemq/readme.adoc[Spring Boot Activemq] (camel-example-spring-boot-activemq) | Messaging | An example showing how to work with Camel, ActiveMQ and Spring Boot
 
@@ -139,11 +171,11 @@ Number of Examples: 92 (9 deprecated)
 
 | link:camel-example-cxf-blueprint/README.md[CXF Blueprint] (camel-example-cxf-blueprint) | OSGi | An example which use a CXF consumer and the OSGI HTTP Service
 
-| link:camel-example-cxf-osgi/README.md[CXF OSGi] (camel-example-cxf-osgi) | OSGi | An example which use a CXF consumer and the OSGI HTTP Service
+| link:camel-example-fhir-osgi/README.md[Fhir Osgi] (camel-example-fhir-osgi) | OSGi | An example running Camel FHIR in Apache Karaf
 
 | link:camel-example-netty-http/README.md[Netty HTTP] (camel-example-netty-http) | OSGi | An example showing how to use a shared Netty HTTP server with multiple Camel applications in OSGi container
 
-| link:camel-example-osgi-rmi/README.md[OSGi RMI] (camel-example-osgi-rmi) | OSGi | *deprecated* A OSGi example which exposes a RMI service.
+| link:camel-example-olingo4-blueprint/README.md[Olingo4 Blueprint] (camel-example-olingo4-blueprint) | OSGi | An example which use the Olingo4 component in Blueprint
 
 | link:camel-example-servlet-rest-blueprint/README.md[Servlet REST Blueprint] (camel-example-servlet-rest-blueprint) | OSGi | An example using Servlet REST with OSGi Blueprint
 
@@ -209,7 +241,7 @@ Number of Examples: 92 (9 deprecated)
 | link:camel-example-cxf-tomcat/README.md[CXF Tomcat] (camel-example-cxf-tomcat) | WebService | An example using Camel CXF (code first) with Apache Tomcat
 
 | link:camel-example-spring-ws/README.md[Spring WebService] (camel-example-spring-ws) | WebService | An example showing how to work with Camel and Spring Web Services
-|=======================================================================
+|===
 // examples: END
 
 

@@ -19,8 +19,10 @@ package org.apache.camel.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -43,7 +45,7 @@ public class CollectionHelperTest extends TestCase {
     }
 
     public void testSize() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("foo", 123);
         map.put("bar", 456);
 
@@ -54,7 +56,7 @@ public class CollectionHelperTest extends TestCase {
     }
 
     public void testAppendValue() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         CollectionHelper.appendValue(map, "foo", 123);
         assertEquals(1, map.size());
 
@@ -71,6 +73,33 @@ public class CollectionHelperTest extends TestCase {
 
         Integer value = (Integer) map.get("bar");
         assertEquals(789, value.intValue());
+    }
+
+    public void testCreateSetContaining() throws Exception {
+        Set<String> set = CollectionHelper.createSetContaining("foo", "bar", "baz");
+        assertEquals(3, set.size());
+        assertTrue(set.contains("foo"));
+        assertTrue(set.contains("bar"));
+        assertTrue(set.contains("baz"));
+    }
+
+    public void testFlatternKeysInMap() throws Exception {
+        Map<String, Object> root = new LinkedHashMap<>();
+        Map<String, Object> api = new LinkedHashMap<>();
+        Map<String, Object> contact = new LinkedHashMap<>();
+        contact.put("organization", "Apache Software Foundation");
+        api.put("version", "1.0.0");
+        api.put("title", "My cool API");
+        api.put("contact", contact);
+        root.put("api", api);
+        root.put("cors", true);
+
+        Map<String, Object> flattern = CollectionHelper.flatternKeysInMap(root, ".");
+        assertEquals(4, flattern.size());
+        assertEquals(true, flattern.get("cors"));
+        assertEquals("1.0.0", flattern.get("api.version"));
+        assertEquals("My cool API", flattern.get("api.title"));
+        assertEquals("Apache Software Foundation", flattern.get("api.contact.organization"));
     }
 
 }

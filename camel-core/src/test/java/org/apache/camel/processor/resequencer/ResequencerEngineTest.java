@@ -19,8 +19,11 @@ package org.apache.camel.processor.resequencer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.TestSupport;
+
+import static org.awaitility.Awaitility.await;
 
 public class ResequencerEngineTest extends TestSupport {
 
@@ -83,7 +86,7 @@ public class ResequencerEngineTest extends TestSupport {
         }
         int input = 1000;
         initResequencer(1000, 1000);
-        List<Integer> list = new LinkedList<Integer>();
+        List<Integer> list = new LinkedList<>();
         for (int i = 0; i < input; i++) {
             list.add(i);
         }
@@ -140,21 +143,17 @@ public class ResequencerEngineTest extends TestSupport {
     
     private void initResequencer(long timeout, int capacity) {
         ResequencerEngine<Integer> engine;
-        buffer = new SequenceBuffer<Integer>();
-        engine = new ResequencerEngine<Integer>(new IntegerComparator());
+        buffer = new SequenceBuffer<>();
+        engine = new ResequencerEngine<>(new IntegerComparator());
         engine.setSequenceSender(buffer);
         engine.setTimeout(timeout);
         engine.start();
-        resequencer = new ResequencerEngineSync<Integer>(engine);
-        runner = new ResequencerRunner<Integer>(resequencer, 50);
+        resequencer = new ResequencerEngineSync<>(engine);
+        runner = new ResequencerRunner<>(resequencer, 50);
         runner.start();
 
-        // give the runner time to start
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            // ignore
-        }
+        // wait for runner to run
+        await().atMost(1, TimeUnit.SECONDS).until(runner::isRunning);
     }
     
 }

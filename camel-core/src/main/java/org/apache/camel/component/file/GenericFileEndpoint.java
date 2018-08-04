@@ -23,6 +23,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.camel.CamelContext;
@@ -57,7 +59,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
 
     protected static final String DEFAULT_STRATEGYFACTORY_CLASS = "org.apache.camel.component.file.strategy.GenericFileProcessStrategyFactory";
     protected static final int DEFAULT_IDEMPOTENT_CACHE_SIZE = 1000;
-    
+    protected static final int DEFAULT_IN_PROGRESS_CACHE_SIZE = 50000;
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     // common options
@@ -97,7 +100,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     @UriParam(label = "consumer,advanced")
     protected GenericFileProcessStrategy<T> processStrategy;
     @UriParam(label = "consumer,advanced")
-    protected IdempotentRepository<String> inProgressRepository = new MemoryIdempotentRepository();
+    protected IdempotentRepository<String> inProgressRepository = MemoryIdempotentRepository.memoryIdempotentRepository(DEFAULT_IN_PROGRESS_CACHE_SIZE);
     @UriParam(label = "consumer,advanced")
     protected String localWorkDirectory;
     @UriParam(label = "consumer,advanced")
@@ -110,6 +113,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected boolean recursive;
     @UriParam(label = "consumer")
     protected boolean delete;
+    @UriParam(label = "consumer")
+    protected boolean preSort;
     @UriParam(label = "consumer,filter")
     protected int maxMessagesPerPoll;
     @UriParam(label = "consumer,filter", defaultValue = "true")
@@ -155,7 +160,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected Comparator<Exchange> sortBy;
     @UriParam(label = "consumer,sort")
     protected boolean shuffle;
-    @UriParam(label = "consumer,lock", enums = "none,markerFile,fileLock,rename,changed,idempotent,idempotent-changed,idempotent-rename")
+    @UriParam(label = "consumer,lock", defaultValue = "none", enums = "none,markerFile,fileLock,rename,changed,idempotent,idempotent-changed,idempotent-rename")
     protected String readLock = "none";
     @UriParam(label = "consumer,lock", defaultValue = "1000")
     protected long readLockCheckInterval = 1000;
@@ -165,8 +170,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected boolean readLockMarkerFile = true;
     @UriParam(label = "consumer,lock", defaultValue = "true")
     protected boolean readLockDeleteOrphanLockFiles = true;
-    @UriParam(label = "consumer,lock", defaultValue = "WARN")
-    protected LoggingLevel readLockLoggingLevel = LoggingLevel.WARN;
+    @UriParam(label = "consumer,lock", defaultValue = "DEBUG")
+    protected LoggingLevel readLockLoggingLevel = LoggingLevel.DEBUG;
     @UriParam(label = "consumer,lock", defaultValue = "1")
     protected long readLockMinLength = 1;
     @UriParam(label = "consumer,lock", defaultValue = "0")
@@ -175,6 +180,14 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected boolean readLockRemoveOnRollback = true;
     @UriParam(label = "consumer,lock")
     protected boolean readLockRemoveOnCommit;
+    @UriParam(label = "consumer,lock")
+    protected int readLockIdempotentReleaseDelay;
+    @UriParam(label = "consumer,lock")
+    protected boolean readLockIdempotentReleaseAsync;
+    @UriParam(label = "consumer,lock")
+    protected int readLockIdempotentReleaseAsyncPoolSize;
+    @UriParam(label = "consumer,lock")
+    protected ScheduledExecutorService readLockIdempotentReleaseExecutorService;
     @UriParam(label = "consumer,lock")
     protected GenericFileExclusiveReadLockStrategy<T> exclusiveReadLockStrategy;
     @UriParam(label = "consumer,advanced")
@@ -214,21 +227,13 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         return StringHelper.sanitize(message.getMessageId());
     }
 
-    public GenericFileProcessStrategy<T> getGenericFileProcessStrategy() {
-        if (processStrategy == null) {
-            processStrategy = createGenericFileStrategy();
-            log.debug("Using Generic file process strategy: {}", processStrategy);
-        }
-        return processStrategy;
-    }
-
     /**
      * This implementation will <b>not</b> load the file content.
      * Any file locking is neither in use by this implementation..
      */
     @Override
     public List<Exchange> getExchanges() {
-        final List<Exchange> answer = new ArrayList<Exchange>();
+        final List<Exchange> answer = new ArrayList<>();
 
         GenericFileConsumer<?> consumer = null;
         try {
@@ -404,7 +409,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     /**
-     * Sets case sensitive flag on ant fiter
+     * Sets case sensitive flag on ant filter
      */
     public void setAntFilterCaseSensitive(boolean antFilterCaseSensitive) {
         this.antFilterCaseSensitive = antFilterCaseSensitive;
@@ -412,6 +417,20 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
 
     public GenericFileFilter<T> getAntFilter() {
         return antFilter;
+    }
+    
+    public boolean isPreSort() {
+        return preSort;
+    }
+
+    /**
+     * When pre-sort is enabled then the consumer will sort the file and directory names during polling, 
+     * that was retrieved from the file system. You may want to do this in case you need to operate on the files 
+     * in a sorted order. The pre-sort is executed before the consumer starts to filter, and accept files 
+     * to process by Camel. This option is default=false meaning disabled.
+     */
+    public void setPreSort(boolean preSort) {
+        this.preSort = preSort;
     }
 
     public boolean isDelete() {
@@ -593,7 +612,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      * Either you can specify a fixed name. Or you can use dynamic placeholders.
      * The done file will always be written in the same folder as the original file.
      * <p/>
-     * Consumer: If provided, Camel will only consume files if a done file exists. 
+     * Consumer: If provided, Camel will only consume files if a done file exists.
      * This option configures what file name to use. Either you can specify a fixed name.
      * Or you can use dynamic placeholders.The done file is always expected in the same folder
      * as the original file.
@@ -903,7 +922,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      * Logging level used when a read lock could not be acquired.
      * By default a WARN is logged.
      * You can change this level, for example to OFF to not have any logging.
-     * This option is only applicable for readLock of types: changed, fileLock, rename.
+     * This option is only applicable for readLock of types: changed, fileLock, idempotent, idempotent-changed, idempotent-rename, rename.
      */
     public void setReadLockLoggingLevel(LoggingLevel readLockLoggingLevel) {
         this.readLockLoggingLevel = readLockLoggingLevel;
@@ -914,7 +933,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     /**
-     * This option applied only for readLock=changed. This option allows you to configure a minimum file length.
+     * This option is applied only for readLock=changed. It allows you to configure a minimum file length.
      * By default Camel expects the file to contain data, and thus the default value is 1.
      * You can set this option to zero, to allow consuming zero-length files.
      */
@@ -927,8 +946,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     /**
-     * This option applied only for readLock=change.
-     * This option allows to specify a minimum age the file must be before attempting to acquire the read lock.
+     * This option is applied only for readLock=changed.
+     * It allows to specify a minimum age the file must be before attempting to acquire the read lock.
      * For example use readLockMinAge=300s to require the file is at last 5 minutes old.
      * This can speedup the changed read lock as it will only attempt to acquire files which are at least that given age.
      */
@@ -941,8 +960,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     /**
-     * This option applied only for readLock=idempotent.
-     * This option allows to specify whether to remove the file name entry from the idempotent repository
+     * This option is applied only for readLock=idempotent.
+     * It allows to specify whether to remove the file name entry from the idempotent repository
      * when processing the file failed and a rollback happens.
      * If this option is false, then the file name entry is confirmed (as if the file did a commit).
      */
@@ -955,16 +974,72 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     /**
-     * This option applied only for readLock=idempotent.
-     * This option allows to specify whether to remove the file name entry from the idempotent repository
+     * This option is applied only for readLock=idempotent.
+     * It allows to specify whether to remove the file name entry from the idempotent repository
      * when processing the file is succeeded and a commit happens.
      * <p/>
      * By default the file is not removed which ensures that any race-condition do not occur so another active
      * node may attempt to grab the file. Instead the idempotent repository may support eviction strategies
      * that you can configure to evict the file name entry after X minutes - this ensures no problems with race conditions.
+     * <p/>
+     * See more details at the readLockIdempotentReleaseDelay option.
      */
     public void setReadLockRemoveOnCommit(boolean readLockRemoveOnCommit) {
         this.readLockRemoveOnCommit = readLockRemoveOnCommit;
+    }
+
+    /**
+     * Whether to delay the release task for a period of millis.
+     * <p/>
+     * This can be used to delay the release tasks to expand the window when a file is regarded as read-locked,
+     * in an active/active cluster scenario with a shared idempotent repository, to ensure other nodes cannot potentially scan and acquire
+     * the same file, due to race-conditions. By expanding the time-window of the release tasks helps prevents these situations.
+     * Note delaying is only needed if you have configured readLockRemoveOnCommit to true.
+     */
+    public void setReadLockIdempotentReleaseDelay(int readLockIdempotentReleaseDelay) {
+        this.readLockIdempotentReleaseDelay = readLockIdempotentReleaseDelay;
+    }
+
+    public boolean isReadLockIdempotentReleaseAsync() {
+        return readLockIdempotentReleaseAsync;
+    }
+
+    /**
+     * Whether the delayed release task should be synchronous or asynchronous.
+     * <p/>
+     * See more details at the readLockIdempotentReleaseDelay option.
+     */
+    public void setReadLockIdempotentReleaseAsync(boolean readLockIdempotentReleaseAsync) {
+        this.readLockIdempotentReleaseAsync = readLockIdempotentReleaseAsync;
+    }
+
+    public int getReadLockIdempotentReleaseAsyncPoolSize() {
+        return readLockIdempotentReleaseAsyncPoolSize;
+    }
+
+    /**
+     * The number of threads in the scheduled thread pool when using asynchronous release tasks.
+     * Using a default of 1 core threads should be sufficient in almost all use-cases, only set this to a higher value
+     * if either updating the idempotent repository is slow, or there are a lot of files to process.
+     * This option is not in-use if you use a shared thread pool by configuring the readLockIdempotentReleaseExecutorService option.
+     * <p/>
+     * See more details at the readLockIdempotentReleaseDelay option.
+     */
+    public void setReadLockIdempotentReleaseAsyncPoolSize(int readLockIdempotentReleaseAsyncPoolSize) {
+        this.readLockIdempotentReleaseAsyncPoolSize = readLockIdempotentReleaseAsyncPoolSize;
+    }
+
+    public ScheduledExecutorService getReadLockIdempotentReleaseExecutorService() {
+        return readLockIdempotentReleaseExecutorService;
+    }
+
+    /**
+     * To use a custom and shared thread pool for asynchronous release tasks.
+     * <p/>
+     * See more details at the readLockIdempotentReleaseDelay option.
+     */
+    public void setReadLockIdempotentReleaseExecutorService(ScheduledExecutorService readLockIdempotentReleaseExecutorService) {
+        this.readLockIdempotentReleaseExecutorService = readLockIdempotentReleaseExecutorService;
     }
 
     public int getBufferSize() {
@@ -997,8 +1072,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      *   The option eagerDeleteTargetFile can be used to control what to do if an moving the file, and there exists already an existing file,
      *   otherwise causing the move operation to fail.
      *   The Move option will move any existing files, before writing the target file.</li>
-     *   <li>TryRename Camel is only applicable if tempFileName option is in use. This allows to try renaming the file from the temporary name to the actual name,
-     *   without doing any exists check.This check may be faster on some file systems and especially FTP servers.</li>
+     *   <li>TryRename is only applicable if tempFileName option is in use. This allows to try renaming the file from the temporary name to the actual name,
+     *   without doing any exists check. This check may be faster on some file systems and especially FTP servers.</li>
      * </ul>
      */
     public void setFileExist(GenericFileExist fileExist) {
@@ -1244,7 +1319,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     }
 
     protected Map<String, Object> getParamsAsMap() {
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
 
         if (isNoop()) {
             params.put("noop", Boolean.toString(true));
@@ -1283,6 +1358,16 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         params.put("readLockMinAge", readLockMinAge);
         params.put("readLockRemoveOnRollback", readLockRemoveOnRollback);
         params.put("readLockRemoveOnCommit", readLockRemoveOnCommit);
+        if (readLockIdempotentReleaseDelay > 0) {
+            params.put("readLockIdempotentReleaseDelay", readLockIdempotentReleaseDelay);
+        }
+        params.put("readLockIdempotentReleaseAsync", readLockIdempotentReleaseAsync);
+        if (readLockIdempotentReleaseAsyncPoolSize > 0) {
+            params.put("readLockIdempotentReleaseAsyncPoolSize", readLockIdempotentReleaseAsyncPoolSize);
+        }
+        if (readLockIdempotentReleaseExecutorService != null) {
+            params.put("readLockIdempotentReleaseExecutorService", readLockIdempotentReleaseExecutorService);
+        }
         return params;
     }
 
@@ -1316,7 +1401,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
 
         // we only support ${file:name} or ${file:name.noext} as dynamic placeholders for done files
         String path = FileUtil.onlyPath(fileName);
-        String onlyName = FileUtil.stripPath(fileName);
+        String onlyName = Matcher.quoteReplacement(FileUtil.stripPath(fileName));
 
         pattern = pattern.replaceFirst("\\$\\{file:name\\}", onlyName);
         pattern = pattern.replaceFirst("\\$simple\\{file:name\\}", onlyName);

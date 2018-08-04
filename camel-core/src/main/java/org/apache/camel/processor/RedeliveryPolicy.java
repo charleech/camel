@@ -44,12 +44,14 @@ import org.slf4j.LoggerFactory;
  *   <li>useCollisionAvoidance = false</li>
  *   <li>retriesExhaustedLogLevel = LoggingLevel.ERROR</li>
  *   <li>retryAttemptedLogLevel = LoggingLevel.DEBUG</li>
+ *   <li>retryAttemptedLogInterval = 1</li>
  *   <li>logRetryAttempted = true</li>
  *   <li>logRetryStackTrace = false</li>
  *   <li>logStackTrace = true</li>
  *   <li>logHandled = false</li>
  *   <li>logExhausted = true</li>
  *   <li>logExhaustedMessageHistory = true</li>
+ *   <li>logExhaustedMessageBody = false</li>
  *   <li>logNewException = true</li>
  *   <li>allowRedeliveryWhileStopping = true</li>
  * </ul>
@@ -91,6 +93,7 @@ public class RedeliveryPolicy implements Cloneable, Serializable {
     protected boolean useCollisionAvoidance;
     protected LoggingLevel retriesExhaustedLogLevel = LoggingLevel.ERROR;
     protected LoggingLevel retryAttemptedLogLevel = LoggingLevel.DEBUG;
+    protected int retryAttemptedLogInterval = 1;
     protected boolean logStackTrace = true;
     protected boolean logRetryStackTrace;
     protected boolean logHandled;
@@ -117,6 +120,7 @@ public class RedeliveryPolicy implements Cloneable, Serializable {
             + ", allowRedeliveryWhileStopping=" + allowRedeliveryWhileStopping
             + ", retriesExhaustedLogLevel=" + retriesExhaustedLogLevel
             + ", retryAttemptedLogLevel=" + retryAttemptedLogLevel
+            + ", retryAttemptedLogInterval=" + retryAttemptedLogInterval
             + ", logRetryAttempted=" + logRetryAttempted
             + ", logStackTrace=" + logStackTrace
             + ", logRetryStackTrace=" + logRetryStackTrace
@@ -347,6 +351,14 @@ public class RedeliveryPolicy implements Cloneable, Serializable {
      */    
     public RedeliveryPolicy retryAttemptedLogLevel(LoggingLevel retryAttemptedLogLevel) {
         setRetryAttemptedLogLevel(retryAttemptedLogLevel);
+        return this;
+    }
+
+    /**
+     * Sets the interval to log retry attempts
+     */
+    public RedeliveryPolicy retryAttemptedLogInterval(int logRetryAttemptedInterval) {
+        setRetryAttemptedLogInterval(logRetryAttemptedInterval);
         return this;
     }
 
@@ -606,6 +618,17 @@ public class RedeliveryPolicy implements Cloneable, Serializable {
 
     public LoggingLevel getRetryAttemptedLogLevel() {
         return retryAttemptedLogLevel;
+    }
+
+    public int getRetryAttemptedLogInterval() {
+        return retryAttemptedLogInterval;
+    }
+
+    /**
+     * Sets the interval to log retry attempts
+     */
+    public void setRetryAttemptedLogInterval(int retryAttemptedLogInterval) {
+        this.retryAttemptedLogInterval = retryAttemptedLogInterval;
     }
 
     public String getDelayPattern() {

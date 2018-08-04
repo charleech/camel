@@ -81,7 +81,7 @@ import org.apache.maven.shared.dependency.tree.traversal.CollectingDependencyNod
 public class SpringBootStarterMojo extends AbstractMojo {
 
     private static final String[] IGNORE_MODULES = {
-        /* OSGi -> */ "camel-blueprint", "camel-core-osgi", "camel-spring-dm", "camel-eventadmin", "camel-paxlogging", "camel-scr",
+        /* OSGi -> */ "camel-blueprint", "camel-core-osgi", "camel-eventadmin", "camel-paxlogging", "camel-scr",
         /* Java EE -> */ "camel-cdi", "camel-ejb",
         /* deprecated (and not working perfectly) -> */ "camel-swagger", "camel-mina", "camel-ibatis", "camel-quartz",
         /* currently incompatible */ "camel-jclouds", "camel-spark-rest",
@@ -320,6 +320,7 @@ public class SpringBootStarterMojo extends AbstractMojo {
         loggingImpl.add("ch.qos.logback:logback-classic");
 
         loggingImpl.add("org.apache.logging.log4j:log4j");
+        loggingImpl.add("org.apache.logging.log4j:log4j-jcl");
         loggingImpl.add("org.apache.logging.log4j:log4j-core");
         loggingImpl.add("org.apache.logging.log4j:log4j-slf4j-impl");
 
@@ -395,9 +396,9 @@ public class SpringBootStarterMojo extends AbstractMojo {
         List<DependencyNode> nodes = visitor.getNodes();
         for (DependencyNode dependencyNode : nodes) {
             Artifact artifact = dependencyNode.getArtifact();
-
-            getLog().debug("Found dependency node: " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion() + " - scope=" + artifact.getScope());
-
+            if (getLog().isDebugEnabled()) {
+                getLog().debug("Found dependency node: " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion() + " - scope=" + artifact.getScope());
+            }
             if (!Artifact.SCOPE_TEST.equals(artifact.getScope()) && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())) {
                 String canonicalName = artifact.getGroupId() + ":" + artifact.getArtifactId();
                 if (artifacts.contains(canonicalName)) {
@@ -566,7 +567,9 @@ public class SpringBootStarterMojo extends AbstractMojo {
             }
         }
 
-        if (IGNORE_TEST_MODULES && (project.getArtifactId().startsWith("camel-test") || project.getArtifactId().startsWith("camel-testng"))) {
+        if (IGNORE_TEST_MODULES && (project.getArtifactId().startsWith("camel-test")
+            || project.getArtifactId().startsWith("camel-testng")
+            || project.getArtifactId().startsWith("camel-testcontainers"))) {
             getLog().debug("Test components are ignored");
             return false;
         }

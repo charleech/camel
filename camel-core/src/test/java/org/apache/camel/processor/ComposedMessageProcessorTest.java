@@ -95,7 +95,7 @@ public class ComposedMessageProcessorTest extends ContextTestSupport {
                 
                 // collect and re-assemble the validated OrderItems into an order again
                 from("seda:aggregate")
-                    .aggregate(new MyOrderAggregationStrategy()).header("orderId").completionTimeout(1000L)
+                    .aggregate(new MyOrderAggregationStrategy()).header("orderId").completionTimeout(100).completionTimeoutCheckerInterval(10)
                         .to("mock:result");
                 // END SNIPPET: e2
             }
@@ -166,7 +166,7 @@ public class ComposedMessageProcessorTest extends ContextTestSupport {
                 return newExchange;
             }
 
-            List<OrderItem> order = new ArrayList<OrderItem>(2);
+            List<OrderItem> order = new ArrayList<>(2);
             order.add(oldExchange.getIn().getBody(OrderItem.class));
             order.add(newExchange.getIn().getBody(OrderItem.class));
 

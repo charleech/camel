@@ -45,7 +45,7 @@ public class EndpointCompletionTest extends ManagementTestSupport {
         mbeanServer.isRegistered(on);
 
         String componentName = "file";
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         assertCompletion(mbeanServer, on, componentName, properties, "");
         assertCompletion(mbeanServer, on, componentName, properties, "po");
         assertCompletion(mbeanServer, on, componentName, properties, "/");
@@ -79,7 +79,7 @@ public class EndpointCompletionTest extends ManagementTestSupport {
         List<?> completions = assertIsInstanceOf(List.class,
                 mbeanServer.invoke(on, "completeEndpointPath", params, signature));
 
-        LOG.info("Component " + componentName + " with '" + completionText + "' Returned: " + completions);
+        LOG.info("Component {} with '{}' Returned: {}", componentName, completionText, completions);
         return (List<String>) completions;
     }
 
@@ -90,7 +90,7 @@ public class EndpointCompletionTest extends ManagementTestSupport {
         String answer = assertIsInstanceOf(String.class,
                 mbeanServer.invoke(on, "componentParameterJsonSchema", params, signature));
 
-        LOG.info("Component " + componentName + " returned JSON: " + answer);
+        LOG.info("Component {} returned JSON: {}", componentName, answer);
 
         // now lets validate that the generated JSON parses correctly
         ObjectMapper mapper = new ObjectMapper();

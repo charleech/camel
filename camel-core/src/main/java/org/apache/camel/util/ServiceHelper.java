@@ -467,7 +467,7 @@ public final class ServiceHelper {
      * @return the services, including the parent service, and all its children
      */
     public static Set<Service> getChildServices(Service service, boolean includeErrorHandler) {
-        Set<Service> answer = new LinkedHashSet<Service>();
+        Set<Service> answer = new LinkedHashSet<>();
         doGetChildServices(answer, service, includeErrorHandler);
         return answer;
     }
@@ -483,12 +483,12 @@ public final class ServiceHelper {
                         if (includeErrorHandler) {
                             // special for error handler as they are tied to the Channel
                             Processor errorHandler = ((Channel) child).getErrorHandler();
-                            if (errorHandler != null && errorHandler instanceof Service) {
+                            if (errorHandler instanceof Service) {
                                 services.add((Service) errorHandler);
                             }
                         }
                         Processor next = ((Channel) child).getNextProcessor();
-                        if (next != null && next instanceof Service) {
+                        if (next instanceof Service) {
                             services.add((Service) next);
                         }
                     }

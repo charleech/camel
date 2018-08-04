@@ -46,6 +46,7 @@ public class Olingo4Endpoint extends AbstractApiEndpoint<Olingo4ApiName, Olingo4
 
     private static final String KEY_PREDICATE_PROPERTY = "keyPredicate";
     private static final String QUERY_PARAMS_PROPERTY = "queryParams";
+    private static final String ENDPOINT_HTTP_HEADERS_PROPERTY = "endpointHttpHeaders";
 
     private static final String READ_METHOD = "read";
     private static final String EDM_PROPERTY = "edm";
@@ -68,9 +69,10 @@ public class Olingo4Endpoint extends AbstractApiEndpoint<Olingo4ApiName, Olingo4
         this.configuration = endpointConfiguration;
 
         // get all endpoint property names
-        endpointPropertyNames = new HashSet<String>(getPropertiesHelper().getValidEndpointProperties(configuration));
+        endpointPropertyNames = new HashSet<>(getPropertiesHelper().getValidEndpointProperties(configuration));
         // avoid adding edm as queryParam
         endpointPropertyNames.add(EDM_PROPERTY);
+        endpointPropertyNames.add(ENDPOINT_HTTP_HEADERS_PROPERTY);
     }
 
     public Producer createProducer() throws Exception {
@@ -186,7 +188,7 @@ public class Olingo4Endpoint extends AbstractApiEndpoint<Olingo4ApiName, Olingo4
 
     private void parseQueryParams(Map<String, Object> options) {
         // extract non-endpoint properties as query params
-        final Map<String, String> queryParams = new HashMap<String, String>();
+        final Map<String, String> queryParams = new HashMap<>();
         for (Iterator<Map.Entry<String, Object>> it = options.entrySet().iterator(); it.hasNext();) {
 
             final Map.Entry<String, Object> entry = it.next();

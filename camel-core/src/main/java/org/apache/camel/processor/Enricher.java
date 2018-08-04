@@ -247,9 +247,11 @@ public class Enricher extends ServiceSupport implements AsyncProcessor, IdAware,
 
         LOG.trace("Processing exchangeId: {} is continued being processed synchronously", exchange.getExchangeId());
 
-        // emit event that the exchange was sent to the endpoint
-        long timeTaken = watch.taken();
-        EventHelper.notifyExchangeSent(resourceExchange.getContext(), resourceExchange, destination, timeTaken);
+        if (watch != null) {
+            // emit event that the exchange was sent to the endpoint
+            long timeTaken = watch.taken();
+            EventHelper.notifyExchangeSent(resourceExchange.getContext(), resourceExchange, destination, timeTaken);
+        }
         
         if (!isAggregateOnException() && resourceExchange.isFailed()) {
             // copy resource exchange onto original exchange (preserving pattern)
@@ -338,6 +340,9 @@ public class Enricher extends ServiceSupport implements AsyncProcessor, IdAware,
     protected void doStart() throws Exception {
         if (aggregationStrategy == null) {
             aggregationStrategy = defaultAggregationStrategy();
+        }
+        if (aggregationStrategy instanceof CamelContextAware) {
+            ((CamelContextAware) aggregationStrategy).setCamelContext(camelContext);
         }
 
         if (producerCache == null) {
