@@ -29,6 +29,7 @@ import org.apache.camel.component.fhir.api.FhirDelete;
 import org.apache.camel.component.fhir.api.FhirHistory;
 import org.apache.camel.component.fhir.api.FhirLoadPage;
 import org.apache.camel.component.fhir.api.FhirMeta;
+import org.apache.camel.component.fhir.api.FhirOperation;
 import org.apache.camel.component.fhir.api.FhirPatch;
 import org.apache.camel.component.fhir.api.FhirRead;
 import org.apache.camel.component.fhir.api.FhirSearch;
@@ -41,15 +42,15 @@ import org.apache.camel.component.fhir.internal.FhirConstants;
 import org.apache.camel.component.fhir.internal.FhirPropertiesHelper;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
-import org.apache.camel.util.component.AbstractApiEndpoint;
-import org.apache.camel.util.component.ApiMethod;
-import org.apache.camel.util.component.ApiMethodPropertiesHelper;
+import org.apache.camel.support.component.AbstractApiEndpoint;
+import org.apache.camel.support.component.ApiMethod;
+import org.apache.camel.support.component.ApiMethodPropertiesHelper;
 
 /**
  * The fhir component is used for working with the FHIR protocol (health care).
  */
 @UriEndpoint(firstVersion = "2.23.0", scheme = "fhir", title = "FHIR", syntax = "fhir:apiName/methodName",
-        consumerClass = FhirConsumer.class, label = "hl7,api")
+        label = "hl7,api")
 public class FhirEndpoint extends AbstractApiEndpoint<FhirApiName, FhirConfiguration> {
 
     private static final String EXTRA_PARAMETERS_PROPERTY = "extraParameters";
@@ -110,6 +111,9 @@ public class FhirEndpoint extends AbstractApiEndpoint<FhirApiName, FhirConfigura
             break;
         case META:
             apiProxy = new FhirMeta(client);
+            break;
+        case OPERATION:
+            apiProxy = new FhirOperation(client);
             break;
         case PATCH:
             apiProxy = new FhirPatch(client);

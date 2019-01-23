@@ -28,23 +28,21 @@ import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.ShutdownRunningTask;
-import org.apache.camel.impl.ScheduledBatchPollingConsumer;
 import org.apache.camel.support.EmptyAsyncCallback;
+import org.apache.camel.support.ScheduledBatchPollingConsumer;
+import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.CastUtils;
-import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.ServiceHelper;
 import org.apache.camel.util.StopWatch;
 import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.TimeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for file consumers.
  */
 public abstract class GenericFileConsumer<T> extends ScheduledBatchPollingConsumer {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+
     protected GenericFileEndpoint<T> endpoint;
     protected GenericFileOperations<T> operations;
     protected GenericFileProcessStrategy<T> processStrategy;
@@ -554,6 +552,7 @@ public abstract class GenericFileConsumer<T> extends ScheduledBatchPollingConsum
             if (endpoint.getIdempotentKey() != null) {
                 Exchange dummy = endpoint.createExchange(file);
                 key = endpoint.getIdempotentKey().evaluate(dummy, String.class);
+                log.trace("Evaluated idempotentKey: {} for file: {}", key, file);
             }
             if (key != null && endpoint.getIdempotentRepository().contains(key)) {
                 log.trace("This consumer is idempotent and the file has been consumed before matching idempotentKey: {}. Will skip this file: {}", key, file);
@@ -681,27 +680,13 @@ public abstract class GenericFileConsumer<T> extends ScheduledBatchPollingConsum
      */
     protected abstract boolean isMatched(GenericFile<T> file, String doneFileName, List<T> files);
 
-    /**
-     * Is the given file already in progress.
-     *
-     * @param file the file
-     * @return <tt>true</tt> if the file is already in progress
-     * @deprecated no longer in use, use {@link org.apache.camel.component.file.GenericFileEndpoint#getInProgressRepository()} instead.
-     */
-    @Deprecated
-    protected boolean isInProgress(GenericFile<T> file) {
-        String key = file.getAbsoluteFilePath();
-        // must use add, to have operation as atomic
-        return !endpoint.getInProgressRepository().add(key);
-    }
-
     protected String evaluateFileExpression() {
         if (fileExpressionResult == null && endpoint.getFileName() != null) {
             // create a dummy exchange as Exchange is needed for expression evaluation
             Exchange dummy = endpoint.createExchange();
             fileExpressionResult = endpoint.getFileName().evaluate(dummy, String.class);
             if (dummy.getException() != null) {
-                throw ObjectHelper.wrapRuntimeCamelException(dummy.getException());
+                throw RuntimeCamelException.wrapRuntimeCamelException(dummy.getException());
             }
         }
         return fileExpressionResult;

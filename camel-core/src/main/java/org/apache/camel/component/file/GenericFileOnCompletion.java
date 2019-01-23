@@ -20,7 +20,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.spi.ExceptionHandler;
 import org.apache.camel.spi.Synchronization;
 import org.apache.camel.support.LoggingExceptionHandler;
-import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * The work is for example to move the processed file into a backup folder, delete the file or
  * in case of processing failure do a rollback. 
- *
- * @version 
  */
 public class GenericFileOnCompletion<T> implements Synchronization {
 
@@ -164,7 +162,7 @@ public class GenericFileOnCompletion<T> implements Synchronization {
         if (endpoint.getDoneFileName() != null && !endpoint.isNoop()) {
             // done file must be in same path as the original input file
             String doneFileName = endpoint.createDoneFileName(absoluteFileName);
-            ObjectHelper.notEmpty(doneFileName, "doneFileName", endpoint);
+            StringHelper.notEmpty(doneFileName, "doneFileName", endpoint);
             // we should delete the dynamic done file
             if (endpoint.getDoneFileName().indexOf("{file:name") > 0 || complete) {
                 try {

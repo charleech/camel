@@ -26,12 +26,10 @@ import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.file.GenericFileEndpoint;
 import org.apache.camel.component.file.GenericFileExclusiveReadLockStrategy;
 import org.apache.camel.component.file.GenericFileOperations;
+import org.apache.camel.spi.CamelLogger;
 import org.apache.camel.spi.IdempotentRepository;
-import org.apache.camel.support.ServiceSupport;
-import org.apache.camel.util.CamelLogger;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A file read lock that uses an {@link IdempotentRepository} and {@link FileRenameExclusiveReadLockStrategy rename} as the lock strategy.
@@ -40,13 +38,11 @@ import org.slf4j.LoggerFactory;
  */
 public class FileIdempotentRenameRepositoryReadLockStrategy extends ServiceSupport implements GenericFileExclusiveReadLockStrategy<File>, CamelContextAware {
 
-    private static final transient Logger LOG = LoggerFactory.getLogger(FileIdempotentRenameRepositoryReadLockStrategy.class);
-
     private final FileRenameExclusiveReadLockStrategy rename;
     private GenericFileEndpoint<File> endpoint;
     private LoggingLevel readLockLoggingLevel = LoggingLevel.DEBUG;
     private CamelContext camelContext;
-    private IdempotentRepository<String> idempotentRepository;
+    private IdempotentRepository idempotentRepository;
     private boolean removeOnRollback = true;
     private boolean removeOnCommit;
 
@@ -60,7 +56,7 @@ public class FileIdempotentRenameRepositoryReadLockStrategy extends ServiceSuppo
     @Override
     public void prepareOnStartup(GenericFileOperations<File> operations, GenericFileEndpoint<File> endpoint) throws Exception {
         this.endpoint = endpoint;
-        LOG.info("Using FileIdempotentRepositoryReadLockStrategy: {} on endpoint: {}", idempotentRepository, endpoint);
+        log.info("Using FileIdempotentRepositoryReadLockStrategy: {} on endpoint: {}", idempotentRepository, endpoint);
 
         rename.prepareOnStartup(operations, endpoint);
     }
@@ -78,7 +74,7 @@ public class FileIdempotentRenameRepositoryReadLockStrategy extends ServiceSuppo
         boolean answer = idempotentRepository.add(key);
         if (!answer) {
             // another node is processing the file so skip
-            CamelLogger.log(LOG, readLockLoggingLevel, "Cannot acquire read lock. Will skip the file: " + file);
+            CamelLogger.log(log, readLockLoggingLevel, "Cannot acquire read lock. Will skip the file: " + file);
         }
 
         if (answer) {
@@ -155,14 +151,14 @@ public class FileIdempotentRenameRepositoryReadLockStrategy extends ServiceSuppo
     /**
      * The idempotent repository to use as the store for the read locks.
      */
-    public IdempotentRepository<String> getIdempotentRepository() {
+    public IdempotentRepository getIdempotentRepository() {
         return idempotentRepository;
     }
 
     /**
      * The idempotent repository to use as the store for the read locks.
      */
-    public void setIdempotentRepository(IdempotentRepository<String> idempotentRepository) {
+    public void setIdempotentRepository(IdempotentRepository idempotentRepository) {
         this.idempotentRepository = idempotentRepository;
     }
 

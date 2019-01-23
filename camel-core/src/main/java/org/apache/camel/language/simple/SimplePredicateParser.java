@@ -47,8 +47,7 @@ import org.apache.camel.language.simple.types.SimpleIllegalSyntaxException;
 import org.apache.camel.language.simple.types.SimpleParserException;
 import org.apache.camel.language.simple.types.SimpleToken;
 import org.apache.camel.language.simple.types.TokenType;
-import org.apache.camel.util.ExpressionToPredicateAdapter;
-import org.apache.camel.util.LRUCache;
+import org.apache.camel.support.ExpressionToPredicateAdapter;
 
 /**
  * A parser to parse simple language as a Camel {@link Predicate}
@@ -57,16 +56,6 @@ public class SimplePredicateParser extends BaseSimpleParser {
 
     // use caches to avoid re-parsing the same expressions over and over again
     private Map<String, Expression> cacheExpression;
-
-    @Deprecated
-    public SimplePredicateParser(String expression) {
-        super(expression, true);
-    }
-
-    @Deprecated
-    public SimplePredicateParser(String expression, boolean allowEscape) {
-        super(expression, allowEscape);
-    }
 
     public SimplePredicateParser(String expression, boolean allowEscape, Map<String, Expression> cacheExpression) {
         super(expression, allowEscape);

@@ -35,12 +35,12 @@ import org.apache.camel.spi.StateRepository;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 import org.apache.camel.spi.UriPath;
-import org.apache.camel.util.jsse.CipherSuitesParameters;
-import org.apache.camel.util.jsse.KeyManagersParameters;
-import org.apache.camel.util.jsse.KeyStoreParameters;
-import org.apache.camel.util.jsse.SSLContextParameters;
-import org.apache.camel.util.jsse.SecureSocketProtocolsParameters;
-import org.apache.camel.util.jsse.TrustManagersParameters;
+import org.apache.camel.support.jsse.CipherSuitesParameters;
+import org.apache.camel.support.jsse.KeyManagersParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.SecureSocketProtocolsParameters;
+import org.apache.camel.support.jsse.TrustManagersParameters;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -53,7 +53,7 @@ public class KafkaConfiguration implements Cloneable, HeaderFilterStrategyAware 
 
     //Common configuration properties
     @UriPath(label = "common")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String topic;
     @UriParam(label = "common")
     private String brokers;
@@ -724,8 +724,8 @@ public class KafkaConfiguration implements Cloneable, HeaderFilterStrategyAware 
 
     /**
      * What to do when there is no initial offset in ZooKeeper or if an offset is out of range:
-     * smallest : automatically reset the offset to the smallest offset
-     * largest : automatically reset the offset to the largest offset
+     * earliest : automatically reset the offset to the earliest offset
+     * latest : automatically reset the offset to the latest offset
      * fail: throw exception to the consumer
      */
     public void setAutoOffsetReset(String autoOffsetReset) {

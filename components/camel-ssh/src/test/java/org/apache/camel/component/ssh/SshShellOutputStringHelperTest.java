@@ -16,10 +16,12 @@
  */
 package org.apache.camel.component.ssh;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class SshShellOutputStringHelperTest extends TestCase {
+public class SshShellOutputStringHelperTest extends Assert {
     
+    @Test
     public void testBeforeLast() {
         assertEquals("Hello ", SshShellOutputStringHelper.beforeLast("Hello World", "World"));
         assertEquals("Hello World ", SshShellOutputStringHelper.beforeLast("Hello World World", "World"));
@@ -31,6 +33,7 @@ public class SshShellOutputStringHelperTest extends TestCase {
     }
     
     
+    @Test
     public void testBetweenBeforeLast() {
         assertEquals("foo bar' how are", SshShellOutputStringHelper.betweenBeforeLast("Hello 'foo bar' how are' you", "'", "'"));
         assertEquals("foo bar", SshShellOutputStringHelper.betweenBeforeLast("Hello ${foo bar} how are you", "${", "}"));

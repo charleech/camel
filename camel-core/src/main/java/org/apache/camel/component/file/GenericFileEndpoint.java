@@ -36,7 +36,8 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
-import org.apache.camel.impl.ScheduledPollEndpoint;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.component.file.strategy.FileMoveExistingStrategy;
 import org.apache.camel.processor.idempotent.MemoryIdempotentRepository;
 import org.apache.camel.spi.BrowsableEndpoint;
 import org.apache.camel.spi.ExceptionHandler;
@@ -44,10 +45,11 @@ import org.apache.camel.spi.FactoryFinder;
 import org.apache.camel.spi.IdempotentRepository;
 import org.apache.camel.spi.Language;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.ObjectHelper;
+import org.apache.camel.support.ScheduledPollEndpoint;
+import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.FileUtil;
 import org.apache.camel.util.IOHelper;
-import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.ServiceHelper;
 import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +94,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected boolean keepLastModified;
     @UriParam(label = "producer,advanced")
     protected boolean allowNullBody;
+    @UriParam(label = "producer", defaultValue = "true")
+    protected boolean jailStartingDirectory = true;
 
     // consumer options
 
@@ -100,7 +104,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     @UriParam(label = "consumer,advanced")
     protected GenericFileProcessStrategy<T> processStrategy;
     @UriParam(label = "consumer,advanced")
-    protected IdempotentRepository<String> inProgressRepository = MemoryIdempotentRepository.memoryIdempotentRepository(DEFAULT_IN_PROGRESS_CACHE_SIZE);
+    protected IdempotentRepository inProgressRepository = MemoryIdempotentRepository.memoryIdempotentRepository(DEFAULT_IN_PROGRESS_CACHE_SIZE);
     @UriParam(label = "consumer,advanced")
     protected String localWorkDirectory;
     @UriParam(label = "consumer,advanced")
@@ -135,12 +139,14 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     protected Expression preMove;
     @UriParam(label = "producer", javaType = "java.lang.String")
     protected Expression moveExisting;
+    @UriParam(label = "producer,advanced")
+    protected FileMoveExistingStrategy moveExistingFileStrategy;
     @UriParam(label = "consumer,filter", defaultValue = "false")
     protected Boolean idempotent;
     @UriParam(label = "consumer,filter", javaType = "java.lang.String")
     protected Expression idempotentKey;
     @UriParam(label = "consumer,filter")
-    protected IdempotentRepository<String> idempotentRepository;
+    protected IdempotentRepository idempotentRepository;
     @UriParam(label = "consumer,filter")
     protected GenericFileFilter<T> filter;
     @UriParam(label = "consumer,filter", javaType = "java.lang.String")
@@ -253,7 +259,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
             // invoke poll which performs the custom processing, so we can browse the exchanges
             consumer.poll();
         } catch (Exception e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         } finally {
             try {
                 ServiceHelper.stopService(consumer);
@@ -570,6 +576,18 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     public void setMoveExisting(Expression moveExisting) {
         this.moveExisting = moveExisting;
     }
+    
+    public FileMoveExistingStrategy getMoveExistingFileStrategy() {
+        return moveExistingFileStrategy;
+    }
+
+    /**
+     * Strategy (Custom Strategy) used to move file with special naming token to use when fileExist=Move is configured.
+     * By default, there is an implementation used if no custom strategy is provided
+     */
+    public void setMoveExistingFileStrategy(FileMoveExistingStrategy moveExistingFileStrategy) {
+        this.moveExistingFileStrategy = moveExistingFileStrategy;
+    }
 
     public void setMoveExisting(String fileLanguageExpression) {
         String expression = configureMoveOrPreMoveExpression(fileLanguageExpression);
@@ -664,7 +682,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
     /**
      * To use a custom idempotent key. By default the absolute path of the file is used.
      * You can use the File Language, for example to use the file name and file size, you can do:
-     * <tt>idempotentKey=${file:name}-${file:size}</tt>
+     * idempotentKey=${file:name}-${file:size}
      */
     public void setIdempotentKey(Expression idempotentKey) {
         this.idempotentKey = idempotentKey;
@@ -674,7 +692,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         this.idempotentKey = createFileLanguageExpression(expression);
     }
 
-    public IdempotentRepository<String> getIdempotentRepository() {
+    public IdempotentRepository getIdempotentRepository() {
         return idempotentRepository;
     }
 
@@ -682,7 +700,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      * A pluggable repository org.apache.camel.spi.IdempotentRepository which by default use MemoryMessageIdRepository
      * if none is specified and idempotent is true.
      */
-    public void setIdempotentRepository(IdempotentRepository<String> idempotentRepository) {
+    public void setIdempotentRepository(IdempotentRepository idempotentRepository) {
         this.idempotentRepository = idempotentRepository;
     }
 
@@ -920,7 +938,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
 
     /**
      * Logging level used when a read lock could not be acquired.
-     * By default a WARN is logged.
+     * By default a DEBUG is logged.
      * You can change this level, for example to OFF to not have any logging.
      * This option is only applicable for readLock of types: changed, fileLock, idempotent, idempotent-changed, idempotent-rename, rename.
      */
@@ -1194,7 +1212,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         this.minDepth = minDepth;
     }
 
-    public IdempotentRepository<String> getInProgressRepository() {
+    public IdempotentRepository getInProgressRepository() {
         return inProgressRepository;
     }
 
@@ -1202,7 +1220,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      * A pluggable in-progress repository org.apache.camel.spi.IdempotentRepository.
      * The in-progress repository is used to account the current in progress files being consumed. By default a memory based repository is used.
      */
-    public void setInProgressRepository(IdempotentRepository<String> inProgressRepository) {
+    public void setInProgressRepository(IdempotentRepository inProgressRepository) {
         this.inProgressRepository = inProgressRepository;
     }
 
@@ -1233,6 +1251,19 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      */
     public void setAllowNullBody(boolean allowNullBody) {
         this.allowNullBody = allowNullBody;
+    }
+
+    public boolean isJailStartingDirectory() {
+        return jailStartingDirectory;
+    }
+
+    /**
+     * Used for jailing (restricting) writing files to the starting directory (and sub) only.
+     * This is enabled by default to not allow Camel to write files to outside directories (to be more secured out of the box).
+     * You can turn this off to allow writing files to directories outside the starting directory, such as parent or root folders.
+     */
+    public void setJailStartingDirectory(boolean jailStartingDirectory) {
+        this.jailStartingDirectory = jailStartingDirectory;
     }
 
     public ExceptionHandler getOnCompletionExceptionHandler() {
@@ -1268,7 +1299,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
             // need to normalize paths to ensure we can match using startsWith
             endpointPath = FileUtil.normalizePath(endpointPath);
             String copyOfName = FileUtil.normalizePath(name);
-            if (ObjectHelper.isNotEmpty(endpointPath) && copyOfName.startsWith(endpointPath)) {
+            if (org.apache.camel.util.ObjectHelper.isNotEmpty(endpointPath) && copyOfName.startsWith(endpointPath)) {
                 name = name.substring(endpointPath.length());
             }
 
@@ -1397,7 +1428,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      */
     protected String createDoneFileName(String fileName) {
         String pattern = getDoneFileName();
-        ObjectHelper.notEmpty(pattern, "doneFileName", pattern);
+        StringHelper.notEmpty(pattern, "doneFileName", pattern);
 
         // we only support ${file:name} or ${file:name.noext} as dynamic placeholders for done files
         String path = FileUtil.onlyPath(fileName);
@@ -1405,8 +1436,8 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
 
         pattern = pattern.replaceFirst("\\$\\{file:name\\}", onlyName);
         pattern = pattern.replaceFirst("\\$simple\\{file:name\\}", onlyName);
-        pattern = pattern.replaceFirst("\\$\\{file:name.noext\\}", FileUtil.stripExt(onlyName));
-        pattern = pattern.replaceFirst("\\$simple\\{file:name.noext\\}", FileUtil.stripExt(onlyName));
+        pattern = pattern.replaceFirst("\\$\\{file:name.noext\\}", FileUtil.stripExt(onlyName, true));
+        pattern = pattern.replaceFirst("\\$simple\\{file:name.noext\\}", FileUtil.stripExt(onlyName, true));
 
         // must be able to resolve all placeholders supported
         if (StringHelper.hasStartToken(pattern, "simple")) {
@@ -1414,7 +1445,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         }
 
         String answer = pattern;
-        if (ObjectHelper.isNotEmpty(path) && ObjectHelper.isNotEmpty(pattern)) {
+        if (org.apache.camel.util.ObjectHelper.isNotEmpty(path) && org.apache.camel.util.ObjectHelper.isNotEmpty(pattern)) {
             // done file must always be in same directory as the real file name
             answer = path + getFileSeparator() + pattern;
         }
@@ -1437,7 +1468,7 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
      */
     protected boolean isDoneFile(String fileName) {
         String pattern = getDoneFileName();
-        ObjectHelper.notEmpty(pattern, "doneFileName", pattern);
+        StringHelper.notEmpty(pattern, "doneFileName", pattern);
 
         if (!StringHelper.hasStartToken(pattern, "simple")) {
             // no tokens, so just match names directly
@@ -1501,13 +1532,13 @@ public abstract class GenericFileEndpoint<T> extends ScheduledPollEndpoint imple
         if (idempotentRepository != null) {
             getCamelContext().addService(idempotentRepository, true);
         }
-        ServiceHelper.startServices(inProgressRepository);
+        ServiceHelper.startService(inProgressRepository);
         super.doStart();
     }
 
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        ServiceHelper.stopServices(inProgressRepository);
+        ServiceHelper.stopService(inProgressRepository);
     }
 }

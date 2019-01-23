@@ -21,11 +21,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.ScheduledPollEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.ScheduledPollEndpoint;
 
 /**
  * The scheduler component is used for generating message exchanges when a scheduler fires.
@@ -34,10 +34,10 @@ import org.apache.camel.spi.UriPath;
  * Also this component uses JDK ScheduledExecutorService. Where as the timer uses a JDK Timer.
  */
 @UriEndpoint(firstVersion = "2.15.0", scheme = "scheduler", title = "Scheduler", syntax = "scheduler:name",
-    consumerOnly = true, consumerClass = SchedulerConsumer.class, label = "core,scheduling")
+    consumerOnly = true, label = "core,scheduling")
 public class SchedulerEndpoint extends ScheduledPollEndpoint {
 
-    @UriPath @Metadata(required = "true")
+    @UriPath @Metadata(required = true)
     private String name;
     @UriParam(defaultValue = "1", label = "scheduler")
     private int concurrentTasks = 1;

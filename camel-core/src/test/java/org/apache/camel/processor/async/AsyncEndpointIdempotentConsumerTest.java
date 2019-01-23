@@ -22,15 +22,14 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.processor.idempotent.MemoryIdempotentRepository;
+import org.junit.Test;
 
-/**
- * @version 
- */
 public class AsyncEndpointIdempotentConsumerTest extends ContextTestSupport {
 
     private static String beforeThreadName;
     private static String afterThreadName;
 
+    @Test
     public void testAsyncEndpoint() throws Exception {
         getMockEndpoint("mock:before").expectedBodiesReceived("A", "B", "C");
 

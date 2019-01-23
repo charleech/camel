@@ -22,40 +22,36 @@ import javax.sql.DataSource;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
-import org.apache.camel.impl.UriEndpointComponent;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.CamelContextHelper;
+import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.util.CamelContextHelper;
-import org.apache.camel.util.IntrospectionSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.camel.support.IntrospectionSupport;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * The <a href="http://camel.apache.org/sql-component.html">SQL Component</a> is for working with databases using JDBC queries.
- * 
  */
-public class SqlComponent extends UriEndpointComponent {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SqlComponent.class);
+@Component("sql")
+public class SqlComponent extends DefaultComponent {
 
     private DataSource dataSource;
     @Metadata(label = "advanced", defaultValue = "true")
     private boolean usePlaceholder = true;
 
     public SqlComponent() {
-        super(SqlEndpoint.class);
     }
 
     public SqlComponent(Class<? extends Endpoint> endpointClass) {
-        super(endpointClass);
+        super();
     }
 
     public SqlComponent(CamelContext context) {
-        super(context, SqlEndpoint.class);
+        super(context);
     }
 
     public SqlComponent(CamelContext context, Class<? extends Endpoint> endpointClass) {
-        super(context, endpointClass);
+        super(context);
     }
 
     @Override
@@ -87,7 +83,7 @@ public class SqlComponent extends UriEndpointComponent {
         if (target == null) {
             throw new IllegalArgumentException("DataSource must be configured");
         }
-        LOG.debug("Using default DataSource discovered from registry: {}", target);
+        log.debug("Using default DataSource discovered from registry: {}", target);
 
         String parameterPlaceholderSubstitute = getAndRemoveParameter(parameters, "placeholder", String.class, "#");
 

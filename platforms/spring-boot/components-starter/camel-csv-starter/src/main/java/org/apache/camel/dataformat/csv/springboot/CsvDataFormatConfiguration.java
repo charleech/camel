@@ -132,6 +132,12 @@ public class CsvDataFormatConfiguration
      */
     private Boolean trailingDelimiter = false;
     /**
+     * Sets the implementation of the CsvMarshallerFactory interface which is
+     * able to customize marshalling/unmarshalling behavior by extending
+     * CsvMarshaller or creating it from scratch.
+     */
+    private String marshallerFactoryRef;
+    /**
      * Whether the unmarshalling should produce an iterator that reads the lines
      * on the fly or if all the lines must be read at one.
      */
@@ -342,6 +348,14 @@ public class CsvDataFormatConfiguration
 
     public void setTrailingDelimiter(Boolean trailingDelimiter) {
         this.trailingDelimiter = trailingDelimiter;
+    }
+
+    public String getMarshallerFactoryRef() {
+        return marshallerFactoryRef;
+    }
+
+    public void setMarshallerFactoryRef(String marshallerFactoryRef) {
+        this.marshallerFactoryRef = marshallerFactoryRef;
     }
 
     public Boolean getLazyLoad() {

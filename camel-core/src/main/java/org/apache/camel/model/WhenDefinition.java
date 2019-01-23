@@ -20,15 +20,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.camel.Predicate;
 import org.apache.camel.model.language.ExpressionDefinition;
-import org.apache.camel.processor.FilterProcessor;
 import org.apache.camel.spi.AsPredicate;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.spi.RouteContext;
 
 /**
  * Triggers a route when an expression evaluates to <tt>true</tt>
- * 
- * @version 
  */
 @Metadata(label = "eip,routing") @AsPredicate
 @XmlRootElement(name = "when")
@@ -73,11 +69,6 @@ public class WhenDefinition extends ExpressionNode {
     @Override
     public String getLabel() {
         return "when[" + description() + "]";
-    }
-
-    @Override
-    public FilterProcessor createProcessor(RouteContext routeContext) throws Exception {
-        return createFilterProcessor(routeContext);
     }
 
     /**

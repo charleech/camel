@@ -28,12 +28,10 @@ import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.file.GenericFileEndpoint;
 import org.apache.camel.component.file.GenericFileExclusiveReadLockStrategy;
 import org.apache.camel.component.file.GenericFileOperations;
+import org.apache.camel.spi.CamelLogger;
 import org.apache.camel.spi.IdempotentRepository;
-import org.apache.camel.support.ServiceSupport;
-import org.apache.camel.util.CamelLogger;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A file read lock that uses an {@link org.apache.camel.spi.IdempotentRepository} as the lock strategy. This allows to plugin and use existing
@@ -42,12 +40,10 @@ import org.slf4j.LoggerFactory;
  */
 public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport implements GenericFileExclusiveReadLockStrategy<File>, CamelContextAware {
 
-    private static final transient Logger LOG = LoggerFactory.getLogger(FileIdempotentRepositoryReadLockStrategy.class);
-
     private GenericFileEndpoint<File> endpoint;
     private LoggingLevel readLockLoggingLevel = LoggingLevel.DEBUG;
     private CamelContext camelContext;
-    private IdempotentRepository<String> idempotentRepository;
+    private IdempotentRepository idempotentRepository;
     private boolean removeOnRollback = true;
     private boolean removeOnCommit;
     private int readLockIdempotentReleaseDelay;
@@ -59,7 +55,7 @@ public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport imp
     @Override
     public void prepareOnStartup(GenericFileOperations<File> operations, GenericFileEndpoint<File> endpoint) throws Exception {
         this.endpoint = endpoint;
-        LOG.info("Using FileIdempotentRepositoryReadLockStrategy: {} on endpoint: {}", idempotentRepository, endpoint);
+        log.info("Using FileIdempotentRepositoryReadLockStrategy: {} on endpoint: {}", idempotentRepository, endpoint);
     }
 
     @Override
@@ -75,7 +71,7 @@ public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport imp
         boolean answer = idempotentRepository.add(key);
         if (!answer) {
             // another node is processing the file so skip
-            CamelLogger.log(LOG, readLockLoggingLevel, "Cannot acquire read lock. Will skip the file: " + file);
+            CamelLogger.log(log, readLockLoggingLevel, "Cannot acquire read lock. Will skip the file: " + file);
         }
         return answer;
     }
@@ -98,10 +94,10 @@ public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport imp
         };
 
         if (readLockIdempotentReleaseDelay > 0 && readLockIdempotentReleaseExecutorService != null) {
-            LOG.debug("Scheduling readlock release task to run asynchronous delayed after {} millis", readLockIdempotentReleaseDelay);
+            log.debug("Scheduling readlock release task to run asynchronous delayed after {} millis", readLockIdempotentReleaseDelay);
             readLockIdempotentReleaseExecutorService.schedule(r, readLockIdempotentReleaseDelay, TimeUnit.MILLISECONDS);
         } else if (readLockIdempotentReleaseDelay > 0) {
-            LOG.debug("Delaying readlock release task {} millis", readLockIdempotentReleaseDelay);
+            log.debug("Delaying readlock release task {} millis", readLockIdempotentReleaseDelay);
             Thread.sleep(readLockIdempotentReleaseDelay);
             r.run();
         } else {
@@ -122,10 +118,10 @@ public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport imp
         };
 
         if (readLockIdempotentReleaseDelay > 0 && readLockIdempotentReleaseExecutorService != null) {
-            LOG.debug("Scheduling readlock release task to run asynchronous delayed after {} millis", readLockIdempotentReleaseDelay);
+            log.debug("Scheduling readlock release task to run asynchronous delayed after {} millis", readLockIdempotentReleaseDelay);
             readLockIdempotentReleaseExecutorService.schedule(r, readLockIdempotentReleaseDelay, TimeUnit.MILLISECONDS);
         } else if (readLockIdempotentReleaseDelay > 0) {
-            LOG.debug("Delaying readlock release task {} millis", readLockIdempotentReleaseDelay);
+            log.debug("Delaying readlock release task {} millis", readLockIdempotentReleaseDelay);
             Thread.sleep(readLockIdempotentReleaseDelay);
             r.run();
         } else {
@@ -164,14 +160,14 @@ public class FileIdempotentRepositoryReadLockStrategy extends ServiceSupport imp
     /**
      * The idempotent repository to use as the store for the read locks.
      */
-    public IdempotentRepository<String> getIdempotentRepository() {
+    public IdempotentRepository getIdempotentRepository() {
         return idempotentRepository;
     }
 
     /**
      * The idempotent repository to use as the store for the read locks.
      */
-    public void setIdempotentRepository(IdempotentRepository<String> idempotentRepository) {
+    public void setIdempotentRepository(IdempotentRepository idempotentRepository) {
         this.idempotentRepository = idempotentRepository;
     }
 

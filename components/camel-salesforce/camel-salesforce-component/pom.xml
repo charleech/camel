@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.apache.camel</groupId>
     <artifactId>camel-salesforce-parent</artifactId>
-    <version>2.23.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>camel-salesforce</artifactId>
@@ -222,7 +222,7 @@
           <execution>
             <goals>
               <goal>addTestSources</goal>
-              <goal>testCompile</goal>
+              <goal>compileTests</goal>
             </goals>
           </execution>
         </executions>
@@ -277,7 +277,7 @@ https://developer.salesforce.com/page/Force.com_Migration_Tool]]></message>
           </plugin>
           <plugin>
             <artifactId>maven-resources-plugin</artifactId>
-            <version>3.0.2</version>
+            <version>${maven-resources-plugin-version}</version>
             <executions>
               <execution>
                 <id>copy-test-salesforce-login-properties</id>

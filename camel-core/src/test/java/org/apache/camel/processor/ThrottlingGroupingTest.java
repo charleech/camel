@@ -25,15 +25,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.ContextTestSupport;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.junit.Test;
 
-/**
- * @version 
- */
 public class ThrottlingGroupingTest extends ContextTestSupport {
     private static final int INTERVAL = 500;
     private static final int MESSAGE_COUNT = 9;
     private static final int TOLERANCE = 50;
 
+    @Test
     public void testGroupingWithSingleConstant() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Hello World", "Bye World");
         getMockEndpoint("mock:dead").expectedBodiesReceived("Kaboom");
@@ -45,6 +44,7 @@ public class ThrottlingGroupingTest extends ContextTestSupport {
         assertMockEndpointsSatisfied();
     }
     
+    @Test
     public void testGroupingWithDynamicHeaderExpression() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Hello World");
         getMockEndpoint("mock:result2").expectedBodiesReceived("Bye World");
@@ -68,6 +68,7 @@ public class ThrottlingGroupingTest extends ContextTestSupport {
         assertMockEndpointsSatisfied();
     }
     
+    @Test
     public void testSendLotsOfMessagesButOnly3GetThroughWithin2Seconds() throws Exception {
 
         MockEndpoint resultEndpoint = resolveMandatoryEndpoint("mock:gresult", MockEndpoint.class);
@@ -95,7 +96,7 @@ public class ThrottlingGroupingTest extends ContextTestSupport {
         long maximum = calculateMaximum(intervalMs, throttle, messageCount) + 50;
         // add 500 in case running on slow CI boxes
         maximum += 500;
-        log.info("Sent {} exchanges in {}ms, with throttle rate of {} per {}ms. Calculated min {}ms and max {}ms", new Object[]{messageCount, elapsedTimeMs, throttle, intervalMs, minimum, maximum});
+        log.info("Sent {} exchanges in {}ms, with throttle rate of {} per {}ms. Calculated min {}ms and max {}ms", messageCount, elapsedTimeMs, throttle, intervalMs, minimum, maximum);
 
         assertTrue("Should take at least " + minimum + "ms, was: " + elapsedTimeMs, elapsedTimeMs >= minimum);
         assertTrue("Should take at most " + maximum + "ms, was: " + elapsedTimeMs, elapsedTimeMs <= maximum + TOLERANCE);
@@ -133,12 +134,14 @@ public class ThrottlingGroupingTest extends ContextTestSupport {
         }
     }
     
+    @Test
     public void testSendLotsOfMessagesSimultaneouslyButOnlyGetThroughAsConstantThrottleValue() throws Exception {
         MockEndpoint resultEndpoint = resolveMandatoryEndpoint("mock:gresult", MockEndpoint.class);
         long elapsed = sendMessagesAndAwaitDelivery(MESSAGE_COUNT, "direct:ga", MESSAGE_COUNT, resultEndpoint);
         assertThrottlerTiming(elapsed, 5, INTERVAL, MESSAGE_COUNT);
     }
     
+    @Test
     public void testConfigurationWithHeaderExpression() throws Exception {
         MockEndpoint resultEndpoint = resolveMandatoryEndpoint("mock:gresult", MockEndpoint.class);
         resultEndpoint.expectedMessageCount(MESSAGE_COUNT);

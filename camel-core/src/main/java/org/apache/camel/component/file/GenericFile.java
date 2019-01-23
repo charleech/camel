@@ -22,9 +22,11 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.WrappedFile;
 import org.apache.camel.util.FileUtil;
 import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,7 @@ public class GenericFile<T> implements WrappedFile<T>  {
         try {
             result = source.getClass().newInstance();
         } catch (Exception e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
         result.setCopyFromAbsoluteFilePath(source.getAbsoluteFilePath());
         result.setEndpointPath(source.getEndpointPath());
@@ -129,7 +131,7 @@ public class GenericFile<T> implements WrappedFile<T>  {
         Map<String, Object> headers;
 
         exchange.setProperty(FileComponent.FILE_EXCHANGE_FILE, this);
-        GenericFileMessage<T> msg = new GenericFileMessage<>(this);
+        GenericFileMessage<T> msg = new GenericFileMessage<>(exchange, this);
         if (exchange.hasOut()) {
             headers = exchange.getOut().hasHeaders() ? exchange.getOut().getHeaders() : null;
             exchange.setOut(msg);
@@ -226,9 +228,9 @@ public class GenericFile<T> implements WrappedFile<T>  {
                 // use File.separatorChar as the normalizePath uses this as path separator so we should use the same
                 // in this logic here
                 if (newEndpointPath.endsWith("" + File.separatorChar)) {
-                    newFileName = ObjectHelper.after(newFileName, newEndpointPath);
+                    newFileName = StringHelper.after(newFileName, newEndpointPath);
                 } else {
-                    newFileName = ObjectHelper.after(newFileName, newEndpointPath + File.separatorChar);
+                    newFileName = StringHelper.after(newFileName, newEndpointPath + File.separatorChar);
                 }
 
                 // reconstruct file with clipped name

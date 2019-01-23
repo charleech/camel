@@ -75,6 +75,11 @@ public class NettyHttpComponentConfiguration
      */
     private String executorService;
     /**
+     * To configure security using SSLContextParameters. The option is a
+     * org.apache.camel.support.jsse.SSLContextParameters type.
+     */
+    private String sslContextParameters;
+    /**
      * Whether the component should resolve property placeholders on itself when
      * starting. Only properties which are of String type can use property
      * placeholders.
@@ -138,6 +143,14 @@ public class NettyHttpComponentConfiguration
 
     public void setExecutorService(String executorService) {
         this.executorService = executorService;
+    }
+
+    public String getSslContextParameters() {
+        return sslContextParameters;
+    }
+
+    public void setSslContextParameters(String sslContextParameters) {
+        this.sslContextParameters = sslContextParameters;
     }
 
     public Boolean getResolvePropertyPlaceholders() {
@@ -228,8 +241,8 @@ public class NettyHttpComponentConfiguration
         private String path;
         /**
          * Determines whether or not the raw input stream from Netty
-         * HttpRequestgetContent() or HttpResponsetgetContent() is cached or not
-         * (Camel will read the stream into a in light-weight memory based
+         * HttpRequest#getContent() or HttpResponset#getContent() is cached or
+         * not (Camel will read the stream into a in light-weight memory based
          * Stream caching) cache. By default Camel will cache the Netty input
          * stream to support reading it multiple times to ensure it Camel can
          * retrieve all data from the stream. However you can set this option to

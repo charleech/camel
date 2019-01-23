@@ -32,13 +32,10 @@ import org.apache.camel.http.common.HttpOperationFailedException;
 import org.apache.camel.http.common.HttpProtocolHeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.util.IOHelper;
-import org.apache.camel.util.MessageHelper;
+import org.apache.camel.support.MessageHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @version
- */
 public class DefaultJettyHttpBinding implements JettyHttpBinding {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultJettyHttpBinding.class);

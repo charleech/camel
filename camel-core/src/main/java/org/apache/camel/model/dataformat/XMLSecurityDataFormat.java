@@ -18,6 +18,7 @@ package org.apache.camel.model.dataformat;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -29,7 +30,7 @@ import org.apache.camel.model.DataFormatDefinition;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.NamespaceAware;
-import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
 
 /**
  * The XML Security data format facilitates encryption and decryption of XML payloads.
@@ -73,181 +74,6 @@ public class XMLSecurityDataFormat extends DataFormatDefinition implements Names
 
     public XMLSecurityDataFormat() {
         super("secureXML");
-    }
-
-    // all the parameter constructors is deprecated as people should use getter/setter to configure
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents) {
-        this();
-        this.setSecureTag(secureTag);
-        this.setSecureTagContents(secureTagContents);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents) {
-        this();
-        this.setSecureTag(secureTag);
-        this.setSecureTagContents(secureTagContents);
-        this.setNamespaces(namespaces);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String passPhrase) {
-        this(secureTag, secureTagContents);
-        this.setPassPhrase(passPhrase);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents,
-                                 String passPhrase) {
-        this(secureTag, secureTagContents);
-        this.setPassPhrase(passPhrase);
-        this.setNamespaces(namespaces);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String passPhrase,
-                                 String xmlCipherAlgorithm) {
-        this(secureTag, secureTagContents, passPhrase);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String passPhrase,
-                                 String xmlCipherAlgorithm) {
-        this(secureTag, secureTagContents, passPhrase);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setNamespaces(namespaces);
-    }
-    
-    /**
-     * @deprecated  use {{@link #XMLSecurityDataFormat(String, boolean, String, String, String, String)} or 
-     *                  {{@link #XMLSecurityDataFormat(String, boolean, String, String, String, KeyStoreParameters)} instead
-     */
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String recipientKeyAlias,
-                                 String xmlCipherAlgorithm, String keyCipherAlgorithm, String keyOrTrustStoreParametersId) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setKeyOrTrustStoreParametersId(keyOrTrustStoreParametersId);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, KeyStoreParameters keyOrTrustStoreParameters) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setKeyOrTrustStoreParameters(keyOrTrustStoreParameters);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, String keyOrTrustStoreParametersId, String keyPassword) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setKeyOrTrustStoreParametersId(keyOrTrustStoreParametersId);
-        this.setKeyPassword(keyPassword);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, boolean secureTagContents, String recipientKeyAlias,
-        String xmlCipherAlgorithm, String keyCipherAlgorithm, KeyStoreParameters keyOrTrustStoreParameters, String keyPassword) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setKeyOrTrustStoreParameters(keyOrTrustStoreParameters);
-        this.setKeyPassword(keyPassword);
-    }
-    
-    /**
-     * @deprecated  use {{@link #XMLSecurityDataFormat(String, Map, boolean, String, String, String, String)} or 
-     *                  {{@link #XMLSecurityDataFormat(String, Map, boolean, String, String, String, KeyStoreParameters)} instead
-     */
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, String keyOrTrustStoreParametersId) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-        this.setKeyOrTrustStoreParametersId(keyOrTrustStoreParametersId);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, KeyStoreParameters keyOrTrustStoreParameters) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-        this.setKeyOrTrustStoreParameters(keyOrTrustStoreParameters);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, String keyOrTrustStoreParametersId, String keyPassword) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-        this.setKeyOrTrustStoreParametersId(keyOrTrustStoreParametersId);
-        this.setKeyPassword(keyPassword);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-            String xmlCipherAlgorithm, String keyCipherAlgorithm, KeyStoreParameters keyOrTrustStoreParameters, String keyPassword) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-        this.setKeyOrTrustStoreParameters(keyOrTrustStoreParameters);
-        this.setKeyPassword(keyPassword);
-    }
-
-    @Deprecated
-    public XMLSecurityDataFormat(String secureTag, Map<String, String> namespaces, boolean secureTagContents, String recipientKeyAlias,
-             String xmlCipherAlgorithm, String keyCipherAlgorithm, KeyStoreParameters keyOrTrustStoreParameters, String keyPassword,
-             String digestAlgorithm) {
-        this(secureTag, secureTagContents);
-        this.setRecipientKeyAlias(recipientKeyAlias);
-        this.setXmlCipherAlgorithm(xmlCipherAlgorithm);
-        this.setKeyCipherAlgorithm(keyCipherAlgorithm);
-        this.setNamespaces(namespaces);
-        this.setKeyOrTrustStoreParameters(keyOrTrustStoreParameters);
-        this.setKeyPassword(keyPassword);
-        this.setDigestAlgorithm(digestAlgorithm);
     }
 
     @Override
@@ -428,7 +254,7 @@ public class XMLSecurityDataFormat extends DataFormatDefinition implements Names
     /**
      * Configuration options for creating and loading a KeyStore instance that represents the sender's trustStore or recipient's keyStore.
      */
-    private void setKeyOrTrustStoreParameters(KeyStoreParameters keyOrTrustStoreParameters) {
+    public void setKeyOrTrustStoreParameters(KeyStoreParameters keyOrTrustStoreParameters) {
         this.keyOrTrustStoreParameters = keyOrTrustStoreParameters;
     }
     

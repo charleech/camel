@@ -21,13 +21,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.weather.geolocation.FreeGeoIpGeoLocationProvider;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 import org.apache.camel.spi.UriPath;
-import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.support.ObjectHelper;
 import org.apache.commons.httpclient.HttpConnectionManager;
 
 import static org.apache.camel.component.weather.WeatherLanguage.en;
@@ -41,10 +40,10 @@ public class WeatherConfiguration {
     private final WeatherQuery weatherQuery;
 
     @UriPath(description = "The name value is not used.")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String name;
     @UriParam
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String appid;
     @UriParam
     private WeatherApi weatherApi;
@@ -94,10 +93,10 @@ public class WeatherConfiguration {
     @UriParam(label = "advanced")
     private HttpConnectionManager httpConnectionManager;
     @UriParam(label = "security")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String geolocationAccessKey;
     @UriParam(label = "security")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String geolocationRequestHostIP;
 
     public WeatherConfiguration(WeatherComponent component) {

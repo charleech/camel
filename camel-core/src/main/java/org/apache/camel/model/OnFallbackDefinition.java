@@ -17,14 +17,13 @@
 package org.apache.camel.model;
 
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.camel.Processor;
 import org.apache.camel.spi.Metadata;
-import org.apache.camel.spi.RouteContext;
 import org.apache.camel.util.CollectionStringBuffer;
 
 /**
@@ -49,11 +48,6 @@ public class OnFallbackDefinition extends OutputDefinition<OnFallbackDefinition>
         } else {
             return "OnFallback[" + getOutputs() + "]";
         }
-    }
-
-    @Override
-    public Processor createProcessor(RouteContext routeContext) throws Exception {
-        return this.createChildProcessor(routeContext, false);
     }
 
     @Override

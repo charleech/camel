@@ -18,18 +18,14 @@ package org.apache.camel.component.file;
 
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
-import org.apache.camel.impl.EventDrivenPollingConsumer;
-import org.apache.camel.impl.ScheduledBatchPollingConsumer;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.spi.PollingConsumerPollStrategy;
-import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.ServiceHelper;
+import org.apache.camel.support.EventDrivenPollingConsumer;
+import org.apache.camel.support.ScheduledBatchPollingConsumer;
+import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(GenericFilePollingConsumer.class);
 
     private final long delay;
 
@@ -76,8 +72,8 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
 
     @Override
     public Exchange receiveNoWait() {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("receiveNoWait polling file: {}", getConsumer().getEndpoint());
+        if (log.isTraceEnabled()) {
+            log.trace("receiveNoWait polling file: {}", getConsumer().getEndpoint());
         }
         int polled = doReceive(0);
         if (polled > 0) {
@@ -89,8 +85,8 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
 
     @Override
     public Exchange receive() {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("receive polling file: {}", getConsumer().getEndpoint());
+        if (log.isTraceEnabled()) {
+            log.trace("receive polling file: {}", getConsumer().getEndpoint());
         }
         int polled = doReceive(Long.MAX_VALUE);
         if (polled > 0) {
@@ -102,8 +98,8 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
 
     @Override
     public Exchange receive(long timeout) {
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("receive({}) polling file: {}", timeout, getConsumer().getEndpoint());
+        if (log.isTraceEnabled()) {
+            log.trace("receive({}) polling file: {}", timeout, getConsumer().getEndpoint());
         }
         int polled = doReceive(timeout);
         if (polled > 0) {
@@ -130,9 +126,9 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
                 if (isRunAllowed()) {
 
                     if (retryCounter == -1) {
-                        LOG.trace("Starting to poll: {}", this.getEndpoint());
+                        log.trace("Starting to poll: {}", this.getEndpoint());
                     } else {
-                        LOG.debug("Retrying attempt {} to poll: {}", retryCounter, this.getEndpoint());
+                        log.debug("Retrying attempt {} to poll: {}", retryCounter, this.getEndpoint());
                     }
 
                     // mark we are polling which should also include the begin/poll/commit
@@ -140,7 +136,7 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
                     if (begin) {
                         retryCounter++;
                         polledMessages = getConsumer().poll();
-                        LOG.trace("Polled {} messages", polledMessages);
+                        log.trace("Polled {} messages", polledMessages);
 
                         if (polledMessages == 0 && sendEmptyMessageWhenIdle) {
                             // send an "empty" exchange
@@ -152,11 +148,11 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
 
                         pollStrategy.commit(getConsumer(), getEndpoint(), polledMessages);
                     } else {
-                        LOG.debug("Cannot begin polling as pollStrategy returned false: {}", pollStrategy);
+                        log.debug("Cannot begin polling as pollStrategy returned false: {}", pollStrategy);
                     }
                 }
 
-                LOG.trace("Finished polling: {}", this.getEndpoint());
+                log.trace("Finished polling: {}", this.getEndpoint());
             } catch (Exception e) {
                 try {
                     boolean retry = pollStrategy.rollback(getConsumer(), getEndpoint(), retryCounter, e);
@@ -195,7 +191,7 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
         }
 
         if (cause != null) {
-            throw ObjectHelper.wrapRuntimeCamelException(cause);
+            throw RuntimeCamelException.wrapRuntimeCamelException(cause);
         }
 
         return polledMessages;
@@ -205,7 +201,7 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
     public void process(Exchange exchange) throws Exception {
         Object name = exchange.getIn().getHeader(Exchange.FILE_NAME);
         if (name != null) {
-            LOG.debug("Received file: {}", name);
+            log.debug("Received file: {}", name);
         }
         super.process(exchange);
     }
@@ -221,11 +217,11 @@ public class GenericFilePollingConsumer extends EventDrivenPollingConsumer {
         process(exchange);
     }
 
-    private static void sleep(long delay) throws InterruptedException {
+    private void sleep(long delay) throws InterruptedException {
         if (delay <= 0) {
             return;
         }
-        LOG.trace("Sleeping for: {} millis", delay);
+        log.trace("Sleeping for: {} millis", delay);
         Thread.sleep(delay);
     }
 

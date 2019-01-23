@@ -49,8 +49,8 @@ import org.apache.camel.component.mllp.internal.TcpServerBindThread;
 import org.apache.camel.component.mllp.internal.TcpServerConsumerValidationRunnable;
 import org.apache.camel.component.mllp.internal.TcpSocketConsumerRunnable;
 import org.apache.camel.converter.IOConverter;
-import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.processor.mllp.Hl7AcknowledgementGenerationException;
+import org.apache.camel.support.DefaultConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -502,7 +502,7 @@ public class MllpTcpServerConsumer extends DefaultConsumer {
                             case bE:
                                 break;
                             default:
-                                log.warn("Invalid acknowledgement type [" + acknowledgementMessageType + "] found in message - should be AA, AE or AR");
+                                log.warn("Invalid acknowledgement type [{}] found in message - should be AA, AE or AR", acknowledgementMessageType);
                             }
                         }
 

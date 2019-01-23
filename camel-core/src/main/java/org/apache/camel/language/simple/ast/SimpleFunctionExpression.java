@@ -22,7 +22,6 @@ import org.apache.camel.Expression;
 import org.apache.camel.builder.ExpressionBuilder;
 import org.apache.camel.language.simple.types.SimpleParserException;
 import org.apache.camel.language.simple.types.SimpleToken;
-import org.apache.camel.util.LRUCache;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.OgnlHelper;
 import org.apache.camel.util.StringHelper;
@@ -35,11 +34,6 @@ public class SimpleFunctionExpression extends LiteralExpression {
 
     // use caches to avoid re-parsing the same expressions over and over again
     private Map<String, Expression> cacheExpression;
-
-    @Deprecated
-    public SimpleFunctionExpression(SimpleToken token) {
-        super(token);
-    }
 
     public SimpleFunctionExpression(SimpleToken token, Map<String, Expression> cacheExpression) {
         super(token);
@@ -228,8 +222,8 @@ public class SimpleFunctionExpression extends LiteralExpression {
             String locations = null;
             String key = remainder;
             if (parts.length >= 2) {
-                locations = ObjectHelper.before(remainder, ":");
-                key = ObjectHelper.after(remainder, ":");
+                locations = StringHelper.before(remainder, ":");
+                key = StringHelper.after(remainder, ":");
             }
             return ExpressionBuilder.propertiesComponentExpression(key, locations, null);
         }
@@ -265,12 +259,12 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // bodyAs
         String remainder = ifStartsWithReturnRemainder("bodyAs(", function);
         if (remainder != null) {
-            String type = ObjectHelper.before(remainder, ")");
+            String type = StringHelper.before(remainder, ")");
             if (type == null) {
                 throw new SimpleParserException("Valid syntax: ${bodyAs(type)} was: " + function, token.getIndex());
             }
             type = StringHelper.removeQuotes(type);
-            remainder = ObjectHelper.after(remainder, ")");
+            remainder = StringHelper.after(remainder, ")");
             if (ObjectHelper.isNotEmpty(remainder)) {
                 boolean invalid = OgnlHelper.isInvalidValidOgnlExpression(remainder);
                 if (invalid) {
@@ -285,12 +279,12 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // mandatoryBodyAs
         remainder = ifStartsWithReturnRemainder("mandatoryBodyAs(", function);
         if (remainder != null) {
-            String type = ObjectHelper.before(remainder, ")");
+            String type = StringHelper.before(remainder, ")");
             if (type == null) {
                 throw new SimpleParserException("Valid syntax: ${mandatoryBodyAs(type)} was: " + function, token.getIndex());
             }
             type = StringHelper.removeQuotes(type);
-            remainder = ObjectHelper.after(remainder, ")");
+            remainder = StringHelper.after(remainder, ")");
             if (ObjectHelper.isNotEmpty(remainder)) {
                 boolean invalid = OgnlHelper.isInvalidValidOgnlExpression(remainder);
                 if (invalid) {
@@ -320,14 +314,14 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // headerAs
         remainder = ifStartsWithReturnRemainder("headerAs(", function);
         if (remainder != null) {
-            String keyAndType = ObjectHelper.before(remainder, ")");
+            String keyAndType = StringHelper.before(remainder, ")");
             if (keyAndType == null) {
                 throw new SimpleParserException("Valid syntax: ${headerAs(key, type)} was: " + function, token.getIndex());
             }
 
-            String key = ObjectHelper.before(keyAndType, ",");
-            String type = ObjectHelper.after(keyAndType, ",");
-            remainder = ObjectHelper.after(remainder, ")");
+            String key = StringHelper.before(keyAndType, ",");
+            String type = StringHelper.after(keyAndType, ",");
+            remainder = StringHelper.after(remainder, ")");
             if (ObjectHelper.isEmpty(key) || ObjectHelper.isEmpty(type) || ObjectHelper.isNotEmpty(remainder)) {
                 throw new SimpleParserException("Valid syntax: ${headerAs(key, type)} was: " + function, token.getIndex());
             }
@@ -463,7 +457,7 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // random function
         remainder = ifStartsWithReturnRemainder("random(", function);
         if (remainder != null) {
-            String values = ObjectHelper.before(remainder, ")");
+            String values = StringHelper.before(remainder, ")");
             if (values == null || ObjectHelper.isEmpty(values)) {
                 throw new SimpleParserException("Valid syntax: ${random(min,max)} or ${random(max)} was: " + function, token.getIndex());
             }
@@ -481,7 +475,7 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // skip function
         remainder = ifStartsWithReturnRemainder("skip(", function);
         if (remainder != null) {
-            String values = ObjectHelper.before(remainder, ")");
+            String values = StringHelper.before(remainder, ")");
             if (values == null || ObjectHelper.isEmpty(values)) {
                 throw new SimpleParserException("Valid syntax: ${skip(number)} was: " + function, token.getIndex());
             }
@@ -493,7 +487,7 @@ public class SimpleFunctionExpression extends LiteralExpression {
         // collate function
         remainder = ifStartsWithReturnRemainder("collate(", function);
         if (remainder != null) {
-            String values = ObjectHelper.before(remainder, ")");
+            String values = StringHelper.before(remainder, ")");
             if (values == null || ObjectHelper.isEmpty(values)) {
                 throw new SimpleParserException("Valid syntax: ${collate(group)} was: " + function, token.getIndex());
             }
@@ -506,7 +500,7 @@ public class SimpleFunctionExpression extends LiteralExpression {
         remainder = ifStartsWithReturnRemainder("messageHistory", function);
         if (remainder != null) {
             boolean detailed;
-            String values = ObjectHelper.between(remainder, "(", ")");
+            String values = StringHelper.between(remainder, "(", ")");
             if (values == null || ObjectHelper.isEmpty(values)) {
                 detailed = true;
             } else {

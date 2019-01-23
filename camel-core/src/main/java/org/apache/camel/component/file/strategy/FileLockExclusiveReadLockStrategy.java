@@ -28,7 +28,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.file.GenericFileEndpoint;
 import org.apache.camel.component.file.GenericFileOperations;
-import org.apache.camel.util.CamelLogger;
+import org.apache.camel.spi.CamelLogger;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.StopWatch;
 import org.slf4j.Logger;
@@ -84,6 +84,11 @@ public class FileLockExclusiveReadLockStrategy extends MarkerFileExclusiveReadLo
                         // we could not get the lock within the timeout period, so return false
                         return false;
                     }
+                }
+
+                if (!target.exists()) {
+                    CamelLogger.log(LOG, readLockLoggingLevel, "Cannot acquire read lock as file no longer exists. Will skip the file: " + file);
+                    return false;
                 }
 
                 // get the lock using either try lock or not depending on if we are using timeout or not

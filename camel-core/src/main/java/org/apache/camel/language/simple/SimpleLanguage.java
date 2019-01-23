@@ -22,12 +22,13 @@ import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
 import org.apache.camel.StaticService;
 import org.apache.camel.builder.ExpressionBuilder;
+import org.apache.camel.spi.annotations.Language;
+import org.apache.camel.support.CamelContextHelper;
+import org.apache.camel.support.LRUCache;
+import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.LanguageSupport;
-import org.apache.camel.util.CamelContextHelper;
-import org.apache.camel.util.LRUCache;
-import org.apache.camel.util.LRUCacheFactory;
+import org.apache.camel.support.PredicateToExpressionAdapter;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.PredicateToExpressionAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,7 @@ import org.slf4j.LoggerFactory;
  * <br/>
  * The <b>only</b> file is the filename only with all paths clipped.
  */
+@Language("simple")
 public class SimpleLanguage extends LanguageSupport implements StaticService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleLanguage.class);
@@ -149,7 +151,6 @@ public class SimpleLanguage extends LanguageSupport implements StaticService {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public Predicate createPredicate(String expression) {
         ObjectHelper.notNull(expression, "expression");
 
@@ -158,13 +159,9 @@ public class SimpleLanguage extends LanguageSupport implements StaticService {
 
             expression = loadResource(expression);
 
-            // support old simple language syntax
-            answer = SimpleBackwardsCompatibleParser.parsePredicate(expression, allowEscape);
-            if (answer == null) {
-                // use the new parser
-                SimplePredicateParser parser = new SimplePredicateParser(expression, allowEscape, cacheExpression);
-                answer = parser.parsePredicate();
-            }
+            SimplePredicateParser parser = new SimplePredicateParser(expression, allowEscape, cacheExpression);
+            answer = parser.parsePredicate();
+
             if (cachePredicate != null && answer != null) {
                 cachePredicate.put(expression, answer);
             }
@@ -173,7 +170,6 @@ public class SimpleLanguage extends LanguageSupport implements StaticService {
         return answer;
     }
 
-    @SuppressWarnings("deprecation")
     public Expression createExpression(String expression) {
         ObjectHelper.notNull(expression, "expression");
 
@@ -182,13 +178,9 @@ public class SimpleLanguage extends LanguageSupport implements StaticService {
 
             expression = loadResource(expression);
 
-            // support old simple language syntax
-            answer = SimpleBackwardsCompatibleParser.parseExpression(expression, allowEscape);
-            if (answer == null) {
-                // use the new parser
-                SimpleExpressionParser parser = new SimpleExpressionParser(expression, allowEscape, cacheExpression);
-                answer = parser.parseExpression();
-            }
+            SimpleExpressionParser parser = new SimpleExpressionParser(expression, allowEscape, cacheExpression);
+            answer = parser.parseExpression();
+
             if (cacheExpression != null && answer != null) {
                 cacheExpression.put(expression, answer);
             }

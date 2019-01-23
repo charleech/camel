@@ -26,11 +26,11 @@ import javax.management.ObjectName;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 
 /**
@@ -48,7 +48,7 @@ import org.apache.camel.util.ObjectHelper;
  * <p/>
  * You can append query options to the URI in the following format, ?options=value&option2=value&...
  */
-@UriEndpoint(firstVersion = "2.6.0", scheme = "jmx", title = "JMX", syntax = "jmx:serverURL", consumerOnly = true, consumerClass = JMXConsumer.class, label = "monitoring")
+@UriEndpoint(firstVersion = "2.6.0", scheme = "jmx", title = "JMX", syntax = "jmx:serverURL", consumerOnly = true, label = "monitoring")
 public class JMXEndpoint extends DefaultEndpoint {
 
     // error messages as constants so they can be asserted on from unit tests
@@ -69,7 +69,7 @@ public class JMXEndpoint extends DefaultEndpoint {
     /**
      * The domain for the mbean you're connecting to
      */
-    @UriParam @Metadata(required = "true")
+    @UriParam @Metadata(required = true)
     private String objectDomain;
 
     /**

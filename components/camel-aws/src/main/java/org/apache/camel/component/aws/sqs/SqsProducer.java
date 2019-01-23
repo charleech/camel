@@ -29,22 +29,17 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.NoFactoryAvailableException;
-import org.apache.camel.impl.DefaultProducer;
 import org.apache.camel.spi.HeaderFilterStrategy;
+import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.URISupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.component.aws.common.AwsExchangeUtil.getMessageForResponse;
 
 /**
  * A Producer which sends messages to the Amazon Web Service Simple Queue Service
  * <a href="http://aws.amazon.com/sqs/">AWS SQS</a>
- * 
  */
 public class SqsProducer extends DefaultProducer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SqsProducer.class);
 
     private transient String sqsProducerToString;
 
@@ -59,11 +54,11 @@ public class SqsProducer extends DefaultProducer {
         addDelay(request, exchange);
         configureFifoAttributes(request, exchange);
 
-        LOG.trace("Sending request [{}] from exchange [{}]...", request, exchange);
+        log.trace("Sending request [{}] from exchange [{}]...", request, exchange);
 
         SendMessageResult result = getClient().sendMessage(request);
 
-        LOG.trace("Received result [{}]", result);
+        log.trace("Received result [{}]", result);
 
         Message message = getMessageForResponse(exchange);
         message.setHeader(SqsConstants.MESSAGE_ID, result.getMessageId());
@@ -88,13 +83,13 @@ public class SqsProducer extends DefaultProducer {
         Integer headerValue = exchange.getIn().getHeader(SqsConstants.DELAY_HEADER, Integer.class);
         Integer delayValue;
         if (headerValue == null) {
-            LOG.trace("Using the config delay");
+            log.trace("Using the config delay");
             delayValue = getEndpoint().getConfiguration().getDelaySeconds();
         } else {
-            LOG.trace("Using the header delay");
+            log.trace("Using the header delay");
             delayValue = headerValue;
         }
-        LOG.trace("found delay: " + delayValue);
+        log.trace("found delay: {}", delayValue);
         request.setDelaySeconds(delayValue == null ? Integer.valueOf(0) : delayValue);
     }
 
@@ -169,7 +164,7 @@ public class SqsProducer extends DefaultProducer {
                     result.put(entry.getKey(), mav);
                 } else {
                     // cannot translate the message header to message attribute value
-                    LOG.warn("Cannot put the message header key={}, value={} into Sqs MessageAttribute", entry.getKey(), entry.getValue());
+                    log.warn("Cannot put the message header key={}, value={} into Sqs MessageAttribute", entry.getKey(), entry.getValue());
                 }
             }
         }

@@ -18,14 +18,13 @@ package org.apache.camel.component.weather;
 
 import java.util.Map;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.component.weather.http.AuthenticationHttpClientConfigurer;
 import org.apache.camel.component.weather.http.AuthenticationMethod;
 import org.apache.camel.component.weather.http.CompositeHttpConfigurer;
 import org.apache.camel.component.weather.http.HttpClientConfigurer;
-import org.apache.camel.impl.UriEndpointComponent;
-import org.apache.camel.spi.Metadata;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpConnectionManager;
@@ -36,18 +35,14 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
  * <p/>
  * Camel uses <a href="http://openweathermap.org/api#weather">Open Weather</a> to get the information.
  */
-public class WeatherComponent extends UriEndpointComponent {
+@Component("weather")
+public class WeatherComponent extends DefaultComponent {
 
     private HttpClient httpClient;
     private String geolocationAccessKey;
     private String geolocationRequestHostIP;
 
     public WeatherComponent() {
-        super(WeatherEndpoint.class);
-    }
-
-    public WeatherComponent(CamelContext context) {
-        super(context, WeatherEndpoint.class);
     }
 
     @Override

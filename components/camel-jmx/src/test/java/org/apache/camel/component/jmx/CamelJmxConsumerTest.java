@@ -17,6 +17,7 @@
 package org.apache.camel.component.jmx;
 
 import org.apache.camel.RoutesBuilder;
+import org.apache.camel.api.management.ManagedCamelContext;
 import org.apache.camel.api.management.mbean.ManagedRouteMBean;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -35,7 +36,7 @@ public class CamelJmxConsumerTest extends CamelTestSupport {
         getMockEndpoint("mock:result").message(0).body().contains("<newValue>true</newValue>");
 
         // change the attribute so JMX triggers
-        ManagedRouteMBean mr = context.getManagedRoute("foo", ManagedRouteMBean.class);
+        ManagedRouteMBean mr = context.getExtension(ManagedCamelContext.class).getManagedRoute("foo");
         mr.setTracing(true);
 
         assertMockEndpointsSatisfied();

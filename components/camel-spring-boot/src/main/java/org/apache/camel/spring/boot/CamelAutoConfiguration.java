@@ -42,10 +42,7 @@ import org.apache.camel.impl.CompositeRegistry;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.FileWatcherReloadStrategy;
 import org.apache.camel.processor.interceptor.BacklogTracer;
-import org.apache.camel.processor.interceptor.DefaultTraceFormatter;
 import org.apache.camel.processor.interceptor.HandleFault;
-import org.apache.camel.processor.interceptor.TraceFormatter;
-import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.camel.spi.AsyncProcessorAwaitManager;
 import org.apache.camel.spi.EndpointStrategy;
 import org.apache.camel.spi.EventFactory;
@@ -55,7 +52,7 @@ import org.apache.camel.spi.InflightRepository;
 import org.apache.camel.spi.InterceptStrategy;
 import org.apache.camel.spi.LifecycleStrategy;
 import org.apache.camel.spi.LogListener;
-import org.apache.camel.spi.ManagementNamingStrategy;
+import org.apache.camel.spi.ManagementObjectNameStrategy;
 import org.apache.camel.spi.ManagementStrategy;
 import org.apache.camel.spi.Registry;
 import org.apache.camel.spi.ReloadStrategy;
@@ -70,8 +67,8 @@ import org.apache.camel.spi.UuidGenerator;
 import org.apache.camel.spring.CamelBeanPostProcessor;
 import org.apache.camel.spring.SpringCamelContext;
 import org.apache.camel.spring.spi.XmlCamelContextConfigurer;
+import org.apache.camel.support.jsse.GlobalSSLContextParametersSupplier;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.jsse.GlobalSSLContextParametersSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -122,6 +119,8 @@ public class CamelAutoConfiguration {
     static CamelContext doConfigureCamelContext(ApplicationContext applicationContext,
                                          CamelContext camelContext,
                                          CamelConfigurationProperties config) throws Exception {
+
+        camelContext.init();
 
         if (camelContext instanceof DefaultCamelContext) {
             final DefaultCamelContext defaultContext = (DefaultCamelContext) camelContext;
@@ -216,32 +215,6 @@ public class CamelAutoConfiguration {
 
         // tracing
         camelContext.setTracing(config.isTracing());
-        if (camelContext.getDefaultTracer() instanceof Tracer) {
-            Tracer tracer = (Tracer) camelContext.getDefaultTracer();
-            if (tracer.getDefaultTraceFormatter() != null) {
-                DefaultTraceFormatter formatter = tracer.getDefaultTraceFormatter();
-                if (config.getTracerFormatterBreadCrumbLength() != null) {
-                    formatter.setBreadCrumbLength(config.getTracerFormatterBreadCrumbLength());
-                }
-                if (config.getTracerFormatterMaxChars() != null) {
-                    formatter.setMaxChars(config.getTracerFormatterMaxChars());
-                }
-                if (config.getTracerFormatterNodeLength() != null) {
-                    formatter.setNodeLength(config.getTracerFormatterNodeLength());
-                }
-                formatter.setShowBody(config.isTraceFormatterShowBody());
-                formatter.setShowBodyType(config.isTracerFormatterShowBodyType());
-                formatter.setShowBreadCrumb(config.isTraceFormatterShowBreadCrumb());
-                formatter.setShowException(config.isTraceFormatterShowException());
-                formatter.setShowExchangeId(config.isTraceFormatterShowExchangeId());
-                formatter.setShowExchangePattern(config.isTraceFormatterShowExchangePattern());
-                formatter.setShowHeaders(config.isTraceFormatterShowHeaders());
-                formatter.setShowNode(config.isTraceFormatterShowNode());
-                formatter.setShowProperties(config.isTraceFormatterShowProperties());
-                formatter.setShowRouteId(config.isTraceFormatterShowRouteId());
-                formatter.setShowShortExchangeId(config.isTraceFormatterShowShortExchangeId());
-            }
-        }
 
         if (config.getXmlRoutesReloadDirectory() != null) {
             ReloadStrategy reload = new FileWatcherReloadStrategy(config.getXmlRoutesReloadDirectory());
@@ -370,25 +343,14 @@ public class CamelAutoConfiguration {
      * Similar code in camel-core-xml module in class org.apache.camel.core.xml.AbstractCamelContextFactoryBean.
      */
     static void afterPropertiesSet(ApplicationContext applicationContext, CamelContext camelContext) throws Exception {
-        Tracer tracer = getSingleBeanOfType(applicationContext, Tracer.class);
-        if (tracer != null) {
-            // use formatter if there is a TraceFormatter bean defined
-            TraceFormatter formatter = getSingleBeanOfType(applicationContext, TraceFormatter.class);
-            if (formatter != null) {
-                tracer.setFormatter(formatter);
-            }
-            LOG.info("Using custom Tracer: {}", tracer);
-            camelContext.addInterceptStrategy(tracer);
-        }
-
         final ManagementStrategy managementStrategy = camelContext.getManagementStrategy();
 
-        registerPropertyForBeanType(applicationContext, BacklogTracer.class, camelContext::addInterceptStrategy);
+        registerPropertyForBeanType(applicationContext, BacklogTracer.class, bt -> camelContext.setExtension(BacklogTracer.class, bt));
         registerPropertyForBeanType(applicationContext, HandleFault.class, camelContext::addInterceptStrategy);
         registerPropertyForBeanType(applicationContext, InflightRepository.class, camelContext::setInflightRepository);
         registerPropertyForBeanType(applicationContext, AsyncProcessorAwaitManager.class, camelContext::setAsyncProcessorAwaitManager);
         registerPropertyForBeanType(applicationContext, ManagementStrategy.class, camelContext::setManagementStrategy);
-        registerPropertyForBeanType(applicationContext, ManagementNamingStrategy.class, managementStrategy::setManagementNamingStrategy);
+        registerPropertyForBeanType(applicationContext, ManagementObjectNameStrategy.class, managementStrategy::setManagementObjectNameStrategy);
         registerPropertyForBeanType(applicationContext, EventFactory.class, managementStrategy::setEventFactory);
         registerPropertyForBeanType(applicationContext, UnitOfWorkFactory.class, camelContext::setUnitOfWorkFactory);
         registerPropertyForBeanType(applicationContext, RuntimeEndpointRegistry.class, camelContext::setRuntimeEndpointRegistry);
@@ -437,9 +399,9 @@ public class CamelAutoConfiguration {
         if (healthCheckRegistry != null) {
             healthCheckRegistry.setCamelContext(camelContext);
             LOG.info("Using HealthCheckRegistry: {}", healthCheckRegistry);
-            camelContext.setHealthCheckRegistry(healthCheckRegistry);
+            camelContext.setExtension(HealthCheckRegistry.class, healthCheckRegistry);
         } else {
-            healthCheckRegistry = camelContext.getHealthCheckRegistry();
+            healthCheckRegistry = HealthCheckRegistry.get(camelContext);
             healthCheckRegistry.setCamelContext(camelContext);
         }
 

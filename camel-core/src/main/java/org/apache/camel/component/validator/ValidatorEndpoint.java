@@ -27,7 +27,6 @@ import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.api.management.ManagedOperation;
 import org.apache.camel.api.management.ManagedResource;
-import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.processor.validation.DefaultValidationErrorHandler;
 import org.apache.camel.processor.validation.SchemaReader;
 import org.apache.camel.processor.validation.ValidatingProcessor;
@@ -36,6 +35,7 @@ import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 
 
 /**
@@ -47,7 +47,7 @@ public class ValidatorEndpoint extends DefaultEndpoint {
 
     @UriPath(description = "URL to a local resource on the classpath, or a reference to lookup a bean in the Registry,"
             + " or a full URL to a remote resource or resource on the file system which contains the XSD to validate against.")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private String resourceUri;
     @UriParam(defaultValue = XMLConstants.W3C_XML_SCHEMA_NS_URI, label = "advanced",
             description = "Configures the W3C XML Schema Namespace URI.")
@@ -56,8 +56,6 @@ public class ValidatorEndpoint extends DefaultEndpoint {
     private SchemaFactory schemaFactory;
     @UriParam(label = "advanced", description = "To use a custom org.apache.camel.processor.validation.ValidatorErrorHandler. The default error handler captures the errors and throws an exception.")
     private ValidatorErrorHandler errorHandler = new DefaultValidationErrorHandler();
-    @UriParam(label = "advanced", description = "Whether DOMSource/DOMResult or SaxSource/SaxResult should be used by the validator.")
-    private boolean useDom;
     @UriParam(defaultValue = "true", label = "advanced",
             description = "Whether the Schema instance should be shared or not. This option is introduced to work around a JDK 1.6.x bug. Xerces should not have this issue.")
     private boolean useSharedSchema = true;
@@ -140,7 +138,6 @@ public class ValidatorEndpoint extends DefaultEndpoint {
 
     protected void configureValidator(ValidatingProcessor validator) throws Exception {
         validator.setErrorHandler(getErrorHandler());
-        validator.setUseDom(isUseDom());
         validator.setUseSharedSchema(isUseSharedSchema());
         validator.setFailOnNullBody(isFailOnNullBody());
         validator.setFailOnNullHeader(isFailOnNullHeader());
@@ -192,17 +189,6 @@ public class ValidatorEndpoint extends DefaultEndpoint {
      */
     public void setErrorHandler(ValidatorErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
-    }
-
-    public boolean isUseDom() {
-        return useDom;
-    }
-
-    /**
-     * Whether DOMSource/DOMResult or SaxSource/SaxResult should be used by the validator.
-     */
-    public void setUseDom(boolean useDom) {
-        this.useDom = useDom;
     }
 
     public boolean isUseSharedSchema() {

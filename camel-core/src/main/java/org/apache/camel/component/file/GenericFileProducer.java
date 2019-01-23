@@ -17,18 +17,19 @@
 package org.apache.camel.component.file;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
-import org.apache.camel.impl.DefaultExchange;
-import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.support.DefaultExchange;
+import org.apache.camel.support.DefaultProducer;
+import org.apache.camel.support.LRUCacheFactory;
+import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.FileUtil;
-import org.apache.camel.util.LRUCacheFactory;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.ServiceHelper;
 import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class GenericFileProducer<T> extends DefaultProducer {
     protected final GenericFileEndpoint<T> endpoint;
     protected GenericFileOperations<T> operations;
     // assume writing to 100 different files concurrently at most for the same file producer
-    private final Map<String, Lock> locks = LRUCacheFactory.newLRUCache(100);
+    private final Map<String, Lock> locks = Collections.synchronizedMap(LRUCacheFactory.newLRUCache(100));
 
     protected GenericFileProducer(GenericFileEndpoint<T> endpoint, GenericFileOperations<T> operations) {
         super(endpoint);
@@ -66,14 +67,7 @@ public class GenericFileProducer<T> extends DefaultProducer {
 
         // use lock for same file name to avoid concurrent writes to the same file
         // for example when you concurrently append to the same file
-        Lock lock;
-        synchronized (locks) {
-            lock = locks.get(target);
-            if (lock == null) {
-                lock = new ReentrantLock();
-                locks.put(target, lock);
-            }
-        }
+        Lock lock = locks.computeIfAbsent(target, f -> new ReentrantLock());
 
         lock.lock();
         try {
@@ -208,7 +202,7 @@ public class GenericFileProducer<T> extends DefaultProducer {
             // any done file to write?
             if (endpoint.getDoneFileName() != null) {
                 String doneFileName = endpoint.createDoneFileName(target);
-                ObjectHelper.notEmpty(doneFileName, "doneFileName", endpoint);
+                StringHelper.notEmpty(doneFileName, "doneFileName", endpoint);
 
                 // create empty exchange with empty body to write as the done file
                 Exchange empty = new DefaultExchange(exchange);
@@ -299,7 +293,7 @@ public class GenericFileProducer<T> extends DefaultProducer {
 
         // upload
         if (log.isTraceEnabled()) {
-            log.trace("About to write [{}] to [{}] from exchange [{}]", new Object[]{fileName, getEndpoint(), exchange});
+            log.trace("About to write [{}] to [{}] from exchange [{}]", fileName, getEndpoint(), exchange);
         }
 
         boolean success = operations.storeFile(fileName, exchange, -1);
@@ -331,7 +325,7 @@ public class GenericFileProducer<T> extends DefaultProducer {
             exchange.getIn().setHeader(Exchange.FILE_NAME, value);
         }
 
-        if (value != null && value instanceof String && StringHelper.hasStartToken((String) value, "simple")) {
+        if (value instanceof String && StringHelper.hasStartToken((String) value, "simple")) {
             log.warn("Simple expression: {} detected in header: {} of type String. This feature has been removed (see CAMEL-6748).", value, Exchange.FILE_NAME);
         }
 
@@ -376,6 +370,15 @@ public class GenericFileProducer<T> extends DefaultProducer {
         } else {
             // use a generated filename if no name provided
             answer = baseDir + endpoint.getGeneratedFileName(exchange.getIn());
+        }
+
+        if (endpoint.isJailStartingDirectory()) {
+            // check for file must be within starting directory (need to compact first as the name can be using relative paths via ../ etc)
+            String compatchAnswer = FileUtil.compactPath(answer);
+            String compatchBaseDir = FileUtil.compactPath(baseDir);
+            if (!compatchAnswer.startsWith(compatchBaseDir)) {
+                throw new IllegalArgumentException("Cannot write file with name: " + compatchAnswer + " as the filename is jailed to the starting directory: " + compatchBaseDir);
+            }
         }
 
         if (endpoint.getConfiguration().needToNormalize()) {

@@ -23,7 +23,7 @@ import org.apache.camel.component.kafka.serde.KafkaHeaderSerializer;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.StateRepository;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
-import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -273,9 +273,9 @@ public class KafkaComponentConfiguration
         private Integer fetchWaitMaxMs = 500;
         /**
          * What to do when there is no initial offset in ZooKeeper or if an
-         * offset is out of range: smallest : automatically reset the offset to
-         * the smallest offset largest : automatically reset the offset to the
-         * largest offset fail: throw exception to the consumer
+         * offset is out of range: earliest : automatically reset the offset to
+         * the earliest offset latest : automatically reset the offset to the
+         * latest offset fail: throw exception to the consumer
          */
         private String autoOffsetReset = "latest";
         /**
@@ -365,8 +365,8 @@ public class KafkaComponentConfiguration
          * (typically operating system usernames). The rules are evaluated in
          * order and the first rule that matches a principal name is used to map
          * it to a short name. Any later rules in the list are ignored. By
-         * default, principal names of the form username/hostnameREALM are
-         * mapped to username. For more details on the format please see
+         * default, principal names of the form {username}/{hostname}{REALM} are
+         * mapped to {username}. For more details on the format please see
          * security authorization and acls. Multiple values can be separated by
          * comma
          */
@@ -487,14 +487,14 @@ public class KafkaComponentConfiguration
         private Integer bufferMemorySize = 33554432;
         /**
          * The record key (or null if no key is specified). If this option has
-         * been configured then it take precedence over header link
-         * KafkaConstantsKEY
+         * been configured then it take precedence over header
+         * KafkaConstants#KEY
          */
         private String key;
         /**
          * The partition to which the record will be sent (or null if no
          * partition was specified). If this option has been configured then it
-         * take precedence over header link KafkaConstantsPARTITION_KEY
+         * take precedence over header KafkaConstants#PARTITION_KEY
          */
         private Integer partitionKey;
         /**
@@ -638,7 +638,7 @@ public class KafkaComponentConfiguration
         private Integer heartbeatIntervalMs = 3000;
         /**
          * The maximum amount of data per-partition the server will return. The
-         * maximum total memory used for a request will be partitions
+         * maximum total memory used for a request will be #partitions
          * max.partition.fetch.bytes. This size must be at least as large as the
          * maximum message size the server allows or else it is possible for the
          * producer to send messages larger than the consumer can fetch. If that
@@ -726,7 +726,7 @@ public class KafkaComponentConfiguration
          * Whether the producer should store the RecordMetadata results from
          * sending to Kafka. The results are stored in a List containing the
          * RecordMetadata metadata's. The list is stored on a header with the
-         * key link KafkaConstantsKAFKA_RECORDMETA
+         * key KafkaConstants#KAFKA_RECORDMETA
          */
         private Boolean recordMetadata = true;
         /**

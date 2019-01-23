@@ -18,6 +18,7 @@ package org.apache.camel.processor.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.transform.Result;
 import javax.xml.validation.Schema;
 
@@ -31,8 +32,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A default error handler which just stores all the errors so they can be reported or transformed.
- *
- * @version 
  */
 public class DefaultValidationErrorHandler implements ValidatorErrorHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultValidationErrorHandler.class);
@@ -42,21 +41,21 @@ public class DefaultValidationErrorHandler implements ValidatorErrorHandler {
 
     public void warning(SAXParseException e) throws SAXException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Validation warning: " + e, e);
+            LOG.debug("Validation warning: {}", e, e);
         }
         warnings.add(e);
     }
 
     public void error(SAXParseException e) throws SAXException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Validation error: " + e, e);
+            LOG.debug("Validation error: {}", e, e);
         }
         errors.add(e);
     }
 
     public void fatalError(SAXParseException e) throws SAXException {
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Validation fatalError: " + e, e);
+            LOG.debug("Validation fatalError: {}", e, e);
         }
         fatalErrors.add(e);
     }

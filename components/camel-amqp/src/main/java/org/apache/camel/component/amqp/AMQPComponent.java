@@ -16,24 +16,25 @@
  */
 package org.apache.camel.component.amqp;
 
-import java.net.MalformedURLException;
 import java.util.Set;
+
 import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.component.jms.JmsConfiguration;
+import org.apache.camel.spi.annotations.Component;
 import org.apache.qpid.jms.JmsConnectionFactory;
 
 /**
  * Messaging with AMQP protocol using Apache QPid Client.
  */
+@Component("amqp")
 public class AMQPComponent extends JmsComponent {
 
     // Constructors
 
     public AMQPComponent() {
-        super(AMQPEndpoint.class);
     }
 
     public AMQPComponent(JmsConfiguration configuration) {
@@ -41,7 +42,7 @@ public class AMQPComponent extends JmsComponent {
     }
 
     public AMQPComponent(CamelContext context) {
-        super(context, AMQPEndpoint.class);
+        super(context);
     }
 
     public AMQPComponent(ConnectionFactory connectionFactory) {
@@ -65,16 +66,6 @@ public class AMQPComponent extends JmsComponent {
     }
 
     // Factory methods
-
-    /**
-     * Use {@code amqpComponent(String uri)} instead.
-     */
-    @Deprecated
-    public static AMQPComponent amqp10Component(String uri) throws MalformedURLException {
-        JmsConnectionFactory connectionFactory = new JmsConnectionFactory(uri);
-        connectionFactory.setTopicPrefix("topic://");
-        return new AMQPComponent(connectionFactory);
-    }
 
     public static AMQPComponent amqpComponent(String uri) {
         JmsConnectionFactory connectionFactory = new JmsConnectionFactory(uri);

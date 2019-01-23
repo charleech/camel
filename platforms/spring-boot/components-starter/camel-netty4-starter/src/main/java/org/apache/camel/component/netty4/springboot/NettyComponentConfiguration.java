@@ -32,7 +32,7 @@ import org.apache.camel.component.netty4.NettyServerBootstrapFactory;
 import org.apache.camel.component.netty4.ServerInitializerFactory;
 import org.apache.camel.component.netty4.TextLineDelimiter;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
-import org.apache.camel.util.jsse.SSLContextParameters;
+import org.apache.camel.support.jsse.SSLContextParameters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 
@@ -70,6 +70,11 @@ public class NettyComponentConfiguration
      * Enable usage of global SSL context parameters.
      */
     private Boolean useGlobalSslContextParameters = false;
+    /**
+     * To configure security using SSLContextParameters. The option is a
+     * org.apache.camel.support.jsse.SSLContextParameters type.
+     */
+    private String sslContextParameters;
     /**
      * Whether the component should resolve property placeholders on itself when
      * starting. Only properties which are of String type can use property
@@ -109,6 +114,14 @@ public class NettyComponentConfiguration
     public void setUseGlobalSslContextParameters(
             Boolean useGlobalSslContextParameters) {
         this.useGlobalSslContextParameters = useGlobalSslContextParameters;
+    }
+
+    public String getSslContextParameters() {
+        return sslContextParameters;
+    }
+
+    public void setSslContextParameters(String sslContextParameters) {
+        this.sslContextParameters = sslContextParameters;
     }
 
     public Boolean getResolvePropertyPlaceholders() {
@@ -161,14 +174,14 @@ public class NettyComponentConfiguration
         /**
          * A list of decoders to be used. You can use a String which have values
          * separated by comma, and have the values be looked up in the Registry.
-         * Just remember to prefix the value with so Camel knows it should
+         * Just remember to prefix the value with # so Camel knows it should
          * lookup.
          */
         private List decoders;
         /**
          * A list of encoders to be used. You can use a String which have values
          * separated by comma, and have the values be looked up in the Registry.
-         * Just remember to prefix the value with so Camel knows it should
+         * Just remember to prefix the value with # so Camel knows it should
          * lookup.
          */
         private List encoders;
@@ -234,7 +247,7 @@ public class NettyComponentConfiguration
          */
         private LoggingLevel serverClosedChannelExceptionCaughtLogLevel = LoggingLevel.DEBUG;
         /**
-         * The netty component installs a default codec if both, encoder/deocder
+         * The netty component installs a default codec if both, encoder/decoder
          * is null and textline is false. Setting allowDefaultCodec to false
          * prevents the netty component from installing a default codec as the
          * first element in the filter chain.
@@ -318,8 +331,8 @@ public class NettyComponentConfiguration
          * the channel is not returned to the connection pool until the Exchange
          * is done; or disconnected if the disconnect option is set to true. The
          * reused Channel is stored on the Exchange as an exchange property with
-         * the key link NettyConstantsNETTY_CHANNEL which allows you to obtain
-         * the channel during routing and use it as well.
+         * the key NettyConstants#NETTY_CHANNEL which allows you to obtain the
+         * channel during routing and use it as well.
          */
         private Boolean reuseChannel = false;
         /**

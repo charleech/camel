@@ -30,10 +30,8 @@ import org.slf4j.LoggerFactory;
  * and a consumer to consume HPA events.
  */
 @UriEndpoint(firstVersion = "2.23.0", scheme = "kubernetes-hpa", title = "Kubernetes HPA",
-    syntax = "kubernetes-hpa:masterUrl", consumerClass = KubernetesHPAConsumer.class, label = "container,cloud,paas")
+    syntax = "kubernetes-hpa:masterUrl", label = "container,cloud,paas")
 public class KubernetesHPAEndpoint extends AbstractKubernetesEndpoint {
-
-    private static final Logger LOG = LoggerFactory.getLogger(KubernetesHPAEndpoint.class);
 
     public KubernetesHPAEndpoint(String uri, KubernetesHPAComponent component, KubernetesConfiguration config) {
         super(uri, component, config);

@@ -30,8 +30,6 @@ import org.apache.camel.Producer;
  * This delegate allows the component developers easily to support their
  * existing asynchronous producer to behave synchronously by wrapping their
  * producer in this synchronous delegate.
- *
- * @version 
  */
 public class SynchronousDelegateProducer implements Producer {
 
@@ -43,19 +41,6 @@ public class SynchronousDelegateProducer implements Producer {
 
     public Endpoint getEndpoint() {
         return producer.getEndpoint();
-    }
-
-    public Exchange createExchange() {
-        return producer.createExchange();
-    }
-
-    public Exchange createExchange(ExchangePattern pattern) {
-        return producer.createExchange(pattern);
-    }
-
-    @Deprecated
-    public Exchange createExchange(Exchange exchange) {
-        return producer.createExchange(exchange);
     }
 
     public void process(Exchange exchange) throws Exception {

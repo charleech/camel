@@ -25,16 +25,16 @@
   <parent>
     <groupId>org.apache.camel.example</groupId>
     <artifactId>examples</artifactId>
-    <version>2.23.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>camel-example-fhir-osgi</artifactId>
   <name>Camel :: Example :: FHIR :: OSGi</name>
-  <description>An example running Camel FHIR in Apache Karaf</description>
+  <description>An example running Camel FHIR using OSGi Blueprint</description>
   <packaging>jar</packaging>
 
   <properties>
-    <category>OSGi</category>
+    <category>Health Care</category>
   </properties>
 
   <dependencies>

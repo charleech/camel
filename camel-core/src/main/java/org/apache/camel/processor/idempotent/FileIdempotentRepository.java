@@ -24,19 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.api.management.ManagedAttribute;
 import org.apache.camel.api.management.ManagedOperation;
 import org.apache.camel.api.management.ManagedResource;
 import org.apache.camel.spi.IdempotentRepository;
-import org.apache.camel.support.ServiceSupport;
+import org.apache.camel.support.LRUCache;
+import org.apache.camel.support.LRUCacheFactory;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.FileUtil;
 import org.apache.camel.util.IOHelper;
-import org.apache.camel.util.LRUCache;
-import org.apache.camel.util.LRUCacheFactory;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.Scanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A file based implementation of {@link org.apache.camel.spi.IdempotentRepository}.
@@ -48,12 +47,10 @@ import org.slf4j.LoggerFactory;
  * The file store has a maximum capacity of 32mb by default (you can turn this off and have unlimited size).
  * If the file store grows bigger than the maximum capacity, then the {@link #getDropOldestFileStore()} (is default 1000)
  * number of entries from the file store is dropped to reduce the file store and make room for newer entries.
- *
- * @version 
  */
 @ManagedResource(description = "File based idempotent repository")
-public class FileIdempotentRepository extends ServiceSupport implements IdempotentRepository<String> {
-    private static final Logger LOG = LoggerFactory.getLogger(FileIdempotentRepository.class);
+public class FileIdempotentRepository extends ServiceSupport implements IdempotentRepository {
+
     private static final String STORE_DELIMITER = "\n";
 
     private final AtomicBoolean init = new AtomicBoolean();
@@ -72,29 +69,29 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
     }
 
     /**
-     * Creates a new file based repository using a {@link org.apache.camel.util.LRUCache}
+     * Creates a new file based repository using a {@link LRUCache}
      * as 1st level cache with a default of 1000 entries in the cache.
      *
      * @param fileStore  the file store
      */
-    public static IdempotentRepository<String> fileIdempotentRepository(File fileStore) {
+    public static IdempotentRepository fileIdempotentRepository(File fileStore) {
         return fileIdempotentRepository(fileStore, 1000);
     }
 
     /**
-     * Creates a new file based repository using a {@link org.apache.camel.util.LRUCache}
+     * Creates a new file based repository using a {@link LRUCache}
      * as 1st level cache.
      *
      * @param fileStore  the file store
      * @param cacheSize  the cache size
      */
     @SuppressWarnings("unchecked")
-    public static IdempotentRepository<String> fileIdempotentRepository(File fileStore, int cacheSize) {
+    public static IdempotentRepository fileIdempotentRepository(File fileStore, int cacheSize) {
         return fileIdempotentRepository(fileStore, LRUCacheFactory.newLRUCache(cacheSize));
     }
 
     /**
-     * Creates a new file based repository using a {@link org.apache.camel.util.LRUCache}
+     * Creates a new file based repository using a {@link LRUCache}
      * as 1st level cache.
      *
      * @param fileStore  the file store
@@ -102,7 +99,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
      * @param maxFileStoreSize  the max size in bytes for the filestore file 
      */
     @SuppressWarnings("unchecked")
-    public static IdempotentRepository<String> fileIdempotentRepository(File fileStore, int cacheSize, long maxFileStoreSize) {
+    public static IdempotentRepository fileIdempotentRepository(File fileStore, int cacheSize, long maxFileStoreSize) {
         FileIdempotentRepository repository = new FileIdempotentRepository(fileStore, LRUCacheFactory.newLRUCache(cacheSize));
         repository.setMaxFileStoreSize(maxFileStoreSize);
         return repository;
@@ -118,7 +115,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
      * @param store  the file store
      * @param cache  the cache to use as 1st level cache
      */
-    public static IdempotentRepository<String> fileIdempotentRepository(File store, Map<String, Object> cache) {
+    public static IdempotentRepository fileIdempotentRepository(File store, Map<String, Object> cache) {
         return new FileIdempotentRepository(store, cache);
     }
 
@@ -142,7 +139,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
 
                 // check if we hit maximum capacity (if enabled) and report a warning about this
                 if (maxFileStoreSize > 0 && fileStore.length() > maxFileStoreSize) {
-                    LOG.warn("Maximum capacity of file store: {} hit at {} bytes. Dropping {} oldest entries from the file store", fileStore, maxFileStoreSize, dropOldestFileStore);
+                    log.warn("Maximum capacity of file store: {} hit at {} bytes. Dropping {} oldest entries from the file store", fileStore, maxFileStoreSize, dropOldestFileStore);
                     trunkStore();
                 }
 
@@ -297,7 +294,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
                 }
             }
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
         return false;
     }
@@ -308,17 +305,17 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
      * @param key  the key
      */
     protected void appendToStore(final String key) {
-        LOG.debug("Appending: {} to idempotent filestore: {}", key, fileStore);
+        log.debug("Appending: {} to idempotent filestore: {}", key, fileStore);
         FileOutputStream fos = null;
         try {
             // create store parent directory if missing
             File storeParentDirectory = fileStore.getParentFile();
             if (storeParentDirectory != null && !storeParentDirectory.exists()) {
-                LOG.info("Parent directory of file store {} doesn't exist. Creating.", fileStore);
+                log.info("Parent directory of file store {} doesn't exist. Creating.", fileStore);
                 if (fileStore.getParentFile().mkdirs()) {
-                    LOG.info("Parent directory of filestore: {} successfully created.", fileStore);
+                    log.info("Parent directory of filestore: {} successfully created.", fileStore);
                 } else {
-                    LOG.warn("Parent directory of filestore: {} cannot be created.", fileStore);
+                    log.warn("Parent directory of filestore: {} cannot be created.", fileStore);
                 }
             }
             // create store if missing
@@ -330,41 +327,37 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
             fos.write(key.getBytes());
             fos.write(STORE_DELIMITER.getBytes());
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         } finally {
-            IOHelper.close(fos, "Appending to file idempotent repository", LOG);
+            IOHelper.close(fos, "Appending to file idempotent repository", log);
         }
     }
 
     protected synchronized void removeFromStore(String key) {
-        LOG.debug("Removing: {} from idempotent filestore: {}", key, fileStore);
+        log.debug("Removing: {} from idempotent filestore: {}", key, fileStore);
 
         // we need to re-load the entire file and remove the key and then re-write the file
         List<String> lines = new ArrayList<>();
 
         boolean found = false;
-        Scanner scanner = null;
         try {
-            scanner = new Scanner(fileStore, null, STORE_DELIMITER);
-            while (scanner.hasNext()) {
-                String line = scanner.next();
-                if (key.equals(line)) {
-                    found = true;
-                } else {
-                    lines.add(line);
+            try (Scanner scanner = new Scanner(fileStore, null, STORE_DELIMITER)) {
+                while (scanner.hasNext()) {
+                    String line = scanner.next();
+                    if (key.equals(line)) {
+                        found = true;
+                    } else {
+                        lines.add(line);
+                    }
                 }
             }
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
 
         if (found) {
             // rewrite file
-            LOG.debug("Rewriting idempotent filestore: {} due to key: {} removed", fileStore, key);
+            log.debug("Rewriting idempotent filestore: {} due to key: {} removed", fileStore, key);
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(fileStore);
@@ -373,9 +366,9 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
                     fos.write(STORE_DELIMITER.getBytes());
                 }
             } catch (IOException e) {
-                throw ObjectHelper.wrapRuntimeCamelException(e);
+                throw RuntimeCamelException.wrapRuntimeCamelException(e);
             } finally {
-                IOHelper.close(fos, "Rewriting file idempotent repository", LOG);
+                IOHelper.close(fos, "Rewriting file idempotent repository", log);
             }
         }
     }
@@ -388,7 +381,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
             FileUtil.deleteFile(fileStore);
             FileUtil.createNewFile(fileStore);
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
     }
 
@@ -400,33 +393,29 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
             return;
         }
 
-        LOG.debug("Trunking: {} oldest entries from idempotent filestore: {}", dropOldestFileStore, fileStore);
+        log.debug("Trunking: {} oldest entries from idempotent filestore: {}", dropOldestFileStore, fileStore);
 
         // we need to re-load the entire file and remove the key and then re-write the file
         List<String> lines = new ArrayList<>();
 
-        Scanner scanner = null;
         int count = 0;
         try {
-            scanner = new Scanner(fileStore, null, STORE_DELIMITER);
-            while (scanner.hasNext()) {
-                String line = scanner.next();
-                count++;
-                if (count > dropOldestFileStore) {
-                    lines.add(line);
+            try (Scanner scanner = new Scanner(fileStore, null, STORE_DELIMITER)) {
+                while (scanner.hasNext()) {
+                    String line = scanner.next();
+                    count++;
+                    if (count > dropOldestFileStore) {
+                        lines.add(line);
+                    }
                 }
             }
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
-        } finally {
-            if (scanner != null) {
-                scanner.close();
-            }
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
 
         if (!lines.isEmpty()) {
             // rewrite file
-            LOG.debug("Rewriting idempotent filestore: {} with {} entries:", fileStore, lines.size());
+            log.debug("Rewriting idempotent filestore: {} with {} entries:", fileStore, lines.size());
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(fileStore);
@@ -435,13 +424,13 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
                     fos.write(STORE_DELIMITER.getBytes());
                 }
             } catch (IOException e) {
-                throw ObjectHelper.wrapRuntimeCamelException(e);
+                throw RuntimeCamelException.wrapRuntimeCamelException(e);
             } finally {
-                IOHelper.close(fos, "Rewriting file idempotent repository", LOG);
+                IOHelper.close(fos, "Rewriting file idempotent repository", log);
             }
         } else {
             // its a small file so recreate the file
-            LOG.debug("Clearing idempotent filestore: {}", fileStore);
+            log.debug("Clearing idempotent filestore: {}", fileStore);
             clearStore();
         }
     }
@@ -462,7 +451,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
     protected void loadStore() throws IOException {
         // auto create starting directory if needed
         if (!fileStore.exists()) {
-            LOG.debug("Creating filestore: {}", fileStore);
+            log.debug("Creating filestore: {}", fileStore);
             File parent = fileStore.getParentFile();
             if (parent != null) {
                 parent.mkdirs();
@@ -473,7 +462,7 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
             }
         }
 
-        LOG.trace("Loading to 1st level cache from idempotent filestore: {}", fileStore);
+        log.trace("Loading to 1st level cache from idempotent filestore: {}", fileStore);
 
         cache.clear();
         try (Scanner scanner = new Scanner(fileStore, null, STORE_DELIMITER)) {
@@ -482,10 +471,10 @@ public class FileIdempotentRepository extends ServiceSupport implements Idempote
                 cache.put(line, line);
             }
         } catch (IOException e) {
-            throw ObjectHelper.wrapRuntimeCamelException(e);
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }
 
-        LOG.debug("Loaded {} to the 1st level cache from idempotent filestore: {}", cache.size(), fileStore);
+        log.debug("Loaded {} to the 1st level cache from idempotent filestore: {}", cache.size(), fileStore);
     }
 
     @Override

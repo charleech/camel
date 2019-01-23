@@ -19,10 +19,10 @@ package org.apache.camel.component.saga;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 
 /**
@@ -37,7 +37,7 @@ public class SagaEndpoint extends DefaultEndpoint {
     }
 
     @UriPath(description = "Action to execute (complete or compensate)")
-    @Metadata(required = "true")
+    @Metadata(required = true)
     private final SagaEndpointAction action;
 
     public SagaEndpoint(String endpointUri, SagaComponent component, String action) {

@@ -22,20 +22,18 @@ import org.apache.camel.api.management.ManagedAttribute;
 import org.apache.camel.api.management.ManagedOperation;
 import org.apache.camel.api.management.ManagedResource;
 import org.apache.camel.spi.IdempotentRepository;
-import org.apache.camel.support.ServiceSupport;
-import org.apache.camel.util.LRUCache;
-import org.apache.camel.util.LRUCacheFactory;
+import org.apache.camel.support.LRUCache;
+import org.apache.camel.support.LRUCacheFactory;
+import org.apache.camel.support.service.ServiceSupport;
 
 /**
  * A memory based implementation of {@link org.apache.camel.spi.IdempotentRepository}. 
  * <p/>
  * Care should be taken to use a suitable underlying {@link Map} to avoid this class being a
  * memory leak.
- *
- * @version 
  */
 @ManagedResource(description = "Memory based idempotent repository")
-public class MemoryIdempotentRepository extends ServiceSupport implements IdempotentRepository<String> {
+public class MemoryIdempotentRepository extends ServiceSupport implements IdempotentRepository {
     private Map<String, Object> cache;
     private int cacheSize;
 
@@ -52,7 +50,7 @@ public class MemoryIdempotentRepository extends ServiceSupport implements Idempo
      * Creates a new memory based repository using a {@link LRUCache}
      * with a default of 1000 entries in the cache.
      */
-    public static IdempotentRepository<String> memoryIdempotentRepository() {
+    public static IdempotentRepository memoryIdempotentRepository() {
         return new MemoryIdempotentRepository();
     }
 
@@ -62,7 +60,7 @@ public class MemoryIdempotentRepository extends ServiceSupport implements Idempo
      * @param cacheSize  the cache size
      */
     @SuppressWarnings("unchecked")
-    public static IdempotentRepository<String> memoryIdempotentRepository(int cacheSize) {
+    public static IdempotentRepository memoryIdempotentRepository(int cacheSize) {
         return memoryIdempotentRepository(LRUCacheFactory.newLRUCache(cacheSize));
     }
 
@@ -75,7 +73,7 @@ public class MemoryIdempotentRepository extends ServiceSupport implements Idempo
      *
      * @param cache  the cache
      */
-    public static IdempotentRepository<String> memoryIdempotentRepository(Map<String, Object> cache) {
+    public static IdempotentRepository memoryIdempotentRepository(Map<String, Object> cache) {
         return new MemoryIdempotentRepository(cache);
     }
 

@@ -26,17 +26,20 @@ import com.amazonaws.services.identitymanagement.model.DeleteAccessKeyRequest;
 import com.amazonaws.services.identitymanagement.model.DeleteAccessKeyResult;
 import com.amazonaws.services.identitymanagement.model.DeleteUserRequest;
 import com.amazonaws.services.identitymanagement.model.DeleteUserResult;
+import com.amazonaws.services.identitymanagement.model.GetUserRequest;
+import com.amazonaws.services.identitymanagement.model.GetUserResult;
 import com.amazonaws.services.identitymanagement.model.ListAccessKeysResult;
 import com.amazonaws.services.identitymanagement.model.ListUsersResult;
+import com.amazonaws.services.identitymanagement.model.StatusType;
+import com.amazonaws.services.identitymanagement.model.UpdateAccessKeyRequest;
+import com.amazonaws.services.identitymanagement.model.UpdateAccessKeyResult;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.impl.DefaultProducer;
+import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.URISupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.component.aws.common.AwsExchangeUtil.getMessageForResponse;
 
@@ -45,8 +48,6 @@ import static org.apache.camel.component.aws.common.AwsExchangeUtil.getMessageFo
  * <a href="http://aws.amazon.com/iam/">AWS IAM</a>
  */
 public class IAMProducer extends DefaultProducer {
-
-    private static final Logger LOG = LoggerFactory.getLogger(IAMProducer.class);
 
     private transient String iamProducerToString;
 
@@ -65,11 +66,17 @@ public class IAMProducer extends DefaultProducer {
         case deleteAccessKey:
             deleteAccessKey(getEndpoint().getIamClient(), exchange);
             break;
+        case updateAccessKey:
+            updateAccessKey(getEndpoint().getIamClient(), exchange);
+            break;
         case createUser:
             createUser(getEndpoint().getIamClient(), exchange);
             break;
         case deleteUser:
             deleteUser(getEndpoint().getIamClient(), exchange);
+            break;
+        case getUser:
+            getUser(getEndpoint().getIamClient(), exchange);
             break;
         case listUsers:
             listUsers(getEndpoint().getIamClient(), exchange);
@@ -109,7 +116,7 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.listAccessKeys();
         } catch (AmazonServiceException ase) {
-            LOG.trace("List Access Keys command returned the error code {}", ase.getErrorCode());
+            log.trace("List Access Keys command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);
@@ -126,7 +133,7 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.createUser(request);
         } catch (AmazonServiceException ase) {
-            LOG.trace("Create user command returned the error code {}", ase.getErrorCode());
+            log.trace("Create user command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);
@@ -143,7 +150,24 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.deleteUser(request);
         } catch (AmazonServiceException ase) {
-            LOG.trace("Delete user command returned the error code {}", ase.getErrorCode());
+            log.trace("Delete user command returned the error code {}", ase.getErrorCode());
+            throw ase;
+        }
+        Message message = getMessageForResponse(exchange);
+        message.setBody(result);
+    }
+    
+    private void getUser(AmazonIdentityManagement iamClient, Exchange exchange) {
+        GetUserRequest request = new GetUserRequest();
+        if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.USERNAME))) {
+            String userName = exchange.getIn().getHeader(IAMConstants.USERNAME, String.class);
+            request.withUserName(userName);
+        }
+        GetUserResult result;
+        try {
+            result = iamClient.getUser(request);
+        } catch (AmazonServiceException ase) {
+            log.trace("get user command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);
@@ -155,7 +179,7 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.listUsers();
         } catch (AmazonServiceException ase) {
-            LOG.trace("List users command returned the error code {}", ase.getErrorCode());
+            log.trace("List users command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);
@@ -172,7 +196,7 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.createAccessKey(request);
         } catch (AmazonServiceException ase) {
-            LOG.trace("Create Access Key command returned the error code {}", ase.getErrorCode());
+            log.trace("Create Access Key command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);
@@ -181,6 +205,12 @@ public class IAMProducer extends DefaultProducer {
     
     private void deleteAccessKey(AmazonIdentityManagement iamClient, Exchange exchange) {
         DeleteAccessKeyRequest request = new DeleteAccessKeyRequest();
+        if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_ID))) {
+            String accessKeyId = exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_ID, String.class);
+            request.withAccessKeyId(accessKeyId);
+        } else {
+            throw new IllegalArgumentException("Key Id must be specified");
+        }
         if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.USERNAME))) {
             String userName = exchange.getIn().getHeader(IAMConstants.USERNAME, String.class);
             request.withUserName(userName);
@@ -189,7 +219,36 @@ public class IAMProducer extends DefaultProducer {
         try {
             result = iamClient.deleteAccessKey(request);
         } catch (AmazonServiceException ase) {
-            LOG.trace("Delete Access Key command returned the error code {}", ase.getErrorCode());
+            log.trace("Delete Access Key command returned the error code {}", ase.getErrorCode());
+            throw ase;
+        }
+        Message message = getMessageForResponse(exchange);
+        message.setBody(result);
+    }
+    
+    private void updateAccessKey(AmazonIdentityManagement iamClient, Exchange exchange) {
+        UpdateAccessKeyRequest request = new UpdateAccessKeyRequest();
+        if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_ID))) {
+            String accessKeyId = exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_ID, String.class);
+            request.withAccessKeyId(accessKeyId);
+        } else {
+            throw new IllegalArgumentException("Key Id must be specified");
+        }
+        if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_STATUS))) {
+            String status = exchange.getIn().getHeader(IAMConstants.ACCESS_KEY_STATUS, String.class);
+            request.withStatus(StatusType.fromValue(status));
+        } else {
+            throw new IllegalArgumentException("Access Key status must be specified");
+        }
+        if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(IAMConstants.USERNAME))) {
+            String userName = exchange.getIn().getHeader(IAMConstants.USERNAME, String.class);
+            request.withUserName(userName);
+        }
+        UpdateAccessKeyResult result;
+        try {
+            result = iamClient.updateAccessKey(request);
+        } catch (AmazonServiceException ase) {
+            log.trace("Update Access Key command returned the error code {}", ase.getErrorCode());
             throw ase;
         }
         Message message = getMessageForResponse(exchange);

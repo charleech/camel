@@ -22,10 +22,11 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.impl.UriEndpointComponent;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.support.EndpointHelper;
+import org.apache.camel.support.ObjectHelper;
 import org.apache.camel.util.CastUtils;
-import org.apache.camel.util.EndpointHelper;
-import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,16 +35,15 @@ import static org.apache.camel.util.ObjectHelper.isNotEmpty;
 /**
  * Base class file component. To be extended.
  */
-public abstract class GenericFileComponent<T> extends UriEndpointComponent {
+public abstract class GenericFileComponent<T> extends DefaultComponent {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     public GenericFileComponent() {
-        super(GenericFileEndpoint.class);
     }
 
     public GenericFileComponent(CamelContext context) {
-        super(context, GenericFileEndpoint.class);
+        super(context);
     }
 
     protected GenericFileEndpoint<T> createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
@@ -111,7 +111,7 @@ public abstract class GenericFileComponent<T> extends UriEndpointComponent {
         boolean ignoreCase = reminder.startsWith("ignoreCase:");
         reminder = ignoreCase ? ifStartsWithReturnRemainder("ignoreCase:", reminder) : reminder;
 
-        ObjectHelper.notEmpty(reminder, "sortBy expression", this);
+        StringHelper.notEmpty(reminder, "sortBy expression", this);
 
         // recursive add nested sorters
         return GenericFileDefaultSorter.sortByFileLanguage(getCamelContext(), 

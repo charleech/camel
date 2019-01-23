@@ -20,15 +20,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 import org.apache.camel.Traceable;
-import org.apache.camel.support.ServiceSupport;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A processor which validates the content of the inbound message body against a {@link Predicate}.
- * 
- * @version 
  */
 public class PredicateValidatingProcessor extends ServiceSupport implements Processor, Traceable {
     
@@ -45,7 +43,7 @@ public class PredicateValidatingProcessor extends ServiceSupport implements Proc
         boolean matches = predicate.matches(exchange);
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Validation {} for {} with Predicate[{}]", new Object[]{matches ? "succeed" : "failed", exchange, predicate});
+            LOG.debug("Validation {} for {} with Predicate[{}]", matches ? "succeed" : "failed", exchange, predicate);
         }
 
         if (!matches) {

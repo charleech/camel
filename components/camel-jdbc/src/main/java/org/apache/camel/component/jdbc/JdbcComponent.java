@@ -22,18 +22,14 @@ import javax.sql.DataSource;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.NoSuchBeanException;
-import org.apache.camel.impl.DefaultComponent;
-import org.apache.camel.util.CamelContextHelper;
-import org.apache.camel.util.IntrospectionSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.CamelContextHelper;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.support.IntrospectionSupport;
 
-/**
- * @version
- */
+@Component("jdbc")
 public class JdbcComponent extends DefaultComponent {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcComponent.class);
     private DataSource dataSource;
 
     @Override
@@ -60,7 +56,7 @@ public class JdbcComponent extends DefaultComponent {
                 if (target == null) {
                     throw new IllegalArgumentException("No default DataSource found in the registry");
                 }
-                LOG.debug("Using default DataSource discovered from registry: {}", target);
+                log.debug("Using default DataSource discovered from registry: {}", target);
             }
             dataSource = target;
             dataSourceRef = remaining;

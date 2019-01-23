@@ -18,6 +18,7 @@ package org.apache.camel.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
@@ -27,8 +28,6 @@ import org.apache.camel.spi.Metadata;
 
 /**
  * A useful base class for output types
- *
- * @version 
  */
 @Metadata(label = "configuration")
 @XmlType(name = "output")

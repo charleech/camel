@@ -27,8 +27,6 @@ import org.apache.camel.spi.Metadata;
 
 /**
  * Sends the message to a static endpoint
- *
- * @version 
  */
 @Metadata(label = "eip,endpoint,routing")
 @XmlRootElement(name = "to")
@@ -78,18 +76,6 @@ public class ToDefinition extends SendDefinition<ToDefinition> {
      */
     public void setPattern(ExchangePattern pattern) {
         this.pattern = pattern;
-    }
-
-    /**
-     * Sets the optional {@link ExchangePattern} used to invoke this endpoint
-     *
-     * @deprecated will be removed in the near future. Instead use {@link ProcessorDefinition#inOnly()}
-     * or {@link ProcessorDefinition#inOut()}
-     */
-    @Deprecated
-    public ToDefinition pattern(ExchangePattern pattern) {
-        setPattern(pattern);
-        return this;
     }
 
 }

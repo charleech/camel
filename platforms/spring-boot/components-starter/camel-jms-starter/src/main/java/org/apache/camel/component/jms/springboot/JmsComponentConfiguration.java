@@ -31,7 +31,6 @@ import org.apache.camel.component.jms.MessageListenerContainerFactory;
 import org.apache.camel.component.jms.ReplyToType;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.DeprecatedConfigurationProperty;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jms.core.JmsOperations;
 import org.springframework.jms.support.converter.MessageConverter;
@@ -75,7 +74,7 @@ public class JmsComponentConfiguration
      * Whether the DefaultMessageListenerContainer used in the reply managers
      * for request-reply messaging allow the
      * DefaultMessageListenerContainer.runningAllowed flag to quick stop in case
-     * JmsConfigurationisAcceptMessagesWhileStopping is enabled, and
+     * JmsConfiguration#isAcceptMessagesWhileStopping is enabled, and
      * org.apache.camel.CamelContext is currently being stopped. This quick stop
      * ability is enabled by default in the regular JMS consumers but to enable
      * for reply managers you must enable this flag.
@@ -168,9 +167,8 @@ public class JmsComponentConfiguration
      */
     private Boolean deliveryPersistent = true;
     /**
-     * Specifies the delivery mode to be used. Possible values are Possibles
-     * values are those defined by javax.jms.DeliveryMode. NON_PERSISTENT = 1
-     * and PERSISTENT = 2.
+     * Specifies the delivery mode to be used. Possibles values are those
+     * defined by javax.jms.DeliveryMode. NON_PERSISTENT = 1 and PERSISTENT = 2.
      */
     private Integer deliveryMode;
     /**
@@ -276,12 +274,15 @@ public class JmsComponentConfiguration
      * When sending, specifies whether message IDs should be added. This is just
      * an hint to the JMS Broker. If the JMS provider accepts this hint, these
      * messages must have the message ID set to null; if the provider ignores
-     * the hint, the message ID must be set to its normal unique value
+     * the hint, the message ID must be set to its normal unique value.
      */
     private Boolean messageIdEnabled = true;
     /**
      * Specifies whether timestamps should be enabled by default on sending
-     * messages.
+     * messages. This is just an hint to the JMS broker. If the JMS provider
+     * accepts this hint, these messages must have the timestamp set to zero; if
+     * the provider ignores the hint the timestamp must be set to its normal
+     * value.
      */
     private Boolean messageTimestampEnabled = true;
     /**
@@ -289,7 +290,7 @@ public class JmsComponentConfiguration
      * is passed to the producer for sending. Copying the message is needed in
      * some situations, such as when a replyToDestinationSelectorName is set
      * (incidentally, Camel will set the alwaysCopyMessage option to true, if a
-     * replyToDestinationSelectorName is set)
+     * replyToDestinationSelectorName is set).
      */
     private Boolean alwaysCopyMessage = false;
     /**
@@ -426,13 +427,12 @@ public class JmsComponentConfiguration
     /**
      * If enabled and you are using Request Reply messaging (InOut) and an
      * Exchange failed with a SOAP fault (not exception) on the consumer side,
-     * then the fault flag on link org.apache.camel.MessageisFault() will be
-     * send back in the response as a JMS header with the key link
-     * JmsConstantsJMS_TRANSFER_FAULT. If the client is Camel, the returned
-     * fault flag will be set on the link
-     * org.apache.camel.MessagesetFault(boolean). You may want to enable this
-     * when using Camel components that support faults such as SOAP based such
-     * as cxf or spring-ws.
+     * then the fault flag on org.apache.camel.Message#isFault() will be send
+     * back in the response as a JMS header with the key
+     * JmsConstants#JMS_TRANSFER_FAULT. If the client is Camel, the returned
+     * fault flag will be set on the org.apache.camel.Message#setFault(boolean).
+     * You may want to enable this when using Camel components that support
+     * faults such as SOAP based such as cxf or spring-ws.
      */
     private Boolean transferFault = false;
     /**
@@ -526,7 +526,7 @@ public class JmsComponentConfiguration
      * key as is. Can be used for JMS brokers which do not care whether JMS
      * header keys contain illegal characters. You can provide your own
      * implementation of the org.apache.camel.component.jms.JmsKeyFormatStrategy
-     * and refer to it using the notation. The option is a
+     * and refer to it using the # notation. The option is a
      * org.apache.camel.component.jms.JmsKeyFormatStrategy type.
      */
     private String jmsKeyFormatStrategy;
@@ -1301,8 +1301,8 @@ public class JmsComponentConfiguration
         private ConsumerType consumerType = ConsumerType.Default;
         /**
          * Sets the default connection factory to be used if a connection
-         * factory is not specified for either link
-         * setTemplateConnectionFactory(ConnectionFactory) or link
+         * factory is not specified for either
+         * setTemplateConnectionFactory(ConnectionFactory) or
          * setListenerConnectionFactory(ConnectionFactory)
          */
         private ConnectionFactory connectionFactory;
@@ -1343,9 +1343,9 @@ public class JmsComponentConfiguration
         private Boolean acceptMessagesWhileStopping = false;
         /**
          * Whether the DefaultMessageListenerContainer used in the reply
-         * managers for request-reply messaging allow the link
-         * DefaultMessageListenerContainerrunningAllowed() flag to quick stop in
-         * case link JmsConfigurationisAcceptMessagesWhileStopping() is enabled,
+         * managers for request-reply messaging allow the
+         * DefaultMessageListenerContainer#runningAllowed() flag to quick stop
+         * in case JmsConfiguration#isAcceptMessagesWhileStopping() is enabled,
          * and org.apache.camel.CamelContext is currently being stopped. This
          * quick stop ability is enabled by default in the regular JMS consumers
          * but to enable for reply managers you must enable this flag.
@@ -1553,7 +1553,7 @@ public class JmsComponentConfiguration
          * messages. This is just an hint to the JMS Broker. If the JMS provider
          * accepts this hint, these messages must have the timestamp set to
          * zero; if the provider ignores the hint, the timestamp must be set to
-         * its normal value
+         * its normal value.
          */
         private Boolean messageTimestampEnabled = true;
         /**
@@ -1574,8 +1574,6 @@ public class JmsComponentConfiguration
          * Specifies whether to use transacted mode
          */
         private Boolean transacted = false;
-        @Deprecated
-        private Boolean transactedInOut;
         /**
          * If true, Camel will create a JmsTransactionManager, if there is no
          * transactionManager injected when option transacted=true.
@@ -1709,7 +1707,7 @@ public class JmsComponentConfiguration
          * brokers which do not care whether JMS header keys contain illegal
          * characters. You can provide your own implementation of the
          * org.apache.camel.component.jms.JmsKeyFormatStrategy and refer to it
-         * using the notation.
+         * using the # notation.
          */
         private JmsKeyFormatStrategy jmsKeyFormatStrategy;
         /**
@@ -1725,9 +1723,9 @@ public class JmsComponentConfiguration
         private Boolean transferExchange = false;
         /**
          * Controls whether or not to include serialized headers. Applies only
-         * when link isTransferExchange() is true. This requires that the
-         * objects are serializable. Camel will exclude any non-serializable
-         * objects and log it at WARN level.
+         * when isTransferExchange() is true. This requires that the objects are
+         * serializable. Camel will exclude any non-serializable objects and log
+         * it at WARN level.
          */
         private Boolean allowSerializedHeaders = false;
         /**
@@ -1746,11 +1744,11 @@ public class JmsComponentConfiguration
         /**
          * If enabled and you are using Request Reply messaging (InOut) and an
          * Exchange failed with a SOAP fault (not exception) on the consumer
-         * side, then the fault flag on link org.apache.camel.MessageisFault()
-         * will be send back in the response as a JMS header with the key link
-         * JmsConstantsJMS_TRANSFER_FAULT. If the client is Camel, the returned
-         * fault flag will be set on the link
-         * org.apache.camel.MessagesetFault(boolean). You may want to enable
+         * side, then the fault flag on org.apache.camel.Message#isFault() will
+         * be send back in the response as a JMS header with the key
+         * JmsConstants#JMS_TRANSFER_FAULT. If the client is Camel, the returned
+         * fault flag will be set on the
+         * org.apache.camel.Message#setFault(boolean). You may want to enable
          * this when using Camel components that support faults such as SOAP
          * based such as cxf or spring-ws.
          */
@@ -2344,17 +2342,6 @@ public class JmsComponentConfiguration
 
         public void setTransacted(Boolean transacted) {
             this.transacted = transacted;
-        }
-
-        @Deprecated
-        @DeprecatedConfigurationProperty
-        public Boolean getTransactedInOut() {
-            return transactedInOut;
-        }
-
-        @Deprecated
-        public void setTransactedInOut(Boolean transactedInOut) {
-            this.transactedInOut = transactedInOut;
         }
 
         public Boolean getLazyCreateTransactionManager() {

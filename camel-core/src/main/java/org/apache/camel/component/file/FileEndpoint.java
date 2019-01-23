@@ -29,6 +29,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.PollingConsumer;
 import org.apache.camel.Processor;
+import org.apache.camel.component.file.strategy.FileMoveExistingStrategy;
 import org.apache.camel.processor.idempotent.MemoryIdempotentRepository;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
@@ -40,7 +41,7 @@ import org.apache.camel.util.ObjectHelper;
 /**
  * The file component is used for reading or writing files.
  */
-@UriEndpoint(firstVersion = "1.0.0", scheme = "file", title = "File", syntax = "file:directoryName", consumerClass = FileConsumer.class, label = "core,file")
+@UriEndpoint(firstVersion = "1.0.0", scheme = "file", title = "File", syntax = "file:directoryName", label = "core,file")
 public class FileEndpoint extends GenericFileEndpoint<File> {
 
     private static final Integer CHMOD_WRITE_MASK = 02;
@@ -49,7 +50,7 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
 
     private final FileOperations operations = new FileOperations(this);
 
-    @UriPath(name = "directoryName") @Metadata(required = "true")
+    @UriPath(name = "directoryName") @Metadata(required = true)
     private File file;
     @UriParam(label = "advanced", defaultValue = "true")
     private boolean copyAndDeleteOnRenameFail = true;
@@ -158,7 +159,9 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
         } else if (getMoveExisting() != null && getFileExist() != GenericFileExist.Move) {
             throw new IllegalArgumentException("You must configure fileExist=Move when moveExisting has been set");
         }
-
+        if (this.getMoveExistingFileStrategy() == null) {
+            this.setMoveExistingFileStrategy(createDefaultMoveExistingFileStrategy());
+        }
         return new GenericFileProducer<>(this, operations);
     }
 
@@ -179,6 +182,14 @@ public class FileEndpoint extends GenericFileEndpoint<File> {
      */
     protected FileConsumer newFileConsumer(Processor processor, GenericFileOperations<File> operations) {
         return new FileConsumer(this, processor, operations, processStrategy != null ? processStrategy : createGenericFileStrategy());
+    }
+
+    /**
+     * Default Existing File Move Strategy
+     * @return the default implementation for file component
+     */
+    private FileMoveExistingStrategy createDefaultMoveExistingFileStrategy() {
+        return new GenericFileDefaultMoveExistingFileStrategy();
     }
 
     public File getFile() {

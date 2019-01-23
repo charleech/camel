@@ -28,42 +28,18 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Endpoint;
-import org.apache.camel.impl.UriEndpointComponent;
 import org.apache.camel.spi.Metadata;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.DefaultComponent;
+import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.util.FilePathResolver;
-import org.apache.camel.util.LRUCacheFactory;
 import org.apache.camel.util.ObjectHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The <a href="http://camel.apache.org/properties">Properties Component</a> allows you to use property placeholders when defining Endpoint URIs
  */
-public class PropertiesComponent extends UriEndpointComponent {
-
-    /**
-     * The default prefix token.
-     */
-    public static final String DEFAULT_PREFIX_TOKEN = "{{";
-    
-    /**
-     * The default suffix token.
-     */
-    public static final String DEFAULT_SUFFIX_TOKEN = "}}";
-    
-    /**
-     * The default prefix token.
-     * @deprecated Use {@link #DEFAULT_PREFIX_TOKEN} instead.
-     */
-    @Deprecated
-    public static final String PREFIX_TOKEN = DEFAULT_PREFIX_TOKEN;
-    
-    /**
-     * The default suffix token.
-     * @deprecated Use {@link #DEFAULT_SUFFIX_TOKEN} instead.
-     */
-    @Deprecated
-    public static final String SUFFIX_TOKEN = DEFAULT_SUFFIX_TOKEN;
+@Component("properties")
+public class PropertiesComponent extends DefaultComponent implements org.apache.camel.spi.PropertiesComponent {
 
     /**
      *  Never check system properties.
@@ -89,13 +65,11 @@ public class PropertiesComponent extends UriEndpointComponent {
      */
     public static final String OVERRIDE_PROPERTIES = PropertiesComponent.class.getName() + ".OverrideProperties";
 
-    private static final Logger LOG = LoggerFactory.getLogger(PropertiesComponent.class);
     @SuppressWarnings("unchecked")
     private final Map<CacheKey, Properties> cacheMap = LRUCacheFactory.newLRUSoftCache(1000);
     private final Map<String, PropertiesFunction> functions = new HashMap<>();
     private PropertiesResolver propertiesResolver = new DefaultPropertiesResolver(this);
     private PropertiesParser propertiesParser = new DefaultPropertiesParser(this);
-    private boolean isDefaultCreated;
     private List<PropertiesLocation> locations = Collections.emptyList();
 
     private boolean ignoreMissingLocation;
@@ -124,18 +98,13 @@ public class PropertiesComponent extends UriEndpointComponent {
     private int systemPropertiesMode = SYSTEM_PROPERTIES_MODE_OVERRIDE;
 
     public PropertiesComponent() {
-        super(PropertiesEndpoint.class);
+        super();
         // include out of the box functions
         addFunction(new EnvPropertiesFunction());
         addFunction(new SysPropertiesFunction());
         addFunction(new ServicePropertiesFunction());
         addFunction(new ServiceHostPropertiesFunction());
         addFunction(new ServicePortPropertiesFunction());
-    }
-
-    public PropertiesComponent(boolean isDefaultCreated) {
-        this();
-        this.isDefaultCreated = isDefaultCreated;
     }
 
     public PropertiesComponent(String location) {
@@ -160,12 +129,12 @@ public class PropertiesComponent extends UriEndpointComponent {
         // override default locations
         String locations = getAndRemoveParameter(parameters, "locations", String.class);
         if (locations != null) {
-            LOG.trace("Overriding default locations with location: {}", locations);
+            log.trace("Overriding default locations with location: {}", locations);
             paths = Arrays.stream(locations.split(",")).map(PropertiesLocation::new).collect(Collectors.toList());
         }
 
         String endpointUri = parseUri(remaining, paths);
-        LOG.debug("Endpoint uri parsed as: {}", endpointUri);
+        log.debug("Endpoint uri parsed as: {}", endpointUri);
 
         Endpoint delegate = getCamelContext().getEndpoint(endpointUri);
         PropertiesEndpoint answer = new PropertiesEndpoint(uri, delegate, this);
@@ -229,7 +198,7 @@ public class PropertiesComponent extends UriEndpointComponent {
             uri = uri + suffixToken;
         }
 
-        LOG.trace("Parsing uri {} with properties: {}", uri, prop);
+        log.trace("Parsing uri {} with properties: {}", uri, prop);
         
         if (propertiesParser instanceof AugmentedPropertyNameAwarePropertiesParser) {
             return ((AugmentedPropertyNameAwarePropertiesParser) propertiesParser).parseUri(
@@ -244,13 +213,6 @@ public class PropertiesComponent extends UriEndpointComponent {
         } else {
             return propertiesParser.parseUri(uri, prop, prefixToken, suffixToken);
         }
-    }
-
-    /**
-     * Is this component created as a default by {@link org.apache.camel.CamelContext} during starting up Camel.
-     */
-    public boolean isDefaultCreated() {
-        return isDefaultCreated;
     }
 
     public List<PropertiesLocation> getLocations() {
@@ -543,11 +505,11 @@ public class PropertiesComponent extends UriEndpointComponent {
         List<PropertiesLocation> answer = new ArrayList<>();
 
         for (PropertiesLocation location : locations) {
-            LOG.trace("Parsing location: {} ", location);
+            log.trace("Parsing location: {}", location);
 
             try {
                 String path = FilePathResolver.resolvePath(location.getPath());
-                LOG.debug("Parsed location: {} ", path);
+                log.debug("Parsed location: {}", path);
                 if (ObjectHelper.isNotEmpty(path)) {
                     answer.add(new PropertiesLocation(
                         location.getResolver(),
@@ -559,7 +521,7 @@ public class PropertiesComponent extends UriEndpointComponent {
                 if (!ignoreMissingLocation && !location.isOptional()) {
                     throw e;
                 } else {
-                    LOG.debug("Ignored missing location: {}", location);
+                    log.debug("Ignored missing location: {}", location);
                 }
             }
         }

@@ -18,15 +18,17 @@ package org.apache.camel.builder.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.util.FileUtil;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.util.ResourceHelper;
+import org.apache.camel.util.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +41,6 @@ import org.slf4j.LoggerFactory;
  * ref will lookup the resource in the registry.
  * bean will call a method on a bean to be used as the resource.
  * For bean you can specify the method name after dot, eg bean:myBean.myMethod
- *
- * @version 
  */
 public class XsltUriResolver implements URIResolver {
 
@@ -74,14 +74,16 @@ public class XsltUriResolver implements URIResolver {
         LOG.trace("Resolving URI with href: {} and base: {}", href, base);
 
         String scheme = ResourceHelper.getScheme(href);
+
         if (scheme != null) {
             // need to compact paths for file/classpath as it can be relative paths using .. to go backwards
+            String hrefPath = StringHelper.after(href, scheme);
             if ("file:".equals(scheme)) {
                 // compact path use file OS separator
-                href = FileUtil.compactPath(href);
+                href = scheme + FileUtil.compactPath(hrefPath);
             } else if ("classpath:".equals(scheme)) {
                 // for classpath always use /
-                href = FileUtil.compactPath(href, '/');
+                href = scheme + FileUtil.compactPath(hrefPath, '/');
             }
             LOG.debug("Resolving URI from {}: {}", scheme, href);
 

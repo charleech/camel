@@ -24,7 +24,7 @@ import java.security.cert.Certificate;
 import javax.annotation.Generated;
 import org.apache.camel.component.crypto.CryptoOperation;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
-import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -85,11 +85,12 @@ public class DigitalSignatureComponentConfiguration
          */
         private String algorithm = "SHA1WithDSA";
         /**
-         * Sets the alias used to query the KeyStore for keys and link
-         * java.security.cert.Certificate Certificates to be used in signing and
-         * verifying exchanges. This value can be provided at runtime via the
-         * message header link org.apache.camel.component.crypto.
-         * DigitalSignatureConstantsKEYSTORE_ALIAS
+         * Sets the alias used to query the KeyStore for keys and {link
+         * java.security.cert.Certificate Certificates} to be used in signing
+         * and verifying exchanges. This value can be provided at runtime via
+         * the message header
+         * org.apache.camel.component.crypto.DigitalSignatureConstants
+         * #KEYSTORE_ALIAS
          */
         private String alias;
         /**

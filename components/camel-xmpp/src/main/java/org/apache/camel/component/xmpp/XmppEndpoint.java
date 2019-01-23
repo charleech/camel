@@ -25,7 +25,7 @@ import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.impl.DefaultEndpoint;
+import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.impl.DefaultHeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategyAware;
@@ -51,23 +51,20 @@ import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.jid.parts.Resourcepart;
 import org.jxmpp.stringprep.XmppStringprepException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * To send and receive messages from a XMPP (chat) server.
  */
 @UriEndpoint(firstVersion = "1.0", scheme = "xmpp", title = "XMPP", syntax = "xmpp:host:port/participant", alternativeSyntax = "xmpp:user:password@host:port/participant",
-        consumerClass = XmppConsumer.class, label = "chat,messaging")
+        label = "chat,messaging")
 public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrategyAware {
-    private static final Logger LOG = LoggerFactory.getLogger(XmppEndpoint.class);
 
     private volatile XMPPTCPConnection connection;
     private XmppBinding binding;
 
-    @UriPath @Metadata(required = "true")
+    @UriPath @Metadata(required = true)
     private String host;
-    @UriPath @Metadata(required = "true")
+    @UriPath @Metadata(required = true)
     private int port;
     @UriPath(label = "common")
     private String participant;
@@ -105,11 +102,6 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
 
     public XmppEndpoint(String uri, XmppComponent component) {
         super(uri, component);
-    }
-
-    @Deprecated
-    public XmppEndpoint(String endpointUri) {
-        super(endpointUri);
     }
 
     public Producer createProducer() throws Exception {
@@ -154,7 +146,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     public Exchange createExchange(Stanza packet) {
         Exchange exchange = super.createExchange();
         exchange.setProperty(Exchange.BINDING, getBinding());
-        exchange.setIn(new XmppMessage(packet));
+        exchange.setIn(new XmppMessage(exchange, packet));
         return exchange;
     }
 
@@ -176,7 +168,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         // prepare for creating new connection
         connection = null;
 
-        LOG.trace("Creating new connection ...");
+        log.trace("Creating new connection ...");
         XMPPTCPConnection newConnection = createConnectionInternal();
 
         newConnection.connect();
@@ -186,11 +178,11 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
 
         if (!newConnection.isAuthenticated()) {
             if (user != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Logging in to XMPP as user: {} on connection: {}", user, getConnectionMessage(newConnection));
+                if (log.isDebugEnabled()) {
+                    log.debug("Logging in to XMPP as user: {} on connection: {}", user, getConnectionMessage(newConnection));
                 }
                 if (password == null) {
-                    LOG.warn("No password configured for user: {} on connection: {}", user, getConnectionMessage(newConnection));
+                    log.warn("No password configured for user: {} on connection: {}", user, getConnectionMessage(newConnection));
                 }
 
                 if (createAccount) {
@@ -205,8 +197,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
                     }
                 }
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Logging in anonymously to XMPP on connection: {}", getConnectionMessage(newConnection));
+                if (log.isDebugEnabled()) {
+                    log.debug("Logging in anonymously to XMPP on connection: {}", getConnectionMessage(newConnection));
                 }
                 newConnection.login();
             }
@@ -215,7 +207,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         }
 
         // okay new connection was created successfully so assign it as the connection
-        LOG.debug("Created new connection successfully: {}", newConnection);
+        log.debug("Created new connection successfully: {}", newConnection);
         connection = newConnection;
         return connection;
     }

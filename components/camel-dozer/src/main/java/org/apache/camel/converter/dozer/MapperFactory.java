@@ -25,10 +25,8 @@ import com.github.dozermapper.core.el.ELExpressionFactory;
 import com.github.dozermapper.core.el.NoopELEngine;
 import com.github.dozermapper.core.el.TcclELEngine;
 import com.github.dozermapper.core.util.RuntimeUtils;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.dozer.DozerEndpoint;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,10 +75,6 @@ public class MapperFactory {
 
     private void configureSettings() {
         System.setProperty(SettingsKeys.CLASS_LOADER_BEAN, DozerThreadContextClassLoader.class.getName());
-
-        // TODO: Remove next version, see:
-        // https://github.com/DozerMapper/dozer/issues/680
-        System.setProperty(SettingsKeys.USE_JAXB_MAPPING_ENGINE, Boolean.FALSE.toString());
     }
 
     private ELEngine createELEngine() {

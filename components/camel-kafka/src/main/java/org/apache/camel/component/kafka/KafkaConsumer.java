@@ -32,9 +32,11 @@ import java.util.stream.StreamSupport;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.kafka.serde.KafkaHeaderDeserializer;
-import org.apache.camel.impl.DefaultConsumer;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.StateRepository;
+import org.apache.camel.support.DefaultConsumer;
+import org.apache.camel.support.service.ServiceHelper;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -55,6 +57,7 @@ public class KafkaConsumer extends DefaultConsumer {
     private final Long pollTimeoutMs;
     // This list helps working around the infinite loop of KAFKA-1894
     private final List<KafkaFetchRecords> tasks = new ArrayList<>();
+    private volatile boolean stopOffsetRepo;
 
     public KafkaConsumer(KafkaEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
@@ -105,6 +108,18 @@ public class KafkaConsumer extends DefaultConsumer {
                 endpoint.getConfiguration().getTopic(), endpoint.getConfiguration().isBreakOnFirstError());
         super.doStart();
 
+        // is the offset repository already started?
+        StateRepository repo = endpoint.getConfiguration().getOffsetRepository();
+        if (repo instanceof ServiceSupport) {
+            boolean started = ((ServiceSupport) repo).isStarted();
+            // if not already started then we would do that and also stop it
+            if (!started) {
+                stopOffsetRepo = true;
+                log.debug("Starting OffsetRepository: {}", repo);
+                ServiceHelper.startService(endpoint.getConfiguration().getOffsetRepository());
+            }
+        }
+
         executor = endpoint.createExecutor();
 
         String topic = endpoint.getConfiguration().getTopic();
@@ -140,6 +155,12 @@ public class KafkaConsumer extends DefaultConsumer {
         tasks.clear();
         executor = null;
 
+        if (stopOffsetRepo) {
+            StateRepository repo = endpoint.getConfiguration().getOffsetRepository();
+            log.debug("Stopping OffsetRepository: {}", repo);
+            ServiceHelper.stopAndShutdownService(repo);
+        }
+
         super.doStop();
     }
 
@@ -171,7 +192,7 @@ public class KafkaConsumer extends DefaultConsumer {
                     }
                 } catch (Throwable e) {
                     // ensure this is logged so users can see the problem
-                    log.warn("Error creating org.apache.kafka.clients.consumer.KafkaConsumer due " + e.getMessage(), e);
+                    log.warn("Error creating org.apache.kafka.clients.consumer.KafkaConsumer due {}", e.getMessage(), e);
                 }
 
                 if (!first) {
@@ -295,7 +316,6 @@ public class KafkaConsumer extends DefaultConsumer {
                                     KafkaManualCommit manual = endpoint.getComponent().getKafkaManualCommitFactory().newInstance(exchange, consumer, topicName, threadId,
                                             offsetRepository, partition, record.offset());
                                     exchange.getIn().setHeader(KafkaConstants.MANUAL_COMMIT, manual);
-
                                 }
 
                                 try {
@@ -369,7 +389,7 @@ public class KafkaConsumer extends DefaultConsumer {
             } catch (Exception e) {
                 getExceptionHandler().handleException("Error consuming " + threadId + " from kafka topic", e);
             } finally {
-                log.debug("Closing {} ", threadId);
+                log.debug("Closing {}", threadId);
                 IOHelper.close(consumer);
             }
 
@@ -378,7 +398,7 @@ public class KafkaConsumer extends DefaultConsumer {
 
         private void commitOffset(StateRepository<String, String> offsetRepository, TopicPartition partition, long partitionLastOffset, boolean forceCommit) {
             if (partitionLastOffset != -1) {
-                if (offsetRepository != null) {
+                if (!endpoint.getConfiguration().isAllowManualCommit() && offsetRepository != null) {
                     log.debug("Saving offset repository state {} from topic {} with offset: {}", threadId, topicName, partitionLastOffset);
                     offsetRepository.setState(serializeOffsetKey(partition), serializeOffsetValue(partitionLastOffset));
                 } else if (forceCommit) {

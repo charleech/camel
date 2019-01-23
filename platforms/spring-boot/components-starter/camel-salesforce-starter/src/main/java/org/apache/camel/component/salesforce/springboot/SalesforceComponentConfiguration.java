@@ -31,7 +31,7 @@ import org.apache.camel.component.salesforce.internal.PayloadFormat;
 import org.apache.camel.component.salesforce.internal.dto.NotifyForFieldsEnum;
 import org.apache.camel.component.salesforce.internal.dto.NotifyForOperationsEnum;
 import org.apache.camel.spring.boot.ComponentConfigurationPropertiesCommon;
-import org.apache.camel.util.jsse.KeyStoreParameters;
+import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -64,7 +64,7 @@ public class SalesforceComponentConfiguration
      */
     private SalesforceLoginConfigNestedConfiguration loginConfig;
     /**
-     * URL of the Salesforce instance used after authantication, by default
+     * URL of the Salesforce instance used after authentication, by default
      * received from Salesforce on successful authentication
      */
     private String instanceUrl;
@@ -90,7 +90,7 @@ public class SalesforceComponentConfiguration
      * verify the certificate chain, so this can easily be a selfsigned
      * certificate. Make sure that you upload the certificate to the
      * corresponding connected app. The option is a
-     * org.apache.camel.util.jsse.KeyStoreParameters type.
+     * org.apache.camel.support.jsse.KeyStoreParameters type.
      */
     private String keystore;
     /**
@@ -119,7 +119,7 @@ public class SalesforceComponentConfiguration
     private String password;
     /**
      * If set to true prevents the component from authenticating to Salesforce
-     * with the start of the component. You would generaly set this to the
+     * with the start of the component. You would generally set this to the
      * (default) false and authenticate early and be immediately aware of any
      * authentication issues.
      */
@@ -145,8 +145,8 @@ public class SalesforceComponentConfiguration
     private String longPollingTransportProperties;
     /**
      * SSL parameters to use, see SSLContextParameters class for all available
-     * options. The option is a org.apache.camel.util.jsse.SSLContextParameters
-     * type.
+     * options. The option is a
+     * org.apache.camel.support.jsse.SSLContextParameters type.
      */
     private String sslContextParameters;
     /**
@@ -453,127 +453,6 @@ public class SalesforceComponentConfiguration
         this.resolvePropertyPlaceholders = resolvePropertyPlaceholders;
     }
 
-    public static class SalesforceLoginConfigNestedConfiguration {
-        public static final Class CAMEL_NESTED_CLASS = org.apache.camel.component.salesforce.SalesforceLoginConfig.class;
-        private String instanceUrl;
-        /**
-         * Salesforce login URL, defaults to https://login.salesforce.com
-         */
-        private String loginUrl;
-        /**
-         * Salesforce connected application Consumer Key
-         */
-        private String clientId;
-        /**
-         * Salesforce connected application Consumer Secret
-         */
-        private String clientSecret;
-        /**
-         * Keystore parameters for keystore containing certificate and private
-         * key needed for OAuth 2.0 JWT Bearer Token Flow.
-         */
-        private KeyStoreParameters keystore;
-        /**
-         * Salesforce connected application Consumer token
-         */
-        private String refreshToken;
-        private AuthenticationType type;
-        /**
-         * Salesforce account user name
-         */
-        private String userName;
-        /**
-         * Salesforce account password
-         */
-        private String password;
-        /**
-         * Flag to enable/disable lazy OAuth, default is false. When enabled,
-         * OAuth token retrieval or generation is not done until the first API
-         * call
-         */
-        private Boolean lazyLogin;
-
-        public String getInstanceUrl() {
-            return instanceUrl;
-        }
-
-        public void setInstanceUrl(String instanceUrl) {
-            this.instanceUrl = instanceUrl;
-        }
-
-        public String getLoginUrl() {
-            return loginUrl;
-        }
-
-        public void setLoginUrl(String loginUrl) {
-            this.loginUrl = loginUrl;
-        }
-
-        public String getClientId() {
-            return clientId;
-        }
-
-        public void setClientId(String clientId) {
-            this.clientId = clientId;
-        }
-
-        public String getClientSecret() {
-            return clientSecret;
-        }
-
-        public void setClientSecret(String clientSecret) {
-            this.clientSecret = clientSecret;
-        }
-
-        public KeyStoreParameters getKeystore() {
-            return keystore;
-        }
-
-        public void setKeystore(KeyStoreParameters keystore) {
-            this.keystore = keystore;
-        }
-
-        public String getRefreshToken() {
-            return refreshToken;
-        }
-
-        public void setRefreshToken(String refreshToken) {
-            this.refreshToken = refreshToken;
-        }
-
-        public AuthenticationType getType() {
-            return type;
-        }
-
-        public void setType(AuthenticationType type) {
-            this.type = type;
-        }
-
-        public String getUserName() {
-            return userName;
-        }
-
-        public void setUserName(String userName) {
-            this.userName = userName;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public Boolean getLazyLogin() {
-            return lazyLogin;
-        }
-
-        public void setLazyLogin(Boolean lazyLogin) {
-            this.lazyLogin = lazyLogin;
-        }
-    }
-
     public static class SalesforceEndpointConfigNestedConfiguration {
         public static final Class CAMEL_NESTED_CLASS = org.apache.camel.component.salesforce.SalesforceEndpointConfig.class;
         /**
@@ -734,8 +613,7 @@ public class SalesforceComponentConfiguration
          */
         private Long maxBackoff;
         /**
-         * Default replayId setting if no value is found in link
-         * initialReplayIdMap
+         * Default replayId setting if no value is found in initialReplayIdMap
          */
         private Long defaultReplayId;
         /**
@@ -797,9 +675,9 @@ public class SalesforceComponentConfiguration
         private Boolean approvalSkipEntryCriteria;
         /**
          * Sets the behaviour of 404 not found status received from Salesforce
-         * API. Should the body be set to NULL link NotFoundBehaviourNULL or
-         * should a exception be signaled on the exchange link
-         * NotFoundBehaviourEXCEPTION - the default.
+         * API. Should the body be set to NULL NotFoundBehaviour#NULL or should
+         * a exception be signaled on the exchange NotFoundBehaviour#EXCEPTION -
+         * the default.
          */
         private NotFoundBehaviour notFoundBehaviour;
 
@@ -1181,6 +1059,127 @@ public class SalesforceComponentConfiguration
 
         public void setNotFoundBehaviour(NotFoundBehaviour notFoundBehaviour) {
             this.notFoundBehaviour = notFoundBehaviour;
+        }
+    }
+
+    public static class SalesforceLoginConfigNestedConfiguration {
+        public static final Class CAMEL_NESTED_CLASS = org.apache.camel.component.salesforce.SalesforceLoginConfig.class;
+        private String instanceUrl;
+        /**
+         * Salesforce login URL, defaults to https://login.salesforce.com
+         */
+        private String loginUrl;
+        /**
+         * Salesforce connected application Consumer Key
+         */
+        private String clientId;
+        /**
+         * Salesforce connected application Consumer Secret
+         */
+        private String clientSecret;
+        /**
+         * Keystore parameters for keystore containing certificate and private
+         * key needed for OAuth 2.0 JWT Bearer Token Flow.
+         */
+        private KeyStoreParameters keystore;
+        /**
+         * Salesforce connected application Consumer token
+         */
+        private String refreshToken;
+        private AuthenticationType type;
+        /**
+         * Salesforce account user name
+         */
+        private String userName;
+        /**
+         * Salesforce account password
+         */
+        private String password;
+        /**
+         * Flag to enable/disable lazy OAuth, default is false. When enabled,
+         * OAuth token retrieval or generation is not done until the first API
+         * call
+         */
+        private Boolean lazyLogin;
+
+        public String getInstanceUrl() {
+            return instanceUrl;
+        }
+
+        public void setInstanceUrl(String instanceUrl) {
+            this.instanceUrl = instanceUrl;
+        }
+
+        public String getLoginUrl() {
+            return loginUrl;
+        }
+
+        public void setLoginUrl(String loginUrl) {
+            this.loginUrl = loginUrl;
+        }
+
+        public String getClientId() {
+            return clientId;
+        }
+
+        public void setClientId(String clientId) {
+            this.clientId = clientId;
+        }
+
+        public String getClientSecret() {
+            return clientSecret;
+        }
+
+        public void setClientSecret(String clientSecret) {
+            this.clientSecret = clientSecret;
+        }
+
+        public KeyStoreParameters getKeystore() {
+            return keystore;
+        }
+
+        public void setKeystore(KeyStoreParameters keystore) {
+            this.keystore = keystore;
+        }
+
+        public String getRefreshToken() {
+            return refreshToken;
+        }
+
+        public void setRefreshToken(String refreshToken) {
+            this.refreshToken = refreshToken;
+        }
+
+        public AuthenticationType getType() {
+            return type;
+        }
+
+        public void setType(AuthenticationType type) {
+            this.type = type;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public void setUserName(String userName) {
+            this.userName = userName;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        public Boolean getLazyLogin() {
+            return lazyLogin;
+        }
+
+        public void setLazyLogin(Boolean lazyLogin) {
+            this.lazyLogin = lazyLogin;
         }
     }
 }

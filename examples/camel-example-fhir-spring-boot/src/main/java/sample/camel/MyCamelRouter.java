@@ -28,7 +28,7 @@ import org.hl7.fhir.dstu3.model.Patient;
 import org.springframework.stereotype.Component;
 
 /**
- * A simple Camel route that triggers from a timer and calls a bean and prints to system out.
+ * A simple Camel route that triggers from a file and posts to a FHIR server.
  * <p/>
  * Use <tt>@Component</tt> to make Camel auto detect this route when starting.
  */
