@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,8 +68,8 @@ public enum TwitterEventType {
 
         if (bodyList != null && !bodyList.isEmpty()) {
             exchanges = new ArrayList<>(bodyList.size());
-            for (int i = 0; i < bodyList.size(); i++) {
-                exchanges.add(createExchange(endpoint, bodyList.get(i)));
+            for (T t : bodyList) {
+                exchanges.add(createExchange(endpoint, t));
             }
         }
 

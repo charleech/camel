@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,10 @@ package org.apache.camel.component.wordpress.api;
 import java.io.Serializable;
 import java.util.Objects;
 
-import static java.util.Objects.hash;
-
 import org.apache.camel.component.wordpress.api.auth.WordpressAuthentication;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.hash;
 
 /**
  * Model for the API configuration.
@@ -70,7 +69,8 @@ public final class WordpressAPIConfiguration implements Serializable {
 
     @Override
     public String toString() {
-        return toStringHelper(this).addValue(this.apiUrl).add("Version", this.apiVersion).addValue(this.authentication).toString();
+        return toStringHelper(this).addValue(this.apiUrl).add("Version", this.apiVersion).addValue(this.authentication)
+                .toString();
     }
 
     @Override

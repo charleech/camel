@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,7 @@ final class OffsetTimeSerializer extends com.fasterxml.jackson.datatype.jsr310.s
     private static final long serialVersionUID = 1L;
 
     private OffsetTimeSerializer() {
-        super(com.fasterxml.jackson.datatype.jsr310.ser.OffsetTimeSerializer.INSTANCE, null,
-            DateTimeHandling.ISO_OFFSET_TIME);
+        super(com.fasterxml.jackson.datatype.jsr310.ser.OffsetTimeSerializer.INSTANCE, null, DateTimeHandling.ISO_OFFSET_TIME);
     }
 
 }

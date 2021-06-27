@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,27 +19,20 @@ package org.apache.camel.component.redis;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.BindToRegistry;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisTransactionTest extends RedisTestSupport {
 
     @Mock
+    @BindToRegistry("redisTemplate")
     private RedisTemplate<String, ?> redisTemplate;
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("redisTemplate", redisTemplate);
-        return registry;
-    }
 
     @Test
     public void shouldExecuteMULTI() throws Exception {
@@ -77,4 +70,3 @@ public class RedisTransactionTest extends RedisTestSupport {
     }
 
 }
-

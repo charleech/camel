@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
 /**
@@ -27,36 +26,29 @@ public class MllpAcknowledgementReceiveException extends MllpAcknowledgementExce
         super(EXCEPTION_MESSAGE, hl7Message);
     }
 
-
     public MllpAcknowledgementReceiveException(byte[] hl7Message, byte[] hl7Acknowledgement) {
         super(EXCEPTION_MESSAGE, hl7Message, hl7Acknowledgement);
     }
-
 
     public MllpAcknowledgementReceiveException(byte[] hl7Message, Throwable cause) {
         super(EXCEPTION_MESSAGE, hl7Message, cause);
     }
 
-
     public MllpAcknowledgementReceiveException(byte[] hl7Message, byte[] hl7Acknowledgement, Throwable cause) {
         super(EXCEPTION_MESSAGE, hl7Message, hl7Acknowledgement, cause);
     }
-
 
     public MllpAcknowledgementReceiveException(String message, byte[] hl7Message) {
         super(message, hl7Message);
     }
 
-
     public MllpAcknowledgementReceiveException(String message, byte[] hl7Message, byte[] hl7Acknowledgement) {
         super(message, hl7Message, hl7Acknowledgement);
     }
 
-
     public MllpAcknowledgementReceiveException(String message, byte[] hl7Message, Throwable cause) {
         super(message, hl7Message, cause);
     }
-
 
     public MllpAcknowledgementReceiveException(String message, byte[] hl7Message, byte[] hl7Acknowledgement, Throwable cause) {
         super(message, hl7Message, hl7Acknowledgement, cause);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,9 @@ import java.io.ByteArrayInputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AhcBridgeEndpointPathWithSpacesTest extends BaseAhcTest {
 
@@ -32,7 +34,7 @@ public class AhcBridgeEndpointPathWithSpacesTest extends BaseAhcTest {
     public void testBridgeEndpoint() throws Exception {
         String response = template.requestBodyAndHeader("http://localhost:" + port1 + "/test bar/hello",
                 new ByteArrayInputStream("This is a test".getBytes()), "Content-Type", "application/xml", String.class);
-        assertEquals("Get a wrong response", "/proxy%20bar/hello", response);
+        assertEquals("/proxy%20bar/hello", response, "Get a wrong response");
     }
 
     @Override
@@ -47,7 +49,7 @@ public class AhcBridgeEndpointPathWithSpacesTest extends BaseAhcTest {
                     public void process(Exchange exchange) throws Exception {
                         // get the request URL and copy it to the request body
                         String uri = exchange.getIn().getHeader(Exchange.HTTP_URI, String.class);
-                        exchange.getOut().setBody(uri);
+                        exchange.getMessage().setBody(uri);
                     }
                 };
 

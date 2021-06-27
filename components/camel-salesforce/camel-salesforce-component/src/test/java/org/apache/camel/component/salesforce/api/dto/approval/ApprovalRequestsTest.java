@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,12 @@ import java.util.Arrays;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.XStream;
-
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalRequest.Action;
 import org.apache.camel.component.salesforce.api.utils.JsonUtils;
 import org.apache.camel.component.salesforce.api.utils.XStreamUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ApprovalRequestsTest {
 
@@ -60,59 +59,59 @@ public class ApprovalRequestsTest {
     @Test
     public void shouldSerializeAsJson() throws JsonProcessingException {
         final String json = "{\"requests\":["//
-            + "{"//
-            + "\"actionType\":\"Submit\","//
-            + "\"contextActorId\":\"005D00000015rZy\","//
-            + "\"contextId\":\"001D000000I8mIm\","//
-            + "\"comments\":\"this is a test 1\","//
-            + "\"nextApproverIds\":[\"005D00000015rY9\"],"//
-            + "\"processDefinitionNameOrId\":\"PTO_Request_Process\","//
-            + "\"skipEntryCriteria\":true"//
-            + "},{"//
-            + "\"actionType\":\"Submit\","//
-            + "\"contextActorId\":\"005D00000015rZy\","//
-            + "\"contextId\":\"001D000000I8dIm\","//
-            + "\"comments\":\"this is a test 2\","//
-            + "\"nextApproverIds\":[\"005D00000015xY9\"],"//
-            + "\"processDefinitionNameOrId\":\"PTO_Request_Process\","//
-            + "\"skipEntryCriteria\":true"//
-            + "}"//
-            + "]}";
+                            + "{"//
+                            + "\"actionType\":\"Submit\","//
+                            + "\"contextActorId\":\"005D00000015rZy\","//
+                            + "\"contextId\":\"001D000000I8mIm\","//
+                            + "\"comments\":\"this is a test 1\","//
+                            + "\"nextApproverIds\":[\"005D00000015rY9\"],"//
+                            + "\"processDefinitionNameOrId\":\"PTO_Request_Process\","//
+                            + "\"skipEntryCriteria\":true"//
+                            + "},{"//
+                            + "\"actionType\":\"Submit\","//
+                            + "\"contextActorId\":\"005D00000015rZy\","//
+                            + "\"contextId\":\"001D000000I8dIm\","//
+                            + "\"comments\":\"this is a test 2\","//
+                            + "\"nextApproverIds\":[\"005D00000015xY9\"],"//
+                            + "\"processDefinitionNameOrId\":\"PTO_Request_Process\","//
+                            + "\"skipEntryCriteria\":true"//
+                            + "}"//
+                            + "]}";
 
         final ObjectMapper mapper = JsonUtils.createObjectMapper();
 
         final String serialized = mapper.writerFor(ApprovalRequests.class).writeValueAsString(requests);
 
-        assertEquals("Approval requests should serialize as JSON", json, serialized);
+        assertEquals(json, serialized, "Approval requests should serialize as JSON");
     }
 
     @Test
     public void shouldSerializeAsXml() {
         final String xml = "<ProcessApprovalRequest>"//
-            + "<requests>"//
-            + "<actionType>Submit</actionType>"//
-            + "<contextActorId>005D00000015rZy</contextActorId>"//
-            + "<contextId>001D000000I8mIm</contextId>"//
-            + "<comments>this is a test 1</comments>"//
-            + "<nextApproverIds>005D00000015rY9</nextApproverIds>"//
-            + "<processDefinitionNameOrId>PTO_Request_Process</processDefinitionNameOrId>"//
-            + "<skipEntryCriteria>true</skipEntryCriteria>"//
-            + "</requests>"//
-            + "<requests>"//
-            + "<actionType>Submit</actionType>"//
-            + "<contextActorId>005D00000015rZy</contextActorId>"//
-            + "<contextId>001D000000I8dIm</contextId>"//
-            + "<comments>this is a test 2</comments>"//
-            + "<nextApproverIds>005D00000015xY9</nextApproverIds>"//
-            + "<processDefinitionNameOrId>PTO_Request_Process</processDefinitionNameOrId>"//
-            + "<skipEntryCriteria>true</skipEntryCriteria>"//
-            + "</requests>"//
-            + "</ProcessApprovalRequest>";
+                           + "<requests>"//
+                           + "<actionType>Submit</actionType>"//
+                           + "<contextActorId>005D00000015rZy</contextActorId>"//
+                           + "<contextId>001D000000I8mIm</contextId>"//
+                           + "<comments>this is a test 1</comments>"//
+                           + "<nextApproverIds>005D00000015rY9</nextApproverIds>"//
+                           + "<processDefinitionNameOrId>PTO_Request_Process</processDefinitionNameOrId>"//
+                           + "<skipEntryCriteria>true</skipEntryCriteria>"//
+                           + "</requests>"//
+                           + "<requests>"//
+                           + "<actionType>Submit</actionType>"//
+                           + "<contextActorId>005D00000015rZy</contextActorId>"//
+                           + "<contextId>001D000000I8dIm</contextId>"//
+                           + "<comments>this is a test 2</comments>"//
+                           + "<nextApproverIds>005D00000015xY9</nextApproverIds>"//
+                           + "<processDefinitionNameOrId>PTO_Request_Process</processDefinitionNameOrId>"//
+                           + "<skipEntryCriteria>true</skipEntryCriteria>"//
+                           + "</requests>"//
+                           + "</ProcessApprovalRequest>";
 
         final XStream xStream = XStreamUtils.createXStream(ApprovalRequests.class);
 
         final String serialized = xStream.toXML(requests);
 
-        assertEquals("Approval requests should serialize as XML", xml, serialized);
+        assertEquals(xml, serialized, "Approval requests should serialize as XML");
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,17 +29,24 @@ public class ElasticsearchConfiguration {
 
     private List<HttpHost> hostAddressesList;
 
-    @UriPath @Metadata(required = true)
+    private String user;
+    private String password;
+
+    @UriPath
+    @Metadata(required = true)
     private String clusterName;
     @UriParam
     private ElasticsearchOperation operation;
     @UriParam
-    private String indexName;
+    private Integer size;
     @UriParam
-    private String indexType;
+    private Integer from;
+    @UriParam
+    private String indexName;
     @UriParam(defaultValue = "" + ElasticsearchConstants.DEFAULT_FOR_WAIT_ACTIVE_SHARDS)
     private int waitForActiveShards = ElasticsearchConstants.DEFAULT_FOR_WAIT_ACTIVE_SHARDS;
-    @UriParam @Metadata(required = true)
+    @UriParam
+    @Metadata(required = true)
     private String hostAddresses;
     @UriParam(defaultValue = "" + ElasticsearchConstants.DEFAULT_SOCKET_TIMEOUT)
     private int socketTimeout = ElasticsearchConstants.DEFAULT_SOCKET_TIMEOUT;
@@ -55,13 +62,35 @@ public class ElasticsearchConfiguration {
     private boolean useScroll;
     @UriParam(defaultValue = "" + ElasticsearchConstants.DEFAULT_SCROLL_KEEP_ALIVE_MS)
     private int scrollKeepAliveMs = ElasticsearchConstants.DEFAULT_SCROLL_KEEP_ALIVE_MS;
-
-    private String user;
-    private String password;
-    //Sniffer parameter.
+    @UriParam
     private boolean enableSniffer;
+    @UriParam(defaultValue = "" + ElasticsearchConstants.DEFAULT_SNIFFER_INTERVAL)
     private int snifferInterval = ElasticsearchConstants.DEFAULT_SNIFFER_INTERVAL;
+    @UriParam(defaultValue = "" + ElasticsearchConstants.DEFAULT_AFTER_FAILURE_DELAY)
     private int sniffAfterFailureDelay = ElasticsearchConstants.DEFAULT_AFTER_FAILURE_DELAY;
+
+    /**
+     * Starting index of the response.
+     */
+    public Integer getFrom() {
+        return from;
+    }
+
+    public void setFrom(Integer from) {
+        this.from = from;
+    }
+
+    /**
+     * Size of the response.
+     */
+    public Integer getSize() {
+        return size;
+    }
+
+    public void setSize(Integer size) {
+        this.size = size;
+    }
+
     /**
      * Name of the cluster
      */
@@ -96,19 +125,7 @@ public class ElasticsearchConfiguration {
     }
 
     /**
-     * The type of the index to act against
-     */
-    public String getIndexType() {
-        return indexType;
-    }
-
-    public void setIndexType(String indexType) {
-        this.indexType = indexType;
-    }
-
-    /**
      * Comma separated list with ip:port formatted remote transport addresses to use.
-     * The ip and port options must be left blank for hostAddresses to be considered instead.
      */
     public String getHostAddresses() {
         return hostAddresses;
@@ -149,7 +166,7 @@ public class ElasticsearchConfiguration {
     }
 
     /**
-     *  The time in ms to wait before connection will timeout.
+     * The time in ms to wait before connection will timeout.
      */
     public int getConnectionTimeout() {
         return connectionTimeout;
@@ -160,7 +177,7 @@ public class ElasticsearchConfiguration {
     }
 
     /**
-     *  Basic authenticate user
+     * Basic authenticate user
      */
     public String getUser() {
         return user;
@@ -171,7 +188,7 @@ public class ElasticsearchConfiguration {
     }
 
     /**
-     *  Password for authenticate
+     * Password for authenticate
      */
     public String getPassword() {
         return password;
@@ -184,11 +201,11 @@ public class ElasticsearchConfiguration {
     /**
      * Enable SSL
      */
-    public Boolean getEnableSSL() {
+    public boolean isEnableSSL() {
         return enableSSL;
     }
 
-    public void setEnableSSL(Boolean enableSSL) {
+    public void setEnableSSL(boolean enableSSL) {
         this.enableSSL = enableSSL;
     }
 
@@ -206,28 +223,28 @@ public class ElasticsearchConfiguration {
     /**
      * Disconnect after it finish calling the producer
      */
-    public Boolean getDisconnect() {
+    public boolean isDisconnect() {
         return disconnect;
     }
 
-    public void setDisconnect(Boolean disconnect) {
+    public void setDisconnect(boolean disconnect) {
         this.disconnect = disconnect;
     }
 
     /**
      * Enable automatically discover nodes from a running Elasticsearch cluster
      */
-    public Boolean getEnableSniffer() {
+    public boolean isEnableSniffer() {
         return enableSniffer;
     }
 
-    public void setEnableSniffer(Boolean enableSniffer) {
+    public void setEnableSniffer(boolean enableSniffer) {
         this.enableSniffer = enableSniffer;
     }
 
     /**
-     * The interval between consecutive ordinary sniff executions in milliseconds. Will be honoured when
-     * sniffOnFailure is disabled or when there are no failures between consecutive sniff executions
+     * The interval between consecutive ordinary sniff executions in milliseconds. Will be honoured when sniffOnFailure
+     * is disabled or when there are no failures between consecutive sniff executions
      */
     public int getSnifferInterval() {
         return snifferInterval;
@@ -251,7 +268,7 @@ public class ElasticsearchConfiguration {
     /**
      * Enable scroll usage
      */
-    public boolean getUseScroll() {
+    public boolean isUseScroll() {
         return useScroll;
     }
 

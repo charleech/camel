@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,6 @@ import org.apache.camel.support.component.AbstractApiProducer;
 public class FhirProducer extends AbstractApiProducer<FhirApiName, FhirConfiguration> {
 
     public FhirProducer(FhirEndpoint endpoint) {
-        super(endpoint, FhirPropertiesHelper.getHelper());
+        super(endpoint, FhirPropertiesHelper.getHelper(endpoint.getCamelContext()));
     }
 }

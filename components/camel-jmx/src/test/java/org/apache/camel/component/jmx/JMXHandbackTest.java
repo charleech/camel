@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,10 @@ import java.net.URI;
 
 import org.apache.camel.Message;
 import org.apache.camel.component.jmx.beans.ISimpleMXBean;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertSame;
-
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Tests that we get the handback object in the message header
@@ -33,7 +32,8 @@ public class JMXHandbackTest extends SimpleBeanFixture {
 
     URI hb;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         hb = new URI("urn:some:handback:object");
         super.setUp();
@@ -59,6 +59,6 @@ public class JMXHandbackTest extends SimpleBeanFixture {
     @Override
     protected void initRegistry() {
         super.initRegistry();
-        getRegistry().put("hb", hb);
+        getRegistry().bind("hb", hb);
     }
 }

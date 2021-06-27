@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.jaxb;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -33,24 +34,24 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 /**
  *
  */
 public class SplitterAndExceptionRouteTwistIssueTest extends CamelTestSupport {
 
-    @Produce(uri = "direct:error")
+    @Produce("direct:error")
     protected ProducerTemplate templateError;
 
-    @Produce(uri = "direct:error2")
+    @Produce("direct:error2")
     protected ProducerTemplate templateError2;
 
-    @EndpointInject(uri = "mock:mockReject")
+    @EndpointInject("mock:mockReject")
     protected MockEndpoint mockRejectEndpoint;
 
-    @EndpointInject(uri = "mock:mock_output")
+    @EndpointInject("mock:mock_output")
     protected MockEndpoint mockOutput;
 
     @Test
@@ -97,64 +98,60 @@ public class SplitterAndExceptionRouteTwistIssueTest extends CamelTestSupport {
             public void configure() throws Exception {
 
                 errorHandler(
-                    deadLetterChannel(mockRejectEndpoint)
-                        .useOriginalMessage()
-                        .maximumRedeliveries(0)
-                        .retryAttemptedLogLevel(LoggingLevel.WARN)
-                        .logExhausted(true)
-                        .logStackTrace(true)
-                        .logRetryStackTrace(true)
-                );
+                        deadLetterChannel(mockRejectEndpoint)
+                                .useOriginalMessage()
+                                .maximumRedeliveries(0)
+                                .retryAttemptedLogLevel(LoggingLevel.WARN)
+                                .logExhausted(true)
+                                .logStackTrace(true)
+                                .logRetryStackTrace(true));
 
                 from("direct:error")
-                    .handleFault()
-                    .convertBodyTo(String.class, "UTF-8")
-                    .process(new Processor() {
-                        @Override
-                        public void process(Exchange exchange) throws Exception {
-                            String text = (String) exchange.getIn().getBody();
-                            Twits twits = new Twits();
+                        .convertBodyTo(String.class, "UTF-8")
+                        .process(new Processor() {
+                            @Override
+                            public void process(Exchange exchange) throws Exception {
+                                String text = (String) exchange.getIn().getBody();
+                                Twits twits = new Twits();
 
-                            Twit twit1 = new Twit();
-                            twit1.setText(text);
-                            twits.getTwits().add(twit1);
+                                Twit twit1 = new Twit();
+                                twit1.setText(text);
+                                twits.getTwits().add(twit1);
 
-                            exchange.getIn().setBody(twits);
-                        }
-                    })
-                    .split().xpath("//twits/twit").streaming()
-                    .to(mockOutput);
-
+                                exchange.getIn().setBody(twits);
+                            }
+                        })
+                        .split().xpath("//twits/twit").streaming()
+                        .to(mockOutput);
 
                 from("direct:error2")
-                    .handleFault()
-                    .convertBodyTo(String.class, "UTF-8")
-                    .process(new Processor() {
-                        @Override
-                        public void process(Exchange exchange) throws Exception {
-                            String text = (String) exchange.getIn().getBody();
+                        .convertBodyTo(String.class, "UTF-8")
+                        .process(new Processor() {
+                            @Override
+                            public void process(Exchange exchange) throws Exception {
+                                String text = (String) exchange.getIn().getBody();
 
-                            StringBuilder twits = new StringBuilder();
-                            twits.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+                                StringBuilder twits = new StringBuilder();
+                                twits.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
 
-                            twits.append("<twits>");
-                            twits.append("<twit>");
-                            twits.append(text);
-                            twits.append("</twit>");
-                            twits.append("</twits>");
+                                twits.append("<twits>");
+                                twits.append("<twit>");
+                                twits.append(text);
+                                twits.append("</twit>");
+                                twits.append("</twits>");
 
-                            exchange.getIn().setBody(twits.toString());
-                        }
-                    })
-                    .split().xpath("//twits/twit").streaming()
-                    .to(mockOutput);
+                                exchange.getIn().setBody(twits.toString());
+                            }
+                        })
+                        .split().xpath("//twits/twit").streaming()
+                        .to(mockOutput);
             }
         };
     }
 }
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {"twits"})
+@XmlType(name = "", propOrder = { "twits" })
 @XmlRootElement(name = "twits")
 class Twits implements Serializable {
 
@@ -180,7 +177,7 @@ class Twits implements Serializable {
 }
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Twit", propOrder = {"text"})
+@XmlType(name = "Twit", propOrder = { "text" })
 @XmlRootElement(name = "twit")
 class Twit implements Serializable {
 
@@ -202,6 +199,3 @@ class Twit implements Serializable {
         return text;
     }
 }
-
-
-

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -94,7 +94,8 @@ public class CMISSessionFacade {
 
     private int pollTree(CMISConsumer cmisConsumer) throws Exception {
         Folder rootFolder = session.getRootFolder();
-        RecursiveTreeWalker treeWalker = new RecursiveTreeWalker(cmisConsumer, readContent, readCount,
+        RecursiveTreeWalker treeWalker = new RecursiveTreeWalker(
+                cmisConsumer, readContent, readCount,
                 pageSize);
         return treeWalker.processFolderRecursively(rootFolder);
     }
@@ -131,8 +132,9 @@ public class CMISSessionFacade {
     }
 
     //some duplication
-    public List<Map<String, Object>> retrieveResult(Boolean retrieveContent, Integer readSize,
-                                                    ItemIterable<QueryResult> itemIterable) {
+    public List<Map<String, Object>> retrieveResult(
+            Boolean retrieveContent, Integer readSize,
+            ItemIterable<QueryResult> itemIterable) {
         List<Map<String, Object>> result = new ArrayList<>();
         boolean queryForContent = retrieveContent != null ? retrieveContent : readContent;
         int documentsToRead = readSize != null ? readSize : readCount;
@@ -194,6 +196,10 @@ public class CMISSessionFacade {
         return session.getObjectByPath(path);
     }
 
+    public CmisObject getObjectById(String id) {
+        return this.session.getObject(id);
+    }
+
     public boolean isObjectTypeVersionable(String objectType) {
         if (CamelCMISConstants.CMIS_DOCUMENT.equals(getCMISTypeFor(objectType))) {
             ObjectType typeDefinition = session.getTypeDefinition(objectType);
@@ -215,8 +221,10 @@ public class CMISSessionFacade {
     }
 
     public ContentStream createContentStream(String fileName, byte[] buf, String mimeType) throws Exception {
-        return buf != null ? session.getObjectFactory()
-                .createContentStream(fileName, buf.length, mimeType, new ByteArrayInputStream(buf)) : null;
+        return buf != null
+                ? session.getObjectFactory()
+                        .createContentStream(fileName, buf.length, mimeType, new ByteArrayInputStream(buf))
+                : null;
     }
 
     public String getCMISTypeFor(String customOrCMISType) {
@@ -232,11 +240,19 @@ public class CMISSessionFacade {
         return session.createOperationContext();
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     /**
      * Username for the cmis repository
      */
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     /**
@@ -246,11 +262,19 @@ public class CMISSessionFacade {
         this.password = password;
     }
 
+    public String getRepositoryId() {
+        return repositoryId;
+    }
+
     /**
      * The Id of the repository to use. If not specified the first available repository is used
      */
     public void setRepositoryId(String repositoryId) {
         this.repositoryId = repositoryId;
+    }
+
+    public boolean isReadContent() {
+        return readContent;
     }
 
     /**
@@ -260,6 +284,10 @@ public class CMISSessionFacade {
         this.readContent = readContent;
     }
 
+    public int getReadCount() {
+        return readCount;
+    }
+
     /**
      * Max number of nodes to read
      */
@@ -267,12 +295,20 @@ public class CMISSessionFacade {
         this.readCount = readCount;
     }
 
+    public String getQuery() {
+        return query;
+    }
+
     /**
-     * The cmis query to execute against the repository.
-     * If not specified, the consumer will retrieve every node from the content repository by iterating the content tree recursively
+     * The cmis query to execute against the repository. If not specified, the consumer will retrieve every node from
+     * the content repository by iterating the content tree recursively
      */
     public void setQuery(String query) {
         this.query = query;
+    }
+
+    public int getPageSize() {
+        return pageSize;
     }
 
     /**

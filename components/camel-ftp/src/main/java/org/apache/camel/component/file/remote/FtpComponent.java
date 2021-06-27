@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,18 +20,18 @@ import java.net.URI;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.component.file.FileProcessStrategy;
+import org.apache.camel.Endpoint;
 import org.apache.camel.component.file.GenericFileEndpoint;
-import org.apache.camel.component.file.remote.strategy.FtpProcessStrategyFactory;
 import org.apache.camel.spi.annotations.Component;
-import org.apache.camel.support.IntrospectionSupport;
+import org.apache.camel.support.EndpointHelper;
+import org.apache.camel.support.component.PropertyConfigurerSupport;
+import org.apache.camel.util.PropertiesHelper;
 import org.apache.commons.net.ftp.FTPFile;
 
 /**
  * FTP Component
  */
 @Component("ftp")
-@FileProcessStrategy(FtpProcessStrategyFactory.class)
 public class FtpComponent extends RemoteFileComponent<FTPFile> {
 
     public FtpComponent() {
@@ -42,10 +42,12 @@ public class FtpComponent extends RemoteFileComponent<FTPFile> {
     }
 
     @Override
-    protected GenericFileEndpoint<FTPFile> buildFileEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
+    protected GenericFileEndpoint<FTPFile> buildFileEndpoint(String uri, String remaining, Map<String, Object> parameters)
+            throws Exception {
         String baseUri = getBaseUri(uri);
 
-        // lets make sure we create a new configuration as each endpoint can customize its own version
+        // lets make sure we create a new configuration as each endpoint can
+        // customize its own version
         // must pass on baseUri to the configuration (see above)
         FtpConfiguration config = new FtpConfiguration(new URI(baseUri));
 
@@ -59,42 +61,55 @@ public class FtpComponent extends RemoteFileComponent<FTPFile> {
     }
 
     /**
-     * Get the base uri part before the options as they can be non URI valid such as the expression using $ chars
-     * and the URI constructor will regard $ as an illegal character and we don't want to enforce end users to
-     * to escape the $ for the expression (file language)
+     * Get the base uri part before the options as they can be non URI valid such as the expression using $ chars and
+     * the URI constructor will regard $ as an illegal character and we don't want to enforce end users to to escape the
+     * $ for the expression (file language)
      */
     protected String getBaseUri(String uri) {
         String baseUri = uri;
-        if (uri.indexOf("?") != -1) {
-            baseUri = uri.substring(0, uri.indexOf("?"));
+        if (uri.indexOf('?') != -1) {
+            baseUri = uri.substring(0, uri.indexOf('?'));
         }
         return baseUri;
     }
 
     /**
-     * Extract additional ftp client configuration options from the parameters map (parameters starting with 
-     * 'ftpClientConfig.'). To remember these parameters, we set them in the endpoint and we can use them 
-     * when creating a client.
+     * Extract additional ftp client configuration options from the parameters map (parameters starting with
+     * 'ftpClientConfig.'). To remember these parameters, we set them in the endpoint and we can use them when creating
+     * a client.
      */
     protected void extractAndSetFtpClientConfigParameters(Map<String, Object> parameters, FtpEndpoint<FTPFile> answer) {
-        if (IntrospectionSupport.hasProperties(parameters, "ftpClientConfig.")) {
-            Map<String, Object> param = IntrospectionSupport.extractProperties(parameters, "ftpClientConfig.");
+        if (PropertiesHelper.hasProperties(parameters, "ftpClientConfig.")) {
+            Map<String, Object> param = PropertiesHelper.extractProperties(parameters, "ftpClientConfig.");
             answer.setFtpClientConfigParameters(param);
         }
     }
-    
+
     /**
-     * Extract additional ftp client options from the parameters map (parameters starting with 
-     * 'ftpClient.'). To remember these parameters, we set them in the endpoint and we can use them 
-     * when creating a client.
+     * Extract additional ftp client options from the parameters map (parameters starting with 'ftpClient.'). To
+     * remember these parameters, we set them in the endpoint and we can use them when creating a client.
      */
     protected void extractAndSetFtpClientParameters(Map<String, Object> parameters, FtpEndpoint<FTPFile> answer) {
-        if (IntrospectionSupport.hasProperties(parameters, "ftpClient.")) {
-            Map<String, Object> param = IntrospectionSupport.extractProperties(parameters, "ftpClient.");
+        if (PropertiesHelper.hasProperties(parameters, "ftpClient.")) {
+            Map<String, Object> param = PropertiesHelper.extractProperties(parameters, "ftpClient.");
             answer.setFtpClientParameters(param);
         }
     }
 
+    @Override
+    protected void setProperties(Endpoint endpoint, Map<String, Object> parameters) throws Exception {
+        Object siteCommand = parameters.remove("siteCommand");
+        if (siteCommand != null) {
+            String cmd = PropertyConfigurerSupport.property(getCamelContext(), String.class, siteCommand);
+            if (EndpointHelper.isReferenceParameter(cmd)) {
+                cmd = EndpointHelper.resolveReferenceParameter(getCamelContext(), cmd, String.class);
+            }
+            ((FtpEndpoint) endpoint).getConfiguration().setSiteCommand(cmd);
+        }
+        super.setProperties(endpoint, parameters);
+    }
+
+    @Override
     protected void afterPropertiesSet(GenericFileEndpoint<FTPFile> endpoint) throws Exception {
         // noop
     }

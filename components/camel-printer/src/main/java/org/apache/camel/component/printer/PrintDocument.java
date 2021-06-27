@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+
 import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.attribute.DocAttributeSet;
@@ -35,46 +36,51 @@ class PrintDocument implements Doc {
         this.stream = stream;
         this.docFlavor = docFlavor;
     }
-   
-    public DocFlavor getDocFlavor() { 
+
+    @Override
+    public DocFlavor getDocFlavor() {
         return docFlavor;
     }
 
+    @Override
     public DocAttributeSet getAttributes() {
         return null;
     }
 
+    @Override
     public Object getPrintData() throws IOException {
         return getStreamForBytes();
     }
 
+    @Override
     public Reader getReaderForText() throws IOException {
         synchronized (this) {
             if (reader != null) {
                 return reader;
-            } 
-            
+            }
+
             if (docFlavor.getMediaType().equalsIgnoreCase("image")) {
                 reader = null;
-            } else if ((docFlavor.getMediaType().equalsIgnoreCase("text")) 
-                || ((docFlavor.getMediaType().equalsIgnoreCase("application")) 
-                && (docFlavor.getMediaSubtype().equalsIgnoreCase("xml")))) {
+            } else if ((docFlavor.getMediaType().equalsIgnoreCase("text"))
+                    || ((docFlavor.getMediaType().equalsIgnoreCase("application"))
+                            && (docFlavor.getMediaSubtype().equalsIgnoreCase("xml")))) {
                 buffer = new byte[stream.available()];
                 int n = stream.available();
                 for (int i = 0; i < n; i++) {
-                    buffer[i] = (byte)stream.read();
+                    buffer[i] = (byte) stream.read();
                 }
-               
+
                 reader = new StringReader(new String(buffer));
                 stream = new ByteArrayInputStream(buffer);
             }
-            
+
             return reader;
         }
     }
 
+    @Override
     public InputStream getStreamForBytes() throws IOException {
-        return stream; 
+        return stream;
     }
 
 }

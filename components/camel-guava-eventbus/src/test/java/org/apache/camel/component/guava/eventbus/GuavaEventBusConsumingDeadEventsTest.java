@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,16 @@ import java.util.Date;
 
 import com.google.common.eventbus.DeadEvent;
 import com.google.common.eventbus.EventBus;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class GuavaEventBusConsumingDeadEventsTest extends CamelTestSupport {
 
+    @BindToRegistry("eventBus")
     EventBus eventBus = new EventBus();
 
     @Override
@@ -34,20 +37,13 @@ public class GuavaEventBusConsumingDeadEventsTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("guava-eventbus:eventBus?listenerInterface=org.apache.camel.component.guava.eventbus.CustomListener").
-                        to("mock:customListenerEvents");
+                from("guava-eventbus:eventBus?listenerInterface=org.apache.camel.component.guava.eventbus.CustomListener")
+                        .to("mock:customListenerEvents");
 
-                from("guava-eventbus:eventBus?listenerInterface=org.apache.camel.component.guava.eventbus.DeadEventListener").
-                        to("mock:deadEvents");
+                from("guava-eventbus:eventBus?listenerInterface=org.apache.camel.component.guava.eventbus.DeadEventListener")
+                        .to("mock:deadEvents");
             }
         };
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("eventBus", eventBus);
-        return registry;
     }
 
     @Test
@@ -63,7 +59,8 @@ public class GuavaEventBusConsumingDeadEventsTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
         getMockEndpoint("mock:deadEvents").setExpectedMessageCount(1);
         assertMockEndpointsSatisfied();
-        assertEquals(message, getMockEndpoint("mock:deadEvents").getExchanges().get(0).getIn().getBody(DeadEvent.class).getEvent());
+        assertEquals(message,
+                getMockEndpoint("mock:deadEvents").getExchanges().get(0).getIn().getBody(DeadEvent.class).getEvent());
     }
 
 }

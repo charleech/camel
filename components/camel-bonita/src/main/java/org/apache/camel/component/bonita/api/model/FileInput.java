@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,11 +24,10 @@ public class FileInput implements Serializable {
     private byte[] content;
 
     public FileInput(String filename, byte[] content) {
-        super();
         this.filename = filename;
         this.content = content;
     }
-    
+
     public String getFilename() {
         return filename;
     }
@@ -44,7 +43,5 @@ public class FileInput implements Serializable {
     public void setContent(byte[] content) {
         this.content = content;
     }
-
-    
 
 }

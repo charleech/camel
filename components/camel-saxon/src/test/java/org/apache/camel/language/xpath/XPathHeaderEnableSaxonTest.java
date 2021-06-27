@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,12 @@
 package org.apache.camel.language.xpath;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class XPathHeaderEnableSaxonTest extends XPathHeaderTest {
 
     @Override
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/language/xpath/XPathHeaderEnableSaxonTest.xml");
+        return newAppContext("XPathHeaderEnableSaxonTest.xml");
     }
 
 }

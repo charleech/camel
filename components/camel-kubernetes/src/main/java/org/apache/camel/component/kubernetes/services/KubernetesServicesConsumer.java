@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,13 @@ package org.apache.camel.component.kubernetes.services;
 
 import java.util.concurrent.ExecutorService;
 
-import io.fabric8.kubernetes.api.model.DoneableService;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceList;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
@@ -34,8 +32,12 @@ import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.consumer.common.ServiceEvent;
 import org.apache.camel.support.DefaultConsumer;
 import org.apache.camel.util.ObjectHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KubernetesServicesConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(KubernetesServicesConsumer.class);
 
     private final Processor processor;
     private ExecutorService executor;
@@ -57,14 +59,14 @@ public class KubernetesServicesConsumer extends DefaultConsumer {
         executor = getEndpoint().createExecutor();
 
         servicesWatcher = new ServicesConsumerTask();
-        executor.submit(servicesWatcher);       
+        executor.submit(servicesWatcher);
 
     }
 
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        log.debug("Stopping Kubernetes Services Consumer");
+        LOG.debug("Stopping Kubernetes Services Consumer");
         if (executor != null) {
             if (getEndpoint() != null && getEndpoint().getCamelContext() != null) {
                 if (servicesWatcher != null) {
@@ -80,20 +82,21 @@ public class KubernetesServicesConsumer extends DefaultConsumer {
         }
         executor = null;
     }
-    
+
     class ServicesConsumerTask implements Runnable {
-        
+
         private Watch watch;
-        
+
         @Override
         public void run() {
-            MixedOperation<Service, ServiceList, DoneableService, ServiceResource<Service, DoneableService>> w = getEndpoint().getKubernetesClient().services();
+            MixedOperation<Service, ServiceList, ServiceResource<Service>> w = getEndpoint().getKubernetesClient().services();
             if (ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getNamespace())) {
                 w.inNamespace(getEndpoint().getKubernetesConfiguration().getNamespace());
             }
-            if (ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getLabelKey()) 
-                && ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getLabelValue())) {
-                w.withLabel(getEndpoint().getKubernetesConfiguration().getLabelKey(), getEndpoint().getKubernetesConfiguration().getLabelValue());
+            if (ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getLabelKey())
+                    && ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getLabelValue())) {
+                w.withLabel(getEndpoint().getKubernetesConfiguration().getLabelKey(),
+                        getEndpoint().getKubernetesConfiguration().getLabelValue());
             }
             if (ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getResourceName())) {
                 w.withName(getEndpoint().getKubernetesConfiguration().getResourceName());
@@ -101,10 +104,9 @@ public class KubernetesServicesConsumer extends DefaultConsumer {
             watch = w.watch(new Watcher<Service>() {
 
                 @Override
-                public void eventReceived(io.fabric8.kubernetes.client.Watcher.Action action,
-                    Service resource) {
+                public void eventReceived(io.fabric8.kubernetes.client.Watcher.Action action, Service resource) {
                     ServiceEvent se = new ServiceEvent(action, resource);
-                    Exchange exchange = getEndpoint().createExchange();
+                    Exchange exchange = createExchange(false);
                     exchange.getIn().setBody(se.getService());
                     exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_EVENT_ACTION, se.getAction());
                     exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_EVENT_TIMESTAMP, System.currentTimeMillis());
@@ -112,26 +114,27 @@ public class KubernetesServicesConsumer extends DefaultConsumer {
                         processor.process(exchange);
                     } catch (Exception e) {
                         getExceptionHandler().handleException("Error during processing", exchange, e);
+                    } finally {
+                        releaseExchange(exchange, false);
                     }
-
                 }
 
                 @Override
-                public void onClose(KubernetesClientException cause) {
+                public void onClose(WatcherException cause) {
                     if (cause != null) {
-                        log.error(cause.getMessage(), cause);
+                        LOG.error(cause.getMessage(), cause);
                     }
                 }
 
             });
-        } 
-        
+        }
+
         public Watch getWatch() {
             return watch;
         }
 
         public void setWatch(Watch watch) {
             this.watch = watch;
-        } 
+        }
     }
 }

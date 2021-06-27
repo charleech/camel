@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import org.apache.camel.support.ScheduledPollConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public abstract class DropboxScheduledPollConsumer extends ScheduledPollConsumer {
     protected static final transient Logger LOG = LoggerFactory.getLogger(DropboxScheduledPollConsumer.class);
     protected final DropboxEndpoint endpoint;
@@ -39,9 +38,8 @@ public abstract class DropboxScheduledPollConsumer extends ScheduledPollConsumer
     protected abstract int poll() throws Exception;
 
     /**
-     * Lifecycle method invoked when the consumer has created.
-     * Internally create or reuse a connection to the low level dropbox client
-     * @throws Exception
+     * Lifecycle method invoked when the consumer has created. Internally create or reuse a connection to the low level
+     * dropbox client
      */
     @Override
     protected void doStart() throws Exception {
@@ -56,9 +54,7 @@ public abstract class DropboxScheduledPollConsumer extends ScheduledPollConsumer
     }
 
     /**
-     * Lifecycle method invoked when the consumer has destroyed.
-     * Erase the reference to the dropbox low level client
-     * @throws Exception
+     * Lifecycle method invoked when the consumer has destroyed. Erase the reference to the dropbox low level client
      */
     @Override
     protected void doStop() throws Exception {

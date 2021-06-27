@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,10 +30,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Arquillian.class)
@@ -42,10 +42,10 @@ public class EventComponentTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     // We should ideally use an ExpectedException JUnit rule to assert the content of the exception
@@ -59,8 +59,10 @@ public class EventComponentTest {
             context.start(true);
         } catch (Exception exception) {
             Throwable cause = exception.getCause().getCause();
-            assertThat("Exception cause is not an UnsupportedOperationException!", cause, is(instanceOf(UnsupportedOperationException.class)));
-            assertThat("Incorrect exception message!", cause.getMessage(), is(equalTo("Creating CDI event endpoint isn't supported. Use @Inject CdiEventEndpoint instead")));
+            assertThat("Exception cause is not an UnsupportedOperationException!", cause,
+                    is(instanceOf(UnsupportedOperationException.class)));
+            assertThat("Incorrect exception message!", cause.getMessage(),
+                    is(equalTo("Creating CDI event endpoint isn't supported. Use @Inject CdiEventEndpoint instead")));
             return;
         }
         fail("CDI event endpoint creation by URI should throw an exception!");
@@ -78,11 +80,11 @@ public class EventComponentTest {
     static class NotStartedCamelContext extends DefaultCamelContext {
 
         @Override
-        public void start() throws Exception {
+        public void start() {
             start(false);
         }
 
-        void start(boolean start) throws Exception {
+        void start(boolean start) {
             if (start) {
                 super.start();
             }

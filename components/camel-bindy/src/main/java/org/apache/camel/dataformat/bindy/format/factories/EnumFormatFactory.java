@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public class EnumFormatFactory extends AbstractFormatFactory {
 
     @Override
     public Format<?> build(FormattingOptions formattingOptions) {
-        @SuppressWarnings({"rawtypes", "unchecked"})
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         EnumFormat enumFormat = new EnumFormat(formattingOptions.getClazz());
         return enumFormat;
     }
@@ -41,10 +41,12 @@ public class EnumFormatFactory extends AbstractFormatFactory {
             this.clazz = clazz;
         }
 
+        @Override
         public String format(final T object) throws Exception {
             return object.name();
         }
 
+        @Override
         public T parse(final String string) throws Exception {
             return Enum.valueOf(clazz, string);
         }

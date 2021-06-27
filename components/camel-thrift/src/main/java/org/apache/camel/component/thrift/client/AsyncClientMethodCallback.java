@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 public class AsyncClientMethodCallback implements AsyncMethodCallback {
     private final Exchange exchange;
     private final AsyncCallback callback;
-    
+
     public AsyncClientMethodCallback(Exchange exchange, AsyncCallback callback) {
         this.exchange = exchange;
         this.callback = callback;

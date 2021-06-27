@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,8 @@ public class IrcMessage extends DefaultMessage {
         setBody(message);
     }
 
-    public IrcMessage(CamelContext camelContext, String messageType, String target, IRCUser user, String whoWasKickedNick, String message) {
+    public IrcMessage(CamelContext camelContext, String messageType, String target, IRCUser user, String whoWasKickedNick,
+                      String message) {
         super(camelContext);
         this.messageType = messageType;
         this.target = target;

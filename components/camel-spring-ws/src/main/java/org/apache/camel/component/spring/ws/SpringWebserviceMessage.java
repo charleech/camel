@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,12 @@ public class SpringWebserviceMessage extends DefaultMessage {
     public SpringWebserviceMessage(CamelContext camelContext, WebServiceMessage webServiceMessage) {
         super(camelContext);
         this.webServiceMessage = webServiceMessage;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        webServiceMessage = null;
     }
 
     @Override

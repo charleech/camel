@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,7 +55,6 @@ public class CallableStatementWrapper implements StatementWrapper {
         cb.execute(this);
     }
 
-
     @Override
     public int[] executeBatch() throws SQLException {
 
@@ -64,7 +63,6 @@ public class CallableStatementWrapper implements StatementWrapper {
         }
 
         final Iterator<Map<String, ?>> params = batchItems.iterator();
-
 
         return factory.getJdbcTemplate().execute(new CallableStatementCreator() {
             @Override
@@ -87,12 +85,10 @@ public class CallableStatementWrapper implements StatementWrapper {
         });
     }
 
-
     @Override
     public Integer getUpdateCount() throws SQLException {
         return this.updateCount;
     }
-
 
     @Override
     public Object executeStatement() throws SQLException {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,40 +20,24 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import facebook4j.Facebook;
-
 import org.apache.camel.component.facebook.config.FacebookEndpointConfiguration;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test {@link FacebookMethodsTypeHelper}.
  */
 public class FacebookMethodsTypeHelperTest {
 
-    private Set<String> names = new HashSet<>();
-    private final List<String> getExcludes;
     private final List<String> searchIncludes;
 
     public FacebookMethodsTypeHelperTest() {
-        // get all method names
-        for (Class<?> aClass : Facebook.class.getInterfaces()) {
-            if (aClass.getName().endsWith("Methods")) {
-                for (Method method : aClass.getDeclaredMethods()) {
-                    names.add(getShortName(method.getName()));
-                }
-            }
-        }
-
-        getExcludes = Arrays.asList("places");
         searchIncludes = Arrays.asList("checkins", "events", "groups", "locations", "places", "posts", "users");
     }
 
@@ -74,14 +58,14 @@ public class FacebookMethodsTypeHelperTest {
 
             final String[] argNames = method.getArgNames().toArray(new String[method.getArgNames().size()]);
             List<FacebookMethodsType> candidates = FacebookMethodsTypeHelper.getCandidateMethods(name, argNames);
-            assertFalse("No candidate methods for " + name, candidates.isEmpty());
+            assertFalse(candidates.isEmpty(), "No candidate methods for " + name);
 
             if (!name.equals(shortName) && !"search".equals(name)) {
 
                 if (searchIncludes.contains(shortName)) {
                     candidates = FacebookMethodsTypeHelper.getCandidateMethods(
-                        FacebookMethodsTypeHelper.convertToSearchMethod(shortName), new String[0]);
-                    assertFalse("No candidate search methods for " + shortName, candidates.isEmpty());
+                            FacebookMethodsTypeHelper.convertToSearchMethod(shortName), new String[0]);
+                    assertFalse(candidates.isEmpty(), "No candidate search methods for " + shortName);
                 }
             }
         }
@@ -97,7 +81,7 @@ public class FacebookMethodsTypeHelperTest {
         final Class<?>[] interfaces = Facebook.class.getInterfaces();
         for (Class<?> clazz : interfaces) {
             if (clazz.getName().endsWith("Methods")) {
-                // check all methods of this *Methods interface
+                // check all methods of this Methods interface
                 for (Method method : clazz.getDeclaredMethods()) {
                     // will throw an exception if can't be found
                     final List<Object> arguments = FacebookMethodsTypeHelper.getArguments(method.getName());
@@ -106,8 +90,8 @@ public class FacebookMethodsTypeHelperTest {
                     for (int i = 0; i < nArgs; i++) {
                         types.add((Class<?>) arguments.get(2 * i));
                     }
-                    assertTrue("Missing parameters for " + method,
-                        types.containsAll(Arrays.asList(method.getParameterTypes())));
+                    assertTrue(types.containsAll(Arrays.asList(method.getParameterTypes())),
+                            "Missing parameters for " + method);
                 }
             }
         }
@@ -115,7 +99,7 @@ public class FacebookMethodsTypeHelperTest {
 
     @Test
     public void testAllArguments() throws Exception {
-        assertFalse("Missing arguments", FacebookMethodsTypeHelper.allArguments().isEmpty());
+        assertFalse(FacebookMethodsTypeHelper.allArguments().isEmpty(), "Missing arguments");
     }
 
     @Test
@@ -134,20 +118,20 @@ public class FacebookMethodsTypeHelperTest {
                 // skip lists, since they will be converted in invokeMethod()
                 expectedType = actualType;
             }
-            assertEquals("Missing property " + field.getName(), expectedType, actualType);
+            assertEquals(expectedType, actualType, "Missing property " + field.getName());
         }
     }
 
     @Test
     public void testConvertToGetMethod() throws Exception {
-        assertEquals("Invalid get method name",
-            FacebookMethodsType.GET_ACCOUNTS.getName(), FacebookMethodsTypeHelper.convertToGetMethod("accounts"));
+        assertEquals(FacebookMethodsType.GET_ACCOUNTS.getName(), FacebookMethodsTypeHelper.convertToGetMethod("accounts"),
+                "Invalid get method name");
     }
 
     @Test
     public void testConvertToSearchMethod() throws Exception {
-        assertEquals("Invalid search method name",
-            FacebookMethodsType.SEARCHPOSTS.getName(), FacebookMethodsTypeHelper.convertToSearchMethod("posts"));
+        assertEquals(FacebookMethodsType.SEARCHPOSTS.getName(), FacebookMethodsTypeHelper.convertToSearchMethod("posts"),
+                "Invalid search method name");
     }
 
 }

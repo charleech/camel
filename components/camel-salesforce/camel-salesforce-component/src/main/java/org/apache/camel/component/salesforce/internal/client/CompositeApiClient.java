@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.salesforce.internal.client;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,21 +43,28 @@ public interface CompositeApiClient {
         void onResponse(Optional<T> body, Map<String, String> headers, SalesforceException exception);
     }
 
-    void submitComposite(SObjectComposite composite, Map<String, List<String>> headers,
-        ResponseCallback<SObjectCompositeResponse> callback) throws SalesforceException;
+    void submitCompositeRaw(
+            InputStream raw, Map<String, List<String>> headers, ResponseCallback<InputStream> callback,
+            String method)
+            throws SalesforceException;
 
-    void submitCompositeBatch(SObjectBatch batch, Map<String, List<String>> headers,
-        ResponseCallback<SObjectBatchResponse> callback) throws SalesforceException;
+    void submitComposite(
+            SObjectComposite composite, Map<String, List<String>> headers, ResponseCallback<SObjectCompositeResponse> callback)
+            throws SalesforceException;
+
+    void submitCompositeBatch(
+            SObjectBatch batch, Map<String, List<String>> headers, ResponseCallback<SObjectBatchResponse> callback)
+            throws SalesforceException;
 
     /**
-     * Submits given nodes (records) of SObjects and their children as a tree in
-     * a single request. And updates the <code>Id</code> parameter of each
-     * object to the value returned from the API call.
+     * Submits given nodes (records) of SObjects and their children as a tree in a single request. And updates the
+     * <code>Id</code> parameter of each object to the value returned from the API call.
      *
-     * @param tree SObject tree to submit
+     * @param tree     SObject tree to submit
      * @param callback {@link ResponseCallback} to handle response or exception
      */
-    void submitCompositeTree(SObjectTree tree, Map<String, List<String>> headers,
-        ResponseCallback<SObjectTreeResponse> callback) throws SalesforceException;
+    void submitCompositeTree(
+            SObjectTree tree, Map<String, List<String>> headers, ResponseCallback<SObjectTreeResponse> callback)
+            throws SalesforceException;
 
 }

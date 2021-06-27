@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.jgroups.protocols.raft.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ClusterRoleChangeListener implements RAFT.RoleChange {
     private static final transient Logger LOG = LoggerFactory.getLogger(ClusterRoleChangeListener.class);
 
@@ -40,28 +39,28 @@ public class ClusterRoleChangeListener implements RAFT.RoleChange {
     public void roleChanged(Role role) {
         LOG.debug("Role received {}.", role);
         switch (role) {
-        case Leader:
-            if (!jgroupsRaftClusterView.isMaster()) {
-                jgroupsRaftClusterView.setMaster(true);
-                jgroupsRaftClusterView.fireLeadershipChangedEvent(Optional.ofNullable(jgroupsRaftClusterView.getLocalMember()));
-            }
-            break;
-        case Follower:
-            if (jgroupsRaftClusterView.isMaster()) {
-                jgroupsRaftClusterView.setMaster(false);
-                jgroupsRaftClusterView.fireLeadershipChangedEvent(Optional.empty());
-            }
-            break;
-        case Candidate:
-            if (jgroupsRaftClusterView.isMaster()) {
-                jgroupsRaftClusterView.setMaster(false);
-                jgroupsRaftClusterView.fireLeadershipChangedEvent(Optional.empty());
-            }
-            break;
-        default:
-            LOG.error("Role {} unknown.", role);
-            throw new UnsupportedOperationException("Role " + role + " unknown.");
+            case Leader:
+                if (!jgroupsRaftClusterView.isMaster()) {
+                    jgroupsRaftClusterView.setMaster(true);
+                    jgroupsRaftClusterView
+                            .fireLeadershipChangedEvent(Optional.ofNullable(jgroupsRaftClusterView.getLocalMember()));
+                }
+                break;
+            case Follower:
+                if (jgroupsRaftClusterView.isMaster()) {
+                    jgroupsRaftClusterView.setMaster(false);
+                    jgroupsRaftClusterView.fireLeadershipChangedEvent(Optional.empty());
+                }
+                break;
+            case Candidate:
+                if (jgroupsRaftClusterView.isMaster()) {
+                    jgroupsRaftClusterView.setMaster(false);
+                    jgroupsRaftClusterView.fireLeadershipChangedEvent(Optional.empty());
+                }
+                break;
+            default:
+                LOG.error("Role {} unknown.", role);
+                throw new UnsupportedOperationException("Role " + role + " unknown.");
         }
     }
 }
-

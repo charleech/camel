@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,29 +21,34 @@ import java.util.Map;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SqlConsumerOutputTypeStreamListTest extends CamelTestSupport {
 
     private EmbeddedDatabase db;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         db = new EmbeddedDatabaseBuilder()
-                .setType(EmbeddedDatabaseType.DERBY).addScript("sql/createAndPopulateDatabase.sql").build();
+                .setName(getClass().getSimpleName())
+                .setType(EmbeddedDatabaseType.DERBY)
+                .addScript("sql/createAndPopulateDatabase.sql").build();
 
         super.setUp();
     }
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
 
@@ -97,23 +102,25 @@ public class SqlConsumerOutputTypeStreamListTest extends CamelTestSupport {
             public void configure() {
                 getContext().getComponent("sql", SqlComponent.class).setDataSource(db);
 
-                from("sql:select * from projects order by id?outputType=StreamList&consumer.initialDelay=0&consumer.delay=50").routeId("route1").noAutoStartup()
+                from("sql:select * from projects order by id?outputType=StreamList&initialDelay=0&delay=50").routeId("route1")
+                        .noAutoStartup()
                         .to("log:stream")
                         .to("mock:result");
 
-                from("sql:select * from projects order by id?outputType=StreamList&consumer.initialDelay=0&consumer.delay=50").routeId("route2").noAutoStartup()
+                from("sql:select * from projects order by id?outputType=StreamList&initialDelay=0&delay=50").routeId("route2")
+                        .noAutoStartup()
                         .to("log:stream")
                         .split(body()).streaming()
-                            .to("log:row")
-                            .to("mock:result")
+                        .to("log:row")
+                        .to("mock:result")
                         .end();
 
-                from("sql:select * from projects order by id?outputType=StreamList&outputClass=org.apache.camel.component.sql.ProjectModel&consumer.initialDelay=0&consumer.delay=50")
+                from("sql:select * from projects order by id?outputType=StreamList&outputClass=org.apache.camel.component.sql.ProjectModel&initialDelay=0&delay=50")
                         .routeId("route3").noAutoStartup()
                         .to("log:stream")
                         .split(body()).streaming()
-                            .to("log:row")
-                            .to("mock:result")
+                        .to("log:row")
+                        .to("mock:result")
                         .end();
             }
         };

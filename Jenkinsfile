@@ -17,11 +17,10 @@
  * under the License.
  */
 
-def LOCAL_REPOSITORY = env.LOCAL_REPOSITORY ?: '/home/jenkins/jenkins-slave/maven-repositories/0'
 def AGENT_LABEL = env.AGENT_LABEL ?: 'ubuntu'
-def JDK_NAME = env.JDK_NAME ?: 'JDK 1.8 (latest)'
+def JDK_NAME = env.JDK_NAME ?: 'adoptopenjdk_hotspot_8u282'
 
-def MAVEN_PARAMS = "-U -B -e -fae -V -Dmaven.repo.local=${LOCAL_REPOSITORY} -Dnoassembly -Dmaven.compiler.fork=true -Dsurefire.rerunFailingTestsCount=2"
+def MAVEN_PARAMS = "-U -B -e -fae -V -Dnoassembly -Dmaven.compiler.fork=true -Dsurefire.rerunFailingTestsCount=2"
 
 pipeline {
 
@@ -33,6 +32,10 @@ pipeline {
         jdk JDK_NAME
     }
 
+    environment {
+        MAVEN_SKIP_RC = true
+    }
+
     options {
         buildDiscarder(
             logRotator(artifactNumToKeepStr: '5', numToKeepStr: '10')
@@ -40,42 +43,51 @@ pipeline {
         disableConcurrentBuilds()
     }
 
+    parameters {
+        booleanParam(name: 'CLEAN', defaultValue: true, description: 'Perform the build in clean workspace')
+    }
+
     stages {
+
+        stage('Clean workspace') {
+             when {
+                 expression { params.CLEAN }
+             }
+             steps {
+                 sh 'git clean -fdx'
+           }
+        }
 
         stage('Build & Deploy') {
             when {
                 branch 'master'
             }
             steps {
-                sh "./mvnw $MAVEN_PARAMS -Dmaven.test.skip.exec=true clean deploy"
+                sh "./mvnw $MAVEN_PARAMS -Pdeploy -Dmaven.test.skip.exec=true clean deploy"
             }
         }
 
-        stage('Build') {
+        stage('Website update') {
             when {
-                not {
-                    branch 'master'
-                }
+                branch 'master'
+                changeset 'docs/**/*'
             }
+
             steps {
-                sh "./mvnw $MAVEN_PARAMS -Dmaven.test.skip.exec=true clean install"
+                build job: 'Camel/Camel.website/master', wait: false
             }
         }
 
         stage('Checks') {
             steps {
+                sh "./mvnw $MAVEN_PARAMS -pl :camel-buildtools install"
                 sh "./mvnw $MAVEN_PARAMS -Psourcecheck -Dcheckstyle.failOnViolation=false checkstyle:check"
-            }
-            post {
-                always {
-                    checkstyle pattern: '**/checkstyle-result.xml', canRunOnFailed: true
-                }
             }
         }
 
         stage('Test') {
             steps {
-                sh "./mvnw $MAVEN_PARAMS -Dmaven.test.failure.ignore=true test"
+                sh "./mvnw $MAVEN_PARAMS -Dmaven.test.failure.ignore=true clean install"
             }
             post {
                 always {

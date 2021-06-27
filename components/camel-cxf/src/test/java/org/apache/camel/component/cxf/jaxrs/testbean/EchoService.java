@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,9 @@ import javax.ws.rs.core.Response;
 
 @Path("/echoservice/")
 public class EchoService {
-    @Context 
+    @Context
     private HttpHeaders headers;
-    
+
     @POST
     @Path("/echo/")
     public Response echo(String string) {
@@ -37,5 +37,5 @@ public class EchoService {
             return Response.ok("Old " + string).build();
         }
         return Response.ok("New " + string).cookie(new NewCookie("foo", "bar", "/", null, 1, null, -1, false)).build();
-    }  
+    }
 }

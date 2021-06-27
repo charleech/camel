@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.generator.swagger;
 
 import java.nio.file.Path;
+
 import javax.annotation.processing.Filer;
 
 import io.swagger.models.Swagger;
@@ -25,8 +26,8 @@ import org.apache.camel.model.rest.RestsDefinition;
 import static org.apache.camel.util.ObjectHelper.notNull;
 
 /**
- * Source code and {@link RestsDefinition} generator that generates Camel REST
- * DSL implementations from Swagger (OpenAPI) specifications.
+ * Source code and {@link RestsDefinition} generator that generates Camel REST DSL implementations from Swagger
+ * (OpenAPI) specifications.
  */
 public abstract class RestDslGenerator<G> {
 
@@ -37,6 +38,7 @@ public abstract class RestDslGenerator<G> {
     String restComponent;
     String restContextPath;
     String apiContextPath;
+    boolean clientRequestValidation;
     boolean springComponent;
     boolean springBootProject;
 
@@ -93,9 +95,18 @@ public abstract class RestDslGenerator<G> {
 
         return that;
     }
-    
+
     public G withApiContextPath(String contextPath) {
         this.apiContextPath = contextPath;
+
+        @SuppressWarnings("unchecked")
+        final G that = (G) this;
+
+        return that;
+    }
+
+    public G withClientRequestValidation() {
+        this.clientRequestValidation = true;
 
         @SuppressWarnings("unchecked")
         final G that = (G) this;

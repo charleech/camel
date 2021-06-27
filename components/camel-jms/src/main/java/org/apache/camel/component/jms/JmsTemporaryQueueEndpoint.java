@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,7 @@ import javax.jms.Session;
 import javax.jms.TemporaryQueue;
 
 /**
- * A <a href="http://activemq.apache.org/jms.html">JMS Endpoint</a>
- * for working with a {@link TemporaryQueue}
+ * A <a href="http://activemq.apache.org/jms.html">JMS Endpoint</a> for working with a {@link TemporaryQueue}
  * <p/>
  * <b>Important:</b> Need to be really careful to always use the same Connection otherwise the destination goes stale
  */
@@ -35,7 +34,8 @@ public class JmsTemporaryQueueEndpoint extends JmsQueueEndpoint implements Desti
         setDestinationType("temp-queue");
     }
 
-    public JmsTemporaryQueueEndpoint(String uri, JmsComponent component, String destination, JmsConfiguration configuration, QueueBrowseStrategy queueBrowseStrategy) {
+    public JmsTemporaryQueueEndpoint(String uri, JmsComponent component, String destination, JmsConfiguration configuration,
+                                     QueueBrowseStrategy queueBrowseStrategy) {
         super(uri, component, destination, configuration, queueBrowseStrategy);
         setDestinationType("temp-queue");
     }
@@ -45,24 +45,18 @@ public class JmsTemporaryQueueEndpoint extends JmsQueueEndpoint implements Desti
         setDestinationType("temp-queue");
     }
 
-    public JmsTemporaryQueueEndpoint(TemporaryQueue jmsDestination) throws JMSException {
-        super("jms:temp-queue:" + jmsDestination.getQueueName(), null);
-        setDestinationType("temp-queue");
-        this.jmsDestination = jmsDestination;
-        setDestination(jmsDestination);
-    }
-
-
     /**
-     * This endpoint is a singleton so that the temporary destination instances are shared across all
-     * producers and consumers of the same endpoint URI
+     * This endpoint is a singleton so that the temporary destination instances are shared across all producers and
+     * consumers of the same endpoint URI
      *
      * @return true
      */
+    @Override
     public boolean isSingleton() {
         return true;
     }
-    
+
+    @Override
     public synchronized Destination getJmsDestination(Session session) throws JMSException {
         if (jmsDestination == null) {
             jmsDestination = createJmsDestination(session);

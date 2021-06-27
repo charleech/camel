@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
 import java.net.ServerSocket;
@@ -28,16 +27,17 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit.rule.mllp.MllpClientResource;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.camel.test.mllp.Hl7TestMessageGenerator;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class MllpTcpServerConsumerBindTimeoutTest extends CamelTestSupport {
-    @Rule
+
+    @RegisterExtension
     public MllpClientResource mllpClient = new MllpClientResource();
 
-    @EndpointInject(uri = "mock://result")
+    @EndpointInject("mock://result")
     MockEndpoint result;
 
     @Override
@@ -70,14 +70,14 @@ public class MllpTcpServerConsumerBindTimeoutTest extends CamelTestSupport {
                 String routeId = "mllp-test-receiver-route";
 
                 onCompletion()
-                    .toF("log:%s?level=INFO&showAll=true", routeId)
-                    .log(LoggingLevel.INFO, routeId, "Test route complete");
+                        .toF("log:%s?level=INFO&showAll=true", routeId)
+                        .log(LoggingLevel.INFO, routeId, "Test route complete");
 
                 fromF("mllp://%s:%d?autoAck=true&connectTimeout=%d&receiveTimeout=%d",
-                    mllpClient.getMllpHost(), mllpClient.getMllpPort(), connectTimeout, responseTimeout)
-                    .routeId(routeId)
-                    .log(LoggingLevel.INFO, routeId, "Test route received message")
-                    .to(result);
+                        mllpClient.getMllpHost(), mllpClient.getMllpPort(), connectTimeout, responseTimeout)
+                                .routeId(routeId)
+                                .log(LoggingLevel.INFO, routeId, "Test route received message")
+                                .to(result);
 
             }
         };
@@ -112,4 +112,3 @@ public class MllpTcpServerConsumerBindTimeoutTest extends CamelTestSupport {
     }
 
 }
-

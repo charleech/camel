@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Holds approvals resource data.
  *
- * @see <a href="https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_process_approvals.htm">
+ * @see <a href= "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_process_approvals.htm">
  *      https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_process_approvals.htm</a>
  */
 public final class Approvals implements Serializable {
@@ -52,8 +52,8 @@ public final class Approvals implements Serializable {
 
         @JsonCreator
         Info(@JsonProperty("id") final String id, @JsonProperty("description") final String description,
-                @JsonProperty("name") final String name, @JsonProperty("object") final String object,
-                @JsonProperty("sortOrder") final int sortOrder) {
+             @JsonProperty("name") final String name, @JsonProperty("object") final String object,
+             @JsonProperty("sortOrder") final int sortOrder) {
             this.description = description;
             this.id = id;
             this.name = name;
@@ -111,13 +111,12 @@ public final class Approvals implements Serializable {
     /**
      * Returns approvals for specific Salesforce object type.
      *
-     * @param object
-     *            type
-     * @return approvals of specified type
+     * @param  object type
+     * @return        approvals of specified type
      */
     public List<Info> approvalsFor(final String object) {
         return approvals.getOrDefault(object, Collections.emptyList());
-    };
+    }
 
     /**
      * Returns approvals by Salesforce object type. You might have approvals for "Account" and "Case" Salesforce

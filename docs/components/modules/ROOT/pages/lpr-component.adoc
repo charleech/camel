@@ -1,9 +1,20 @@
 [[lpr-component]]
-== Printer Component
+= Printer Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-printer/src/main/docs/lpr-component.adoc
+:docTitle: Printer
+:artifactId: camel-printer
+:description: Send print jobs to printers.
+:since: 2.1
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/lpr.adoc[opts=optional]
 
-*Available as of Camel version 2.1*
+*Since Camel {since}*
 
-The *printer* component provides a way to direct payloads on a route to
+*{component-header}*
+
+The Printer component provides a way to direct payloads on a route to
 a printer. Obviously the payload has to be a formatted piece of payload
 in order for the component to appropriately print it. The objective is
 to be able to direct specific payloads as jobs to a line printer in a
@@ -12,7 +23,7 @@ camel flow.
 This component only supports a camel producer endpoint.
 
 The functionality allows for the payload to be printed on a default
-printer, named local, remote or wirelessly linked printer using the
+printer, named local, remote or wireless linked printer using the
 javax printing API under the covers.
 
 Maven users will need to add the following dependency to their `pom.xml`
@@ -28,7 +39,7 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 Since the URI scheme for a printer has not been standardized (the
 nearest thing to a standard being the IETF print standard) and therefore
@@ -43,11 +54,20 @@ lpr://remotehost:port/path/to/printer[?options]
 You can append query options to the URI in the following format,
 `?option=value&option=value&...`
 
-### Options
+== Options
 
 
 // component options: START
-The Printer component has no options.
+The Printer component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -61,7 +81,7 @@ lpr:hostname:port/printername
 
 with the following path and query parameters:
 
-==== Path Parameters (3 parameters):
+=== Path Parameters (3 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -73,7 +93,7 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (11 parameters):
+=== Query Parameters (11 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -82,43 +102,28 @@ with the following path and query parameters:
 | *copies* (producer) | Number of copies to print | 1 | int
 | *docFlavor* (producer) | Sets DocFlavor to use. |  | DocFlavor
 | *flavor* (producer) | Sets DocFlavor to use. |  | String
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *mediaSize* (producer) | Sets the stationary as defined by enumeration names in the javax.print.attribute.standard.MediaSizeName API. The default setting is to use North American Letter sized stationary. The value's case is ignored, e.g. values of iso_a4 and ISO_A4 may be used. | na-letter | String
 | *mediaTray* (producer) | Sets MediaTray supported by the javax.print.DocFlavor API, for example upper,middle etc. |  | String
 | *mimeType* (producer) | Sets mimeTypes supported by the javax.print.DocFlavor API |  | String
-| *orientation* (producer) | Sets the page orientation. | portrait | String
+| *orientation* (producer) | Sets the page orientation. There are 4 enums and the value can be one of: portrait, landscape, reverse-portrait, reverse-landscape | portrait | String
 | *printerPrefix* (producer) | Sets the prefix name of the printer, it is useful when the printer name does not start with //hostname/printer |  | String
 | *sendToPrinter* (producer) | etting this option to false prevents sending of the print data to the printer | true | boolean
-| *sides* (producer) | Sets one sided or two sided printing based on the javax.print.attribute.standard.Sides API | one-sided | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *sides* (producer) | Sets one sided or two sided printing based on the javax.print.attribute.standard.Sides API. There are 5 enums and the value can be one of: one-sided, duplex, tumble, two-sided-short-edge, two-sided-long-edge | one-sided | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
 
+== Sending Messages to a Printer
 
-The component supports 2 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.lpr.enabled* | Enable lpr component | true | Boolean
-| *camel.component.lpr.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-### Sending Messages to a Printer
-
-#### Printer Producer
+=== Printer Producer
 
 Sending data to the printer is very straightforward and involves
 creating a producer endpoint that can be sent message exchanges on in
 route.
 
-### Usage Samples
+== Usage Samples
 
-#### Example 1: Printing text based payloads on a Default printer using letter stationary and one-sided mode
+=== Example 1: Printing text based payloads on a Default printer using letter stationary and one-sided mode
 
 [source,java]
 -----------------------------------------------
@@ -133,7 +138,7 @@ RouteBuilder builder = new RouteBuilder() {
     }};
 -----------------------------------------------
 
-#### Example 2: Printing GIF based payloads on a Remote printer using A4 stationary and one-sided mode
+=== Example 2: Printing GIF based payloads on a Remote printer using A4 stationary and one-sided mode
 
 [source,java]
 --------------------------------------------------
@@ -147,7 +152,7 @@ RouteBuilder builder = new RouteBuilder() {
    }};
 --------------------------------------------------
 
-#### Example 3: Printing JPEG based payloads on a Remote printer using Japanese Postcard stationary and one-sided mode
+=== Example 3: Printing JPEG based payloads on a Remote printer using Japanese Postcard stationary and one-sided mode
 
 [source,java]
 --------------------------------------------------
@@ -161,3 +166,5 @@ RouteBuilder builder = new RouteBuilder() {
            "&flavor=DocFlavor.INPUT_STREAM")
     }};
 --------------------------------------------------
+
+include::{page-component-version}@camel-spring-boot::page$printer-starter.adoc[]

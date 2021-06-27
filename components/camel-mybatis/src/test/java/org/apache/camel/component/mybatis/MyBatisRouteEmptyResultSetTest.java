@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,9 @@ import java.util.ArrayList;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MyBatisRouteEmptyResultSetTest extends MyBatisTestSupport {
 
@@ -32,14 +34,15 @@ public class MyBatisRouteEmptyResultSetTest extends MyBatisTestSupport {
         assertMockEndpointsSatisfied();
 
         // should be an empty list
-        assertEquals("Should be an empty list", 0, endpoint.getReceivedExchanges().get(0).getIn().getBody(ArrayList.class).size());
+        assertEquals(0, endpoint.getReceivedExchanges().get(0).getIn().getBody(ArrayList.class).size(),
+                "Should be an empty list");
     }
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("mybatis:selectAllAccounts?consumer.useIterator=false&consumer.routeEmptyResultSet=true").to("mock:results");
+                from("mybatis:selectAllAccounts?useIterator=false&routeEmptyResultSet=true").to("mock:results");
             }
         };
     }

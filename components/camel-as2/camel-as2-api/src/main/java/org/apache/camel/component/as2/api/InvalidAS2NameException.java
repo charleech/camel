@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,14 +28,12 @@ public class InvalidAS2NameException extends Exception {
     private final int index;
 
     /**
-     * Constructs an <code>InvalidAS2NameException</code> for the
-     * specified name and index.
+     * Constructs an <code>InvalidAS2NameException</code> for the specified name and index.
      *
-     * @param name - the AS2 name that is invalid.
+     * @param name  - the AS2 name that is invalid.
      * @param index - the index in the <code>name</code> of the invalid character
      */
     public InvalidAS2NameException(String name, int index) {
-        super();
         this.name = name;
         this.index = index;
     }

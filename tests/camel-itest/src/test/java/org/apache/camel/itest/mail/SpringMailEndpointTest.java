@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,28 +19,28 @@ package org.apache.camel.itest.mail;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-
 
 /**
  * Unit testing Mail configured using spring bean
  */
+@CamelSpringTest
 @ContextConfiguration
-@Ignore
-public class SpringMailEndpointTest extends AbstractJUnit4SpringContextTests {
+@Disabled
+public class SpringMailEndpointTest {
 
     @Autowired
     protected ProducerTemplate template;
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint result;
 
     @Test
-    public void testMailEndpointAsSpringBean() throws Exception {
+    void testMailEndpointAsSpringBean() throws Exception {
         Mailbox.clearAll();
 
         String body = "Hello Claus.\nYes it does.\n\nRegards James.";

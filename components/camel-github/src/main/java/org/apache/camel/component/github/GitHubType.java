@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,14 @@ package org.apache.camel.component.github;
 
 public enum GitHubType {
 
-    CLOSEPULLREQUEST, PULLREQUESTCOMMENT, COMMIT, PULLREQUEST, TAG, PULLREQUESTSTATE,
-    PULLREQUESTFILES, GETCOMMITFILE, CREATEISSUE
-
+    CLOSEPULLREQUEST,
+    PULLREQUESTCOMMENT,
+    COMMIT,
+    PULLREQUEST,
+    TAG,
+    PULLREQUESTSTATE,
+    PULLREQUESTFILES,
+    GETCOMMITFILE,
+    CREATEISSUE,
+    EVENT;
 }

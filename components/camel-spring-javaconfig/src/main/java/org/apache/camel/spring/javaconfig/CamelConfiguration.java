@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyList;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.ConsumerTemplate;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.spring.CamelBeanPostProcessor;
 import org.apache.camel.spring.SpringCamelContext;
+import org.apache.camel.spring.xml.CamelBeanPostProcessor;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -39,19 +37,21 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static java.util.Collections.emptyList;
+
 /**
- * A useful base class for writing
- * <a
- * href="http://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html#beans-annotation-config">
+ * A useful base class for writing <a href=
+ * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html#beans-annotation-config">
  * Spring annotation-based</a> configurations for working with Camel.
  */
 @Configuration
 public abstract class CamelConfiguration implements BeanFactoryAware, ApplicationContextAware {
-    
+
     private BeanFactory beanFactory;
     private AutowireCapableBeanFactory autowireCapableBeanFactory;
     private ApplicationContext applicationContext;
 
+    @Override
     public void setBeanFactory(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
         if (beanFactory instanceof AutowireCapableBeanFactory) {
@@ -63,6 +63,7 @@ public abstract class CamelConfiguration implements BeanFactoryAware, Applicatio
         return this.beanFactory;
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext ac) {
         this.applicationContext = ac;
     }
@@ -84,18 +85,18 @@ public abstract class CamelConfiguration implements BeanFactoryAware, Applicatio
     }
 
     /**
-     * Invoke callbacks on the object, as though it were configured in the factory. If appropriate,
-     * the object may be wrapped before being returned. For this reason, it is recommended to always
-     * respect the return value when using this method.
+     * Invoke callbacks on the object, as though it were configured in the factory. If appropriate, the object may be
+     * wrapped before being returned. For this reason, it is recommended to always respect the return value when using
+     * this method.
      *
-     * @param   object  object to configure
+     * @param  object object to configure
      *
-     * @return  either the original object or a wrapped one after callbacks called on it.
+     * @return        either the original object or a wrapped one after callbacks called on it.
      */
     protected <T> T getConfigured(T object) {
         if (this.autowireCapableBeanFactory == null) {
             throw new UnsupportedOperationException(
-                "Cannot configure object - not running in an AutowireCapableBeanFactory");
+                    "Cannot configure object - not running in an AutowireCapableBeanFactory");
         }
 
         @SuppressWarnings("unchecked") // See SPR-4955
@@ -159,7 +160,7 @@ public abstract class CamelConfiguration implements BeanFactoryAware, Applicatio
     public CamelContext camelContext() throws Exception {
         CamelContext camelContext = createCamelContext();
         setupCamelContext(camelContext);
-        camelContext.init();
+        camelContext.build();
         return camelContext;
     }
 
@@ -179,7 +180,7 @@ public abstract class CamelConfiguration implements BeanFactoryAware, Applicatio
      * Factory method returning {@link CamelContext} used by this configuration.
      *
      * @return {@link CamelContext} used by this configuration. By default {@link SpringCamelContext} instance is
-     * created, to fully integrate Spring application context and Camel registry.
+     *         created, to fully integrate Spring application context and Camel registry.
      */
     protected CamelContext createCamelContext() throws Exception {
         return new SpringCamelContext(getApplicationContext());

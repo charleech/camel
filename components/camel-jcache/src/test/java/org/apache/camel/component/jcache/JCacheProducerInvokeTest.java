@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.jcache;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.cache.Cache;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
@@ -28,7 +29,10 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JCacheProducerInvokeTest extends JCacheComponentTestSupport {
     private static final EntryProcessor<Object, Object, Object> ENTRY_PROCESSOR = new EntryProcessor<Object, Object, Object>() {
@@ -123,10 +127,10 @@ public class JCacheProducerInvokeTest extends JCacheComponentTestSupport {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:invoke")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:invoke");
                 from("direct:invoke-all")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:invoke-all");
             }
         };

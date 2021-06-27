@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,43 +18,42 @@ package org.apache.camel.component.zookeeper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 import org.apache.camel.spi.UriPath;
-import org.apache.camel.util.CollectionStringBuffer;
 
 /**
- * <code>ZookeeperConfiguration</code> encapsulates the configuration used to
- * interact with a ZooKeeper cluster. Most typically it is parsed from endpoint
- * uri but may also be configured programatically and applied to a
- * {@link ZooKeeperComponent}. A copy of this component's configuration will be
- * injected into any {@link ZooKeeperEndpoint}s the component creates.
+ * <code>ZookeeperConfiguration</code> encapsulates the configuration used to interact with a ZooKeeper cluster. Most
+ * typically it is parsed from endpoint uri but may also be configured programatically and applied to a
+ * {@link ZooKeeperComponent}. A copy of this component's configuration will be injected into any
+ * {@link ZooKeeperEndpoint}s the component creates.
  */
 @UriParams
 public class ZooKeeperConfiguration implements Cloneable {
 
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String serverUrls;
     private List<String> servers;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String path;
     @UriParam(defaultValue = "5000")
     private int timeout = 5000;
     @UriParam(label = "consumer", defaultValue = "5000")
     private long backoff = 5000;
-    @UriParam(defaultValue = "true")
-    @Deprecated
-    private boolean awaitExistence = true;
     @UriParam(label = "consumer")
     private boolean repeat;
     @UriParam
     private boolean listChildren;
     @UriParam(label = "producer")
     private boolean create;
-    @UriParam(label = "producer", enums = "PERSISTENT,PERSISTENT_SEQUENTIAL,EPHEMERAL,EPHEMERAL_SEQUENTIAL", defaultValue = "EPHEMERAL")
+    @UriParam(label = "producer", enums = "PERSISTENT,PERSISTENT_SEQUENTIAL,EPHEMERAL,EPHEMERAL_SEQUENTIAL",
+              defaultValue = "EPHEMERAL")
     private String createMode;
     @UriParam(label = "consumer", defaultValue = "true")
     private boolean sendEmptyMessageOnDelete = true;
@@ -68,7 +67,7 @@ public class ZooKeeperConfiguration implements Cloneable {
 
     public ZooKeeperConfiguration copy() {
         try {
-            return (ZooKeeperConfiguration)clone();
+            return (ZooKeeperConfiguration) clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeCamelException(e);
         }
@@ -83,11 +82,11 @@ public class ZooKeeperConfiguration implements Cloneable {
      */
     public String getServerUrls() {
         if (servers != null) {
-            CollectionStringBuffer csb = new CollectionStringBuffer(",");
+            StringJoiner serversBuilder = new StringJoiner(",");
             for (String server : servers) {
-                csb.append(server);
+                serversBuilder.add(server);
             }
-            return csb.toString();
+            return serversBuilder.toString();
         }
         return null;
     }
@@ -151,23 +150,6 @@ public class ZooKeeperConfiguration implements Cloneable {
      */
     public void setRepeat(boolean repeat) {
         this.repeat = repeat;
-    }
-
-    /**
-     * @deprecated The usage of this option has no effect at all.
-     */
-    @Deprecated
-    public boolean shouldAwaitExistence() {
-        return awaitExistence;
-    }
-
-    /**
-     * Not in use
-     * @deprecated The usage of this option has no effect at all.
-     */
-    @Deprecated
-    public void setAwaitExistence(boolean awaitExistence) {
-        this.awaitExistence = awaitExistence;
     }
 
     public long getBackoff() {

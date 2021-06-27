@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf;
 
 import org.apache.camel.test.AvailablePortFinder;
 
 /**
- * For test cases that use unique contexts, they can share the 
- * ports which will make things a bit faster as ports aren't opened
- * and closed all the time. 
+ * For test cases that use unique contexts, they can share the ports which will make things a bit faster as ports aren't
+ * opened and closed all the time.
  */
 public final class CXFTestSupport {
 
-    static final int PORT1 = AvailablePortFinder.getNextAvailable();  
-    static final int PORT2 = AvailablePortFinder.getNextAvailable();  
-    static final int PORT3 = AvailablePortFinder.getNextAvailable();  
-    static final int PORT4 = AvailablePortFinder.getNextAvailable();  
-    static final int PORT5 = AvailablePortFinder.getNextAvailable();  
+    static final int PORT1 = AvailablePortFinder.getNextAvailable();
+    static final int PORT2 = AvailablePortFinder.getNextAvailable();
+    static final int PORT3 = AvailablePortFinder.getNextAvailable();
+    static final int PORT4 = AvailablePortFinder.getNextAvailable();
+    static final int PORT5 = AvailablePortFinder.getNextAvailable();
     static final int PORT6 = AvailablePortFinder.getNextAvailable();
+    static final int PORT7 = AvailablePortFinder.getNextAvailable();
     static final int SSL_PORT = AvailablePortFinder.getNextAvailable();
 
     static {
@@ -43,19 +42,20 @@ public final class CXFTestSupport {
         System.setProperty("CXFTestSupport.port4", Integer.toString(PORT4));
         System.setProperty("CXFTestSupport.port5", Integer.toString(PORT5));
         System.setProperty("CXFTestSupport.port6", Integer.toString(PORT6));
+        System.setProperty("CXFTestSupport.port7", Integer.toString(PORT7));
         System.setProperty("CXFTestSupport.sslPort", Integer.toString(SSL_PORT));
         System.setProperty("org.apache.cxf.transports.http_jetty.DontClosePort", "true");
     }
-    
+
     private CXFTestSupport() {
     }
-    
+
     public static int getPort(String name) {
         int port = AvailablePortFinder.getNextAvailable();
         System.setProperty(name, Integer.toString(port));
         return port;
     }
-    
+
     public static int getPort1() {
         return PORT1;
     }
@@ -78,6 +78,10 @@ public final class CXFTestSupport {
 
     public static int getPort6() {
         return PORT6;
+    }
+
+    public static int getPort7() {
+        return PORT7;
     }
 
     public static int getSslPort() {

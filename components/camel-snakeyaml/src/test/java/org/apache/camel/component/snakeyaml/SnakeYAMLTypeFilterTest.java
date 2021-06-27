@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.snakeyaml;
 
 import java.util.Arrays;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.snakeyaml.model.TestPojo;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class SnakeYAMLTypeFilterTest extends CamelTestSupport {
     @Test
@@ -54,31 +53,31 @@ public class SnakeYAMLTypeFilterTest extends CamelTestSupport {
                 SnakeYAMLDataFormat safeConstructorDf = new SnakeYAMLDataFormat();
 
                 from("direct:safe-constructor")
-                    .unmarshal(safeConstructorDf);
+                        .unmarshal(safeConstructorDf);
 
                 // Type filter Constructor
                 SnakeYAMLDataFormat typeConstructorDf = new SnakeYAMLDataFormat();
                 typeConstructorDf.addTypeFilters(TypeFilters.types(TestPojo.class));
 
                 from("direct:type-constructor")
-                    .unmarshal(typeConstructorDf);
+                        .unmarshal(typeConstructorDf);
 
                 // Type filter Constructor from string definitions
                 SnakeYAMLDataFormat typeConstructorStrDf = new SnakeYAMLDataFormat();
                 typeConstructorStrDf.setTypeFilterDefinitions(Arrays.asList(
-                    "type:org.apache.camel.component.snakeyaml.model.TestPojo",
-                    "regexp:org.apache.camel.component.snakeyaml.model.R.*"));
+                        "type:org.apache.camel.component.snakeyaml.model.TestPojo",
+                        "regexp:org.apache.camel.component.snakeyaml.model.R.*"));
 
                 from("direct:type-constructor-strdef")
-                    .unmarshal(typeConstructorStrDf);
+                        .unmarshal(typeConstructorStrDf);
 
                 // Allow all Constructor
                 SnakeYAMLDataFormat allConstructorDf = new SnakeYAMLDataFormat();
                 allConstructorDf.setAllowAnyType(true);
 
                 from("direct:all-constructor")
-                    .unmarshal(allConstructorDf)
-                    .to("mock:all-constructor");
+                        .unmarshal(allConstructorDf)
+                        .to("mock:all-constructor");
             }
         };
     }

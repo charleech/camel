@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.cdi.test;
 
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -43,13 +44,13 @@ import org.junit.runner.RunWith;
 
 import static org.apache.camel.cdi.rule.LogEventMatcher.logEvent;
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Arquillian.class)
@@ -61,27 +62,25 @@ public class XmlErrorHandlerPolicyTest {
         @Override
         protected void verify() {
             assertThat("Log messages not found!", getEvents(),
-                containsInRelativeOrder(
-                    logEvent()
-                        .withLevel("INFO")
-                        .withMessage(containsString("Camel CDI is starting Camel context [test]")),
-                    logEvent()
-                        .withLevel("WARN")
-                        .withMessage(matchesPattern(
-                            "Failed delivery for \\(MessageId: .+\\). "
-                                + "On delivery attempt: 3 "
-                                + "caught: org.apache.camel.CamelException: failure message!")),
-                    logEvent()
-                        .withLevel("ERROR")
-                        .withMessage(matchesPattern(
-                            "(?s)Failed delivery for \\(MessageId: .+\\). "
-                                + "Exhausted after delivery attempt: 4 "
-                                + "caught: org.apache.camel.CamelException: failure message!.*")),
-                    logEvent()
-                        .withLevel("INFO")
-                        .withMessage(containsString("Camel CDI is stopping Camel context [test]"))
-                )
-            );
+                    containsInRelativeOrder(
+                            logEvent()
+                                    .withLevel("INFO")
+                                    .withMessage(containsString("Camel CDI is starting Camel context [test]")),
+                            logEvent()
+                                    .withLevel("WARN")
+                                    .withMessage(matchesPattern(
+                                            "Failed delivery for \\(MessageId: .+\\). "
+                                                                + "On delivery attempt: 3 "
+                                                                + "caught: org.apache.camel.CamelException: failure message!")),
+                            logEvent()
+                                    .withLevel("ERROR")
+                                    .withMessage(matchesPattern(
+                                            "(?s)Failed delivery for \\(MessageId: .+\\). "
+                                                                + "Exhausted after delivery attempt: 4 "
+                                                                + "caught: org.apache.camel.CamelException: failure message!.*")),
+                            logEvent()
+                                    .withLevel("INFO")
+                                    .withMessage(containsString("Camel CDI is stopping Camel context [test]"))));
         }
     };
 
@@ -100,14 +99,14 @@ public class XmlErrorHandlerPolicyTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test Camel XML
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-errorHandler-policy.xml").toFile(),
-                "imported-context.xml")
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test Camel XML
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-errorHandler-policy.xml").toFile(),
+                        "imported-context.xml")
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -126,11 +125,11 @@ public class XmlErrorHandlerPolicyTest {
             inbound.sendBody("exception");
         } catch (Exception exception) {
             assertThat("Exception is incorrect!",
-                exception, is(instanceOf(CamelExecutionException.class)));
+                    exception, is(instanceOf(CamelExecutionException.class)));
             assertThat("Exception cause is incorrect!",
-                exception.getCause(), is(instanceOf(CamelException.class)));
+                    exception.getCause(), is(instanceOf(CamelException.class)));
             assertThat("Exception message is incorrect!",
-                exception.getCause().getMessage(), is(equalTo("failure message!")));
+                    exception.getCause().getMessage(), is(equalTo("failure message!")));
             return;
         }
         fail("No exception thrown!");

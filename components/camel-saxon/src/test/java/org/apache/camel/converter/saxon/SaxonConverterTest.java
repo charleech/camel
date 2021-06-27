@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,23 +33,28 @@ import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.xpath.XPathEvaluator;
 import org.apache.camel.Exchange;
-import org.apache.camel.StringSource;
-import org.apache.camel.builder.xml.DefaultNamespaceContext;
+import org.apache.camel.language.xpath.DefaultNamespaceContext;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.camel.util.xml.StringSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SaxonConverterTest extends CamelTestSupport {
-    private static final String CONTENT = "<a xmlns=\"http://www.apache.org/test\"><b foo=\"bar\">test</b><c><d>foobar</d></c></a>";
+    private static final String CONTENT
+            = "<a xmlns=\"http://www.apache.org/test\"><b foo=\"bar\">test</b><c><d>foobar</d></c></a>";
     private static final String CONTENT_B = "<b xmlns=\"http://www.apache.org/test\" foo=\"bar\">test</b>";
-    private static final NamespaceContext NS_CONTEXT = (new DefaultNamespaceContext()).add("ns1", "http://www.apache.org/test");
+    private static final NamespaceContext NS_CONTEXT = new DefaultNamespaceContext().add("ns1", "http://www.apache.org/test");
 
     private Exchange exchange;
     private XPathEvaluator evaluator;
     private NodeInfo doc;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         exchange = new DefaultExchange(context);

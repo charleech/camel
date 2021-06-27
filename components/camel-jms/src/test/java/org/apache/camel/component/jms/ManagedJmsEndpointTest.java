@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,12 @@ import javax.management.ObjectName;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -40,6 +42,7 @@ public class ManagedJmsEndpointTest extends CamelTestSupport {
         return true;
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext context = new DefaultCamelContext();
 
@@ -57,7 +60,8 @@ public class ManagedJmsEndpointTest extends CamelTestSupport {
     public void testJmsEndpoint() throws Exception {
         MBeanServer mbeanServer = getMBeanServer();
 
-        Set<ObjectName> objectNames = mbeanServer.queryNames(new ObjectName("org.apache.camel:context=camel-*,type=endpoints,name=\"activemq://queue:start\""), null);
+        Set<ObjectName> objectNames = mbeanServer.queryNames(
+                new ObjectName("org.apache.camel:context=camel-*,type=endpoints,name=\"activemq://queue:start\""), null);
         assertEquals(1, objectNames.size());
         ObjectName name = objectNames.iterator().next();
 
@@ -65,7 +69,7 @@ public class ManagedJmsEndpointTest extends CamelTestSupport {
         assertEquals("activemq://queue:start", uri);
 
         Boolean singleton = (Boolean) mbeanServer.getAttribute(name, "Singleton");
-        assertTrue(singleton.booleanValue());
+        assertTrue(singleton);
 
         Integer running = (Integer) mbeanServer.getAttribute(name, "RunningMessageListeners");
         assertEquals(1, running.intValue());
@@ -89,7 +93,8 @@ public class ManagedJmsEndpointTest extends CamelTestSupport {
         size = (Long) mbeanServer.invoke(name, "queueSize", null, null);
         assertEquals(1, size.intValue());
 
-        String body = (String) mbeanServer.invoke(name, "browseMessageBody", new Object[]{0}, new String[]{"java.lang.Integer"});
+        String body = (String) mbeanServer.invoke(name, "browseMessageBody", new Object[] { 0 },
+                new String[] { "java.lang.Integer" });
         assertEquals("Hi World", body);
     }
 
@@ -102,6 +107,5 @@ public class ManagedJmsEndpointTest extends CamelTestSupport {
             }
         };
     }
-
 
 }

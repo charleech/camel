@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,14 @@
  */
 package org.apache.camel.component.mail;
 
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Unit test for Mail subject support.
@@ -43,9 +46,10 @@ public class MailSubjectTest extends CamelTestSupport {
 
         mock.assertIsSatisfied();
 
-        assertFalse("Should not have attachements", mock.getExchanges().get(0).getIn().hasAttachments());
+        assertFalse(mock.getExchanges().get(0).getIn(AttachmentMessage.class).hasAttachments(), "Should not have attachements");
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
@@ -53,7 +57,7 @@ public class MailSubjectTest extends CamelTestSupport {
                 from("direct:a").setHeader("subject", constant(subject)).to("smtp://james2@localhost");
                 // END SNIPPET: e1
 
-                from("pop3://localhost?username=james2&password=secret&consumer.initialDelay=100&consumer.delay=100").to("mock:result");
+                from("pop3://localhost?username=james2&password=secret&initialDelay=100&delay=100").to("mock:result");
             }
         };
     }

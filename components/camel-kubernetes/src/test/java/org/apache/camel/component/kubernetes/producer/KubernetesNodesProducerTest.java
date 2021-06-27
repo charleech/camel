@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,35 +21,38 @@ import java.util.List;
 import java.util.Map;
 
 import io.fabric8.kubernetes.api.model.Node;
+import io.fabric8.kubernetes.api.model.NodeBuilder;
 import io.fabric8.kubernetes.api.model.NodeListBuilder;
-import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
-
+import io.fabric8.kubernetes.api.model.NodeSpec;
+import io.fabric8.kubernetes.api.model.NodeSpecBuilder;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.KubernetesServer;
 import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.KubernetesTestSupport;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class KubernetesNodesProducerTest extends KubernetesTestSupport {
 
-    @Rule
+    @RegisterExtension
     public KubernetesServer server = new KubernetesServer();
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("kubernetesClient", server.getClient());
-        return registry;
+    @BindToRegistry("kubernetesClient")
+    public KubernetesClient getClient() throws Exception {
+        return server.getClient();
     }
-    
+
     @Test
     public void listTest() throws Exception {
         server.expect().withPath("/api/v1/nodes").andReturn(200, new NodeListBuilder().addNewItem().and().build()).once();
-        List<Node> result = template.requestBody("direct:list", "",
-                List.class);
+        List<Node> result = template.requestBody("direct:list", "", List.class);
 
         assertEquals(1, result.size());
     }
@@ -57,24 +60,50 @@ public class KubernetesNodesProducerTest extends KubernetesTestSupport {
     @Test
     public void listByLabelsTest() throws Exception {
         server.expect().withPath("/api/v1/nodes?labelSelector=" + toUrlEncoded("key1=value1,key2=value2"))
-        .andReturn(200, new NodeListBuilder().addNewItem().and().addNewItem().and().addNewItem().and().build()).once();
-        Exchange ex = template.request("direct:listByLabels", new Processor() {
-
-            @Override
-            public void process(Exchange exchange) throws Exception {
-                Map<String, String> labels = new HashMap<>();
-                labels.put("key1", "value1");
-                labels.put("key2", "value2");
-                exchange.getIn()
-                        .setHeader(
-                                KubernetesConstants.KUBERNETES_NODES_LABELS,
-                                labels);
-            }
+                .andReturn(200, new NodeListBuilder().addNewItem().and().addNewItem().and().addNewItem().and().build()).once();
+        Exchange ex = template.request("direct:listByLabels", exchange -> {
+            Map<String, String> labels = new HashMap<>();
+            labels.put("key1", "value1");
+            labels.put("key2", "value2");
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NODES_LABELS, labels);
         });
 
-        List<Node> result = ex.getOut().getBody(List.class);
-        
+        List<Node> result = ex.getMessage().getBody(List.class);
+
         assertEquals(3, result.size());
+    }
+
+    @Test
+    public void createNodeTest() throws Exception {
+        ObjectMeta meta = new ObjectMeta();
+        meta.setName("test");
+        server.expect().withPath("/api/v1/nodes").andReturn(200, new NodeBuilder().withMetadata(meta).build()).once();
+        Exchange ex = template.request("direct:createNode", exchange -> {
+            Map<String, String> labels = new HashMap<>();
+            labels.put("key1", "value1");
+            labels.put("key2", "value2");
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NODES_LABELS, labels);
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NODE_NAME, "test");
+            NodeSpec spec = new NodeSpecBuilder().build();
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NODE_SPEC, spec);
+        });
+
+        Node result = ex.getMessage().getBody(Node.class);
+
+        assertEquals("test", result.getMetadata().getName());
+    }
+
+    @Test
+    public void deleteNode() throws Exception {
+        Node node1 = new NodeBuilder().withNewMetadata().withName("node1").withNamespace("test").and().build();
+        server.expect().withPath("/api/v1/nodes/node1").andReturn(200, node1).once();
+
+        Exchange ex = template.request("direct:deleteNode",
+                exchange -> exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NODE_NAME, "node1"));
+
+        boolean nodeDeleted = ex.getMessage().getBody(Boolean.class);
+
+        assertTrue(nodeDeleted);
     }
 
     @Override
@@ -82,10 +111,11 @@ public class KubernetesNodesProducerTest extends KubernetesTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("direct:list")
-                        .toF("kubernetes-nodes:///?kubernetesClient=#kubernetesClient&operation=listNodes");
+                from("direct:list").toF("kubernetes-nodes:///?kubernetesClient=#kubernetesClient&operation=listNodes");
                 from("direct:listByLabels")
                         .toF("kubernetes-nodes:///?kubernetesClient=#kubernetesClient&operation=listNodesByLabels");
+                from("direct:createNode").toF("kubernetes-nodes:///?kubernetesClient=#kubernetesClient&operation=createNode");
+                from("direct:deleteNode").toF("kubernetes-nodes:///?kubernetesClient=#kubernetesClient&operation=deleteNode");
             }
         };
     }

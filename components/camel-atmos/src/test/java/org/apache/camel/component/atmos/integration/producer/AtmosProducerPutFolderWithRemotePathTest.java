@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.atmos.integration.producer;
 
-
 import java.util.List;
 
 import org.apache.camel.Exchange;
@@ -25,12 +24,14 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.atmos.integration.AtmosTestSupport;
 import org.apache.camel.component.atmos.util.AtmosResultHeader;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class AtmosProducerPutFolderWithRemotePathTest extends AtmosTestSupport {
 
-    public AtmosProducerPutFolderWithRemotePathTest() throws Exception { }
+    public AtmosProducerPutFolderWithRemotePathTest() throws Exception {
+    }
 
     @Test
     public void testCamelAtmos() throws Exception {
@@ -41,14 +42,13 @@ public class AtmosProducerPutFolderWithRemotePathTest extends AtmosTestSupport {
             }
         });
 
-
         MockEndpoint mock = getMockEndpoint("mock:result");
-        mock.expectedMinimumMessageCount(1);       
+        mock.expectedMinimumMessageCount(1);
         assertMockEndpointsSatisfied();
 
         List<Exchange> exchanges = mock.getReceivedExchanges();
         Exchange exchange = exchanges.get(0);
-        Object header =  exchange.getIn().getHeader(AtmosResultHeader.UPLOADED_FILES.name());
+        Object header = exchange.getIn().getHeader(AtmosResultHeader.UPLOADED_FILES.name());
         Object body = exchange.getIn().getBody();
         assertNotNull(header);
         assertNotNull(body);

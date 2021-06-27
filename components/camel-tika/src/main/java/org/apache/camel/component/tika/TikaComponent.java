@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,12 +32,18 @@ public class TikaComponent extends DefaultComponent {
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         TikaConfiguration tikaConfiguration = new TikaConfiguration();
-        setProperties(tikaConfiguration, parameters);
+
         TikaConfig config = resolveAndRemoveReferenceParameter(parameters, TIKA_CONFIG, TikaConfig.class);
         if (config != null) {
             tikaConfiguration.setTikaConfig(config);
         }
         tikaConfiguration.setOperation(new URI(uri).getHost());
+        TikaEndpoint endpoint = createEndpoint(uri, tikaConfiguration);
+        setProperties(endpoint, parameters);
+        return endpoint;
+    }
+
+    protected TikaEndpoint createEndpoint(String uri, TikaConfiguration tikaConfiguration) {
         return new TikaEndpoint(uri, this, tikaConfiguration);
     }
 }

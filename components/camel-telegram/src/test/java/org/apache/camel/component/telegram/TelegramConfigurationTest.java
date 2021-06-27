@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,17 +19,19 @@ package org.apache.camel.component.telegram;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.telegram.util.TelegramTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Tests that the configuration is loaded properly.
  */
 public class TelegramConfigurationTest extends TelegramTestSupport {
 
-
     @Test
     public void testChatBotResult() throws Exception {
-        TelegramEndpoint endpoint = (TelegramEndpoint) context().getEndpoints().stream().filter(e -> e instanceof TelegramEndpoint).findAny().get();
+        TelegramEndpoint endpoint = (TelegramEndpoint) context().getEndpoints().stream()
+                .filter(e -> e instanceof TelegramEndpoint).findAny().get();
         TelegramConfiguration config = endpoint.getConfiguration();
 
         assertEquals("bots", config.getType());
@@ -38,8 +40,10 @@ public class TelegramConfigurationTest extends TelegramTestSupport {
         assertEquals(2000L, endpoint.getDelay());
         assertEquals(Integer.valueOf(10), config.getTimeout());
         assertEquals(Integer.valueOf(60), config.getLimit());
+        assertEquals("127.0.0.1", config.getProxyHost());
+        assertEquals(Integer.valueOf(1234), config.getProxyPort());
+        assertEquals(TelegramProxyType.SOCKS5, config.getProxyType());
     }
-
 
     @Override
     protected RoutesBuilder createRouteBuilder() throws Exception {
@@ -48,7 +52,7 @@ public class TelegramConfigurationTest extends TelegramTestSupport {
             public void configure() throws Exception {
 
                 from("direct:telegram")
-                        .to("telegram:bots/mock-token?chatId=12345&delay=2000&timeout=10&limit=60");
+                        .to("telegram:bots/?authorizationToken=mock-token&chatId=12345&delay=2000&timeout=10&limit=60&proxyHost=127.0.0.1&proxyPort=1234&proxyType=SOCKS5");
             }
         };
     }

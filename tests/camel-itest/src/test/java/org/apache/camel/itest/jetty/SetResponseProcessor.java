@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,13 @@ import org.apache.camel.Processor;
 
 public class SetResponseProcessor implements Processor {
 
-    public void process(Exchange exchange) throws Exception {
+    @Override
+    public void process(Exchange exchange) {
 
         // Convert the input stream into a string
         String request = exchange.getIn().getBody(String.class);
-        
-        exchange.getOut().setBody("<response>" + request + "</response>");
+
+        exchange.getMessage().setBody("<response>" + request + "</response>");
 
     }
 

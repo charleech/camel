@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ package org.apache.camel.component.atmosphere.websocket;
  *
  */
 public final class WebsocketConstants {
-    
+
     public static final String CONNECTION_KEY = "websocket.connectionKey";
     public static final String CONNECTION_KEY_LIST = "websocket.connectionKey.list";
     public static final String SEND_TO_ALL = "websocket.sendToAll";

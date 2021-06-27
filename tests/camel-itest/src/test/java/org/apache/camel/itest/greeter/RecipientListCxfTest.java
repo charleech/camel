@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,15 +23,17 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class RecipientListCxfTest extends CamelSpringTestSupport {
-    
-    private static int port1 = AvailablePortFinder.getNextAvailable(20032);
-    private static int port2 = AvailablePortFinder.getNextAvailable(20043);
+
+    private static int port1 = AvailablePortFinder.getNextAvailable();
+    private static int port2 = AvailablePortFinder.getNextAvailable();
     static {
         //set them as system properties so Spring can use the property placeholder
         //things to set them into the URL's in the spring contexts 
@@ -39,13 +41,13 @@ public class RecipientListCxfTest extends CamelSpringTestSupport {
         System.setProperty("RecipientListCxfTest.port2", Integer.toString(port2));
     }
 
-    @EndpointInject(uri = "mock:reply")
+    @EndpointInject("mock:reply")
     protected MockEndpoint replyEndpoint;
 
-    @EndpointInject(uri = "mock:reply2")
+    @EndpointInject("mock:reply2")
     protected MockEndpoint reply2Endpoint;
 
-    @EndpointInject(uri = "mock:output")
+    @EndpointInject("mock:output")
     protected MockEndpoint outputEndpoint;
 
     @Override
@@ -54,7 +56,7 @@ public class RecipientListCxfTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testRecipientListCXF() throws Exception {
+    void testRecipientListCXF() throws Exception {
         replyEndpoint.expectedBodiesReceived("Hello Willem", "Hello Jonathan", "Hello Freeman");
         reply2Endpoint.expectedBodiesReceived("Bye Claus", "Bye Jonathan", "Bye Freeman");
         outputEndpoint.expectedBodiesReceived("Hello Willem", "Bye Claus", "Bye Jonathan", "Hello Freeman");

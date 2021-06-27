@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,27 +19,23 @@ package org.apache.camel.pgevent;
 import java.sql.Connection;
 
 import com.impossibl.postgres.api.jdbc.PGConnection;
-
 import org.apache.camel.component.pgevent.PgEventHelper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
-import static org.junit.Assert.assertSame;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PgEventHelperTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testToPGConnectionWithNullConnection() throws Exception {
-        expectedException.expect(IllegalArgumentException.class);
-        PgEventHelper.toPGConnection(null);
+        assertThrows(IllegalArgumentException.class,
+                () -> PgEventHelper.toPGConnection(null));
     }
 
     @Test
@@ -61,9 +57,9 @@ public class PgEventHelperTest {
 
     @Test
     public void testToPGConnectionWithInvalidWrappedConnection() throws Exception {
-        expectedException.expect(IllegalStateException.class);
         Connection wrapperConnection = mock(Connection.class);
         when(wrapperConnection.isWrapperFor(PGConnection.class)).thenReturn(false);
-        PgEventHelper.toPGConnection(wrapperConnection);
+        assertThrows(IllegalStateException.class,
+                () -> PgEventHelper.toPGConnection(wrapperConnection));
     }
 }

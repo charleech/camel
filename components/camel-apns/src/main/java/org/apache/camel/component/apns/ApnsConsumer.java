@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,6 +42,7 @@ public class ApnsConsumer extends ScheduledPollConsumer {
         setUseFixedDelay(DEFAULT_APNS_FIXED_DELAY);
     }
 
+    @Override
     protected int poll() throws Exception {
         List<InactiveDevice> inactiveDeviceList = getInactiveDevices();
 
@@ -50,7 +51,7 @@ public class ApnsConsumer extends ScheduledPollConsumer {
         while (it.hasNext()) {
             InactiveDevice inactiveDevice = it.next();
 
-            Exchange e = getEndpoint().createExchange();
+            Exchange e = createExchange(true);
             e.getIn().setBody(inactiveDevice);
             getProcessor().process(e);
         }
@@ -85,7 +86,9 @@ public class ApnsConsumer extends ScheduledPollConsumer {
         // only add as consumer if not already registered
         if (!getEndpoint().getConsumers().contains(this)) {
             if (!getEndpoint().getConsumers().isEmpty()) {
-                throw new IllegalStateException("Endpoint " + getEndpoint().getEndpointUri() + " only allows 1 active consumer but you attempted to start a 2nd consumer.");
+                throw new IllegalStateException(
+                        "Endpoint " + getEndpoint().getEndpointUri()
+                                                + " only allows 1 active consumer but you attempted to start a 2nd consumer.");
             }
             getEndpoint().getConsumers().add(this);
         }

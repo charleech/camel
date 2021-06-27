@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.atomix.client.messaging;
 
-
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -25,15 +24,16 @@ import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 
 /**
- * The atomix-messaging component is used to access Atomix's <a href="http://atomix.io/atomix/docs/groups/#messaging">group messaging</a>.
+ * Access Atomix's <a href="http://atomix.io/atomix/docs/groups/#messaging">group messaging</a>.
  */
 @UriEndpoint(
-    firstVersion = "2.20.0",
-    scheme = "atomix-messaging",
-    title = "Atomix Messaging",
-    syntax = "atomix-messaging:resourceName",
-    label = "clustering")
-final class AtomixMessagingEndpoint extends AbstractAtomixClientEndpoint<AtomixMessagingComponent, AtomixMessagingConfiguration> {
+             firstVersion = "2.20.0",
+             scheme = "atomix-messaging",
+             title = "Atomix Messaging",
+             syntax = "atomix-messaging:resourceName",
+             label = "clustering")
+public final class AtomixMessagingEndpoint
+        extends AbstractAtomixClientEndpoint<AtomixMessagingComponent, AtomixMessagingConfiguration> {
     @UriParam
     private AtomixMessagingConfiguration configuration;
 
@@ -48,7 +48,9 @@ final class AtomixMessagingEndpoint extends AbstractAtomixClientEndpoint<AtomixM
 
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new AtomixMessagingConsumer(this, processor);
+        AtomixMessagingConsumer consumer = new AtomixMessagingConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
     }
 
     @Override
@@ -61,4 +63,3 @@ final class AtomixMessagingEndpoint extends AbstractAtomixClientEndpoint<AtomixM
         this.configuration = configuration;
     }
 }
-

@@ -1,5 +1,5 @@
 [[DozerTypeConversion-DozerTypeConversion]]
-== Dozer Type Conversion
+= Dozer Type Conversion
 
 https://github.com/DozerMapper/dozer/blob/master/docs/asciidoc/about/about.adoc[Dozer] is a fast
 and flexible framework for mapping back and forth between Java Beans.
@@ -88,7 +88,7 @@ them.
 
 To a large extent the two objects share an identical structure, with only
 the address representation being different. It would be very helpful if
-there were a practical way to to automate this kind of mapping, such
+there were a practical way to automate this kind of mapping, such
 that the similar properties could get mapped automatically and only the
 inconsistencies requiring custom mapping.
 
@@ -100,7 +100,7 @@ inconsistencies between the beans i.e. the address properties, knowing
 that Dozer will automatically match and convert the others.
 
 [[DozerTypeConversion-ConfiguringDozer]]
-=== Configuring Dozer
+== Configuring Dozer
 
 Dozer's configuration is extremely flexible and many mapping scenarios
 are covered https://github.com/DozerMapper/dozer/blob/master/docs/asciidoc/documentation/mappings.adoc[here].
@@ -129,7 +129,7 @@ For our simple example, the configuration looks like the following.
 ---------------------------------------------------------------------------------------------------------
 
 [[DozerTypeConversion-SupportforDozerinCamel]]
-=== Support for Dozer in Camel
+== Support for Dozer in Camel
 
 Camel provides a simple mechanism to integrate Dozer Mappers with it's
 own powerful http://camel.apache.org/type-converter.html[Type
@@ -145,7 +145,7 @@ type conversion framework to be handled by the mapper.
 *Limitation*
 
 The Camel Dozer type converter does not support having the same type
-conversion paris in different mapping ids (eg map-id) in Dozer.
+conversion pairs in different mapping ids (eg map-id) in Dozer.
 ====
 
 In Java it can be configured as follows:
@@ -175,7 +175,7 @@ Or in Spring:
     </list>
   </property>
 </bean>
- 
+ 
 <camelContext id="myCamel" xmlns="http://camel.apache.org/schema/spring">
   ...
 </camelContext>
@@ -197,13 +197,13 @@ Or in OSGi Blueprints:
     </list>
   </property>
 </bean>
- 
+ 
 <camelContext id="myCamel" xmlns="http://camel.apache.org/schema/blueprint">
   ...
 </camelContext>
 --------------------------------------------------------------------------------------------------
 
-You should of noticed that the configuration for Spring or OSGi Blueprints
+You should have noticed that the configuration for Spring or OSGi Blueprints
 is the same, except for the 'xmlns' for the 'camelContext'.
 
 Now, where necessary, Camel will use Dozer to do conversions; in our

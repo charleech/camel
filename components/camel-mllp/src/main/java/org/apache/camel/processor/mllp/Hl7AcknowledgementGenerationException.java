@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,11 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.processor.mllp;
 
 import org.apache.camel.component.mllp.internal.Hl7Util;
-
 
 /*
  * Exception thrown by the HL7AcknowledgmentGenerator in the event of a failure.
@@ -41,7 +39,6 @@ public class Hl7AcknowledgementGenerationException extends Exception {
         this.hl7MessageBytes = hl7MessageBytes;
     }
 
-
     public boolean hasHl7MessageBytes() {
         return hl7MessageBytes != null && hl7MessageBytes.length > 0;
     }
@@ -63,8 +60,8 @@ public class Hl7AcknowledgementGenerationException extends Exception {
             StringBuilder messageBuilder = new StringBuilder(parentMessage.length() + hl7MessageBytes.length);
 
             messageBuilder.append(parentMessage).append("\n\t{hl7MessageBytes [")
-                .append(hl7MessageBytes.length)
-                .append("] = ");
+                    .append(hl7MessageBytes.length)
+                    .append("] = ");
 
             Hl7Util.appendBytesAsPrintFriendlyString(messageBuilder, hl7MessageBytes, 0, hl7MessageBytes.length);
 

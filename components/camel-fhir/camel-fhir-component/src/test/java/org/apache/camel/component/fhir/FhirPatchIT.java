@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.fhir.api.ExtraParameters;
@@ -28,14 +29,17 @@ import org.apache.camel.component.fhir.internal.FhirPatchApiMethod;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * Test class for {@link org.apache.camel.component.fhir.api.FhirPatch} APIs.
- * The class source won't be generated again if the generator MOJO finds it under src/test/java.
+ * Test class for {@link org.apache.camel.component.fhir.api.FhirPatch} APIs. The class source won't be generated again
+ * if the generator MOJO finds it under src/test/java.
  */
 public class FhirPatchIT extends AbstractFhirTestSupport {
 
@@ -54,7 +58,7 @@ public class FhirPatchIT extends AbstractFhirTestSupport {
         headers.put("CamelFhir.preferReturn", null);
 
         MethodOutcome result = requestBodyAndHeaders("direct://PATCH_BY_ID", null, headers);
-        assertNotNull("patchById result", result);
+        assertNotNull(result, "patchById result");
         assertActive(result);
     }
 
@@ -91,7 +95,7 @@ public class FhirPatchIT extends AbstractFhirTestSupport {
     }
 
     @Test
-    @Ignore(value = "https://github.com/jamesagnew/hapi-fhir/issues/955")
+    @Disabled(value = "https://github.com/jamesagnew/hapi-fhir/issues/955")
     public void testPatchByUrl() throws Exception {
         final Map<String, Object> headers = new HashMap<>();
         // parameter type is String
@@ -103,7 +107,7 @@ public class FhirPatchIT extends AbstractFhirTestSupport {
 
         MethodOutcome result = requestBodyAndHeaders("direct://PATCH_BY_URL", null, headers);
 
-        assertNotNull("patchByUrl result", result);
+        assertNotNull(result, "patchByUrl result");
         LOG.debug("patchByUrl: " + result);
         assertActive(result);
     }
@@ -114,15 +118,15 @@ public class FhirPatchIT extends AbstractFhirTestSupport {
             public void configure() {
                 // test route for patchById
                 from("direct://PATCH_BY_ID")
-                    .to("fhir://" + PATH_PREFIX + "/patchById");
+                        .to("fhir://" + PATH_PREFIX + "/patchById");
 
                 // test route for patchBySId
                 from("direct://PATCH_BY_SID")
-                    .to("fhir://" + PATH_PREFIX + "/patchById");
+                        .to("fhir://" + PATH_PREFIX + "/patchById");
 
                 // test route for patchByUrl
                 from("direct://PATCH_BY_URL")
-                    .to("fhir://" + PATH_PREFIX + "/patchByUrl");
+                        .to("fhir://" + PATH_PREFIX + "/patchByUrl");
 
             }
         };

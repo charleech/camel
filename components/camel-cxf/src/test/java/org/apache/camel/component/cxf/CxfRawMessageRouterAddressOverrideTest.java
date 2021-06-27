@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,20 @@
  */
 package org.apache.camel.component.cxf;
 
-
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 
 public class CxfRawMessageRouterAddressOverrideTest extends CxfRawMessageRouterTest {
     private String routerEndpointURI = "cxf://" + getRouterAddress() + "?" + SERVICE_CLASS + "&dataFormat=RAW";
     private String serviceEndpointURI = "cxf://http://localhost:9002/badAddress" + "?" + SERVICE_CLASS + "&dataFormat=RAW";
-    
+
     @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from(routerEndpointURI).to("log:org.apache.camel?level=DEBUG")
-                .setHeader(Exchange.DESTINATION_OVERRIDE_URL, constant(getServiceAddress()))
-                .to(serviceEndpointURI).to("mock:result");
+                        .setHeader(Exchange.DESTINATION_OVERRIDE_URL, constant(getServiceAddress()))
+                        .to(serviceEndpointURI).to("mock:result");
             }
         };
     }

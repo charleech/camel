@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,10 +43,11 @@ public class CMISQueryProducer extends DefaultProducer {
         return (CMISEndpoint) super.getEndpoint();
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         List<Map<String, Object>> nodes = executeQuery(exchange);
-        exchange.getOut().setBody(nodes);
-        exchange.getOut().setHeader(CamelCMISConstants.CAMEL_CMIS_RESULT_COUNT, nodes.size());
+        exchange.getMessage().setBody(nodes);
+        exchange.getMessage().setHeader(CamelCMISConstants.CAMEL_CMIS_RESULT_COUNT, nodes.size());
     }
 
     private List<Map<String, Object>> executeQuery(Exchange exchange) throws Exception {

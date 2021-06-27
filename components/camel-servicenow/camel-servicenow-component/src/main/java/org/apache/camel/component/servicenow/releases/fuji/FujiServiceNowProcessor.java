@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.servicenow.releases.fuji;
 
 import org.apache.camel.Exchange;
@@ -40,21 +39,22 @@ public abstract class FujiServiceNowProcessor extends AbstractServiceNowProcesso
         final String sysId = getSysID(in);
 
         doProcess(
-            exchange,
-            ObjectHelper.notNull(requestModel, "requestModel"),
-            ObjectHelper.notNull(responseModel, "responseModel"),
-            apiVersion,
-            ObjectHelper.notNull(action, "action"),
-            ObjectHelper.notNull(tableName, "tableName"),
-            sysId);
+                exchange,
+                ObjectHelper.notNull(requestModel, "requestModel"),
+                ObjectHelper.notNull(responseModel, "responseModel"),
+                apiVersion,
+                ObjectHelper.notNull(action, "action"),
+                ObjectHelper.notNull(tableName, "tableName"),
+                sysId);
     }
 
     protected abstract void doProcess(
-        Exchange exchange,
-        Class<?> requestModel,
-        Class<?> responseModel,
-        String apiVersion,
-        String action,
-        String tableName,
-        String sysId) throws Exception;
+            Exchange exchange,
+            Class<?> requestModel,
+            Class<?> responseModel,
+            String apiVersion,
+            String action,
+            String tableName,
+            String sysId)
+            throws Exception;
 }

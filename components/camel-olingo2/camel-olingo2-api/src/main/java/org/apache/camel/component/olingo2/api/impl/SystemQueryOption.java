@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,5 +20,13 @@ package org.apache.camel.component.olingo2.api.impl;
  * Copied from Olingo2 core package.
  */
 public enum SystemQueryOption {
-  $format, $filter, $inlinecount, $orderby, $skiptoken, $skip, $top, $expand, $select;
+    $format,
+    $filter,
+    $inlinecount,
+    $orderby,
+    $skiptoken,
+    $skip,
+    $top,
+    $expand,
+    $select;
 }

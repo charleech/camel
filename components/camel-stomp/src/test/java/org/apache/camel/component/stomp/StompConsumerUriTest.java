@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.fusesource.stomp.client.BlockingConnection;
 import org.fusesource.stomp.client.Stomp;
 import org.fusesource.stomp.codec.StompFrame;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.fusesource.hawtbuf.UTF8Buffer.utf8;
 import static org.fusesource.stomp.client.Constants.DESTINATION;
@@ -34,10 +34,6 @@ public class StompConsumerUriTest extends StompBaseTest {
 
     @Test
     public void testConsume() throws Exception {
-        if (!canTest()) {
-            return;
-        }
-
         context.addRoutes(createRouteBuilder());
         context.start();
 
@@ -59,12 +55,13 @@ public class StompConsumerUriTest extends StompBaseTest {
         mock.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                fromF("stomp:test?brokerURL=tcp://localhost:%d", getPort())
-                    .transform(body().convertToString())
-                    .to("mock:result");
+                fromF("stomp:test?brokerURL=tcp://localhost:%d", service.getPort())
+                        .transform(body().convertToString())
+                        .to("mock:result");
             }
         };
     }

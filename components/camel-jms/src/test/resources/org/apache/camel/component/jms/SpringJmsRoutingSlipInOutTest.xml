@@ -26,8 +26,14 @@
 
     <bean id="myBean" class="org.apache.camel.component.jms.JmsRoutingSlipInOutTest$MyBean"/>
 
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-        <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;broker.useJmx=false"/>
+    <bean id="activemq" class="org.apache.camel.component.jms.JmsComponent">
+        <property name="connectionFactory">
+      <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+          <property name="brokerURL">
+              <bean class="org.apache.camel.component.jms.CamelJmsTestHelper" factory-method="createBrokerUrl"/>
+          </property>
+      </bean>
+    </property>
     </bean>
 
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,5 +20,7 @@ package org.apache.camel.component.wordpress.api.model;
  * Scope under which the request is made; determines fields present in response.
  */
 public enum Context {
-    view, embed, edit;
+    view,
+    embed,
+    edit;
 }

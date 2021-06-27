@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.jms.async;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,11 +23,15 @@ import org.apache.camel.AsyncCallback;
 import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultAsyncProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  */
 public class MyAsyncProducer extends DefaultAsyncProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(MyAsyncProducer.class);
 
     private final ExecutorService executor;
     private final AtomicInteger counter = new AtomicInteger();
@@ -38,37 +41,37 @@ public class MyAsyncProducer extends DefaultAsyncProducer {
         this.executor = endpoint.getCamelContext().getExecutorServiceManager().newDefaultThreadPool(this, "MyProducer");
     }
 
+    @Override
     public MyAsyncEndpoint getEndpoint() {
         return (MyAsyncEndpoint) super.getEndpoint();
     }
 
+    @Override
     public boolean process(final Exchange exchange, final AsyncCallback callback) {
-        executor.submit(new Callable<Object>() {
-            public Object call() throws Exception {
+        executor.submit(() -> {
 
-                log.info("Simulating a task which takes " + getEndpoint().getDelay() + " millis to reply");
-                Thread.sleep(getEndpoint().getDelay());
+            LOG.info("Simulating a task which takes " + getEndpoint().getDelay() + " millis to reply");
+            Thread.sleep(getEndpoint().getDelay());
 
-                int count = counter.incrementAndGet();
-                if (getEndpoint().getFailFirstAttempts() >= count) {
-                    log.info("Simulating a failure at attempt " + count);
-                    exchange.setException(new CamelExchangeException("Simulated error at attempt " + count, exchange));
-                } else {
-                    String reply = getEndpoint().getReply();
-                    exchange.getOut().setBody(reply);
-                    // propagate headers
-                    exchange.getOut().setHeaders(exchange.getIn().getHeaders());
-                    log.info("Setting reply " + reply);
-                }
-
-                log.info("Callback done(false)");
-                callback.done(false);
-                return null;
+            int count = counter.incrementAndGet();
+            if (getEndpoint().getFailFirstAttempts() >= count) {
+                LOG.info("Simulating a failure at attempt " + count);
+                exchange.setException(new CamelExchangeException("Simulated error at attempt " + count, exchange));
+            } else {
+                String reply = getEndpoint().getReply();
+                exchange.getMessage().setBody(reply);
+                // propagate headers
+                exchange.getMessage().setHeaders(exchange.getIn().getHeaders());
+                LOG.info("Setting reply " + reply);
             }
+
+            LOG.info("Callback done(false)");
+            callback.done(false);
+            return null;
         });
 
         // indicate from this point forward its being routed asynchronously
-        log.info("Task submitted, now tell Camel routing engine to that this Exchange is being continued asynchronously");
+        LOG.info("Task submitted, now tell Camel routing engine to that this Exchange is being continued asynchronously");
         return false;
     }
 

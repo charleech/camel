@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,20 @@
  */
 package org.apache.camel.language.groovy;
 
+import java.util.Map;
+
 import groovy.lang.Script;
 import org.apache.camel.Service;
 import org.apache.camel.spi.annotations.Language;
+import org.apache.camel.support.LRUCacheFactory;
 import org.apache.camel.support.LanguageSupport;
-import org.apache.camel.support.LRUSoftCache;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 @Language("groovy")
 public class GroovyLanguage extends LanguageSupport {
 
     // Cache used to stores the compiled scripts (aka their classes)
-    private final LRUSoftCache<String, GroovyClassService> scriptCache = new LRUSoftCache<>(16, 1000, true);
+    private final Map<String, GroovyClassService> scriptCache = LRUCacheFactory.newLRUSoftCache(16, 1000, true);
 
     private static final class GroovyClassService implements Service {
 
@@ -38,11 +40,11 @@ public class GroovyLanguage extends LanguageSupport {
         }
 
         @Override
-        public void start() throws Exception {
+        public void start() {
         }
 
         @Override
-        public void stop() throws Exception {
+        public void stop() {
             InvokerHelper.removeClass(script);
         }
 
@@ -52,10 +54,12 @@ public class GroovyLanguage extends LanguageSupport {
         return new GroovyLanguage().createExpression(expression);
     }
 
+    @Override
     public GroovyExpression createPredicate(String expression) {
         return createExpression(expression);
     }
 
+    @Override
     public GroovyExpression createExpression(String expression) {
         expression = loadResource(expression);
         return new GroovyExpression(expression);

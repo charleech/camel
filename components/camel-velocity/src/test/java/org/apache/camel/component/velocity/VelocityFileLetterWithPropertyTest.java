@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,23 +17,16 @@
 package org.apache.camel.component.velocity;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.impl.JndiRegistry;
 
 public class VelocityFileLetterWithPropertyTest extends VelocityLetterTest {
-    
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry =  new JndiRegistry(createJndiContext());
-        registry.bind("properties", new PropertiesComponent());
-        return registry;
-    }
-    
+
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                
+
                 System.setProperty("ENV", "src/test/resources/");
-                
+
                 from("direct:a").to("velocity:file:{{ENV}}org/apache/camel/component/velocity/letter.vm").to("mock:result");
             }
         };

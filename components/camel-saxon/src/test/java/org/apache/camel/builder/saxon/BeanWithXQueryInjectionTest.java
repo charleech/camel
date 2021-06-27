@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,15 @@
  */
 package org.apache.camel.builder.saxon;
 
-import javax.naming.Context;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.xquery.XQuery;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.jndi.JndiContext;
-import org.junit.Test;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BeanWithXQueryInjectionTest extends CamelTestSupport {
     private static final Logger LOG = LoggerFactory.getLogger(BeanWithXQueryInjectionTest.class);
@@ -36,17 +36,16 @@ public class BeanWithXQueryInjectionTest extends CamelTestSupport {
 
         template.sendBodyAndHeader("direct:in", expectedBody, "foo", "bar");
 
-        assertEquals("bean body: " + myBean, expectedBody, myBean.body);
-        assertEquals("bean foo: " + myBean, "bar", myBean.foo);
+        assertEquals(expectedBody, myBean.body, "bean body: " + myBean);
+        assertEquals("bar", myBean.foo, "bean foo: " + myBean);
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        JndiContext answer = new JndiContext();
-        answer.bind("myBean", myBean);
-        return answer;
+    protected void bindToRegistry(Registry registry) throws Exception {
+        registry.bind("myBean", myBean);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {

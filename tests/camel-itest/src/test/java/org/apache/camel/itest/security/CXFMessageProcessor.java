@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,21 +26,22 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CXFMessageProcessor implements Processor {
     static final String RESPONSE = "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-        + "<soap:Body><greetMeResponse xmlns=\"http://apache.org/hello_world_soap_http/types\">"
-        + "<responseType> Hello CXF</responseType></greetMeResponse></soap:Body></soap:Envelope>";
+                                   + "<soap:Body><greetMeResponse xmlns=\"http://apache.org/hello_world_soap_http/types\">"
+                                   + "<responseType> Hello CXF</responseType></greetMeResponse></soap:Body></soap:Envelope>";
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         // just print out the request message
         Message in = exchange.getIn();
         String request = in.getBody(String.class);
         // just make sure the request is greetme
-        assertTrue("It should be GreetMe request.", request.indexOf("<greetMe") > 0);
+        assertTrue(request.indexOf("<greetMe") > 0, "It should be GreetMe request.");
         InputStream is = new ByteArrayInputStream(RESPONSE.getBytes());
         SOAPMessage message = MessageFactory.newInstance().createMessage(null, is);
-        exchange.getOut().setBody(message);
+        exchange.getMessage().setBody(message);
     }
 }

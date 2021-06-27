@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,7 +39,8 @@ public class DoubleFormatFactory extends AbstractFormatFactory {
 
     @Override
     public Format<?> build(FormattingOptions formattingOptions) {
-        return new DoubleFormat(formattingOptions.isImpliedDecimalSeparator(),
+        return new DoubleFormat(
+                formattingOptions.isImpliedDecimalSeparator(),
                 formattingOptions.getPrecision(),
                 formattingOptions.getLocale());
     }
@@ -50,12 +51,14 @@ public class DoubleFormatFactory extends AbstractFormatFactory {
             super(impliedDecimalPosition, precision, locale);
         }
 
+        @Override
         public String format(Double object) throws Exception {
             return !super.hasImpliedDecimalPosition()
                     ? super.getFormat().format(object)
                     : super.getFormat().format(object * super.getMultiplier());
         }
 
+        @Override
         public Double parse(String string) throws Exception {
             Double value = null;
             if (!super.hasImpliedDecimalPosition()) {

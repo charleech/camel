@@ -1,9 +1,22 @@
 [[spring-integration-component]]
-== Spring Integration Component
+= Spring Integration Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-spring-integration/src/main/docs/spring-integration-component.adoc
+:docTitle: Spring Integration
+:artifactId: camel-spring-integration
+:description: Bridge Camel with Spring Integration.
+:since: 1.4
+:supportLevel: Stable
+:component-header: Both producer and consumer are supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/spring-integration.adoc[opts=optional]
+//Manually maintained attributes
+:group: Spring
 
-*Available as of Camel version 1.4*
+*Since Camel {since}*
 
-The *spring-integration:* component provides a bridge for Camel
+*{component-header}*
+
+The Spring Integration component provides a bridge for Camel
 components to talk to
 http://www.springsource.org/spring-integration[spring integration
 endpoints].
@@ -21,7 +34,7 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 -----------------------------------------------
@@ -36,11 +49,21 @@ used by the Spring Integration Spring context. It will equal to the
 You can append query options to the URI in the following format,
 `?option=value&option=value&...`
 
-### Options
+== Options
 
 
 // component options: START
-The Spring Integration component has no options.
+The Spring Integration component supports 3 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -54,7 +77,7 @@ spring-integration:defaultChannel
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -64,7 +87,7 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (7 parameters):
+=== Query Parameters (7 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -74,30 +97,15 @@ with the following path and query parameters:
 | *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
 | *inputChannel* (consumer) | The Spring integration input channel name that this endpoint wants to consume from Spring integration. |  | String
 | *exceptionHandler* (consumer) | To let the consumer use a custom ExceptionHandler. Notice if the option bridgeErrorHandler is enabled then this option is not in use. By default the consumer will deal with exceptions, that will be logged at WARN or ERROR level and ignored. |  | ExceptionHandler
-| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. |  | ExchangePattern
+| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. There are 3 enums and the value can be one of: InOnly, InOut, InOptionalOut |  | ExchangePattern
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *outputChannel* (producer) | The Spring integration output channel name that is used to send messages to Spring integration. |  | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 2 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.spring-integration.enabled* | Enable spring-integration component | true | Boolean
-| *camel.component.spring-integration.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-### Usage
+== Usage
 
 The Spring integration component is a bridge that connects Camel
 endpoints with Spring integration endpoints through the Spring
@@ -105,15 +113,15 @@ integration's input channels and output channels. Using this component,
 we can send Camel messages to Spring Integration endpoints or receive
 messages from Spring integration endpoints in a Camel routing context.
 
-### Examples
+== Examples
 
-#### Using the Spring integration endpoint
+=== Using the Spring integration endpoint
 
 You can set up a Spring integration endpoint using a URI, as follows:
 
 Or directly using a Spring integration channel name:
 
-#### The Source and Target adapter
+=== The Source and Target adapter
 
 Spring integration also provides the Spring integration's source and
 target adapters, which can route messages from a Spring integration
@@ -124,9 +132,5 @@ This example uses the following namespaces:
 
 You can bind your source or target to a Camel endpoint as follows:
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$spring-integration-starter.adoc[]

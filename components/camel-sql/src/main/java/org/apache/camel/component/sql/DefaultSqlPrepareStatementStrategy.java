@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,13 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeExchangeException;
-import org.apache.camel.language.simple.SimpleLanguage;
-import org.apache.camel.util.CollectionStringBuffer;
 import org.apache.camel.support.ObjectHelper;
 import org.apache.camel.util.StringQuoteHelper;
 import org.slf4j.Logger;
@@ -44,9 +43,13 @@ import org.springframework.util.CompositeIterator;
 public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementStrategy {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultSqlPrepareStatementStrategy.class);
-    private static final Pattern REPLACE_IN_PATTERN = Pattern.compile("\\:\\?in\\:(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\})", Pattern.MULTILINE);
-    private static final Pattern REPLACE_PATTERN = Pattern.compile("\\:\\?\\w+|\\:\\?\\$\\{[^\\}]+\\}|\\:\\?\\$simple\\{[^\\}]+\\}", Pattern.MULTILINE);
-    private static final Pattern NAME_PATTERN = Pattern.compile("\\:\\?((in\\:(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\}))|(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\}))", Pattern.MULTILINE);
+    private static final Pattern REPLACE_IN_PATTERN
+            = Pattern.compile("\\:\\?in\\:(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\})", Pattern.MULTILINE);
+    private static final Pattern REPLACE_PATTERN
+            = Pattern.compile("\\:\\?\\w+|\\:\\?\\$\\{[^\\}]+\\}|\\:\\?\\$simple\\{[^\\}]+\\}", Pattern.MULTILINE);
+    private static final Pattern NAME_PATTERN = Pattern.compile(
+            "\\:\\?((in\\:(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\}))|(\\w+|\\$\\{[^\\}]+\\}|\\$simple\\{[^\\}]+\\}))",
+            Pattern.MULTILINE);
     private final char separator;
 
     public DefaultSqlPrepareStatementStrategy() {
@@ -69,12 +72,12 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
                     Object parameter = lookupParameter(found, exchange, exchange.getIn().getBody());
                     if (parameter != null) {
                         Iterator it = createInParameterIterator(parameter);
-                        CollectionStringBuffer csb = new CollectionStringBuffer(",");
+                        StringJoiner replaceBuilder = new StringJoiner(",");
                         while (it.hasNext()) {
                             it.next();
-                            csb.append("\\?");
+                            replaceBuilder.add("\\?");
                         }
-                        String replace = csb.toString();
+                        String replace = replaceBuilder.toString();
                         String foundEscaped = found.replace("$", "\\$").replace("{", "\\{").replace("}", "\\}");
                         Matcher paramMatcher = Pattern.compile("\\:\\?in\\:" + foundEscaped, Pattern.MULTILINE).matcher(query);
                         query = paramMatcher.replaceAll(replace);
@@ -82,7 +85,7 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
                 }
             }
             // replace all :?word and :?${foo} with just ?
-            answer = REPLACE_PATTERN.matcher(query).replaceAll("\\?");
+            answer = replaceParams(query);
         } else {
             answer = query;
         }
@@ -91,9 +94,60 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
         return answer;
     }
 
+    private String replaceParams(String query) {
+        // nested parameters are not replaced properly just by the REPLACE_PATTERN
+        // for example ":?${array[${index}]}"
+        query = replaceBracketedParams(query);
+        return REPLACE_PATTERN.matcher(query).replaceAll("\\?");
+    }
+
+    private String replaceBracketedParams(String query) {
+        while (query.contains(":?${")) {
+            int i = query.indexOf(":?${");
+            int j = findClosingBracket(query, i + 3);
+
+            if (j == -1) {
+                throw new IllegalArgumentException("String doesn't have equal opening and closing brackets: " + query);
+            }
+
+            query = query.substring(0, i) + "?" + query.substring(j + 1);
+        }
+        return query;
+    }
+
+    /**
+     * Finds closing bracket in text for named parameter.
+     *
+     * @param  text
+     * @param  openPosition position of the opening bracket
+     *
+     * @return              index of corresponding closing bracket, or -1, if none was found
+     */
+    private static int findClosingBracket(String text, int openPosition) {
+        if (text.charAt(openPosition) != '{') {
+            throw new IllegalArgumentException("Character at specified position is not an open bracket");
+        }
+
+        int remainingClosingBrackets = 0;
+
+        for (int i = openPosition; i < text.length(); i++) {
+            if (text.charAt(i) == '{') {
+                remainingClosingBrackets++;
+            } else if (text.charAt(i) == '}') {
+                remainingClosingBrackets--;
+            }
+            if (remainingClosingBrackets == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     @Override
-    public Iterator<?> createPopulateIterator(final String query, final String preparedQuery, final int expectedParams, final Exchange exchange,
-                                              final Object value) throws SQLException {
+    public Iterator<?> createPopulateIterator(
+            final String query, final String preparedQuery, final int expectedParams, final Exchange exchange,
+            final Object value)
+            throws SQLException {
         if (hasNamedParameters(query)) {
             // create an iterator that returns the value in the named order
             return new PopulateIterator(query, exchange, value);
@@ -166,15 +220,40 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
 
     private static final class NamedQueryParser {
 
+        private final String query;
         private final Matcher matcher;
 
         private NamedQueryParser(String query) {
+            this.query = query;
             this.matcher = NAME_PATTERN.matcher(query);
         }
 
         public String next() {
             if (matcher.find()) {
-                return matcher.group(1);
+                String param = matcher.group(1);
+
+                int openingBrackets = 0;
+                int closingBrackets = 0;
+                for (int i = 0; i < param.length(); i++) {
+                    if (param.charAt(i) == '{') {
+                        openingBrackets++;
+                    }
+                    if (param.charAt(i) == '}') {
+                        closingBrackets++;
+                    }
+                }
+                if (openingBrackets != closingBrackets) {
+                    // nested parameters are not found properly by the NAME_PATTERN
+                    // for example param ":?${array[?${index}]}"
+                    // is detected as "${array[?${index}"
+                    // we have to find correct closing bracket manually
+                    String querySubstring = query.substring(matcher.start());
+                    int i = querySubstring.indexOf('{');
+                    int j = findClosingBracket(querySubstring, i);
+                    param = "$" + querySubstring.substring(i, j + 1);
+                }
+
+                return param;
             }
 
             return null;
@@ -187,7 +266,8 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
 
         Object answer = null;
         if ((nextParam.startsWith("$simple{") || nextParam.startsWith("${")) && nextParam.endsWith("}")) {
-            answer = SimpleLanguage.expression(nextParam).evaluate(exchange, Object.class);
+            answer = exchange.getContext().resolveLanguage("simple").createExpression(nextParam).evaluate(exchange,
+                    Object.class);
         } else if (bodyMap.containsKey(nextParam)) {
             answer = bodyMap.get(nextParam);
         } else if (headersMap.containsKey(nextParam)) {
@@ -233,8 +313,8 @@ public class DefaultSqlPrepareStatementStrategy implements SqlPrepareStatementSt
     }
 
     private static final class PopulateIterator implements Iterator<Object> {
-        private static final String MISSING_PARAMETER_EXCEPTION =
-                "Cannot find key [%s] in message body or headers to use when setting named parameter in query [%s]";
+        private static final String MISSING_PARAMETER_EXCEPTION
+                = "Cannot find key [%s] in message body or headers to use when setting named parameter in query [%s]";
         private final String query;
         private final NamedQueryParser parser;
         private final Exchange exchange;

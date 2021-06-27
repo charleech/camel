@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,9 @@ import javax.xml.transform.TransformerFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.builder.xml.XsltUriResolver;
 import org.apache.camel.component.spring.ws.filter.MessageFilter;
-import org.apache.camel.component.xslt.XsltComponent;
-import org.apache.camel.component.xslt.XsltEndpoint;
+import org.apache.camel.component.xslt.XsltUriResolver;
+import org.apache.camel.component.xslt.saxon.XsltSaxonComponent;
 import org.apache.camel.spi.ClassResolver;
 import org.apache.camel.support.ObjectHelper;
 import org.slf4j.Logger;
@@ -44,17 +43,21 @@ import org.springframework.ws.soap.SoapMessage;
  * Message filter that transforms the header of a soap message
  */
 public class HeaderTransformationMessageFilter implements MessageFilter {
+    private static final String SAXON_TRANSFORMER_FACTORY_CLASS_NAME = "net.sf.saxon.TransformerFactoryImpl";
     private static final String SOAP_HEADER_TRANSFORMATION_PROBLEM = "Soap header transformation problem";
     private static final Logger LOG = LoggerFactory.getLogger(HeaderTransformationMessageFilter.class);
     private String xslt;
     private boolean saxon;
 
-    /**
-     * @param xslt
-     */
     public HeaderTransformationMessageFilter(String xslt) {
-        super();
         this.xslt = xslt;
+    }
+
+    /**
+     * Whether a header is valid
+     */
+    protected boolean validHeaderName(String name) {
+        return !"Content-Type".equalsIgnoreCase(name);
     }
 
     @Override
@@ -67,13 +70,14 @@ public class HeaderTransformationMessageFilter implements MessageFilter {
     @Override
     public void filterConsumer(Exchange exchange, WebServiceMessage webServiceMessage) {
         if (exchange != null) {
-            Message responseMessage = exchange.hasOut() ? exchange.getOut() : exchange.getIn();
+            Message responseMessage = exchange.getMessage();
             processHeader(exchange.getContext(), responseMessage, webServiceMessage);
         }
     }
 
     /**
      * Transform the header
+     * 
      * @param context
      * @param inOrOut
      * @param webServiceMessage
@@ -89,7 +93,7 @@ public class HeaderTransformationMessageFilter implements MessageFilter {
                 Transformer transformer = transformerFactory.newTransformer(stylesheetResource);
 
                 addParameters(inOrOut, transformer);
-                
+
                 transformer.transform(soapMessage.getSoapHeader().getSource(), soapMessage.getSoapHeader().getResult());
             } catch (TransformerException e) {
                 throw new RuntimeException("Cannot transform the header of the soap message", e);
@@ -99,14 +103,15 @@ public class HeaderTransformationMessageFilter implements MessageFilter {
 
     /**
      * Adding the headers of the message as parameter to the transformer
-     * 
-     * @param inOrOut
-     * @param transformer
      */
     private void addParameters(Message inOrOut, Transformer transformer) {
         Map<String, Object> headers = inOrOut.getHeaders();
         for (Map.Entry<String, Object> headerEntry : headers.entrySet()) {
             String key = headerEntry.getKey();
+
+            if (!validHeaderName(key)) {
+                continue;
+            }
 
             // Key's with '$' are not allowed in XSLT
             if (key != null && !key.startsWith("$")) {
@@ -162,15 +167,15 @@ public class HeaderTransformationMessageFilter implements MessageFilter {
     /**
      * Loading the saxon transformer class
      * 
-     * @param context
+     * @param  context
      * @return
      */
     private TransformerFactory getSaxonTransformerFactory(CamelContext context) {
         final ClassResolver resolver = context.getClassResolver();
         try {
             Class<TransformerFactory> factoryClass = resolver.resolveMandatoryClass(
-                    XsltEndpoint.SAXON_TRANSFORMER_FACTORY_CLASS_NAME, TransformerFactory.class,
-                    XsltComponent.class.getClassLoader());
+                    SAXON_TRANSFORMER_FACTORY_CLASS_NAME, TransformerFactory.class,
+                    XsltSaxonComponent.class.getClassLoader());
 
             if (factoryClass != null) {
                 return ObjectHelper.newInstance(factoryClass);

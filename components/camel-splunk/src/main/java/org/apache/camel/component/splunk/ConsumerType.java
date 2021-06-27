@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,9 @@
 package org.apache.camel.component.splunk;
 
 public enum ConsumerType {
-    NORMAL, REALTIME, SAVEDSEARCH;
+    NORMAL,
+    REALTIME,
+    SAVEDSEARCH;
 
     public static ConsumerType fromUri(String uri) {
         for (ConsumerType consumerType : ConsumerType.values()) {

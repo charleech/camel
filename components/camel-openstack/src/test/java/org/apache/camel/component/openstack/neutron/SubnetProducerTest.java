@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,30 +22,28 @@ import java.util.UUID;
 
 import org.apache.camel.component.openstack.common.OpenstackConstants;
 import org.apache.camel.component.openstack.neutron.producer.SubnetProducer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.networking.SubnetService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.network.IPVersionType;
 import org.openstack4j.model.network.Subnet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SubnetProducerTest extends NeutronProducerTestSupport {
 
     private Subnet dummySubnet;
@@ -62,7 +60,7 @@ public class SubnetProducerTest extends NeutronProducerTestSupport {
     @Captor
     private ArgumentCaptor<String> subnetIdCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(networkingService.subnet()).thenReturn(subnetService);
 
@@ -117,7 +115,7 @@ public class SubnetProducerTest extends NeutronProducerTestSupport {
         producer.process(exchange);
 
         final List<Subnet> result = msg.getBody(List.class);
-        assertTrue(result.size() == 2);
+        assertEquals(2, result.size());
         assertEquals(testOSsubnet, result.get(0));
     }
 
@@ -132,14 +130,6 @@ public class SubnetProducerTest extends NeutronProducerTestSupport {
 
         verify(subnetService).delete(subnetIdCaptor.capture());
         assertEquals(subnetID, subnetIdCaptor.getValue());
-        assertFalse(msg.isFault());
-
-        //in case of failure
-        final String failureMessage = "fail";
-        when(subnetService.delete(anyString())).thenReturn(ActionResponse.actionFailed(failureMessage, 404));
-        producer.process(exchange);
-        assertTrue(msg.isFault());
-        assertTrue(msg.getBody(String.class).contains(failureMessage));
     }
 
     private Subnet createSubnet() {

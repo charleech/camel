@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,12 +23,14 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.Processor;
 import org.apache.camel.component.hbase.mapping.CellMappingStrategy;
 import org.apache.camel.component.hbase.mapping.CellMappingStrategyFactory;
 import org.apache.camel.component.hbase.model.HBaseCell;
 import org.apache.camel.component.hbase.model.HBaseData;
 import org.apache.camel.component.hbase.model.HBaseRow;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.support.ScheduledBatchPollingConsumer;
 import org.apache.camel.util.CastUtils;
 import org.apache.camel.util.ObjectHelper;
@@ -41,11 +43,15 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.Filter;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.filter.PageFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The HBase consumer.
  */
 public class HBaseConsumer extends ScheduledBatchPollingConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HBaseConsumer.class);
 
     private final HBaseEndpoint endpoint;
     private HBaseRow rowModel;
@@ -82,17 +88,20 @@ public class HBaseConsumer extends ScheduledBatchPollingConsumer {
             if (rowModel != null && rowModel.getCells() != null) {
                 Set<HBaseCell> cellModels = rowModel.getCells();
                 for (HBaseCell cellModel : cellModels) {
-                    scan.addColumn(HBaseHelper.getHBaseFieldAsBytes(cellModel.getFamily()), HBaseHelper.getHBaseFieldAsBytes(cellModel.getQualifier()));
+                    scan.addColumn(HBaseHelper.getHBaseFieldAsBytes(cellModel.getFamily()),
+                            HBaseHelper.getHBaseFieldAsBytes(cellModel.getQualifier()));
                 }
             }
 
             ResultScanner scanner = table.getScanner(scan);
             int exchangeCount = 0;
             // The next three statements are used just to get a reference to the BodyCellMappingStrategy instance.
-            Exchange exchange = endpoint.createExchange();
+            Exchange exchange = new DefaultExchange(endpoint);
             exchange.getIn().setHeader(CellMappingStrategyFactory.STRATEGY, CellMappingStrategyFactory.BODY);
             CellMappingStrategy mappingStrategy = endpoint.getCellMappingStrategyFactory().getStrategy(exchange.getIn());
-            for (Result result = scanner.next(); (exchangeCount < maxMessagesPerPoll || maxMessagesPerPoll <= 0) && result != null; result = scanner.next()) {
+            for (Result result = scanner.next();
+                 (exchangeCount < maxMessagesPerPoll || maxMessagesPerPoll <= 0) && result != null;
+                 result = scanner.next()) {
                 HBaseData data = new HBaseData();
                 HBaseRow resultRow = new HBaseRow();
                 resultRow.apply(rowModel);
@@ -102,15 +111,15 @@ public class HBaseConsumer extends ScheduledBatchPollingConsumer {
                 List<Cell> cells = result.listCells();
                 if (cells != null) {
                     Set<HBaseCell> cellModels = rowModel.getCells();
-                    if (cellModels.size() > 0) {
+                    if (!cellModels.isEmpty()) {
                         for (HBaseCell modelCell : cellModels) {
                             HBaseCell resultCell = new HBaseCell();
                             String family = modelCell.getFamily();
                             String column = modelCell.getQualifier();
                             resultCell.setValue(endpoint.getCamelContext().getTypeConverter().convertTo(
-                                modelCell.getValueType(),
-                                result.getValue(HBaseHelper.getHBaseFieldAsBytes(family), HBaseHelper.getHBaseFieldAsBytes(column)))
-                            );
+                                    modelCell.getValueType(),
+                                    result.getValue(HBaseHelper.getHBaseFieldAsBytes(family),
+                                            HBaseHelper.getHBaseFieldAsBytes(column))));
                             resultCell.setFamily(modelCell.getFamily());
                             resultCell.setQualifier(modelCell.getQualifier());
                             resultRow.getCells().add(resultCell);
@@ -123,13 +132,14 @@ public class HBaseConsumer extends ScheduledBatchPollingConsumer {
                             HBaseCell resultCell = new HBaseCell();
                             resultCell.setFamily(family);
                             resultCell.setQualifier(qualifier);
-                            resultCell.setValue(endpoint.getCamelContext().getTypeConverter().convertTo(String.class, CellUtil.cloneValue(cell)));
-                            resultRow.getCells().add(resultCell); 
+                            resultCell.setValue(endpoint.getCamelContext().getTypeConverter().convertTo(String.class,
+                                    CellUtil.cloneValue(cell)));
+                            resultRow.getCells().add(resultCell);
                         }
                     }
-               
+
                     data.getRows().add(resultRow);
-                    exchange = endpoint.createExchange();
+                    exchange = createExchange(true);
                     // Probably overkill but kept it here for consistency.
                     exchange.getIn().setHeader(CellMappingStrategyFactory.STRATEGY, CellMappingStrategyFactory.BODY);
                     mappingStrategy.applyScanResults(exchange.getIn(), data);
@@ -150,7 +160,8 @@ public class HBaseConsumer extends ScheduledBatchPollingConsumer {
 
         // limit if needed
         if (maxMessagesPerPoll > 0 && total > maxMessagesPerPoll) {
-            log.debug("Limiting to maximum messages to poll {} as there were {} messages in this poll.", maxMessagesPerPoll, total);
+            LOG.debug("Limiting to maximum messages to poll {} as there were {} messages in this poll.", maxMessagesPerPoll,
+                    total);
             total = maxMessagesPerPoll;
         }
 
@@ -158,14 +169,14 @@ public class HBaseConsumer extends ScheduledBatchPollingConsumer {
             // only loop if we are started (allowed to run)
             Exchange exchange = ObjectHelper.cast(Exchange.class, exchanges.poll());
             // add current index and total as properties
-            exchange.setProperty(Exchange.BATCH_INDEX, index);
-            exchange.setProperty(Exchange.BATCH_SIZE, total);
-            exchange.setProperty(Exchange.BATCH_COMPLETE, index == total - 1);
+            exchange.setProperty(ExchangePropertyKey.BATCH_INDEX, index);
+            exchange.setProperty(ExchangePropertyKey.BATCH_SIZE, total);
+            exchange.setProperty(ExchangePropertyKey.BATCH_COMPLETE, index == total - 1);
 
             // update pending number of exchanges
             pendingExchanges = total - index - 1;
 
-            log.trace("Processing exchange [{}]...", exchange);
+            LOG.trace("Processing exchange [{}]...", exchange);
             getProcessor().process(exchange);
             if (exchange.getException() != null) {
                 // if we failed then throw exception

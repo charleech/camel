@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,8 @@ import org.apache.camel.spi.RoutePolicy;
 import org.apache.camel.spi.RoutePolicyFactory;
 
 /**
- * A {@link org.apache.camel.spi.RoutePolicyFactory} to plugin and use metrics for gathering route utilization statistics
+ * A {@link org.apache.camel.spi.RoutePolicyFactory} to plugin and use metrics for gathering route utilization
+ * statistics
  */
 public class MetricsRoutePolicyFactory implements RoutePolicyFactory {
 
@@ -35,6 +36,7 @@ public class MetricsRoutePolicyFactory implements RoutePolicyFactory {
     private boolean prettyPrint;
     private TimeUnit rateUnit = TimeUnit.SECONDS;
     private TimeUnit durationUnit = TimeUnit.MILLISECONDS;
+    private String namePattern;
 
     /**
      * To use a specific {@link com.codahale.metrics.MetricRegistry} instance.
@@ -104,6 +106,14 @@ public class MetricsRoutePolicyFactory implements RoutePolicyFactory {
         this.durationUnit = durationUnit;
     }
 
+    public String getNamePattern() {
+        return namePattern;
+    }
+
+    public void setNamePattern(final String namePattern) {
+        this.namePattern = namePattern;
+    }
+
     @Override
     public RoutePolicy createRoutePolicy(CamelContext camelContext, String routeId, NamedNode routeDefinition) {
         MetricsRoutePolicy answer = new MetricsRoutePolicy();
@@ -113,6 +123,9 @@ public class MetricsRoutePolicyFactory implements RoutePolicyFactory {
         answer.setPrettyPrint(isPrettyPrint());
         answer.setRateUnit(getRateUnit());
         answer.setDurationUnit(getDurationUnit());
+        if (namePattern != null) {
+            answer.setNamePattern(namePattern);
+        }
         return answer;
     }
 

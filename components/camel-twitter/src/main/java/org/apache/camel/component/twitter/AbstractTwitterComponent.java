@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.util.Map;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.component.extension.ComponentVerifierExtension;
-import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.spi.Metadata;
+import org.apache.camel.support.DefaultComponent;
 
 /**
  * Base Twitter component
@@ -71,10 +71,15 @@ public abstract class AbstractTwitterComponent extends DefaultComponent {
 
         // and then override from parameters
         setProperties(properties, parameters);
-        return doCreateEndpoint(properties, uri, remaining, parameters);
+        Endpoint answer = doCreateEndpoint(properties, uri, remaining, parameters);
+        // ensure properties have been configured with required options
+        properties.checkComplete();
+        return answer;
     }
 
-    protected abstract Endpoint doCreateEndpoint(TwitterConfiguration properties, String uri, String remaining, Map<String, Object> parameters) throws Exception;
+    protected abstract Endpoint doCreateEndpoint(
+            TwitterConfiguration properties, String uri, String remaining, Map<String, Object> parameters)
+            throws Exception;
 
     public String getAccessToken() {
         return accessToken;
@@ -168,6 +173,7 @@ public abstract class AbstractTwitterComponent extends DefaultComponent {
      * Get a verifier for the component.
      */
     public ComponentVerifierExtension getVerifier() {
-        return (scope, parameters) -> getExtension(ComponentVerifierExtension.class).orElseThrow(UnsupportedOperationException::new).verify(scope, parameters);
+        return (scope, parameters) -> getExtension(ComponentVerifierExtension.class)
+                .orElseThrow(UnsupportedOperationException::new).verify(scope, parameters);
     }
 }

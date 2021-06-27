@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -32,19 +33,20 @@ import org.apache.camel.component.wordpress.consumer.WordpressUserConsumer;
 import org.apache.camel.component.wordpress.producer.WordpressPostProducer;
 import org.apache.camel.component.wordpress.producer.WordpressUserProducer;
 import org.apache.camel.component.wordpress.proxy.WordpressOperationType;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
-import org.apache.camel.support.EndpointHelper;
-import org.apache.camel.support.IntrospectionSupport;
+import org.apache.camel.support.DefaultEndpoint;
+import org.apache.camel.support.PropertyBindingSupport;
 import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.util.PropertiesHelper;
 
 /**
- * Integrates Camel with Wordpress.
+ * Manage posts and users using Wordpress API.
  */
-@UriEndpoint(firstVersion = "2.21.0", scheme = "wordpress", title = "Wordpress", syntax = "wordpress:operationDetail", label = "cms")
+@UriEndpoint(firstVersion = "2.21.0", scheme = "wordpress", title = "Wordpress", syntax = "wordpress:operation",
+             category = { Category.CLOUD, Category.API, Category.CMS })
 public class WordpressEndpoint extends DefaultEndpoint {
 
     public static final String ENDPOINT_SERVICE_POST = "post, user";
@@ -53,19 +55,20 @@ public class WordpressEndpoint extends DefaultEndpoint {
     @Metadata(required = true)
     private String operation;
 
-    @UriPath(description = "The second part of an endpoint operation. Needed only when endpoint semantic is not enough, like wordpress:post:delete", enums = "delete")
+    @UriPath(description = "The second part of an endpoint operation. Needed only when endpoint semantic is not enough, like wordpress:post:delete",
+             enums = "delete")
     private String operationDetail;
 
     @UriParam
-    private WordpressComponentConfiguration config;
+    private WordpressConfiguration configuration;
 
-    public WordpressEndpoint(String uri, WordpressComponent component, WordpressComponentConfiguration configuration) {
+    public WordpressEndpoint(String uri, WordpressComponent component, WordpressConfiguration configuration) {
         super(uri, component);
-        this.config = configuration;
+        this.configuration = configuration;
     }
 
-    public WordpressComponentConfiguration getConfig() {
-        return config;
+    public WordpressConfiguration getConfiguration() {
+        return configuration;
     }
 
     public String getOperation() {
@@ -84,30 +87,28 @@ public class WordpressEndpoint extends DefaultEndpoint {
         this.operationDetail = operationDetail;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
+    @Override
     public Producer createProducer() throws Exception {
         switch (WordpressOperationType.valueOf(operation)) {
-        case post:
-            return new WordpressPostProducer(this);
-        case user:
-            return new WordpressUserProducer(this);
-        default:
-            break;
+            case post:
+                return new WordpressPostProducer(this);
+            case user:
+                return new WordpressUserProducer(this);
+            default:
+                break;
         }
         throw new UnsupportedOperationException(String.format("Operation '%s' not supported.", operation));
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         switch (WordpressOperationType.valueOf(operation)) {
-        case post:
-            return new WordpressPostConsumer(this, processor);
-        case user:
-            return new WordpressUserConsumer(this, processor);
-        default:
-            break;
+            case post:
+                return new WordpressPostConsumer(this, processor);
+            case user:
+                return new WordpressUserConsumer(this, processor);
+            default:
+                break;
         }
         throw new UnsupportedOperationException(String.format("Operation '%s' not supported.", operation));
     }
@@ -118,38 +119,39 @@ public class WordpressEndpoint extends DefaultEndpoint {
 
         // set configuration properties first
         try {
-            if (config == null) {
-                config = new WordpressComponentConfiguration();
+            if (configuration == null) {
+                configuration = new WordpressConfiguration();
             }
-            EndpointHelper.setReferenceProperties(getCamelContext(), config, options);
-            EndpointHelper.setProperties(getCamelContext(), config, options);
+            PropertyBindingSupport.bindProperties(getCamelContext(), configuration, options);
 
-            if (config.getSearchCriteria() == null) {
+            if (configuration.getSearchCriteria() == null) {
                 final SearchCriteria searchCriteria = WordpressOperationType.valueOf(operation).getCriteriaType().newInstance();
-                Map<String, Object> criteriaOptions = IntrospectionSupport.extractProperties(options, "criteria.");
+                Map<String, Object> criteriaOptions = PropertiesHelper.extractProperties(options, "criteria.");
                 // any property that has a "," should be a List
                 criteriaOptions = criteriaOptions.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> {
-                    if (e != null && e.toString().indexOf(",") > -1) {
+                    if (e.toString().contains(",")) {
                         return Arrays.asList(e.toString().split(","));
                     }
                     return e.getValue();
                 }));
-                IntrospectionSupport.setProperties(searchCriteria, criteriaOptions);
-                config.setSearchCriteria(searchCriteria);
+                PropertyBindingSupport.bindProperties(getCamelContext(), searchCriteria, criteriaOptions);
+                configuration.setSearchCriteria(searchCriteria);
             }
         } catch (Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
         // validate configuration
-        config.validate();
+        configuration.validate();
         this.initServiceProvider();
     }
 
     private void initServiceProvider() {
-        final WordpressAPIConfiguration apiConfiguration = new WordpressAPIConfiguration(config.getUrl(), config.getApiVersion());
+        final WordpressAPIConfiguration apiConfiguration
+                = new WordpressAPIConfiguration(configuration.getUrl(), configuration.getApiVersion());
         // basic auth
-        if (ObjectHelper.isNotEmpty(config.getUser())) {
-            apiConfiguration.setAuthentication(new WordpressBasicAuthentication(config.getUser(), config.getPassword()));
+        if (ObjectHelper.isNotEmpty(configuration.getUser())) {
+            apiConfiguration
+                    .setAuthentication(new WordpressBasicAuthentication(configuration.getUser(), configuration.getPassword()));
         }
 
         WordpressServiceProvider.getInstance().init(apiConfiguration);

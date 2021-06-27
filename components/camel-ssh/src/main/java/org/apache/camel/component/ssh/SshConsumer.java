@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,21 +56,21 @@ public class SshConsumer extends ScheduledPollConsumer {
         }
 
         String command = endpoint.getPollCommand();
-        Exchange exchange = endpoint.createExchange();
-
-        String knownHostResource = endpoint.getKnownHostsResource();
-        if (knownHostResource != null) {
-            client.setServerKeyVerifier(new ResourceBasedSSHKeyVerifier(exchange.getContext(), knownHostResource,
-                    endpoint.isFailOnUnknownHost()));
-        }
-
-        SshResult result = SshHelper.sendExecCommand(exchange.getIn().getHeaders(), command, endpoint, client);
-
-        exchange.getIn().setBody(result.getStdout());
-        exchange.getIn().setHeader(SshResult.EXIT_VALUE, result.getExitValue());
-        exchange.getIn().setHeader(SshResult.STDERR, result.getStderr());
-
+        Exchange exchange = createExchange(false);
         try {
+            String knownHostResource = endpoint.getKnownHostsResource();
+            if (knownHostResource != null) {
+                client.setServerKeyVerifier(new ResourceBasedSSHKeyVerifier(
+                        exchange.getContext(), knownHostResource,
+                        endpoint.isFailOnUnknownHost()));
+            }
+
+            SshResult result = SshHelper.sendExecCommand(exchange.getIn().getHeaders(), command, endpoint, client);
+
+            exchange.getIn().setBody(result.getStdout());
+            exchange.getIn().setHeader(SshResult.EXIT_VALUE, result.getExitValue());
+            exchange.getIn().setHeader(SshResult.STDERR, result.getStderr());
+
             // send message to next processor in the route
             getProcessor().process(exchange);
             return 1; // number of messages polled
@@ -79,6 +79,7 @@ public class SshConsumer extends ScheduledPollConsumer {
             if (exchange.getException() != null) {
                 getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
             }
+            releaseExchange(exchange, false);
         }
     }
 }

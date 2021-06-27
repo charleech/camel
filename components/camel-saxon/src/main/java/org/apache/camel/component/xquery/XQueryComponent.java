@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,13 @@ import java.util.Map;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.lib.ModuleURIResolver;
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.apache.camel.spi.Metadata;
 import org.apache.camel.support.ResourceHelper;
 
 /**
- * An <a href="http://camel.apache.org/xquery.html">XQuery Component</a>
- * for performing transforming messages
+ * An <a href="http://camel.apache.org/xquery.html">XQuery Component</a> for performing transforming messages
  */
 @Component("xquery")
 public class XQueryComponent extends DefaultComponent {
@@ -45,6 +44,7 @@ public class XQueryComponent extends DefaultComponent {
     public XQueryComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         XQueryEndpoint answer = new XQueryEndpoint(uri, this);
         answer.setConfiguration(configuration);
@@ -58,7 +58,7 @@ public class XQueryComponent extends DefaultComponent {
     }
 
     public URL resolveModuleResource(String uri) throws Exception {
-        return ResourceHelper.resolveMandatoryResourceAsUrl(getCamelContext().getClassResolver(), uri);
+        return ResourceHelper.resolveMandatoryResourceAsUrl(getCamelContext(), uri);
     }
 
     public ModuleURIResolver getModuleURIResolver() {

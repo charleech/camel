@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,10 +28,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxp.XmlConverter;
 import org.apache.cxf.binding.soap.SoapHeader;
 
-
-
 public class CxfConsumerPayLoadConvertorTest extends CxfConsumerPayloadTest {
-    
+
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
@@ -43,7 +42,7 @@ public class CxfConsumerPayLoadConvertorTest extends CxfConsumerPayloadTest {
                         // You can use a customer toStringConverter to turn a CxfPayLoad message into String as you want                        
                         String request = exchange.getIn().getBody(String.class);
                         String documentString = ECHO_RESPONSE;
-                        
+
                         Element in = new XmlConverter().toDOMElement(inElements.get(0));
                         // Just check the element namespace
                         if (!in.getNamespaceURI().equals(ELEMENT_NAMESPACE)) {
@@ -57,7 +56,7 @@ public class CxfConsumerPayLoadConvertorTest extends CxfConsumerPayloadTest {
                             checkRequest("ECHO_REQUEST", request);
                         }
                         // just set the documentString into to the message body
-                        exchange.getOut().setBody(documentString); 
+                        exchange.getMessage().setBody(documentString);
                     }
                 });
             }

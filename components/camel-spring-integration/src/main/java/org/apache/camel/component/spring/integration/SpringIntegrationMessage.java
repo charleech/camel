@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,7 @@ import org.apache.camel.support.DefaultMessage;
 import org.springframework.messaging.Message;
 
 /**
- * The Message {@link DefaultMessage} implementation
- * for accessing the SpringIntegrationMessage
+ * The Message {@link DefaultMessage} implementation for accessing the SpringIntegrationMessage
  */
 public class SpringIntegrationMessage extends DefaultMessage {
     private org.springframework.messaging.Message<?> siMessage;
@@ -43,6 +42,12 @@ public class SpringIntegrationMessage extends DefaultMessage {
     public SpringIntegrationMessage(CamelContext camelContext, Message<?> message) {
         super(camelContext);
         this.siMessage = message;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        siMessage = null;
     }
 
     public void setMessage(org.springframework.messaging.Message<?> message) {
@@ -76,7 +81,6 @@ public class SpringIntegrationMessage extends DefaultMessage {
             SpringIntegrationMessage orig = (SpringIntegrationMessage) that;
             setMessage(orig.getMessage());
         }
-        getAttachments().putAll(that.getAttachments());
     }
 
     @Override
@@ -88,6 +92,7 @@ public class SpringIntegrationMessage extends DefaultMessage {
         }
     }
 
+    @Override
     public Object getHeader(String name) {
         if (siMessage != null) {
             return siMessage.getHeaders().get(name);

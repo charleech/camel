@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,14 @@
  */
 package org.apache.camel.component.zookeepermaster;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
+import org.apache.camel.component.zookeepermaster.group.DefaultGroupFactoryStrategy;
 import org.apache.camel.component.zookeepermaster.group.Group;
-import org.apache.camel.component.zookeepermaster.group.internal.ManagedGroupFactory;
-import org.apache.camel.component.zookeepermaster.group.internal.ManagedGroupFactoryBuilder;
+import org.apache.camel.component.zookeepermaster.group.ManagedGroupFactory;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
@@ -34,7 +35,8 @@ import org.apache.curator.retry.RetryOneTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZookeeperGroupSupport extends ServiceSupport implements CamelContextAware, Callable<CuratorFramework>, ConnectionStateListener {
+public class ZookeeperGroupSupport extends ServiceSupport
+        implements CamelContextAware, Callable<CuratorFramework>, ConnectionStateListener {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(ZookeeperComponentSupport.class);
 
@@ -45,8 +47,11 @@ public class ZookeeperGroupSupport extends ServiceSupport implements CamelContex
     private static final String ZOOKEEPER_PORT_ENV = "ZK_CLIENT_SERVICE_PORT";
 
     private CamelContext camelContext;
-    private ManagedGroupFactory managedGroupFactory;
 
+    @Metadata(label = "advanced", autowired = true)
+    private ManagedGroupFactory managedGroupFactory;
+    @Metadata(label = "advanced", autowired = true)
+    private ManagedGroupFactoryStrategy managedGroupFactoryStrategy;
     @Metadata(label = "advanced")
     private CuratorFramework curator;
     @Metadata(defaultValue = "10000")
@@ -121,6 +126,22 @@ public class ZookeeperGroupSupport extends ServiceSupport implements CamelContex
         this.zooKeeperPassword = zooKeeperPassword;
     }
 
+    public ManagedGroupFactory getManagedGroupFactory() {
+        return managedGroupFactory;
+    }
+
+    public void setManagedGroupFactory(ManagedGroupFactory managedGroupFactory) {
+        this.managedGroupFactory = managedGroupFactory;
+    }
+
+    public ManagedGroupFactoryStrategy getManagedGroupFactoryStrategy() {
+        return managedGroupFactoryStrategy;
+    }
+
+    public void setManagedGroupFactoryStrategy(ManagedGroupFactoryStrategy managedGroupFactoryStrategy) {
+        this.managedGroupFactoryStrategy = managedGroupFactoryStrategy;
+    }
+
     @Override
     protected void doStart() throws Exception {
         ObjectHelper.notNull(camelContext, "CamelContext");
@@ -128,7 +149,8 @@ public class ZookeeperGroupSupport extends ServiceSupport implements CamelContex
         // attempt to lookup curator framework from registry using the name curator
         if (curator == null) {
             try {
-                CuratorFramework aCurator = getCamelContext().getRegistry().lookupByNameAndType("curator", CuratorFramework.class);
+                CuratorFramework aCurator
+                        = getCamelContext().getRegistry().lookupByNameAndType("curator", CuratorFramework.class);
                 if (aCurator != null) {
                     LOG.debug("CuratorFramework found in CamelRegistry: {}", aCurator);
                     setCurator(aCurator);
@@ -138,10 +160,29 @@ public class ZookeeperGroupSupport extends ServiceSupport implements CamelContex
             }
         }
 
-        // will auto create curator if needed
-        managedGroupFactory = ManagedGroupFactoryBuilder.create(curator, getClass().getClassLoader(), getCamelContext().getClassResolver(), this);
+        if (managedGroupFactoryStrategy == null) {
+            Set<ManagedGroupFactoryStrategy> set
+                    = getCamelContext().getRegistry().findByType(ManagedGroupFactoryStrategy.class);
+            if (set.size() == 1) {
+                setManagedGroupFactoryStrategy(set.iterator().next());
+            }
+        }
+        if (managedGroupFactory == null) {
+            Set<ManagedGroupFactory> set = getCamelContext().getRegistry().findByType(ManagedGroupFactory.class);
+            if (set.size() == 1) {
+                setManagedGroupFactory(set.iterator().next());
+            }
+        }
+        if (managedGroupFactory == null) {
+            if (managedGroupFactoryStrategy == null) {
+                managedGroupFactoryStrategy = new DefaultGroupFactoryStrategy();
+            }
+            managedGroupFactory = managedGroupFactoryStrategy.createGroupFactory(curator, getClass().getClassLoader(),
+                    getCamelContext(), this);
+        }
     }
 
+    @Override
     public CuratorFramework call() throws Exception {
         String connectString = getZooKeeperUrl();
         if (connectString == null) {
@@ -163,9 +204,9 @@ public class ZookeeperGroupSupport extends ServiceSupport implements CamelContex
         }
         LOG.info("Creating new CuratorFramework with connection: {}", connectString);
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(connectString)
-            .retryPolicy(new RetryOneTime(1000))
-            .connectionTimeoutMs(getMaximumConnectionTimeout());
+                .connectString(connectString)
+                .retryPolicy(new RetryOneTime(1000))
+                .connectionTimeoutMs(getMaximumConnectionTimeout());
 
         if (password != null && !password.isEmpty()) {
             builder.authorization("digest", ("fabric:" + password).getBytes());

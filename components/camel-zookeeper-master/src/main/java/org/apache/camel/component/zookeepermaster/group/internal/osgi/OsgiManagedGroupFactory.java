@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.camel.component.zookeepermaster.group.Group;
+import org.apache.camel.component.zookeepermaster.group.ManagedGroupFactory;
 import org.apache.camel.component.zookeepermaster.group.NodeState;
 import org.apache.camel.component.zookeepermaster.group.internal.DelegateZooKeeperGroup;
 import org.apache.camel.component.zookeepermaster.group.internal.DelegateZooKeeperMultiGroup;
-import org.apache.camel.component.zookeepermaster.group.internal.ManagedGroupFactory;
 import org.apache.curator.framework.CuratorFramework;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleReference;
@@ -74,7 +74,8 @@ public class OsgiManagedGroupFactory implements ManagedGroupFactory {
         delegate.close();
     }
 
-    static class OsgiTrackingManagedGroupFactory implements ManagedGroupFactory, ServiceTrackerCustomizer<CuratorFramework, CuratorFramework> {
+    static class OsgiTrackingManagedGroupFactory
+            implements ManagedGroupFactory, ServiceTrackerCustomizer<CuratorFramework, CuratorFramework> {
 
         private final BundleContext bundleContext;
         private final ServiceTracker<CuratorFramework, CuratorFramework> tracker;
@@ -88,7 +89,7 @@ public class OsgiManagedGroupFactory implements ManagedGroupFactory {
         OsgiTrackingManagedGroupFactory(BundleContext bundleContext) {
             this.bundleContext = bundleContext;
             this.tracker = new ServiceTracker<>(
-                bundleContext, CuratorFramework.class, this);
+                    bundleContext, CuratorFramework.class, this);
             this.tracker.open();
         }
 

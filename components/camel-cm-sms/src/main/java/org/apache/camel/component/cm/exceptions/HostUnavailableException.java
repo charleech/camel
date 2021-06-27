@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,8 @@ public class HostUnavailableException extends CMDirectException {
         super(message, cause);
     }
 
-    public HostUnavailableException(final String message, final Throwable cause, final boolean enableSuppression, final boolean writableStackTrace) {
+    public HostUnavailableException(final String message, final Throwable cause, final boolean enableSuppression,
+                                    final boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

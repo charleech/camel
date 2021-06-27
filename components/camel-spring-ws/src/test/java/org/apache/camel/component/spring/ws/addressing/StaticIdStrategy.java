@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.springframework.ws.soap.addressing.messageid.UuidMessageIdStrategy;
  */
 public class StaticIdStrategy extends UuidMessageIdStrategy {
 
+    @Override
     public URI newMessageId(SoapMessage message) {
         return URI.create("staticTestId");
     }

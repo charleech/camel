@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,15 +29,16 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EtcdWatchConsumer extends AbstractEtcdConsumer implements ResponsePromise.IsSimplePromiseResponseHandler<EtcdKeysResponse> {
+public class EtcdWatchConsumer extends AbstractEtcdConsumer
+        implements ResponsePromise.IsSimplePromiseResponseHandler<EtcdKeysResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(EtcdWatchConsumer.class);
 
     private final EtcdWatchEndpoint endpoint;
     private final EtcdConfiguration configuration;
     private final AtomicLong index;
 
-    public EtcdWatchConsumer(EtcdWatchEndpoint endpoint, Processor processor, EtcdConfiguration configuration, EtcdNamespace namespace, String path) {
-        super(endpoint, processor, configuration, namespace, path);
+    public EtcdWatchConsumer(EtcdWatchEndpoint endpoint, Processor processor, EtcdConfiguration configuration, String path) {
+        super(endpoint, processor, configuration, path);
 
         this.endpoint = endpoint;
         this.configuration = configuration;
@@ -92,8 +93,8 @@ public class EtcdWatchConsumer extends AbstractEtcdConsumer implements ResponseP
             try {
                 EtcdKeysResponse response = promise.get();
 
-                exchange = endpoint.createExchange();
-                exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, getNamespace());
+                exchange = createExchange(false);
+                exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, "watch");
                 exchange.getIn().setHeader(EtcdConstants.ETCD_PATH, response.node.key);
                 exchange.getIn().setBody(response);
 
@@ -105,7 +106,7 @@ public class EtcdWatchConsumer extends AbstractEtcdConsumer implements ResponseP
 
                 if (configuration.isSendEmptyExchangeOnTimeout()) {
                     exchange = endpoint.createExchange();
-                    exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, getNamespace());
+                    exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, "watch");
                     exchange.getIn().setHeader(EtcdConstants.ETCD_TIMEOUT, true);
                     exchange.getIn().setHeader(EtcdConstants.ETCD_PATH, getPath());
                     exchange.getIn().setBody(null);
@@ -124,6 +125,10 @@ public class EtcdWatchConsumer extends AbstractEtcdConsumer implements ResponseP
                     getExceptionHandler().handleException("Error processing exchange", exchange, e);
                 }
             }
+        }
+
+        if (exchange != null) {
+            releaseExchange(exchange, false);
         }
 
         if (throwable != null) {

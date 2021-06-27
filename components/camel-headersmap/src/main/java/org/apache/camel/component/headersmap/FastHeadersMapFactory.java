@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,13 @@ import java.util.Map;
 
 import com.cedarsoftware.util.CaseInsensitiveMap;
 import org.apache.camel.spi.HeadersMapFactory;
+import org.apache.camel.spi.annotations.JdkService;
 
 /**
- * A faster {@link HeadersMapFactory} which is using the {@link com.cedarsoftware.util.CaseInsensitiveMap} map implementation.
+ * A faster {@link HeadersMapFactory} which is using the {@link com.cedarsoftware.util.CaseInsensitiveMap} map
+ * implementation.
  */
+@JdkService(HeadersMapFactory.FACTORY)
 public class FastHeadersMapFactory implements HeadersMapFactory {
 
     @Override
@@ -44,5 +47,10 @@ public class FastHeadersMapFactory implements HeadersMapFactory {
     @Override
     public boolean isCaseInsensitive() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "camel-headersmap";
     }
 }

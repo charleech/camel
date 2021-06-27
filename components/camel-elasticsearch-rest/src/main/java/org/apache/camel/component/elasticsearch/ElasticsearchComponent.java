@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,7 @@ import org.elasticsearch.client.RestClient;
 @Component("elasticsearch-rest")
 public class ElasticsearchComponent extends DefaultComponent {
 
-    @Metadata(label = "advanced")
+    @Metadata(label = "advanced", autowired = true)
     private RestClient client;
     @Metadata(label = "advanced")
     private String hostAddresses;
@@ -57,7 +57,7 @@ public class ElasticsearchComponent extends DefaultComponent {
     private boolean enableSniffer;
     @Metadata(label = "advanced", defaultValue = "" + ElasticsearchConstants.DEFAULT_SNIFFER_INTERVAL)
     private int snifferInterval = ElasticsearchConstants.DEFAULT_SNIFFER_INTERVAL;
-    @Metadata(label = "advanced", defaultValue = "" +  ElasticsearchConstants.DEFAULT_AFTER_FAILURE_DELAY)
+    @Metadata(label = "advanced", defaultValue = "" + ElasticsearchConstants.DEFAULT_AFTER_FAILURE_DELAY)
     private int sniffAfterFailureDelay = ElasticsearchConstants.DEFAULT_AFTER_FAILURE_DELAY;
 
     public ElasticsearchComponent() {
@@ -69,6 +69,7 @@ public class ElasticsearchComponent extends DefaultComponent {
         registerExtension(new ElasticsearchRestComponentVerifierExtension());
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         ElasticsearchConfiguration config = new ElasticsearchConfiguration();
         config.setHostAddresses(this.getHostAddresses());
@@ -83,13 +84,13 @@ public class ElasticsearchComponent extends DefaultComponent {
         config.setSniffAfterFailureDelay(this.getSniffAfterFailureDelay());
         config.setClusterName(remaining);
 
-        setProperties(config, parameters);
+        Endpoint endpoint = new ElasticsearchEndpoint(uri, this, config, client);
+        setProperties(endpoint, parameters);
         config.setHostAddressesList(parseHostAddresses(config.getHostAddresses(), config));
 
-        Endpoint endpoint = new ElasticsearchEndpoint(uri, this, config, client);
         return endpoint;
     }
-    
+
     private List<HttpHost> parseHostAddresses(String ipsString, ElasticsearchConfiguration config) throws UnknownHostException {
         if (ipsString == null || ipsString.isEmpty()) {
             return null;
@@ -104,8 +105,8 @@ public class ElasticsearchComponent extends DefaultComponent {
             } else {
                 throw new IllegalArgumentException();
             }
-            Integer port = split.length > 1 ? Integer.parseInt(split[1]) : ElasticsearchConstants.DEFAULT_PORT;
-            addressesTrAd.add(new HttpHost(hostname, port, config.getEnableSSL() ? "HTTPS" : "HTTP"));
+            int port = split.length > 1 ? Integer.parseInt(split[1]) : ElasticsearchConstants.DEFAULT_PORT;
+            addressesTrAd.add(new HttpHost(hostname, port, config.isEnableSSL() ? "HTTPS" : "HTTP"));
         }
         return addressesTrAd;
     }
@@ -115,15 +116,16 @@ public class ElasticsearchComponent extends DefaultComponent {
     }
 
     /**
-     * To use an existing configured Elasticsearch client, instead of creating a client per endpoint.
-     * This allow to customize the client with specific settings.
+     * To use an existing configured Elasticsearch client, instead of creating a client per endpoint. This allow to
+     * customize the client with specific settings.
      */
     public void setClient(RestClient client) {
         this.client = client;
     }
+
     /**
-     * Comma separated list with ip:port formatted remote transport addresses to use.
-     * The ip and port options must be left blank for hostAddresses to be considered instead.
+     * Comma separated list with ip:port formatted remote transport addresses to use. The ip and port options must be
+     * left blank for hostAddresses to be considered instead.
      */
     public String getHostAddresses() {
         return hostAddresses;
@@ -145,7 +147,7 @@ public class ElasticsearchComponent extends DefaultComponent {
     }
 
     /**
-     *  The time in ms to wait before connection will timeout.
+     * The time in ms to wait before connection will timeout.
      */
     public int getConnectionTimeout() {
         return connectionTimeout;
@@ -156,7 +158,7 @@ public class ElasticsearchComponent extends DefaultComponent {
     }
 
     /**
-     *  Basic authenticate user
+     * Basic authenticate user
      */
     public String getUser() {
         return user;
@@ -167,7 +169,7 @@ public class ElasticsearchComponent extends DefaultComponent {
     }
 
     /**
-     *  Password for authenticate
+     * Password for authenticate
      */
     public String getPassword() {
         return password;
@@ -211,8 +213,8 @@ public class ElasticsearchComponent extends DefaultComponent {
     }
 
     /**
-     * The interval between consecutive ordinary sniff executions in milliseconds. Will be honoured when
-     * sniffOnFailure is disabled or when there are no failures between consecutive sniff executions
+     * The interval between consecutive ordinary sniff executions in milliseconds. Will be honoured when sniffOnFailure
+     * is disabled or when there are no failures between consecutive sniff executions
      */
     public int getSnifferInterval() {
         return snifferInterval;

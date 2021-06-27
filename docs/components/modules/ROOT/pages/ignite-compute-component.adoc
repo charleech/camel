@@ -1,7 +1,20 @@
 [[ignite-compute-component]]
-== Ignite Compute Component
+= Ignite Compute Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-ignite/src/main/docs/ignite-compute-component.adoc
+:docTitle: Ignite Compute
+:artifactId: camel-ignite
+:description: Run compute operations on an Ignite cluster.
+:since: 2.17
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/ignite-compute.adoc[opts=optional]
+//Manually maintained attributes
+:group: Ignite
 
-*Available as of Camel version 2.17*
+*Since Camel {since}*
+
+*{component-header}*
 
 The Ignite Compute endpoint is one of camel-ignite endpoints which allows you to run https://apacheignite.readme.io/docs/compute-grid[compute operations] on the cluster by passing in an IgniteCallable, an IgniteRunnable, an IgniteClosure, or collections of them, along with their parameters if necessary.
 
@@ -11,20 +24,21 @@ The host part of the endpoint URI is a symbolic endpoint ID, it is not used for 
 
 The endpoint tries to run the object passed in the body of the IN message as the compute job. It expects different payload types depending on the execution type.
 
-### Options
+== Options
 
 // component options: START
-The Ignite Compute component supports 4 options, which are listed below.
+The Ignite Compute component supports 5 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *ignite* (producer) | Sets the Ignite instance. |  | Ignite
-| *configurationResource* (producer) | Sets the resource from where to load the configuration. It can be a: URI, String (URI) or an InputStream. |  | Object
-| *igniteConfiguration* (producer) | Allows the user to set a programmatic IgniteConfiguration. |  | IgniteConfiguration
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
+| *configurationResource* (producer) | The resource from where to load the configuration. It can be a: URL, String or InputStream type. |  | Object
+| *ignite* (producer) | To use an existing Ignite instance. |  | Ignite
+| *igniteConfiguration* (producer) | Allows the user to set a programmatic ignite configuration. |  | IgniteConfiguration
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
 |===
 // component options: END
 
@@ -37,7 +51,7 @@ ignite-compute:endpointId
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -47,7 +61,7 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (8 parameters):
+=== Query Parameters (8 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -55,36 +69,18 @@ with the following path and query parameters:
 | Name | Description | Default | Type
 | *clusterGroupExpression* (producer) | An expression that returns the Cluster Group for the IgniteCompute instance. |  | ClusterGroupExpression
 | *computeName* (producer) | The name of the compute job, which will be set via IgniteCompute#withName(String). |  | String
-| *executionType* (producer) | *Required* The compute operation to perform. Possible values: CALL, BROADCAST, APPLY, EXECUTE, RUN, AFFINITY_CALL, AFFINITY_RUN. The component expects different payload types depending on the operation. |  | IgniteComputeExecution Type
-| *propagateIncomingBodyIfNo ReturnValue* (producer) | Sets whether to propagate the incoming body if the return type of the underlying Ignite operation is void. | true | boolean
+| *executionType* (producer) | *Required* The compute operation to perform. Possible values: CALL, BROADCAST, APPLY, EXECUTE, RUN, AFFINITY_CALL, AFFINITY_RUN. The component expects different payload types depending on the operation. There are 7 enums and the value can be one of: CALL, BROADCAST, APPLY, EXECUTE, RUN, AFFINITY_CALL, AFFINITY_RUN |  | IgniteComputeExecutionType
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *propagateIncomingBodyIfNo{zwsp}ReturnValue* (producer) | Sets whether to propagate the incoming body if the return type of the underlying Ignite operation is void. | true | boolean
 | *taskName* (producer) | The task name, only applicable if using the IgniteComputeExecutionType#EXECUTE execution type. |  | String
 | *timeoutMillis* (producer) | The timeout interval for triggered jobs, in milliseconds, which will be set via IgniteCompute#withTimeout(long). |  | Long
-| *treatCollectionsAsCache Objects* (producer) | Sets whether to treat Collections as cache objects or as Collections of items to insert/update/compute, etc. | false | boolean
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *treatCollectionsAsCacheObjects* (producer) | Sets whether to treat Collections as cache objects or as Collections of items to insert/update/compute, etc. | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 5 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.ignite-compute.configuration-resource* | Sets the resource from where to load the configuration. It can be a: URI, String (URI) or an InputStream. The option is a java.lang.Object type. |  | String
-| *camel.component.ignite-compute.enabled* | Enable ignite-compute component | true | Boolean
-| *camel.component.ignite-compute.ignite* | Sets the Ignite instance. The option is a org.apache.ignite.Ignite type. |  | String
-| *camel.component.ignite-compute.ignite-configuration* | Allows the user to set a programmatic IgniteConfiguration. The option is a org.apache.ignite.configuration.IgniteConfiguration type. |  | String
-| *camel.component.ignite-compute.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-#### Expected payload types
+=== Expected payload types
 
 Each operation expects the indicated types:
 [width="100%",cols="1,4",options="header"]
@@ -99,7 +95,7 @@ Each operation expects the indicated types:
 | AFFINITY_RUN | IgniteRunnable.
 |=======================================================================
 
-#### Headers used
+=== Headers used
 
 This endpoint uses the following headers:
 [width="100%",cols="1,1,1,4",options="header"]
@@ -120,3 +116,5 @@ Affinity cache name for the AFFINITY_CALL and AFFINITY_RUN operations.
 | CamelIgniteComputeAffinityKey | IgniteConstants.IGNITE_COMPUTE_AFFINITY_KEY | Object |
 Affinity key for the AFFINITY_CALL and AFFINITY_RUN operations.
 |=======================================================================
+
+include::{page-component-version}@camel-spring-boot::page$ignite-starter.adoc[]

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,20 @@ package org.apache.camel.component.ignite.queue;
  */
 public enum IgniteQueueOperation {
 
-    CONTAINS, ADD, SIZE, REMOVE, ITERATOR, CLEAR, RETAIN_ALL, ARRAY, DRAIN, ELEMENT, PEEK, OFFER, POLL, TAKE, PUT
+    CONTAINS,
+    ADD,
+    SIZE,
+    REMOVE,
+    ITERATOR,
+    CLEAR,
+    RETAIN_ALL,
+    ARRAY,
+    DRAIN,
+    ELEMENT,
+    PEEK,
+    OFFER,
+    POLL,
+    TAKE,
+    PUT
 
 }

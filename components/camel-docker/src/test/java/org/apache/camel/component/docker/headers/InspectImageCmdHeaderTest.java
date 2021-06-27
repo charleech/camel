@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.InspectImageCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -38,7 +37,7 @@ public class InspectImageCmdHeaderTest extends BaseDockerHeaderTest<InspectImage
     private InspectImageCmd mockObject;
 
     @Test
-    public void listImageHeaderTest() {
+    void listImageHeaderTest() {
 
         String imageId = "be29975e0098";
 
@@ -54,7 +53,6 @@ public class InspectImageCmdHeaderTest extends BaseDockerHeaderTest<InspectImage
     @Override
     protected void setupMocks() {
         Mockito.when(dockerClient.inspectImageCmd(anyString())).thenReturn(mockObject);
-
 
     }
 

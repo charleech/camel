@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,12 @@ import org.apache.camel.builder.RouteBuilder;
 
 public class VelocityFileLetterTest extends VelocityLetterTest {
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("direct:a").to("velocity:file:src/test/resources/org/apache/camel/component/velocity/letter.vm").to("mock:result");
+                from("direct:a").to("velocity:file:src/test/resources/org/apache/camel/component/velocity/letter.vm")
+                        .to("mock:result");
             }
         };
     }

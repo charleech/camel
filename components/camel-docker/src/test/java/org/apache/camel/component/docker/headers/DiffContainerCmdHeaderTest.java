@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.ContainerDiffCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -37,7 +36,7 @@ public class DiffContainerCmdHeaderTest extends BaseDockerHeaderTest<ContainerDi
     private ContainerDiffCmd mockObject;
 
     @Test
-    public void containerDiffHeaderTest() {
+    void containerDiffHeaderTest() {
 
         String containerId = "9c09acd48a25";
         String containerIdDiff = "0f9dfe8defa0";

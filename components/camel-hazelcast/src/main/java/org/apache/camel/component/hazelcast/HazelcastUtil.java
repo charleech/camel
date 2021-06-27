@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,13 +30,11 @@ public final class HazelcastUtil {
 
         // hazelcast.version.check.enabled is deprecated
         cfg.setProperty(
-            "hazelcast.phone.home.enabled",
-            System.getProperty("hazelcast.phone.home.enabled", "false")
-        );
+                "hazelcast.phone.home.enabled",
+                System.getProperty("hazelcast.phone.home.enabled", "false"));
         cfg.setProperty(
-            "hazelcast.logging.type",
-            System.getProperty("hazelcast.logging.type", "slf4j")
-        );
+                "hazelcast.logging.type",
+                System.getProperty("hazelcast.logging.type", "slf4j"));
 
         return newInstance(cfg);
     }

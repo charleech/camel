@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,18 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
 
 @Component("slack")
 public class SlackComponent extends DefaultComponent {
 
+    @Metadata(label = "webhook")
     private String webhookUrl;
+
+    @Metadata(label = "token")
+    private String token;
 
     public SlackComponent() {
         this(null);
@@ -34,18 +39,9 @@ public class SlackComponent extends DefaultComponent {
 
     public SlackComponent(CamelContext context) {
         super(context);
-        
         registerExtension(new SlackComponentVerifierExtension());
     }
 
-    /**
-     * Create a slack endpoint
-     *
-     * @param uri         the full URI of the endpoint
-     * @param channelName the channel or username that the message should be sent to
-     * @param parameters  the optional parameters passed in
-     * @return the camel endpoint
-     */
     @Override
     protected Endpoint createEndpoint(String uri, String channelName, Map<String, Object> parameters) throws Exception {
         Endpoint endpoint = new SlackEndpoint(uri, channelName, this);
@@ -62,5 +58,16 @@ public class SlackComponent extends DefaultComponent {
      */
     public void setWebhookUrl(String webhookUrl) {
         this.webhookUrl = webhookUrl;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    /**
+     * The token to use
+     */
+    public void setToken(String token) {
+        this.token = token;
     }
 }

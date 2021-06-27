@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,37 +16,30 @@
  */
 package org.apache.camel.component.servlet.rest;
 
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
-import com.meterware.servletunit.ServletUnitClient;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.servlet.ServletCamelRouterTestSupport;
 import org.apache.camel.component.servlet.ServletRestHttpBinding;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RestServletOptionsTest extends ServletCamelRouterTestSupport {
-    
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("myBinding", new ServletRestHttpBinding());
-        return jndi;
-    }
+
+    @BindToRegistry("myBinding")
+    private ServletRestHttpBinding restHttpBinding = new ServletRestHttpBinding();
 
     @Test
     public void testServletOptions() throws Exception {
-        WebRequest req = new OptionsMethodWebRequest(CONTEXT_URL + "/services/users/v1/customers");
-        ServletUnitClient client = newClient();
-        client.setExceptionsThrownOnErrorStatus(false);
-        WebResponse response = client.getResponse(req);
+        WebRequest req = new OptionsMethodWebRequest(contextUrl + "/services/users/v1/customers");
+        WebResponse response = query(req, false);
 
         assertEquals(200, response.getResponseCode());
         assertEquals("GET,OPTIONS", response.getHeaderField("ALLOW"));
         assertEquals("", response.getText());
 
-        req = new OptionsMethodWebRequest(CONTEXT_URL + "/services/users/v1/id/123");
-        response = client.getResponse(req);
+        req = new OptionsMethodWebRequest(contextUrl + "/services/users/v1/id/123");
+        response = query(req, false);
 
         assertEquals(200, response.getResponseCode());
         assertEquals("PUT,OPTIONS", response.getHeaderField("ALLOW"));
@@ -55,10 +48,8 @@ public class RestServletOptionsTest extends ServletCamelRouterTestSupport {
 
     @Test
     public void testMultipleServletOptions() throws Exception {
-        WebRequest req = new OptionsMethodWebRequest(CONTEXT_URL + "/services/users/v2/options");
-        ServletUnitClient client = newClient();
-        client.setExceptionsThrownOnErrorStatus(false);
-        WebResponse response = client.getResponse(req);
+        WebRequest req = new OptionsMethodWebRequest(contextUrl + "/services/users/v2/options");
+        WebResponse response = query(req, false);
 
         assertEquals(200, response.getResponseCode());
         assertEquals("GET,POST,OPTIONS", response.getHeaderField("ALLOW"));
@@ -72,17 +63,10 @@ public class RestServletOptionsTest extends ServletCamelRouterTestSupport {
             public void configure() throws Exception {
                 // configure to use servlet on localhost
                 restConfiguration().component("servlet").host("localhost").endpointProperty("httpBinding", "#myBinding");
-                
+
                 // use the rest DSL to define the rest services
-                rest("/users/")
-                    .get("v1/customers")
-                        .to("mock:customers")
-                    .put("v1/id/{id}")
-                        .to("mock:id")
-                    .get("v2/options")
-                        .to("mock:options")
-                    .post("v2/options")
-                        .to("mock:options");
+                rest("/users/").get("v1/customers").to("mock:customers").put("v1/id/{id}").to("mock:id").get("v2/options")
+                        .to("mock:options").post("v2/options").to("mock:options");
             }
         };
     }

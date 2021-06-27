@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,15 @@
 package org.apache.camel.component.olingo2.api.batch;
 
 /**
-* OData operation used by {@link org.apache.camel.component.olingo2.api.batch.Olingo2BatchChangeRequest}.
-*/
+ * OData operation used by {@link org.apache.camel.component.olingo2.api.batch.Olingo2BatchChangeRequest}.
+ */
 public enum Operation {
 
-    CREATE("POST"), UPDATE("PUT"), PATCH("PATCH"), MERGE("MERGE"), DELETE("DELETE");
+    CREATE("POST"),
+    UPDATE("PUT"),
+    PATCH("PATCH"),
+    MERGE("MERGE"),
+    DELETE("DELETE");
 
     private final String httpMethod;
 

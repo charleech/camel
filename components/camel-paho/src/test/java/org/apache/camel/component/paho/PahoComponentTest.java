@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,52 +18,41 @@ package org.apache.camel.component.paho;
 
 import java.io.UnsupportedEncodingException;
 
-import org.apache.activemq.broker.BrokerService;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.apache.camel.test.infra.activemq.services.ActiveMQEmbeddedService;
+import org.apache.camel.test.infra.activemq.services.ActiveMQEmbeddedServiceBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class PahoComponentTest extends CamelTestSupport {
 
-    MqttConnectOptions connectOptions = new MqttConnectOptions();
+    static int mqttPort = AvailablePortFinder.getNextAvailable();
 
-    @EndpointInject(uri = "mock:test")
+    @RegisterExtension
+    public static ActiveMQEmbeddedService service = ActiveMQEmbeddedServiceBuilder
+            .bare()
+            .withPersistent(false)
+            .withMqttTransport(mqttPort)
+            .build();
+
+    @EndpointInject("mock:test")
     MockEndpoint mock;
 
-    @EndpointInject(uri = "mock:testCustomizedPaho")
+    @EndpointInject("mock:testCustomizedPaho")
     MockEndpoint testCustomizedPahoMock;
-
-    BrokerService broker;
-
-    int mqttPort = AvailablePortFinder.getNextAvailable();
 
     @Override
     protected boolean useJmx() {
         return false;
-    }
-
-    @Override
-    public void doPreSetup() throws Exception {
-        super.doPreSetup();
-        broker = new BrokerService();
-        broker.setPersistent(false);
-        broker.addConnector("mqtt://localhost:" + mqttPort);
-        broker.start();
-    }
-
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        broker.stop();
     }
 
     @Override
@@ -81,39 +70,27 @@ public class PahoComponentTest extends CamelTestSupport {
 
                 from("paho:persistenceTest?persistence=FILE&brokerUrl=tcp://localhost:" + mqttPort).to("mock:persistenceTest");
 
-                from("direct:connectOptions").to("paho:registryConnectOptions?connectOptions=#connectOptions&brokerUrl=tcp://localhost:" + mqttPort);
-
                 from("direct:testCustomizedPaho").to("customizedPaho:testCustomizedPaho?brokerUrl=tcp://localhost:" + mqttPort);
                 from("paho:testCustomizedPaho?brokerUrl=tcp://localhost:" + mqttPort).to("mock:testCustomizedPaho");
             }
         };
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("connectOptions", connectOptions);
-        return registry;
-    }
-
     // Tests
 
     @Test
     public void checkOptions() {
-        String uri = "paho:/test/topic"
-                + "?clientId=sampleClient"
-                + "&brokerUrl=tcp://localhost:" + mqttPort
-                + "&qos=2"
-                + "&persistence=file";
+        String uri = "paho:/test/topic" + "?clientId=sampleClient" + "&brokerUrl=tcp://localhost:" + mqttPort + "&qos=2"
+                     + "&persistence=file";
 
         PahoEndpoint endpoint = getMandatoryEndpoint(uri, PahoEndpoint.class);
 
         // Then
         assertEquals("/test/topic", endpoint.getTopic());
-        assertEquals("sampleClient", endpoint.getClientId());
-        assertEquals("tcp://localhost:" + mqttPort, endpoint.getBrokerUrl());
-        assertEquals(2, endpoint.getQos());
-        assertEquals(PahoPersistence.FILE, endpoint.getPersistence());
+        assertEquals("sampleClient", endpoint.getConfiguration().getClientId());
+        assertEquals("tcp://localhost:" + mqttPort, endpoint.getConfiguration().getBrokerUrl());
+        assertEquals(2, endpoint.getConfiguration().getQos());
+        assertEquals(PahoPersistence.FILE, endpoint.getConfiguration().getPersistence());
     }
 
     @Test
@@ -139,28 +116,6 @@ public class PahoComponentTest extends CamelTestSupport {
 
         // Then
         mock.assertIsSatisfied();
-    }
-
-    @Test
-    public void shouldUseConnectionOptionsFromRegistry() {
-        // Given
-        PahoEndpoint pahoWithConnectOptionsFromRegistry = getMandatoryEndpoint(
-                "paho:registryConnectOptions?connectOptions=#connectOptions&brokerUrl=tcp://localhost:" + mqttPort,
-                PahoEndpoint.class);
-
-        // Then
-        assertSame(connectOptions, pahoWithConnectOptionsFromRegistry.resolveMqttConnectOptions());
-    }
-
-    @Test
-    public void shouldAutomaticallyUseConnectionOptionsFromRegistry() {
-        // Given
-        PahoEndpoint pahoWithConnectOptionsFromRegistry = getMandatoryEndpoint(
-                "paho:registryConnectOptions?brokerUrl=tcp://localhost:" + mqttPort,
-                PahoEndpoint.class);
-
-        // Then
-        assertSame(connectOptions, pahoWithConnectOptionsFromRegistry.resolveMqttConnectOptions());
     }
 
     @Test
@@ -224,5 +179,5 @@ public class PahoComponentTest extends CamelTestSupport {
         // Then
         mock.assertIsSatisfied();
     }
-    
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ public class DataOutInterceptor extends AbstractOutDatabindingInterceptor {
         super(Phase.MARSHAL);
     }
 
+    @Override
     public void handleMessage(Message message) throws Fault {
         XMLStreamWriter xmlWriter = getXMLStreamWriter(message);
         try {

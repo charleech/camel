@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.pdf;
 
 public final class PdfPageSizeConstant {
@@ -28,5 +27,6 @@ public final class PdfPageSizeConstant {
     public static final String PAGE_SIZE_A6 = "PAGE_SIZE_A6";
     public static final String PAGE_SIZE_LETTER = "PAGE_SIZE_LETTER";
 
-    private PdfPageSizeConstant() { }
+    private PdfPageSizeConstant() {
+    }
 }

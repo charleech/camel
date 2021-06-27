@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,10 @@ package org.apache.camel.component.facebook.data;
 import java.lang.reflect.Method;
 
 import facebook4j.Facebook;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test that all *Methods methods are mapped in {@link FacebookMethodsType}.
@@ -38,9 +36,10 @@ public class FacebookMethodsTypeTest {
             if (clazz.getName().endsWith("Methods")) {
                 // check all methods of this *Methods interface
                 for (Method method : clazz.getDeclaredMethods()) {
-                    final FacebookMethodsType methodsType = FacebookMethodsType.findMethod(method.getName(), method.getParameterTypes());
-                    assertNotNull("Expected method mapping not found:" + method.getName(), methodsType);
-                    assertEquals("Methods are not equal", method, methodsType.getMethod());
+                    final FacebookMethodsType methodsType
+                            = FacebookMethodsType.findMethod(method.getName(), method.getParameterTypes());
+                    assertNotNull(methodsType, "Expected method mapping not found:" + method.getName());
+                    assertEquals(method, methodsType.getMethod(), "Methods are not equal");
                 }
             }
         }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.test.executor;
 
 import java.util.concurrent.RejectedExecutionException;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +29,12 @@ public class PooledExecutorTest {
     Logger log = LoggerFactory.getLogger(this.getClass());
     TestExecutor instance;
 
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         instance = new TestExecutor(THREAD_COUNT);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         instance.stop();
     }

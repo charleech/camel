@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.apache.camel.spi.UriParams;
 public class AtomixValueConfiguration extends AtomixClientConfiguration {
     @UriParam(defaultValue = "SET")
     private AtomixValue.Action defaultAction = AtomixValue.Action.SET;
-    @UriParam
+    @UriParam(javaType = "java.time.Duration")
     private long ttl;
 
     // ****************************************
@@ -58,6 +58,7 @@ public class AtomixValueConfiguration extends AtomixClientConfiguration {
     // Copy
     // ****************************************
 
+    @Override
     public AtomixValueConfiguration copy() {
         try {
             return (AtomixValueConfiguration) super.clone();

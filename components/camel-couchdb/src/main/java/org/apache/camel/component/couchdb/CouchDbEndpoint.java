@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,8 @@ package org.apache.camel.component.couchdb;
 
 import java.net.URI;
 
-import com.google.gson.JsonObject;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
-import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.spi.Metadata;
@@ -31,24 +30,30 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.lightcouch.CouchDbClient;
 
 /**
- * The couchdb component is used for integrate with CouchDB databases.
+ * Consume changesets for inserts, updates and deletes in a CouchDB database, as well as get, save, update and delete
+ * documents from a CouchDB database.
  */
-@UriEndpoint(firstVersion = "2.11.0", scheme = "couchdb", title = "CouchDB", syntax = "couchdb:protocol:hostname:port/database", label = "database,nosql")
+@UriEndpoint(firstVersion = "2.11.0", scheme = "couchdb", title = "CouchDB", syntax = "couchdb:protocol:hostname:port/database",
+             category = { Category.DATABASE, Category.NOSQL })
 public class CouchDbEndpoint extends DefaultEndpoint {
 
     public static final String DEFAULT_STYLE = "main_only";
     public static final long DEFAULT_HEARTBEAT = 30000;
     public static final int DEFAULT_PORT = 5984;
 
-    private static final String URI_ERROR = "Invalid URI. Format must be of the form couchdb:http[s]://hostname[:port]/database?[options...]";
+    private static final String URI_ERROR
+            = "Invalid URI. Format must be of the form couchdb:http[s]://hostname[:port]/database?[options...]";
 
-    @UriPath(enums = "http,https") @Metadata(required = true)
+    @UriPath(enums = "http,https")
+    @Metadata(required = true)
     private String protocol;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String hostname;
     @UriPath(defaultValue = "" + DEFAULT_PORT)
     private int port;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String database;
     @UriParam(label = "consumer", enums = "all_docs,main_only", defaultValue = DEFAULT_STYLE)
     private String style = DEFAULT_STYLE;
@@ -56,7 +61,7 @@ public class CouchDbEndpoint extends DefaultEndpoint {
     private String username;
     @UriParam(label = "security", secret = true)
     private String password;
-    @UriParam(label = "consumer", defaultValue = "" + DEFAULT_HEARTBEAT)
+    @UriParam(label = "consumer", defaultValue = "" + DEFAULT_HEARTBEAT, javaType = "java.time.Duration")
     private long heartbeat = DEFAULT_HEARTBEAT;
     @UriParam
     private boolean createDatabase;
@@ -105,24 +110,9 @@ public class CouchDbEndpoint extends DefaultEndpoint {
         return new CouchDbProducer(this, createClient());
     }
 
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    public Exchange createExchange(String seq, String id, JsonObject obj, boolean deleted) {
-        Exchange exchange = super.createExchange();
-        exchange.getIn().setHeader(CouchDbConstants.HEADER_DATABASE, database);
-        exchange.getIn().setHeader(CouchDbConstants.HEADER_SEQ, seq);
-        exchange.getIn().setHeader(CouchDbConstants.HEADER_DOC_ID, id);
-        exchange.getIn().setHeader(CouchDbConstants.HEADER_DOC_REV, obj.get("_rev").getAsString());
-        exchange.getIn().setHeader(CouchDbConstants.HEADER_METHOD, deleted ? "DELETE" : "UPDATE");
-        exchange.getIn().setBody(obj);
-        return exchange;
-    }
-
     protected CouchDbClientWrapper createClient() {
-        return new CouchDbClientWrapper(new CouchDbClient(database, createDatabase, protocol, hostname, port, username, password));
+        return new CouchDbClientWrapper(
+                new CouchDbClient(database, createDatabase, protocol, hostname, port, username, password));
     }
 
     public String getProtocol() {
@@ -152,8 +142,9 @@ public class CouchDbEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * Specifies how many revisions are returned in the changes array.
-     * The default, main_only, will only return the current "winning" revision; all_docs will return all leaf revisions (including conflicts and deleted former conflicts.)
+     * Specifies how many revisions are returned in the changes array. The default, main_only, will only return the
+     * current "winning" revision; all_docs will return all leaf revisions (including conflicts and deleted former
+     * conflicts.)
      */
     public void setStyle(String style) {
         this.style = style;
@@ -252,8 +243,8 @@ public class CouchDbEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * Start tracking changes immediately after the given update sequence.
-     * The default, null, will start monitoring from the latest sequence.
+     * Start tracking changes immediately after the given update sequence. The default, null, will start monitoring from
+     * the latest sequence.
      */
     public void setSince(String since) {
         this.since = since;

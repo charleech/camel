@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,11 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *
@@ -34,9 +38,9 @@ public class AhcProducerTwoParametersWithSameKeyTest extends BaseAhcTest {
         Exchange out = template.request("ahc:http://localhost:{{port}}/myapp?from=me&to=foo&to=bar", null);
 
         assertNotNull(out);
-        assertFalse("Should not fail", out.isFailed());
-        assertEquals("OK", out.getOut().getBody(String.class));
-        assertEquals("yes", out.getOut().getHeader("bar"));
+        assertFalse(out.isFailed(), "Should not fail");
+        assertEquals("OK", out.getMessage().getBody(String.class));
+        assertEquals("yes", out.getMessage().getHeader("bar"));
     }
 
     @Test
@@ -53,10 +57,9 @@ public class AhcProducerTwoParametersWithSameKeyTest extends BaseAhcTest {
         });
 
         assertNotNull(out);
-        assertFalse("Should not fail", out.isFailed());
-        assertEquals("OK", out.getOut().getBody(String.class));
-        assertEquals("yes", out.getOut().getHeader("bar"));
-
+        assertFalse(out.isFailed(), "Should not fail");
+        assertEquals("OK", out.getMessage().getBody(String.class));
+        assertEquals("yes", out.getMessage().getHeader("bar"));
 
     }
 
@@ -77,13 +80,13 @@ public class AhcProducerTwoParametersWithSameKeyTest extends BaseAhcTest {
                         assertEquals("bar", to.get(1));
 
                         // response
-                        exchange.getOut().setBody("OK");
+                        exchange.getMessage().setBody("OK");
                         // use multiple values for the foo header in the reply
                         List<Integer> list = new ArrayList<>();
                         list.add(123);
                         list.add(456);
-                        exchange.getOut().setHeader("foo", list);
-                        exchange.getOut().setHeader("bar", "yes");
+                        exchange.getMessage().setHeader("foo", list);
+                        exchange.getMessage().setHeader("bar", "yes");
                     }
                 });
             }

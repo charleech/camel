@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,19 +21,14 @@ import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
-
 /**
- * This object contains factory methods for each
- * Java content interface and Java element interface
- * in the org.apache.camel.component.salesforce.api.dto.bulk package.
- * <p>An ObjectFactory allows you to programatically
- * construct new instances of the Java representation
- * for XML content. The Java representation of XML
- * content can consist of schema derived interfaces
- * and classes representing the binding of schema
- * type definitions, element declarations and model
- * groups.  Factory methods for each of these are
- * provided in this class.
+ * This object contains factory methods for each Java content interface and Java element interface in the
+ * org.apache.camel.component.salesforce.api.dto.bulk package.
+ * <p>
+ * An ObjectFactory allows you to programatically construct new instances of the Java representation for XML content.
+ * The Java representation of XML content can consist of schema derived interfaces and classes representing the binding
+ * of schema type definitions, element declarations and model groups. Factory methods for each of these are provided in
+ * this class.
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -43,11 +38,13 @@ public class ObjectFactory {
     private static final QName ERROR_QNAME = new QName("http://www.force.com/2009/06/asyncapi/dataload", "error");
     private static final QName RESULTS_QNAME = new QName("http://www.force.com/2009/06/asyncapi/dataload", "results");
     private static final QName RESULT_LIST_QNAME = new QName("http://www.force.com/2009/06/asyncapi/dataload", "result-list");
-    private static final QName BATCH_INFO_LIST_QNAME = new QName("http://www.force.com/2009/06/asyncapi/dataload", "batchInfoList");
+    private static final QName BATCH_INFO_LIST_QNAME
+            = new QName("http://www.force.com/2009/06/asyncapi/dataload", "batchInfoList");
     private static final QName QUERY_RESULT_QNAME = new QName("http://www.force.com/2009/06/asyncapi/dataload", "queryResult");
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.apache.camel.component.salesforce.api.dto.bulk
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package:
+     * org.apache.camel.component.salesforce.api.dto.bulk
      */
     public ObjectFactory() {
     }

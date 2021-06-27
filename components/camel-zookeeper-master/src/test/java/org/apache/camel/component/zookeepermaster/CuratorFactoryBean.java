@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
- * Spring {@link FactoryBean} to make using {@link CuratorFramework} easier to setup
- * in Spring XML files also.
+ * Spring {@link FactoryBean} to make using {@link CuratorFramework} easier to setup in Spring XML files also.
  */
 public class CuratorFactoryBean implements FactoryBean<CuratorFramework>, DisposableBean {
 
@@ -54,13 +53,14 @@ public class CuratorFactoryBean implements FactoryBean<CuratorFramework>, Dispos
 
     // FactoryBean interface
     //-------------------------------------------------------------------------
+    @Override
     public CuratorFramework getObject() throws Exception {
         LOG.debug("Connecting to ZooKeeper on " + connectString);
 
         CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
-            .connectString(connectString)
-            .retryPolicy(new ExponentialBackoffRetry(5, 10))
-            .connectionTimeoutMs(getTimeout());
+                .connectString(connectString)
+                .retryPolicy(new ExponentialBackoffRetry(5, 10))
+                .connectionTimeoutMs(getTimeout());
 
         this.curator = builder.build();
         LOG.debug("Starting curator " + curator);
@@ -68,14 +68,17 @@ public class CuratorFactoryBean implements FactoryBean<CuratorFramework>, Dispos
         return curator;
     }
 
+    @Override
     public Class<?> getObjectType() {
         return CuratorFramework.class;
     }
 
+    @Override
     public boolean isSingleton() {
         return true;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (curator != null) {
             // Note we cannot use zkClient.close()

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,31 +15,32 @@
  * limitations under the License.
  */
 package org.apache.camel.component.smpp;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SmppUtilsTest {
-    
+
     private static TimeZone defaultTimeZone;
-    
-    @BeforeClass
+
+    @BeforeAll
     public static void setUpBeforeClass() {
         defaultTimeZone = TimeZone.getDefault();
-        
+
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
     }
-    
-    @AfterClass
+
+    @AfterAll
     public static void tearDownAfterClass() {
         if (defaultTimeZone != null) {
-            TimeZone.setDefault(defaultTimeZone);            
+            TimeZone.setDefault(defaultTimeZone);
         }
     }
 
@@ -48,13 +49,13 @@ public class SmppUtilsTest {
         assertEquals("-300101000000000+", SmppUtils.formatTime(new Date(0L)));
         assertEquals("-300101024640000+", SmppUtils.formatTime(new Date(10000000L)));
     }
-    
+
     @Test
     public void string2Date() {
         Date date = SmppUtils.string2Date("-300101010000004+");
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        
+
         assertEquals(5, calendar.get(Calendar.YEAR));
         assertEquals(11, calendar.get(Calendar.MONTH));
         assertEquals(10, calendar.get(Calendar.DAY_OF_MONTH));

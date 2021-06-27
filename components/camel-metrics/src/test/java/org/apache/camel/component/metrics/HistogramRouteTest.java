@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,13 +24,11 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
-import org.apache.camel.test.spring.CamelSpringDelegatingTestContextLoader;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.MockEndpoints;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.apache.camel.test.spring.junit5.MockEndpoints;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -44,17 +42,16 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-@RunWith(CamelSpringRunner.class)
+@CamelSpringTest
 @ContextConfiguration(
-        classes = { HistogramRouteTest.TestConfig.class },
-        loader = CamelSpringDelegatingTestContextLoader.class)
+                      classes = { HistogramRouteTest.TestConfig.class })
 @MockEndpoints
 public class HistogramRouteTest {
 
-    @EndpointInject(uri = "mock:out")
+    @EndpointInject("mock:out")
     private MockEndpoint endpoint;
 
-    @Produce(uri = "direct:in")
+    @Produce("direct:in")
     private ProducerTemplate producer;
 
     private MetricRegistry mockRegistry;
@@ -86,7 +83,7 @@ public class HistogramRouteTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         // TODO - 12.05.2014, Lauri - is there any better way to set this up?
         mockRegistry = endpoint.getCamelContext().getRegistry().lookupByNameAndType(METRIC_REGISTRY_NAME, MetricRegistry.class);
@@ -94,7 +91,7 @@ public class HistogramRouteTest {
         inOrder = Mockito.inOrder(mockRegistry, mockHistogram);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         endpoint.reset();
         reset(mockRegistry);

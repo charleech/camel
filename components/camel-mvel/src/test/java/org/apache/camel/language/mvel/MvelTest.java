@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,11 @@
  */
 package org.apache.camel.language.mvel;
 
-import org.apache.camel.test.junit4.LanguageTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.LanguageTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MvelTest extends LanguageTestSupport {
 
@@ -44,6 +47,7 @@ public class MvelTest extends LanguageTestSupport {
         assertTrue(exchange.hasOut());
     }
 
+    @Override
     protected String getLanguageName() {
         return "mvel";
     }

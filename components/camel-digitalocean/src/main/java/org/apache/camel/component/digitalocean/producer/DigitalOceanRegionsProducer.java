@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ public class DigitalOceanRegionsProducer extends DigitalOceanProducer {
         super(endpoint, configuration);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         Regions regions = getEndpoint().getDigitalOceanClient().getAvailableRegions(configuration.getPage());
         LOG.trace("All Regions : page {} [{}] ", regions.getRegions(), configuration.getPage());

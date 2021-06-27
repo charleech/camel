@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,7 @@ import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
 
 /**
- * A <a href="http://flatpack.sourceforge.net/">Flatpack Component</a>
- * for working with fixed width and delimited files
+ * A <a href="http://flatpack.sourceforge.net/">Flatpack Component</a> for working with fixed width and delimited files
  */
 @Component("flatpack")
 public class FlatpackComponent extends DefaultComponent {
@@ -35,6 +34,7 @@ public class FlatpackComponent extends DefaultComponent {
     public FlatpackComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         boolean fixed = false;
 

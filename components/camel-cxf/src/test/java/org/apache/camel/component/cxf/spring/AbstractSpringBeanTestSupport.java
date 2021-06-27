@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,27 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.spring;
 
 import org.apache.camel.util.IOHelper;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public abstract class AbstractSpringBeanTestSupport extends Assert {
-    
+public abstract class AbstractSpringBeanTestSupport {
+
     protected ClassPathXmlApplicationContext ctx;
-    
+
     protected abstract String[] getApplicationContextFiles();
-    
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
-        ctx =  new ClassPathXmlApplicationContext(getApplicationContextFiles());
+        ctx = new ClassPathXmlApplicationContext(getApplicationContextFiles());
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         IOHelper.close(ctx);
     }

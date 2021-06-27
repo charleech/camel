@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,20 +41,22 @@ public class NamedCamelBeanTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClass(NamedCamelBean.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClass(NamedCamelBean.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
-    public void sendMessageToInbound(@Uri("direct:inbound") ProducerTemplate in,
-                                     @Uri("mock:outbound") MockEndpoint out) throws InterruptedException {
+    public void sendMessageToInbound(
+            @Uri("direct:inbound") ProducerTemplate in,
+            @Uri("mock:outbound") MockEndpoint out)
+            throws InterruptedException {
         out.expectedMessageCount(1);
         out.expectedBodiesReceived("test-processed");
-        
+
         in.sendBody("test");
 
         assertIsSatisfied(2L, TimeUnit.SECONDS, out);

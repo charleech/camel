@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 package org.apache.camel.component.cxf;
 
 import javax.xml.transform.Source;
@@ -24,7 +23,8 @@ import javax.xml.ws.ServiceMode;
 import javax.xml.ws.WebServiceProvider;
 
 @WebServiceProvider(targetNamespace = "http://camel.apache.org/cxf/jaxws/provider")
-@ServiceMode (value = javax.xml.ws.Service.Mode.PAYLOAD)
+@ServiceMode(value = javax.xml.ws.Service.Mode.PAYLOAD)
 public interface DefaultPayloadProviderSEI extends Provider<Source> {
+    @Override
     Source invoke(Source request);
 }

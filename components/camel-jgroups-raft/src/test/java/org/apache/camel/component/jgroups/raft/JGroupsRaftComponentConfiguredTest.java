@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,21 +18,23 @@ package org.apache.camel.component.jgroups.raft;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jgroups.raft.utils.NopStateMachine;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.jgroups.JChannel;
 import org.jgroups.raft.RaftHandle;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class JGroupsRaftComponentConfiguredTest extends CamelTestSupport {
 
     static final String CLUSTER_NAME = "JGroupsRaftComponentConfiguredTest";
-    static final String CONFIGURED_ENDPOINT_URI = String.format("my-config-jgroupsraft:%s?raftId=B&channelProperties=raftB.xml", CLUSTER_NAME);
+    static final String CONFIGURED_ENDPOINT_URI
+            = String.format("my-config-jgroupsraft:%s?raftId=B&channelProperties=raftB.xml", CLUSTER_NAME);
 
     static final String CLUSTER_NAME2 = "JGroupsraftComponentConfiguredTest2";
-    static final String CONFIGURED_ENDPOINT_URI2 = String.format("my-config-jgroupsraft2:%s?raftId=C&channelProperties=raftXXX.xml", CLUSTER_NAME2);
+    static final String CONFIGURED_ENDPOINT_URI2
+            = String.format("my-config-jgroupsraft2:%s?raftId=C&channelProperties=raftXXX.xml", CLUSTER_NAME2);
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {

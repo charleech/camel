@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.milo.server.MiloServerComponent;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Testing the monitor functionality for item
@@ -34,16 +34,17 @@ public class MonitorItemTest extends AbstractMiloServerTest {
 
     private static final String MILO_SERVER_ITEM_1 = "milo-server:myitem1";
 
-    private static final String MILO_CLIENT_ITEM_C1_1 = "milo-client:tcp://foo:bar@localhost:@@port@@?node="
-                                                        + NodeIds.nodeValue(MiloServerComponent.DEFAULT_NAMESPACE_URI, "items-myitem1")
+    private static final String MILO_CLIENT_ITEM_C1_1 = "milo-client:opc.tcp://foo:bar@localhost:@@port@@?node="
+                                                        + NodeIds.nodeValue(MiloServerComponent.DEFAULT_NAMESPACE_URI,
+                                                                "myitem1")
                                                         + "&allowedSecurityPolicies=None&overrideHost=true";
 
     private static final String MOCK_TEST_1 = "mock:test1";
 
-    @EndpointInject(uri = MOCK_TEST_1)
+    @EndpointInject(MOCK_TEST_1)
     protected MockEndpoint test1Endpoint;
 
-    @Produce(uri = DIRECT_START_1)
+    @Produce(DIRECT_START_1)
     protected ProducerTemplate producer1;
 
     @Override

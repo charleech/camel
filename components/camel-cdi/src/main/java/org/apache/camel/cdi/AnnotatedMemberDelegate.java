@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,16 @@ package org.apache.camel.cdi;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.util.Set;
+
+import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedType;
 
+@Vetoed
 class AnnotatedMemberDelegate<T> extends AnnotatedDelegate implements AnnotatedMember<T> {
 
     private final AnnotatedMember<T> delegate;
-    
+
     AnnotatedMemberDelegate(AnnotatedMember<T> delegate, Set<Annotation> annotations) {
         super(delegate, annotations);
         this.delegate = delegate;

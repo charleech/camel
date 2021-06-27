@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,22 +29,20 @@ import org.apache.camel.cdi.ImportResource;
 import org.apache.camel.cdi.Uri;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.RouteDefinition;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 @ImportResource("imported-context.xml")
@@ -65,17 +63,17 @@ public class XmlRouteContextImportTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test Camel XML
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-routeContextRef-import.xml").toFile(),
-                "imported-context.xml")
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-routeContext.xml").toFile(),
-                "imported-route-context.xml")
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test Camel XML
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-routeContextRef-import.xml").toFile(),
+                        "imported-context.xml")
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-routeContext.xml").toFile(),
+                        "imported-route-context.xml")
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -83,10 +81,8 @@ public class XmlRouteContextImportTest {
         assertThat("Route context is incorrect!", routes, hasSize(1));
         RouteDefinition route = routes.get(0);
 
-        assertThat("Route input is incorrect!", route.getInputs(), hasSize(1));
-
         assertThat("Route is incorrect!",
-            route.getInputs().get(0).getEndpointUri(), is(equalTo("direct:inbound")));
+                route.getInput().getEndpointUri(), is(equalTo("direct:inbound")));
     }
 
     @Test

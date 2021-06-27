@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,15 @@
  */
 package org.apache.camel.component.zookeeper.operations;
 
-import static java.lang.String.format;
-
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
+import static java.lang.String.format;
+
 /**
- * <code>SetDataOperation</code> sets the content of a ZooKeeper node. An optional version
- * may be specified that the node must currently have for the operation to succeed.
+ * <code>SetDataOperation</code> sets the content of a ZooKeeper node. An optional version may be specified that the
+ * node must currently have for the operation to succeed.
+ * 
  * @see {@link ZooKeeper#setData(String, byte[], int)}
  */
 public class SetDataOperation extends ZooKeeperOperation<byte[]> {
@@ -37,13 +38,14 @@ public class SetDataOperation extends ZooKeeperOperation<byte[]> {
         this.data = data;
     }
 
+    @Override
     public OperationResult<byte[]> getResult() {
         try {
             Stat statistics = connection.setData(node, data, version);
             if (LOG.isDebugEnabled()) {
                 if (LOG.isTraceEnabled()) {
                     LOG.trace(format("Set data of node '%s'  with '%d' bytes of data, retrieved statistics '%s' ",
-                                     node, data != null ? data.length : 0, statistics));
+                            node, data != null ? data.length : 0, statistics));
                 } else {
                     LOG.debug(format("Set data of node '%s' with '%d' bytes of data", node, data != null ? data.length : 0));
                 }

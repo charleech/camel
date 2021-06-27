@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,14 @@ import java.util.Map;
 
 import net.sf.saxon.Configuration;
 import org.apache.camel.Endpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class XQueryEndpointConfigurationTest extends CamelSpringTestSupport {
     @Test
@@ -37,7 +42,7 @@ public class XQueryEndpointConfigurationTest extends CamelSpringTestSupport {
 
         for (Endpoint ep : context.getEndpoints()) {
             if (ep instanceof XQueryEndpoint) {
-                endpoint = (XQueryEndpoint)ep;
+                endpoint = (XQueryEndpoint) ep;
                 break;
             }
         }
@@ -53,7 +58,7 @@ public class XQueryEndpointConfigurationTest extends CamelSpringTestSupport {
     }
 
     @Override
-    protected ClassPathXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/xquery/XQueryEndpointConfigurationTest.xml");
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return newAppContext("XQueryEndpointConfigurationTest.xml");
     }
 }

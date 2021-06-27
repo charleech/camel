@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,9 @@ import java.util.Map;
 
 import org.apache.camel.CamelException;
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.apache.camel.spi.Metadata;
 
 /**
  * Component that creates {@link ZooKeeperEndpoint}s for interacting with a ZooKeeper cluster.
@@ -33,7 +33,7 @@ import org.apache.camel.spi.Metadata;
 public class ZooKeeperComponent extends DefaultComponent {
 
     @Metadata(label = "advanced")
-    private ZooKeeperConfiguration configuration;
+    private ZooKeeperConfiguration configuration = new ZooKeeperConfiguration();
 
     public ZooKeeperComponent() {
     }
@@ -42,6 +42,7 @@ public class ZooKeeperComponent extends DefaultComponent {
         this.configuration = configuration;
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         if (getCamelContext() == null) {
             throw new CamelException("No Camel context has been provided to this zookeeper component");
@@ -49,9 +50,10 @@ public class ZooKeeperComponent extends DefaultComponent {
 
         ZooKeeperConfiguration config = getConfiguration().copy();
         extractConfigFromUri(uri, config);
-        setProperties(config, parameters);
 
-        return new ZooKeeperEndpoint(uri, this, config);
+        Endpoint endpoint = new ZooKeeperEndpoint(uri, this, config);
+        setProperties(endpoint, parameters);
+        return endpoint;
     }
 
     private void extractConfigFromUri(String remaining, ZooKeeperConfiguration config) throws URISyntaxException {
@@ -64,9 +66,6 @@ public class ZooKeeperComponent extends DefaultComponent {
     }
 
     public ZooKeeperConfiguration getConfiguration() {
-        if (configuration == null) {
-            configuration = new ZooKeeperConfiguration();
-        }
         return configuration;
     }
 

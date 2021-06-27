@@ -1,21 +1,44 @@
 [[kubernetes-pods-component]]
-== Kubernetes Pods Component
+= Kubernetes Pods Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-kubernetes/src/main/docs/kubernetes-pods-component.adoc
+:docTitle: Kubernetes Pods
+:artifactId: camel-kubernetes
+:description: Perform operations on Kubernetes Pods and get notified on Pod changes.
+:since: 2.17
+:supportLevel: Stable
+:component-header: Both producer and consumer are supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/kubernetes-pods.adoc[opts=optional]
+//Manually maintained attributes
+:group: Kubernetes
 
-*Available as of Camel version 2.17*
+*Since Camel {since}*
 
-The *Kubernetes Pods* component is one of <<kubernetes-component,Kubernetes Components>> which
-provides a producer to execute kubernetes pod operations.
+*{component-header}*
+
+The Kubernetes Pods component is one of xref:kubernetes-summary.adoc[Kubernetes Components] which
+provides a producer to execute Kubernetes Pods operations and a consumer to consume events related to Pod Objects.
 
 
 
-### Component Options
+== Component Options
 
 // component options: START
-The Kubernetes Pods component has no options.
+The Kubernetes Pods component supports 3 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
-### Endpoint Options
+== Endpoint Options
 
 // endpoint options: START
 The Kubernetes Pods endpoint is configured using URI syntax:
@@ -26,7 +49,7 @@ kubernetes-pods:masterUrl
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -36,7 +59,7 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (28 parameters):
+=== Query Parameters (33 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -48,16 +71,21 @@ with the following path and query parameters:
 | *portName* (common) | The port name, used for ServiceCall EIP |  | String
 | *portProtocol* (common) | The port protocol, used for ServiceCall EIP | tcp | String
 | *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
+| *crdGroup* (consumer) | The Consumer CRD Resource Group we would like to watch |  | String
+| *crdName* (consumer) | The Consumer CRD Resource name we would like to watch |  | String
+| *crdPlural* (consumer) | The Consumer CRD Resource Plural we would like to watch |  | String
+| *crdScope* (consumer) | The Consumer CRD Resource Scope we would like to watch |  | String
+| *crdVersion* (consumer) | The Consumer CRD Resource Version we would like to watch |  | String
 | *labelKey* (consumer) | The Consumer Label key when watching at some resources |  | String
 | *labelValue* (consumer) | The Consumer Label value when watching at some resources |  | String
 | *namespace* (consumer) | The namespace |  | String
 | *poolSize* (consumer) | The Consumer pool size | 1 | int
 | *resourceName* (consumer) | The Consumer Resource Name we would like to watch |  | String
 | *exceptionHandler* (consumer) | To let the consumer use a custom ExceptionHandler. Notice if the option bridgeErrorHandler is enabled then this option is not in use. By default the consumer will deal with exceptions, that will be logged at WARN or ERROR level and ignored. |  | ExceptionHandler
-| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. |  | ExchangePattern
+| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. There are 3 enums and the value can be one of: InOnly, InOut, InOptionalOut |  | ExchangePattern
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *operation* (producer) | Producer operation to do on Kubernetes |  | String
 | *connectionTimeout* (advanced) | Connection timeout in milliseconds to use when making requests to the Kubernetes API server. |  | Integer
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 | *caCertData* (security) | The CA Cert Data |  | String
 | *caCertFile* (security) | The CA Cert File |  | String
 | *clientCertData* (security) | The Client Cert Data |  | String
@@ -72,19 +100,65 @@ with the following path and query parameters:
 | *username* (security) | Username to connect to Kubernetes |  | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
+
+== Supported producer operation
+
+- listPods
+- listPodsByLabels
+- getPod
+- createPod
+- deletePod
+
+== Kubernetes Pods Producer Examples
+
+- listPods: this operation list the pods on a kubernetes cluster
+
+[source,java]
+--------------------------------------------------------------------------------
+from("direct:list").
+    toF("kubernetes-pods:///?kubernetesClient=#kubernetesClient&operation=listPods").
+    to("mock:result");
+--------------------------------------------------------------------------------
+
+This operation return a List of Pods from your cluster
+
+- listPodsByLabels:  this operation list the pods by labels on a kubernetes cluster
+
+[source,java]
+--------------------------------------------------------------------------------
+from("direct:listByLabels").process(new Processor() {
+
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                Map<String, String> labels = new HashMap<>();
+                labels.put("key1", "value1");
+                labels.put("key2", "value2");
+                exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_PODS_LABELS, labels);
+            }
+        });
+    toF("kubernetes-pods:///?kubernetesClient=#kubernetesClient&operation=listPodsByLabels").
+    to("mock:result");
+--------------------------------------------------------------------------------
+
+This operation return a List of Pods from your cluster, using a label selector (with key1 and key2, with value value1 and value2)
+
+== Kubernetes Pods Consumer Example
+
+[source,java]
+--------------------------------------------------------------------------------
+fromF("kubernetes-pods://%s?oauthToken=%s&namespace=default&resourceName=test", host, authToken).process(new KubernertesProcessor()).to("mock:result");
+
+    public class KubernertesProcessor implements Processor {
+        @Override
+        public void process(Exchange exchange) throws Exception {
+            Message in = exchange.getIn();
+            Pod pod = exchange.getIn().getBody(Pod.class);
+            log.info("Got event with configmap name: " + pod.getMetadata().getName() + " and action " + in.getHeader(KubernetesConstants.KUBERNETES_EVENT_ACTION));
+        }
+    }
+--------------------------------------------------------------------------------
+
+This consumer will return a list of events on the namespace default for the pod test.
 
 
-The component supports 2 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.kubernetes-pods.enabled* | Whether to enable auto configuration of the kubernetes-pods component. This is enabled by default. |  | Boolean
-| *camel.component.kubernetes-pods.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
+include::{page-component-version}@camel-spring-boot::page$kubernetes-starter.adoc[]

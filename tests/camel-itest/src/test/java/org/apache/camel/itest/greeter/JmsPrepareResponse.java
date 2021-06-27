@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,19 +25,18 @@ import org.apache.hello_world_soap_http.types.FaultDetail;
 
 public class JmsPrepareResponse implements Processor {
 
-    public void process(Exchange exchange) throws Exception {
+    @Override
+    public void process(Exchange exchange) {
         Message in = exchange.getIn();
         if ("greetMe".equals(in.getHeader(CxfConstants.OPERATION_NAME))) {
-            String request = in.getBody(String.class);               
-            exchange.getOut().setBody("Hello" + request);
+            String request = in.getBody(String.class);
+            exchange.getMessage().setBody("Hello" + request);
         } else {
             // throw the Exception
             FaultDetail faultDetail = new FaultDetail();
-            faultDetail.setMajor((short)2);
-            faultDetail.setMinor((short)1);
-            exchange.getOut().setBody(new PingMeFault("PingMeFault raised by server", faultDetail));
-            exchange.getOut().setFault(true);
-            
+            faultDetail.setMajor((short) 2);
+            faultDetail.setMinor((short) 1);
+            exchange.getMessage().setBody(new PingMeFault("PingMeFault raised by server", faultDetail));
         }
     }
 }

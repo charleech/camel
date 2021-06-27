@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,22 @@ package org.apache.camel.component.disruptor.vm;
 
 import java.util.Iterator;
 
-import org.apache.camel.ContextTestSupport;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.disruptor.DisruptorComponent;
 import org.apache.camel.component.disruptor.DisruptorReference;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  *
  */
-public class DisruptorVmComponentReferenceEndpointTest extends ContextTestSupport {
+public class DisruptorVmComponentReferenceEndpointTest extends CamelTestSupport {
 
     @Test
-    public void testDisruptorVmComponentReference() throws Exception {
+    void testDisruptorVmComponentReference() throws Exception {
         DisruptorVmComponent vm = context.getComponent("disruptor-vm", DisruptorVmComponent.class);
 
         String key = DisruptorComponent.getDisruptorKey("disruptor-vm://foo");
@@ -40,7 +43,7 @@ public class DisruptorVmComponentReferenceEndpointTest extends ContextTestSuppor
         // add a second consumer on the endpoint
         context.addRoutes(new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("disruptor-vm:foo?blockWhenFull=true").routeId("foo2").to("mock:foo2");
             }
         });
@@ -69,10 +72,10 @@ public class DisruptorVmComponentReferenceEndpointTest extends ContextTestSuppor
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("disruptor-vm:foo").routeId("foo").to("mock:foo");
 
                 from("disruptor-vm:bar").routeId("bar").to("mock:bar");

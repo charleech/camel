@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.TopContainerCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -38,7 +37,7 @@ public class TopContainerCmdHeaderTest extends BaseDockerHeaderTest<TopContainer
     private TopContainerCmd mockObject;
 
     @Test
-    public void topContainerHeaderTest() {
+    void topContainerHeaderTest() {
 
         String containerId = "9c09acd48a25";
         String psArgs = "aux";
@@ -46,7 +45,6 @@ public class TopContainerCmdHeaderTest extends BaseDockerHeaderTest<TopContainer
         Map<String, Object> headers = getDefaultParameters();
         headers.put(DockerConstants.DOCKER_CONTAINER_ID, containerId);
         headers.put(DockerConstants.DOCKER_PS_ARGS, psArgs);
-
 
         template.sendBodyAndHeaders("direct:in", "", headers);
 

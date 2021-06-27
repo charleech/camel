@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.apache.http.entity.ContentType;
 public class ApplicationEDIX12Entity extends ApplicationEDIEntity {
 
     public ApplicationEDIX12Entity(String content, String charset, String contentTransferEncoding,
-            boolean isMainBody) {
+                                   boolean isMainBody) {
         super(content, ContentType.create(AS2MediaType.APPLICATION_EDI_X12, charset), contentTransferEncoding, isMainBody);
     }
 

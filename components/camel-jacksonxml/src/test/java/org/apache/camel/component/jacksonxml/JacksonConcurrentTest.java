@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.body;
 
 public class JacksonConcurrentTest extends CamelTestSupport {
 
@@ -58,17 +60,13 @@ public class JacksonConcurrentTest extends CamelTestSupport {
         executor.shutdownNow();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("direct:start").
-                        marshal().jacksonxml().
-                        to("log:marshalled").
-                        to("direct:marshalled");
+                from("direct:start").marshal().jacksonxml().to("log:marshalled").to("direct:marshalled");
 
-                from("direct:marshalled").
-                        unmarshal().jacksonxml(TestPojo.class).
-                        to("mock:result");
+                from("direct:marshalled").unmarshal().jacksonxml(TestPojo.class).to("mock:result");
             }
         };
     }

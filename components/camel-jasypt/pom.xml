@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.camel</groupId>
         <artifactId>components</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>camel-jasypt</artifactId>
@@ -33,19 +33,18 @@
     <description>Security using Jasypt</description>
 
     <properties>
-        <!-- use by camel-catalog -->
         <firstVersion>2.5.0</firstVersion>
         <label>security</label>
 
-        <camel.osgi.export.pkg>org.apache.camel.component.jasypt.*</camel.osgi.export.pkg>
         <camel.osgi.import.before.defaults>org.jasypt.encryption.*;version="[1.9,2)"</camel.osgi.import.before.defaults>
     </properties>
 
     <dependencies>
 
+        <!-- extends properties component from camel-base -->
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-base</artifactId>
         </dependency>
 
         <dependency>
@@ -53,30 +52,20 @@
             <artifactId>jasypt</artifactId>
             <version>${jasypt-version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test-spring</artifactId>
+            <artifactId>camel-test-spring-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test-blueprint</artifactId>
-            <scope>test</scope>
-        </dependency>
-         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>   
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -100,9 +89,9 @@
                             <pluginExecutions>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>org.apache.felix</groupId>
-                                        <artifactId>maven-bundle-plugin</artifactId>
-                                        <versionRange>${maven-bundle-plugin-version}</versionRange>
+                                        <groupId>org.apache.camel</groupId>
+                                        <artifactId>camel-bundle-plugin</artifactId>
+                                        <versionRange>${project.version}</versionRange>
                                         <goals>
                                             <goal>manifest</goal>
                                         </goals>
@@ -117,23 +106,8 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
         <plugins>
-
-            <!-- add OSGi to the MANIFEST.MF file -->
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- add main class and classpath to the MANIFEST.MF file -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -149,7 +123,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,8 @@ public interface UndertowHttpBinding {
 
     Message toCamelMessage(ClientExchange clientExchange, Exchange exchange) throws Exception;
 
-    void populateCamelHeaders(HttpServerExchange httpExchange, Map<String, Object> headerMap, Exchange exchange) throws Exception;
+    void populateCamelHeaders(HttpServerExchange httpExchange, Map<String, Object> headerMap, Exchange exchange)
+            throws Exception;
 
     void populateCamelHeaders(ClientResponse response, Map<String, Object> headerMap, Exchange exchange) throws Exception;
 
@@ -45,7 +46,9 @@ public interface UndertowHttpBinding {
     Object toHttpRequest(ClientRequest clientRequest, Message message);
 
     void setHeaderFilterStrategy(HeaderFilterStrategy headerFilterStrategy);
-    
+
     void setTransferException(Boolean transferException);
+
+    void setMuteException(Boolean muteException);
 
 }

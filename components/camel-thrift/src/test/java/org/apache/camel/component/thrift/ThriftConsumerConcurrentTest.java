@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.googlecode.junittoolbox.MultithreadingTester;
 import com.googlecode.junittoolbox.RunnableAssert;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.thrift.generated.Calculator;
 import org.apache.camel.component.thrift.generated.Operation;
 import org.apache.camel.component.thrift.generated.Work;
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClientManager;
@@ -41,9 +40,12 @@ import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ThriftConsumerConcurrentTest extends CamelTestSupport {
     private static final Logger LOG = LoggerFactory.getLogger(ThriftConsumerConcurrentTest.class);
@@ -53,7 +55,7 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
     private static final int THRIFT_TEST_NUM1 = 12;
     private static final int CONCURRENT_THREAD_COUNT = 30;
     private static final int ROUNDS_PER_THREAD_COUNT = 10;
-    
+
     private static AtomicInteger idCounter = new AtomicInteger();
 
     public static Integer createId() {
@@ -83,17 +85,18 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
                 } catch (TException e) {
                     LOG.info("Exception", e);
                 }
-                
-                assertNotNull("instanceId = " + instanceId, calculateResponse);
+
+                assertNotEquals(0, calculateResponse, "instanceId = " + instanceId);
                 assertEquals(instanceId * THRIFT_TEST_NUM1, calculateResponse);
 
                 transport.close();
             }
         };
 
-        new MultithreadingTester().add(ra).numThreads(CONCURRENT_THREAD_COUNT).numRoundsPerThread(ROUNDS_PER_THREAD_COUNT).run();
+        new MultithreadingTester().add(ra).numThreads(CONCURRENT_THREAD_COUNT).numRoundsPerThread(ROUNDS_PER_THREAD_COUNT)
+                .run();
     }
-    
+
     @Test
     public void testAsyncWithConcurrentThreads() throws Exception {
         RunnableAssert ra = new RunnableAssert("testAsyncWithConcurrentThreads") {
@@ -101,9 +104,11 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
             @Override
             public void run() throws TTransportException, IOException, InterruptedException {
                 final CountDownLatch latch = new CountDownLatch(1);
-                
+
                 TNonblockingTransport transport = new TNonblockingSocket("localhost", THRIFT_ASYNC_REQUEST_TEST_PORT);
-                Calculator.AsyncClient client = (new Calculator.AsyncClient.Factory(new TAsyncClientManager(), new TBinaryProtocol.Factory())).getAsyncClient(transport);
+                Calculator.AsyncClient client
+                        = (new Calculator.AsyncClient.Factory(new TAsyncClientManager(), new TBinaryProtocol.Factory()))
+                                .getAsyncClient(transport);
 
                 int instanceId = createId();
                 CalculateAsyncMethodCallback calculateCallback = new CalculateAsyncMethodCallback(latch);
@@ -113,26 +118,27 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
                     LOG.info("Exception", e);
                 }
                 latch.await(5, TimeUnit.SECONDS);
-                
+
                 int calculateResponse = calculateCallback.getCalculateResponse();
-                assertNotNull("instanceId = " + instanceId, calculateResponse);
+                LOG.debug("instanceId = {}", instanceId);
                 assertEquals(instanceId * THRIFT_TEST_NUM1, calculateResponse);
 
                 transport.close();
             }
         };
 
-        new MultithreadingTester().add(ra).numThreads(CONCURRENT_THREAD_COUNT).numRoundsPerThread(ROUNDS_PER_THREAD_COUNT).run();
+        new MultithreadingTester().add(ra).numThreads(CONCURRENT_THREAD_COUNT).numRoundsPerThread(ROUNDS_PER_THREAD_COUNT)
+                .run();
     }
-    
+
     public class CalculateAsyncMethodCallback implements AsyncMethodCallback<Integer> {
         private final CountDownLatch latch;
         private Integer calculateResponse;
-        
+
         public CalculateAsyncMethodCallback(CountDownLatch latch) {
             this.latch = latch;
         }
-        
+
         @Override
         public void onComplete(Integer response) {
             calculateResponse = response;
@@ -144,7 +150,7 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
             LOG.info("Exception", exception);
             latch.countDown();
         }
-        
+
         public Integer getCalculateResponse() {
             return calculateResponse;
         }
@@ -155,17 +161,18 @@ public class ThriftConsumerConcurrentTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() {
-                
-                from("thrift://localhost:" + THRIFT_SYNC_REQUEST_TEST_PORT + "/org.apache.camel.component.thrift.generated.Calculator?synchronous=true")
-                    .setBody(simple("${body[1]}")).bean(new CalculatorMessageBuilder(), "multiply");
-                
-                
-                from("thrift://localhost:" + THRIFT_ASYNC_REQUEST_TEST_PORT + "/org.apache.camel.component.thrift.generated.Calculator")
-                    .setBody(simple("${body[1]}")).bean(new CalculatorMessageBuilder(), "multiply");
+
+                from("thrift://localhost:" + THRIFT_SYNC_REQUEST_TEST_PORT
+                     + "/org.apache.camel.component.thrift.generated.Calculator?synchronous=true")
+                             .setBody(simple("${body[1]}")).bean(new CalculatorMessageBuilder(), "multiply");
+
+                from("thrift://localhost:" + THRIFT_ASYNC_REQUEST_TEST_PORT
+                     + "/org.apache.camel.component.thrift.generated.Calculator")
+                             .setBody(simple("${body[1]}")).bean(new CalculatorMessageBuilder(), "multiply");
             }
         };
     }
-    
+
     public class CalculatorMessageBuilder {
         public Integer multiply(Work work) {
             return work.num1 * work.num2;

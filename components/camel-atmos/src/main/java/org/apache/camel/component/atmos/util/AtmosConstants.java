@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ public final class AtmosConstants {
     public static final String ATMOS_FILE_SEPARATOR = "/";
     public static final long POLL_CONSUMER_DELAY = 60 * 60 * 1000L;
 
-    private AtmosConstants() { }
+    private AtmosConstants() {
+    }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.language.mvel;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
@@ -63,5 +64,13 @@ public class RootObject {
 
     public <T> T getProperty(String name, Class<T> type) {
         return exchange.getProperty(name, type);
+    }
+
+    public Map<String, Object> getHeaders() {
+        Message message = exchange.getMessage();
+        if (message != null) {
+            return message.getHeaders();
+        }
+        return Collections.emptyMap();
     }
 }

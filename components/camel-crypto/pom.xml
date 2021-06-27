@@ -18,81 +18,43 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.apache.camel</groupId>
-		<artifactId>components</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>components</artifactId>
+        <version>3.10.0-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>camel-crypto</artifactId>
-	<packaging>jar</packaging>
-	<name>Camel :: Crypto</name>
-	<description>Camel Cryptographic Support</description>
+    <artifactId>camel-crypto</artifactId>
+    <packaging>jar</packaging>
+    <name>Camel :: Crypto</name>
+    <description>Camel Cryptographic Support</description>
 
-	<properties>
-		<camel.osgi.export.pkg>
-			org.apache.camel.component.crypto.*;${camel.osgi.version},
-			org.apache.camel.converter.crypto.*
-		</camel.osgi.export.pkg>
-		<camel.osgi.import.pkg>
-			!org.apache.camel.component.crypto.*,
-			!org.apache.camel.converter.crypto.*,
-			${camel.osgi.import.defaults},
-			*
-		</camel.osgi.import.pkg>
-		<camel.osgi.export.service>
-			org.apache.camel.spi.ComponentResolver;component=crypto,
-			org.apache.camel.spi.DataFormatResolver;dataformat=crypto,
-			org.apache.camel.spi.DataFormatResolver;dataformat=gpg
-		</camel.osgi.export.service>
-	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-		</dependency>
- 		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpg-jdk15on</artifactId>
-			<version>${bouncycastle-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>${bouncycastle-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>${commons-io-version}</version>
-		</dependency> 
-
-		<!-- for testing -->
-		<dependency>
-			<groupId>org.apache.camel</groupId>
-			<artifactId>camel-test-spring</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <dependencies>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <scope>test</scope>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-support</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpg-jdk15on</artifactId>
+            <version>${bouncycastle-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${bouncycastle-version}</version>
+        </dependency>
+
+        <!-- for testing -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -101,7 +63,7 @@
             <scope>test</scope>
         </dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>
 

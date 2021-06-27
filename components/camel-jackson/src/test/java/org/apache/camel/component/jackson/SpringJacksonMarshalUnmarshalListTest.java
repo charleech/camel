@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,13 @@ package org.apache.camel.component.jackson;
 import java.util.List;
 
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SpringJacksonMarshalUnmarshalListTest extends CamelSpringTestSupport {
 
@@ -68,7 +71,8 @@ public class SpringJacksonMarshalUnmarshalListTest extends CamelSpringTestSuppor
 
     @Override
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/jackson/SpringJacksonMarshalUnmarshalListTest.xml");
+        return new ClassPathXmlApplicationContext(
+                "org/apache/camel/component/jackson/SpringJacksonMarshalUnmarshalListTest.xml");
     }
 
 }

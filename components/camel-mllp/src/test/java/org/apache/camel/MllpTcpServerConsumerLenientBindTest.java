@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel;
 
 import java.net.ServerSocket;
@@ -25,19 +24,24 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit.rule.mllp.MllpClientResource;
 import org.apache.camel.test.junit.rule.mllp.MllpJUnitResourceTimeoutException;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.camel.test.mllp.Hl7TestMessageGenerator;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.apache.camel.test.junit5.TestSupport.assertStringContains;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MllpTcpServerConsumerLenientBindTest extends CamelTestSupport {
     static final int RECEIVE_TIMEOUT = 1000;
     static final int READ_TIMEOUT = 500;
 
-    @Rule
+    @RegisterExtension
     public MllpClientResource mllpClient = new MllpClientResource();
 
-    @EndpointInject(uri = "mock://result")
+    @EndpointInject("mock://result")
     MockEndpoint result;
 
     ServerSocket portBlocker;
@@ -61,10 +65,10 @@ public class MllpTcpServerConsumerLenientBindTest extends CamelTestSupport {
 
             public void configure() {
                 fromF("mllp://%s:%d?bindTimeout=15000&bindRetryInterval=500&receiveTimeout=%d&readTimeout=%d&reuseAddress=false&lenientBind=true",
-                    mllpClient.getMllpHost(), mllpClient.getMllpPort(), RECEIVE_TIMEOUT, READ_TIMEOUT)
-                    .routeId(routeId)
-                    .log(LoggingLevel.INFO, routeId, "Receiving: ${body}")
-                    .to(result);
+                        mllpClient.getMllpHost(), mllpClient.getMllpPort(), RECEIVE_TIMEOUT, READ_TIMEOUT)
+                                .routeId(routeId)
+                                .log(LoggingLevel.INFO, routeId, "Receiving: ${body}")
+                                .to(result);
             }
         };
 
@@ -88,10 +92,9 @@ public class MllpTcpServerConsumerLenientBindTest extends CamelTestSupport {
         assertEquals(ServiceStatus.Started, context.getStatus());
 
         mllpClient.connect();
-        String acknowledgement = mllpClient.sendMessageAndWaitForAcknowledgement(Hl7TestMessageGenerator.generateMessage(10002));
+        String acknowledgement
+                = mllpClient.sendMessageAndWaitForAcknowledgement(Hl7TestMessageGenerator.generateMessage(10002));
         assertStringContains(acknowledgement, "10002");
     }
-
-
 
 }

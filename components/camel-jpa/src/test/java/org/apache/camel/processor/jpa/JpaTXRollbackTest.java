@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,9 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.examples.SendEmail;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JpaTXRollbackTest extends AbstractJpaTest {
 
@@ -48,8 +50,8 @@ public class JpaTXRollbackTest extends AbstractJpaTest {
 
         assertMockEndpointsSatisfied();
 
-        assertTrue("Should be >= 2, was: " + foo.intValue(), foo.intValue() >= 2);
-        assertTrue("Should be >= 2, was: " + bar.intValue(), bar.intValue() >= 2);
+        assertTrue(foo.intValue() >= 2, "Should be >= 2, was: " + foo.intValue());
+        assertTrue(bar.intValue() >= 2, "Should be >= 2, was: " + bar.intValue());
     }
 
     @Override
@@ -57,7 +59,7 @@ public class JpaTXRollbackTest extends AbstractJpaTest {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("jpa://" + SendEmail.class.getName() + "?consumer.transacted=true&delay=1000").routeId("foo").noAutoStartup()
+                from("jpa://" + SendEmail.class.getName() + "?transacted=true&delay=1000").routeId("foo").noAutoStartup()
                         .process(new Processor() {
                             @Override
                             public void process(Exchange exchange) throws Exception {

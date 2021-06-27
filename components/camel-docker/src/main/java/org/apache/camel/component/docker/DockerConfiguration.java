@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,13 +29,15 @@ import org.apache.camel.spi.UriPath;
 public class DockerConfiguration implements Cloneable {
 
     @UriPath(enums = "events,stats,auth,info,ping,version,imagebuild,imagecreate,imageinspect,imagelist,imagepull,imagepush"
-            + "imageremove,imagesearch,imagetag,containerattach,containercommit,containercopyfile,containercreate,containerdiff"
-            + "inspectcontainer,containerkill,containerlist,containerlog,containerpause,containerrestart,containerremove,containerstart"
-            + "containerstop,containertop,containerunpause,containerwait,execcreate,execstart") @Metadata(required = true)
+                     + "imageremove,imagesearch,imagetag,containerattach,containercommit,containercopyfile,containercreate,containerdiff"
+                     + "inspectcontainer,containerkill,containerlist,containerlog,containerpause,containerrestart,containerremove,containerstart"
+                     + "containerstop,containertop,containerunpause,containerwait,execcreate,execstart")
+    @Metadata(required = true)
     private DockerOperation operation;
-    @UriParam(defaultValue = "localhost") @Metadata(required = true)
+    @UriParam(defaultValue = "localhost")
+    @Metadata(required = true)
     private String host = "localhost";
-    @UriParam(defaultValue = "2375") @Metadata(required = true)
+    @UriParam(defaultValue = "2375")
     private Integer port = 2375;
     @UriParam(label = "security", secret = true)
     private String username;
@@ -65,7 +67,7 @@ public class DockerConfiguration implements Cloneable {
     private boolean socket;
     @UriParam(label = "advanced", defaultValue = "com.github.dockerjava.netty.NettyDockerCmdExecFactory")
     private String cmdExecFactory = "com.github.dockerjava.netty.NettyDockerCmdExecFactory";
-    
+    @UriParam(label = "advanced")
     private Map<String, Object> parameters = new HashMap<>();
 
     public String getHost() {
@@ -189,7 +191,7 @@ public class DockerConfiguration implements Cloneable {
         this.maxPerRouteConnections = maxPerRouteConnections;
     }
 
-    public boolean isLoggingFilterEnabled() {
+    public boolean isLoggingFilter() {
         return loggingFilter;
     }
 
@@ -200,7 +202,7 @@ public class DockerConfiguration implements Cloneable {
         this.loggingFilter = loggingFilterEnabled;
     }
 
-    public boolean isFollowRedirectFilterEnabled() {
+    public boolean isFollowRedirectFilter() {
         return followRedirectFilter;
     }
 
@@ -236,14 +238,14 @@ public class DockerConfiguration implements Cloneable {
     public boolean isTlsVerify() {
         return tlsVerify;
     }
-    
+
     /**
-     * Check TLS 
+     * Check TLS
      */
     public void setTlsVerify(boolean tlsVerify) {
         this.tlsVerify = tlsVerify;
     }
-    
+
     public boolean isSocket() {
         return socket;
     }

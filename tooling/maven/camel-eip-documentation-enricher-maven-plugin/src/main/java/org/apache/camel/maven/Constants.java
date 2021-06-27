@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,5 +41,6 @@ public final class Constants {
     public static final String DEPRECATED_ATTRIBUTE_NAME = "deprecated";
     public static final String MODEL_ATTRIBUTE_NAME = "model";
 
-    private Constants() { }
+    private Constants() {
+    }
 }

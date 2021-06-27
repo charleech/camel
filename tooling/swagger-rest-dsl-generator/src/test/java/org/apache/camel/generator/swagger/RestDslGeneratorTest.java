@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,10 @@ import java.time.Instant;
 
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.model.rest.RestsDefinition;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -67,7 +66,8 @@ public class RestDslGeneratorTest {
     public void shouldGenerateSourceCodeWithRestComponent() throws IOException, URISyntaxException {
         final StringBuilder code = new StringBuilder();
 
-        RestDslGenerator.toAppendable(swagger).withGeneratedTime(generated).withRestComponent("servlet").withRestContextPath("/").generate(code);
+        RestDslGenerator.toAppendable(swagger).withGeneratedTime(generated).withRestComponent("servlet")
+                .withRestContextPath("/").generate(code);
 
         final URI file = RestDslGeneratorTest.class.getResource("/SwaggerPetstoreWithRestComponent.txt").toURI();
         final String expectedContent = new String(Files.readAllBytes(Paths.get(file)), StandardCharsets.UTF_8);
@@ -80,8 +80,8 @@ public class RestDslGeneratorTest {
         final StringBuilder code = new StringBuilder();
 
         RestDslGenerator.toAppendable(swagger).withGeneratedTime(generated).withClassName("MyRestRoute")
-            .withPackageName("com.example").withIndent("\t").withSourceCodeTimestamps()
-            .withDestinationGenerator(o -> "direct:rest-" + o.getOperationId()).generate(code);
+                .withPackageName("com.example").withIndent("\t").withSourceCodeTimestamps()
+                .withDestinationGenerator(o -> "direct:rest-" + o.getOperationId()).generate(code);
 
         final URI file = RestDslGeneratorTest.class.getResource("/MyRestRoute.txt").toURI();
         final String expectedContent = new String(Files.readAllBytes(Paths.get(file)), StandardCharsets.UTF_8);
@@ -94,9 +94,9 @@ public class RestDslGeneratorTest {
         final StringBuilder code = new StringBuilder();
 
         RestDslGenerator.toAppendable(swagger).withGeneratedTime(generated).withClassName("MyRestRoute")
-            .withPackageName("com.example").withIndent("\t").withSourceCodeTimestamps()
-            .withOperationFilter("find*,deletePet,updatePet")
-            .withDestinationGenerator(o -> "direct:rest-" + o.getOperationId()).generate(code);
+                .withPackageName("com.example").withIndent("\t").withSourceCodeTimestamps()
+                .withOperationFilter("find*,deletePet,updatePet")
+                .withDestinationGenerator(o -> "direct:rest-" + o.getOperationId()).generate(code);
 
         final URI file = RestDslGeneratorTest.class.getResource("/MyRestRouteFilter.txt").toURI();
         final String expectedContent = new String(Files.readAllBytes(Paths.get(file)), StandardCharsets.UTF_8);

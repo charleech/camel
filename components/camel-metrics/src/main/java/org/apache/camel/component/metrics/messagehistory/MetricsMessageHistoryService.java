@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,13 @@
 package org.apache.camel.component.metrics.messagehistory;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.management.MBeanServer;
 
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.json.MetricsModule;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +42,8 @@ import org.apache.camel.support.service.ServiceSupport;
  * Service holding the {@link MetricsMessageHistory} which registers all message history metrics.
  */
 @ManagedResource(description = "MetricsMessageHistory")
-public final class MetricsMessageHistoryService extends ServiceSupport implements CamelContextAware, StaticService, MetricsMessageHistoryMBean {
+public final class MetricsMessageHistoryService extends ServiceSupport
+        implements CamelContextAware, StaticService, MetricsMessageHistoryMBean {
 
     private CamelContext camelContext;
     private MetricRegistry metricsRegistry;
@@ -62,10 +64,12 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
         this.metricsRegistry = metricsRegistry;
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
@@ -111,7 +115,9 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
     }
 
     @Override
-    protected void doStart() throws Exception {
+    protected void doInit() throws Exception {
+        super.doInit();
+
         if (metricsRegistry == null) {
             Registry camelRegistry = getCamelContext().getRegistry();
             metricsRegistry = camelRegistry.lookupByNameAndType(MetricsComponent.METRIC_REGISTRY_NAME, MetricRegistry.class);
@@ -120,6 +126,21 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
                 metricsRegistry = new MetricRegistry();
             }
         }
+
+        // json mapper
+        this.mapper = new ObjectMapper().registerModule(new MetricsModule(getRateUnit(), getDurationUnit(), false));
+        if (getRateUnit() == TimeUnit.SECONDS && getDurationUnit() == TimeUnit.SECONDS) {
+            // they both use same units so reuse
+            this.secondsMapper = this.mapper;
+        } else {
+            this.secondsMapper
+                    = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, false));
+        }
+    }
+
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
 
         if (useJmx) {
             ManagementAgent agent = getCamelContext().getManagementStrategy().getManagementAgent();
@@ -133,19 +154,12 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
                 throw new IllegalStateException("CamelContext has not enabled JMX");
             }
         }
-
-        // json mapper
-        this.mapper = new ObjectMapper().registerModule(new MetricsModule(getRateUnit(), getDurationUnit(), false));
-        if (getRateUnit() == TimeUnit.SECONDS && getDurationUnit() == TimeUnit.SECONDS) {
-            // they both use same units so reuse
-            this.secondsMapper = this.mapper;
-        } else {
-            this.secondsMapper = new ObjectMapper().registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.SECONDS, false));
-        }
     }
 
     @Override
     protected void doStop() throws Exception {
+        super.doStop();
+
         if (reporter != null) {
             reporter.stop();
             reporter = null;
@@ -165,6 +179,7 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
         }
     }
 
+    @Override
     public String dumpStatisticsAsJsonTimeUnitSeconds() {
         ObjectWriter writer = secondsMapper.writer();
         if (isPrettyPrint()) {
@@ -177,6 +192,7 @@ public final class MetricsMessageHistoryService extends ServiceSupport implement
         }
     }
 
+    @Override
     public void reset() {
         // remove all
         metricsRegistry.removeMatching(new MetricFilter() {

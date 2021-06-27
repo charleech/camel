@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,7 @@ public enum GrpcAuthType {
     NONE,
 
     /**
-     * Google OAuth2 token auth. Valid for producer interacting with Google
-     * public services with gRPC support only
+     * Google OAuth2 token auth. Valid for producer interacting with Google public services with gRPC support only
      */
     GOOGLE,
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,16 @@ import org.apache.camel.Exchange;
 
 public class RestUndertowHttpBinding extends DefaultUndertowHttpBinding {
 
+    public RestUndertowHttpBinding() {
+    }
+
+    public RestUndertowHttpBinding(boolean useStreaming) {
+        super(useStreaming);
+    }
+
     @Override
-    public void populateCamelHeaders(HttpServerExchange httpExchange, Map<String, Object> headersMap, Exchange exchange) throws Exception {
+    public void populateCamelHeaders(HttpServerExchange httpExchange, Map<String, Object> headersMap, Exchange exchange)
+            throws Exception {
         super.populateCamelHeaders(httpExchange, headersMap, exchange);
 
         String path = httpExchange.getRequestPath();

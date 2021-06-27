@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.apache.camel.component.yammer.model;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Reference {
@@ -90,7 +90,8 @@ public class Reference {
 
     @Override
     public String toString() {
-        return "Reference [url=" + url + ", permalink=" + permalink + ", normalizedName=" + normalizedName + ", id=" + id + ", type=" + type + ", name=" + name + ", webUrl=" + webUrl + "]";
+        return "Reference [url=" + url + ", permalink=" + permalink + ", normalizedName=" + normalizedName + ", id=" + id
+               + ", type=" + type + ", name=" + name + ", webUrl=" + webUrl + "]";
     }
 
 }

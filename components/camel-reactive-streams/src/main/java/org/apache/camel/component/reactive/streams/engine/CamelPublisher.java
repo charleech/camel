@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,26 +45,28 @@ public class CamelPublisher implements Publisher<Exchange>, AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(CamelPublisher.class);
 
-    private ExecutorService workerPool;
+    private final ExecutorService workerPool;
 
-    private String name;
+    private final String name;
+
+    private final List<CamelSubscription> subscriptions = new CopyOnWriteArrayList<>();
 
     private ReactiveStreamsBackpressureStrategy backpressureStrategy;
-
-    private List<CamelSubscription> subscriptions = new CopyOnWriteArrayList<>();
 
     private ReactiveStreamsProducer producer;
 
     public CamelPublisher(ExecutorService workerPool, CamelContext context, String name) {
         this.workerPool = workerPool;
-        this.backpressureStrategy = ((ReactiveStreamsComponent) context.getComponent("reactive-streams")).getBackpressureStrategy();
+        this.backpressureStrategy
+                = ((ReactiveStreamsComponent) context.getComponent("reactive-streams")).getBackpressureStrategy();
         this.name = name;
     }
 
     @Override
     public void subscribe(Subscriber<? super Exchange> subscriber) {
         Objects.requireNonNull(subscriber, "subscriber must not be null");
-        CamelSubscription sub = new CamelSubscription(UUID.randomUUID().toString(), workerPool, this, name, this.backpressureStrategy, subscriber);
+        CamelSubscription sub = new CamelSubscription(
+                UUID.randomUUID().toString(), workerPool, this, name, this.backpressureStrategy, subscriber);
         this.subscriptions.add(sub);
         subscriber.onSubscribe(sub);
     }
@@ -85,7 +87,7 @@ public class CamelPublisher implements Publisher<Exchange>, AutoCloseable {
             // subscriber (or their subscription is cancelled)
             AtomicInteger counter = new AtomicInteger(subs.size());
             // Use just the first exception in the callback when multiple exceptions are thrown
-            AtomicReference<Throwable> thrown = new AtomicReference<>(null);
+            AtomicReference<Throwable> thrown = new AtomicReference<>();
 
             callback = ReactiveStreamsHelper.attachCallback(data, (exchange, error) -> {
                 thrown.compareAndSet(null, error);
@@ -108,7 +110,6 @@ public class CamelPublisher implements Publisher<Exchange>, AutoCloseable {
             callback.processed(data, new IllegalStateException("The stream has no active subscriptions"));
         }
     }
-
 
     public void attachProducer(ReactiveStreamsProducer producer) {
         Objects.requireNonNull(producer, "producer cannot be null, use the detach method");

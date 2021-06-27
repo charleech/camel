@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,13 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.camel.tooling.util.PackageHelper;
+import org.apache.camel.tooling.util.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -33,8 +37,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-
-import static org.apache.camel.maven.packaging.StringHelper.between;
 
 /**
  * Creates the Maven catalog for the Camel archetypes
@@ -49,16 +51,10 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
     protected MavenProject project;
 
     /**
-     * The output directory for generated components file
+     * The output directory for generated archetypes
      */
     @Parameter(defaultValue = "${project.build.directory}/classes/")
     protected File outDir;
-
-    /**
-     * The build directory
-     */
-    @Parameter(defaultValue = "${project.build.directory}")
-    protected File projectBuildDir;
 
     /**
      * Maven ProjectHelper.
@@ -69,31 +65,38 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
     /**
      * Execute goal.
      *
-     * @throws org.apache.maven.plugin.MojoExecutionException execution of the main class or one of the
-     *                 threads it generated failed.
-     * @throws org.apache.maven.plugin.MojoFailureException something bad happened...
+     * @throws org.apache.maven.plugin.MojoExecutionException execution of the main class or one of the threads it
+     *                                                        generated failed.
+     * @throws org.apache.maven.plugin.MojoFailureException   something bad happened...
      */
+    @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            generateArchetypeCatalog(getLog(), project, projectHelper, projectBuildDir, outDir);
-        } catch (IOException e) {
-            throw new MojoFailureException("Error generating archetype catalog due " + e.getMessage(), e);
+        // only generate this for the root pom
+        if ("pom".equals(project.getModel().getPackaging())) {
+            try {
+                generateArchetypeCatalog(getLog(), project, projectHelper, outDir);
+            } catch (IOException e) {
+                throw new MojoFailureException("Error generating archetype catalog due " + e.getMessage(), e);
+            }
         }
     }
 
-    public static void generateArchetypeCatalog(Log log, MavenProject project, MavenProjectHelper projectHelper, File projectBuildDir, File outDir) throws MojoExecutionException, IOException {
+    public static void generateArchetypeCatalog(Log log, MavenProject project, MavenProjectHelper projectHelper, File outDir)
+            throws MojoExecutionException, IOException {
 
-        File rootDir = projectBuildDir.getParentFile();
-        log.info("Scanning for Camel Maven Archetypes from root directory " + rootDir);
+        File archetypes = PackageHelper.findCamelDirectory(project.getBasedir(), "archetypes");
+        if (archetypes == null || !archetypes.exists()) {
+            throw new MojoExecutionException("Cannot find directory: archetypes");
+        }
+        log.info("Scanning for Camel Maven Archetypes from directory: " + archetypes);
 
         // find all archetypes which are in the parent dir of the build dir
-        File[] dirs = rootDir.listFiles(new FileFilter() {
+        File[] dirs = archetypes.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.getName().startsWith("camel-archetype") && pathname.isDirectory();
             }
         });
-
 
         List<ArchetypeModel> models = new ArrayList<>();
 
@@ -106,8 +109,9 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
             boolean parent = false;
             ArchetypeModel model = new ArchetypeModel();
 
-            // just use a simple line by line text parser (no need for DOM) just to grab 4 lines of data
-            for (Object o : FileUtils.readLines(pom)) {
+            // just use a simple line by line text parser (no need for DOM) just
+            // to grab 4 lines of data
+            for (Object o : FileUtils.readLines(pom, StandardCharsets.UTF_8)) {
 
                 String line = o.toString();
 
@@ -122,16 +126,16 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
                 }
                 if (parent) {
                     // grab version from parent
-                    String version = between(line, "<version>", "</version>");
+                    String version = Strings.between(line, "<version>", "</version>");
                     if (version != null) {
                         model.setVersion(version);
                     }
                     continue;
                 }
 
-                String groupId = between(line, "<groupId>", "</groupId>");
-                String artifactId = between(line, "<artifactId>", "</artifactId>");
-                String description = between(line, "<description>", "</description>");
+                String groupId = Strings.between(line, "<groupId>", "</groupId>");
+                String artifactId = Strings.between(line, "<artifactId>", "</artifactId>");
+                String description = Strings.between(line, "<description>", "</description>");
 
                 if (groupId != null && model.getGroupId() == null) {
                     model.setGroupId(groupId);
@@ -148,6 +152,9 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
                 models.add(model);
             }
         }
+
+        // sort the models by artifact id so its generated in same order
+        Collections.sort(models, (o1, o2) -> o1.getArtifactId().compareToIgnoreCase(o2.getArtifactId()));
 
         log.info("Found " + models.size() + " archetypes");
 
@@ -189,7 +196,7 @@ public class PackageArchetypeCatalogMojo extends AbstractMojo {
 
                     List<String> includes = new ArrayList<>();
                     includes.add("archetype-catalog.xml");
-                    projectHelper.addResource(project, outDir.getPath(), includes, new ArrayList<String>());
+                    projectHelper.addResource(project, outDir.getPath(), includes, new ArrayList<>());
                     projectHelper.attachArtifact(project, "xml", "archetype-catalog", out);
                 }
             } catch (Exception e) {

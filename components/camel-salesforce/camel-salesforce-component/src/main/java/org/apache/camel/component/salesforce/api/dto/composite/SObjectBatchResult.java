@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,11 +50,12 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
  * Which will result in {@link #getResult()} returning {@link Map} created like: <blockquote>
  *
  * <pre>
- * {@code
- * Map<String, Object> result = new HashMap<>();
- * result.put("id", "0010Y00000Ary91QAB");
- * result.put("success", Boolean.TRUE);
- * result.put("errors", Collections.emptyList());
+ * {
+ *     &#64;code
+ *     Map<String, Object> result = new HashMap<>();
+ *     result.put("id", "0010Y00000Ary91QAB");
+ *     result.put("success", Boolean.TRUE);
+ *     result.put("errors", Collections.emptyList());
  * }
  * </pre>
  *
@@ -76,14 +77,15 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
  * And that results in {@link #getResult()} returning {@link Map} created like: <blockquote>
  *
  * <pre>
- * {@code
- * Map<String, Object> result = new HashMap<>();
+ * {
+ *     &#64;code
+ *     Map<String, Object> result = new HashMap<>();
  *
- * Map<String, Object> nestedResult = new HashMap<>();
- * result.put("Result", nestedResult);
+ *     Map<String, Object> nestedResult = new HashMap<>();
+ *     result.put("Result", nestedResult);
  *
- * nestedResult.put("id", "0010Y00000Ary91QAB");
- * nestedResult.put("success", "true");
+ *     nestedResult.put("id", "0010Y00000Ary91QAB");
+ *     nestedResult.put("success", "true");
  * }
  * </pre>
  *
@@ -102,8 +104,7 @@ public final class SObjectBatchResult implements Serializable {
     private final int statusCode;
 
     @JsonCreator
-    public SObjectBatchResult(@JsonProperty("statusCode") final int statusCode,
-            @JsonProperty("result") final Object result) {
+    public SObjectBatchResult(@JsonProperty("statusCode") final int statusCode, @JsonProperty("result") final Object result) {
         this.statusCode = statusCode;
         this.result = result;
     }

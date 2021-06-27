@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,40 +19,34 @@ package org.apache.camel.component.redis;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.Topic;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisConsumerTest extends CamelTestSupport {
 
     @Mock
+    @BindToRegistry("listenerContainer")
     private RedisMessageListenerContainer listenerContainer;
 
     @Captor
     private ArgumentCaptor<Collection<ChannelTopic>> collectionCaptor;
     @Captor
     private ArgumentCaptor<MessageListener> messageListenerCaptor;
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("listenerContainer", listenerContainer);
-        return registry;
-    }
 
     @Test
     public void registerConsumerForTwoChannelTopics() throws Exception {
@@ -68,6 +62,7 @@ public class RedisConsumerTest extends CamelTestSupport {
         assertEquals("two", twoTopic.getTopic());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {

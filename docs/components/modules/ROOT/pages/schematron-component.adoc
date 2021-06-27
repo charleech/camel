@@ -1,13 +1,24 @@
 [[schematron-component]]
-== Schematron Component
+= Schematron Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-schematron/src/main/docs/schematron-component.adoc
+:docTitle: Schematron
+:artifactId: camel-schematron
+:description: Validate XML payload using the Schematron Library.
+:since: 2.15
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/schematron.adoc[opts=optional]
 
-*Available as of Camel version 2.15*
+*Since Camel {since}*
 
-http://www.schematron.com/index.html[Schematron] is an XML-based
+*{component-header}*
+
+http://www.schematron.com/index.html[Schematron] is an XML-based
 language for validating XML instance documents. It is used to make
 assertions about data in an XML document and it is also used to express
 operational and business rules. Schematron is
-an http://standards.iso.org/ittf/PubliclyAvailableStandards/index.html[ISO
+an http://standards.iso.org/ittf/PubliclyAvailableStandards/index.html[ISO
 Standard]. The schematron component uses the leading
 http://www.schematron.com/implementation.html[implementation] of ISO
 schematron. It is an XSLT based implementation. The schematron rules is
@@ -18,18 +29,27 @@ written in a way that Schematron rules are loaded at the start of the
 endpoint (only once) this is to minimise the overhead of instantiating a
 Java Templates object representing the rules.
 
-### URI format
+== URI format
 
 [source,java]
 ---------------------------
 schematron://path?[options]
 ---------------------------
 
-### URI options
+== URI options
 
 
 // component options: START
-The Schematron component has no options.
+The Schematron component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -45,7 +65,7 @@ schematron:path
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -55,39 +75,24 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (4 parameters):
+=== Query Parameters (4 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
 | *abort* (producer) | Flag to abort the route and throw a schematron validation exception. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *rules* (producer) | To use the given schematron rules instead of loading from the path |  | Templates
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 | *uriResolver* (advanced) | Set the URIResolver to be used for resolving schematron includes in the rules file. |  | URIResolver
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 2 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.schematron.enabled* | Enable schematron component | true | Boolean
-| *camel.component.schematron.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
 
 
 
 
 
-### Headers
+== Headers
 
 [width="100%",cols="10%,10%,10%,70%",options="header",]
 |=======================================================================
@@ -98,7 +103,7 @@ The component supports 2 options, which are listed below.
 |CamelSchematronValidationReport |The schematrion report body in XML format. See an example below |String |IN
 |=======================================================================
 
-### URI and path syntax
+== URI and path syntax
 
 The following example shows how to invoke the schematron processor in
 Java DSL. The schematron rules file is sourced from the class path:
@@ -108,7 +113,7 @@ Java DSL. The schematron rules file is sourced from the class path:
 from("direct:start").to("schematron://sch/schematron.sch").to("mock:result")
 ----------------------------------------------------------------------------
 
- 
+ 
 
 The following example shows how to invoke the schematron processor in
 XML DSL. The schematrion rules file is sourced from the file system:
@@ -135,21 +140,25 @@ XML DSL. The schematrion rules file is sourced from the file system:
 </route>
 -----------------------------------------------------------------------------------------------
 
-TIP: *Where to store schematron rules?*
+[TIP]
+====
+*Where to store schematron rules?*
+
 Schematron rules can change with business requirement, as such it is
 recommended to store these rules somewhere in file system. When the
 schematron component endpoint is started, the rules are compiled into
-XSLT as a  Java Templates Object. This is done only once to minimise the
+XSLT as a  Java Templates Object. This is done only once to minimise the
 overhead of instantiating Java Templates object, which can be an
 expensive operation for large set of rules and given that the process
 goes through four pipelines
-of http://www.schematron.com/implementation.html[XSLT transformations].
+of http://www.schematron.com/implementation.html[XSLT transformations].
 So if you happen to store the rules in the file system, in the event of
 an update, all you need is to restart the route or the component. No
 harm in storing these rules in the class path though, but you will have
 to build and deploy the component to pick up the changes.
+====
 
-### Schematron rules and report samples
+== Schematron rules and report samples
 
 Here is an example of schematron rules
 
@@ -193,9 +202,15 @@ Here is an example of schematron report:
 </svrl:schematron-output>
 ------------------------------------------------------------------------
 
-TIP: *Useful Links and resources*
+[TIP]
+====
+*Useful Links and resources*
+
 * http://www.mulberrytech.com/papers/schematron-Philly.pdf[Introduction
-to Schematron] by Mulleberry technologies. An excellent document in PDF
+to Schematron] by Mulleberry technologies. An excellent document in PDF
 to get you started on Schematron.
 * http://www.schematron.com[Schematron official site]. This contains
 links to other resources
+====
+
+include::{page-component-version}@camel-spring-boot::page$schematron-starter.adoc[]

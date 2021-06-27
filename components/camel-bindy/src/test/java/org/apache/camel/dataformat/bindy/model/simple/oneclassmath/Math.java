@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,10 +31,10 @@ public class Math {
     /*
        Pattern is not yet supported by BigDecimal.
        FormatFactory class -->
-
+    
                } else if (clazz == BigDecimal.class) {
             return new BigDecimalFormat(impliedDecimalSeparator, precision, getLocale(locale));
-
+    
         So we should remove it from the model pattern = "00.00"
       */
     private BigDecimal bigDecimal;

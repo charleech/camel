@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,33 +18,31 @@ package org.apache.camel.component.jgroups.raft;
 
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
-import org.jgroups.raft.RaftHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Consumes events from the JGroups-raft RaftHandle ({@code org.jgroups.raft.RaftHandle}). Received events
- * are routed to Camel as body and/or headers of {@link org.apache.camel.Exchange} see {@link JGroupsRaftEventType}.
+ * Consumes events from the JGroups-raft RaftHandle ({@code org.jgroups.raft.RaftHandle}). Received events are routed to
+ * Camel as body and/or headers of {@link org.apache.camel.Exchange} see {@link JGroupsRaftEventType}.
  */
 public class JGroupsRaftConsumer extends DefaultConsumer {
     private static final transient Logger LOG = LoggerFactory.getLogger(JGroupsRaftConsumer.class);
 
-    private final RaftHandle raftHandle;
     private final String clusterName;
     private boolean enableRoleChangeEvents;
 
     private final CamelRoleChangeListener roleListener;
     private final JGroupsRaftEndpoint endpoint;
 
-    public JGroupsRaftConsumer(JGroupsRaftEndpoint endpoint, Processor processor, RaftHandle raftHandle, String clusterName, boolean enableRoleChangeEvents) {
+    public JGroupsRaftConsumer(JGroupsRaftEndpoint endpoint, Processor processor, String clusterName,
+                               boolean enableRoleChangeEvents) {
         super(endpoint, processor);
 
         this.endpoint = endpoint;
-        this.raftHandle = raftHandle;
         this.clusterName = clusterName;
         this.enableRoleChangeEvents = enableRoleChangeEvents;
 
-        this.roleListener = new CamelRoleChangeListener(endpoint, processor);
+        this.roleListener = new CamelRoleChangeListener(this, endpoint, processor);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class JGroupsRaftConsumer extends DefaultConsumer {
         super.doStart();
         if (enableRoleChangeEvents) {
             LOG.debug("Connecting roleListener : {} to the cluster: {}.", roleListener, clusterName);
-            raftHandle.addRoleListener(roleListener);
+            endpoint.getResolvedRaftHandle().addRoleListener(roleListener);
         }
         endpoint.connect();
     }
@@ -61,7 +59,7 @@ public class JGroupsRaftConsumer extends DefaultConsumer {
     protected void doStop() throws Exception {
         if (enableRoleChangeEvents) {
             LOG.debug("Closing connection to cluster: {} from roleListener: {}.", clusterName, roleListener);
-            raftHandle.removeRoleListener(roleListener);
+            endpoint.getResolvedRaftHandle().removeRoleListener(roleListener);
         }
         endpoint.disconnect();
         super.doStop();

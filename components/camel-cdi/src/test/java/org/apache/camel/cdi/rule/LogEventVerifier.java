@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 public class LogEventVerifier extends LogVerifier {
     private final List<LogEvent> events = new ArrayList<>();
 
     @Override
     protected void doAppend(org.apache.logging.log4j.core.LogEvent event) {
         events.add(new LogEvent(
-            event.getLevel().toString(),
-            event.getLoggerName(),
-            event.getMessage().getFormattedMessage()));
+                event.getLevel().toString(),
+                event.getLoggerName(),
+                event.getMessage().getFormattedMessage()));
     }
 
     public List<LogEvent> getEvents() {

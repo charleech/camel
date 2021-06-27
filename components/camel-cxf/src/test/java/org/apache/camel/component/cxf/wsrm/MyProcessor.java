@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,12 @@ import org.slf4j.LoggerFactory;
  */
 public class MyProcessor implements Processor {
     private static Logger logger = LoggerFactory.getLogger(MyProcessor.class);
-    
+
+    @Override
     public void process(Exchange exchange) throws Exception {
         logger.info("***** Entering Processor *******");
         String name = exchange.getIn().getBody(String.class);
-        exchange.getOut().setBody("Hello " + name);
+        exchange.getMessage().setBody("Hello " + name);
         logger.info("***** Leaving Processor *******");
     }
 

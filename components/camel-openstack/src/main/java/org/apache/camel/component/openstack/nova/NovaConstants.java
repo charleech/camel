@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,5 +42,6 @@ public final class NovaConstants extends OpenstackConstants {
     public static final String CREATE_SNAPSHOT = "createSnapshot";
     public static final String ACTION = "action";
 
-    private NovaConstants() { }
+    private NovaConstants() {
+    }
 }

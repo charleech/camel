@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,7 +87,7 @@ public class AS2MessageDispositionNotificationEntity extends MimeEntity {
             throw new HttpException("The " + AS2Header.AS2_TO + " is missing");
         }
 
-        this.originalMessageId  = HttpMessageUtils.getHeaderValue(request, AS2Header.MESSAGE_ID);
+        this.originalMessageId = HttpMessageUtils.getHeaderValue(request, AS2Header.MESSAGE_ID);
 
         this.receivedContentMic = MicUtils.createReceivedContentMic(request, decryptingPrivateKey);
 
@@ -118,7 +118,6 @@ public class AS2MessageDispositionNotificationEntity extends MimeEntity {
                                                    String[] warningFields,
                                                    Map<String, String> extensionFields,
                                                    ReceivedContentMic receivedContentMic) {
-        super();
         this.reportingUA = reportingUA;
         this.mtnName = mtnName;
         this.finalRecipient = finalRecipient;
@@ -195,8 +194,8 @@ public class AS2MessageDispositionNotificationEntity extends MimeEntity {
                     canonicalOutstream.writeln(header.toString());
                 }
                 canonicalOutstream.writeln(); // ensure empty line between
-                                              // headers and body; RFC2046 -
-                                              // 5.1.1
+                                             // headers and body; RFC2046 -
+                                             // 5.1.1
             }
 
             if (reportingUA != null) {
@@ -253,7 +252,8 @@ public class AS2MessageDispositionNotificationEntity extends MimeEntity {
             }
 
             if (receivedContentMic != null) {
-                Header as2ReceivedContentMicField = new BasicHeader(RECEIVED_CONTENT_MIC,
+                Header as2ReceivedContentMicField = new BasicHeader(
+                        RECEIVED_CONTENT_MIC,
                         receivedContentMic.toString());
                 canonicalOutstream.writeln(as2ReceivedContentMicField.toString());
             }

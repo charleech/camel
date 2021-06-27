@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,5 +35,6 @@ public abstract class Olingo2BatchRequest {
         return headers;
     }
 
+    @Override
     public abstract String toString();
 }

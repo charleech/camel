@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,12 +46,11 @@ public class WebsocketConsumer extends ServletConsumer {
     private AtmosphereFramework framework;
     private final AtmosphereFrameworkInitializer initializer;
 
-
     public WebsocketConsumer(WebsocketEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
         initializer = new AtmosphereFrameworkInitializer(false, true);
     }
-    
+
     public void configureEventsResending(final boolean enableEventsResending) {
         this.enableEventsResending = enableEventsResending;
     }
@@ -63,12 +62,12 @@ public class WebsocketConsumer extends ServletConsumer {
         this.framework.addInitParameter(ApplicationConfig.ANALYTICS, "false");
         this.framework.addInitParameter(ApplicationConfig.WEBSOCKET_SUPPORT, "true");
         this.framework.addInitParameter(ApplicationConfig.WEBSOCKET_PROTOCOL,
-                                        getEndpoint().isUseStreaming() ? WebsocketStreamHandler.class.getName() : WebsocketHandler.class.getName());
+                getEndpoint().isUseStreaming() ? WebsocketStreamHandler.class.getName() : WebsocketHandler.class.getName());
         this.framework.init(config);
 
         WebSocketProtocol wsp = this.framework.getWebSocketProtocol();
         if (wsp instanceof WebsocketHandler) {
-            ((WebsocketHandler)wsp).setConsumer(this);
+            ((WebsocketHandler) wsp).setConsumer(this);
         } else {
             throw new IllegalArgumentException("Unexpected WebSocketHandler: " + wsp);
         }
@@ -76,7 +75,7 @@ public class WebsocketConsumer extends ServletConsumer {
 
     @Override
     public WebsocketEndpoint getEndpoint() {
-        return (WebsocketEndpoint)super.getEndpoint();
+        return (WebsocketEndpoint) super.getEndpoint();
     }
 
     void service(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -85,24 +84,19 @@ public class WebsocketConsumer extends ServletConsumer {
     }
 
     public void sendMessage(final String connectionKey, Object message) {
-        final Exchange exchange = getEndpoint().createExchange();
+        final Exchange exchange = createExchange(true);
 
         // set header and body
         exchange.getIn().setHeader(WebsocketConstants.CONNECTION_KEY, connectionKey);
         exchange.getIn().setBody(message);
 
-        // send exchange using the async routing engine
-        getAsyncProcessor().process(exchange, new AsyncCallback() {
-            public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                    getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-                }
-            }
-        });
+        // use default consumer callback
+        AsyncCallback cb = defaultConsumerCallback(exchange, true);
+        getAsyncProcessor().process(exchange, cb);
     }
 
     public void sendEventNotification(String connectionKey, int eventType) {
-        final Exchange exchange = getEndpoint().createExchange();
+        final Exchange exchange = createExchange(true);
 
         // set header
         exchange.getIn().setHeader(WebsocketConstants.CONNECTION_KEY, connectionKey);
@@ -112,32 +106,22 @@ public class WebsocketConsumer extends ServletConsumer {
             exchange.getIn().setHeader(param.getKey(), param.getValue());
         }
 
-        // send exchange using the async routing engine
-        getAsyncProcessor().process(exchange, new AsyncCallback() {
-            public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                    getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-                }
-            }
-        });
+        // use default consumer callback
+        AsyncCallback cb = defaultConsumerCallback(exchange, true);
+        getAsyncProcessor().process(exchange, cb);
     }
 
     public void sendNotDeliveredMessage(List<String> failedConnectionKeys, Object message) {
-        final Exchange exchange = getEndpoint().createExchange();
+        final Exchange exchange = createExchange(true);
 
         // set header and body
         exchange.getIn().setHeader(WebsocketConstants.CONNECTION_KEY_LIST, failedConnectionKeys);
         exchange.getIn().setHeader(WebsocketConstants.ERROR_TYPE, WebsocketConstants.MESSAGE_NOT_SENT_ERROR_TYPE);
         exchange.getIn().setBody(message);
 
-        // send exchange using the async routing engine
-        getAsyncProcessor().process(exchange, new AsyncCallback() {
-            public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                    getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-                }
-            }
-        });
+        // use default consumer callback
+        AsyncCallback cb = defaultConsumerCallback(exchange, true);
+        getAsyncProcessor().process(exchange, cb);
     }
 
     public boolean isEnableEventsResending() {

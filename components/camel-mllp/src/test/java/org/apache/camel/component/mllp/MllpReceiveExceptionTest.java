@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests for the  class.
+ * Tests for the class.
  */
 public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
     static final String TEST_EXCEPTION_MESSAGE = "Receive Exception Message";
@@ -47,7 +46,6 @@ public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
         assertNull(instance.hl7AcknowledgementBytes);
     }
 
-
     /**
      * Description of test.
      *
@@ -62,7 +60,6 @@ public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
         assertNull(instance.hl7MessageBytes);
         assertNull(instance.hl7AcknowledgementBytes);
     }
-
 
     /**
      * Description of test.
@@ -79,7 +76,6 @@ public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
         assertNull(instance.hl7AcknowledgementBytes);
     }
 
-
     /**
      * Description of test.
      *
@@ -95,7 +91,6 @@ public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
         assertArrayEquals(HL7_ACKNOWLEDGEMENT_BYTES, instance.hl7AcknowledgementBytes);
     }
 
-
     /**
      * Description of test.
      *
@@ -110,7 +105,6 @@ public class MllpReceiveExceptionTest extends MllpExceptionTestSupport {
         assertArrayEquals(HL7_MESSAGE_BYTES, instance.hl7MessageBytes);
         assertNull(instance.hl7AcknowledgementBytes);
     }
-
 
     /**
      * Description of test.

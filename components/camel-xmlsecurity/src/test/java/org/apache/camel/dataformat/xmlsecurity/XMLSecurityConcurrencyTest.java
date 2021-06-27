@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,41 +16,31 @@
  */
 package org.apache.camel.dataformat.xmlsecurity;
 
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.crypto.KeyGenerator;
+
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.xml.security.encryption.XMLCipher;
-import org.apache.xml.security.encryption.XMLEncryptionException;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.body;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class XMLSecurityConcurrencyTest extends CamelTestSupport {
-    private static final boolean HAS_3DES;
-    static {
-        boolean ok = false;
-        try {
-            XMLCipher.getInstance(XMLCipher.TRIPLEDES_KeyWrap);
-            ok = true;
-        } catch (XMLEncryptionException e) {
-        }
-        HAS_3DES = ok;
-    }
 
     @Test
     public void testNoConcurrentProducers() throws Exception {
-        if (!HAS_3DES) {
-            return;
-        }
         doSendMessages(1, 1);
     }
 
     @Test
     public void testConcurrentProducers() throws Exception {
-        if (!HAS_3DES) {
-            return;
-        }
         doSendMessages(10, 5);
     }
 
@@ -75,22 +65,22 @@ public class XMLSecurityConcurrencyTest extends CamelTestSupport {
 
         String secure = getMockEndpoint("mock:secure").getReceivedExchanges().get(0).getIn().getBody(String.class);
         assertNotNull(secure);
-        assertTrue("Should not be readable", secure.indexOf("read") == -1);
+        assertEquals(-1, secure.indexOf("read"), "Should not be readable");
         executor.shutdownNow();
     }
 
-    protected RouteBuilder createRouteBuilder() {
+    @Override
+    protected RouteBuilder createRouteBuilder() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+        Key defaultKey = keyGenerator.generateKey();
+
         return new RouteBuilder() {
             public void configure() {
-                from("direct:start").
-                        marshal().secureXML().
-                        to("mock:secure").
-                        to("direct:marshalled");
+                from("direct:start").marshal().secureXML(defaultKey.getEncoded()).to("mock:secure").to("direct:marshalled");
 
-                from("direct:marshalled").
-                        unmarshal().secureXML().
-                        convertBodyTo(String.class).
-                        to("mock:result");
+                from("direct:marshalled").unmarshal().secureXML(defaultKey.getEncoded()).convertBodyTo(String.class)
+                        .to("mock:result");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ public class HttpHandlerRegistrationInfo {
     private final URI uri;
 
     public HttpHandlerRegistrationInfo(URI uri, String methodRestrict, Boolean matchOnUriPrefix) {
-        super();
         this.matchOnUriPrefix = matchOnUriPrefix;
         this.methodRestrict = methodRestrict;
         this.uri = uri;
@@ -59,8 +58,8 @@ public class HttpHandlerRegistrationInfo {
         }
         HttpHandlerRegistrationInfo that = (HttpHandlerRegistrationInfo) o;
         return Objects.equals(matchOnUriPrefix, that.matchOnUriPrefix)
-            && Objects.equals(methodRestrict, that.methodRestrict)
-            && Objects.equals(uri, that.uri);
+                && Objects.equals(methodRestrict, that.methodRestrict)
+                && Objects.equals(uri, that.uri);
     }
 
     @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,8 @@ public class Security {
 
     @Override
     public String toString() {
-        return Security.class.getName() + " --> 22: " + this.getIdSource() + ", 48: " + this.getSecurityCode() + ", 54: " + this.getSide();
+        return Security.class.getName() + " --> 22: " + this.getIdSource() + ", 48: " + this.getSecurityCode() + ", 54: "
+               + this.getSide();
     }
 
 }

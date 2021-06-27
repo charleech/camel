@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.Message;
@@ -30,6 +30,9 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.GenericMessage;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SpringIntegrationTwoWayConsumerTest extends CamelSpringTestSupport {
 
@@ -47,9 +50,9 @@ public class SpringIntegrationTwoWayConsumerTest extends CamelSpringTestSupport 
         responseChannel.subscribe(new MessageHandler() {
             public void handleMessage(Message<?> message) {
                 latch.countDown();
-                assertEquals("Get the wrong result", MESSAGE_BODY + " is processed",  message.getPayload());
-                assertEquals("Done",  message.getHeaders().get("Status"));
-            }             
+                assertEquals(MESSAGE_BODY + " is processed", message.getPayload(), "Get the wrong result");
+                assertEquals("Done", message.getHeaders().get("Status"));
+            }
         });
 
         requestChannel.send(message);
@@ -57,6 +60,7 @@ public class SpringIntegrationTwoWayConsumerTest extends CamelSpringTestSupport 
         assertTrue(latch.await(1, TimeUnit.SECONDS));
     }
 
+    @Override
     public ClassPathXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/spring/integration/twoWayConsumer.xml");
     }

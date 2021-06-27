@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.itest;
 
 import org.apache.camel.test.AvailablePortFinder;
 
 /**
- * For test cases that use unique contexts, they can share the 
- * ports which will make things a bit faster as ports aren't opened
- * and closed all the time. 
+ * For test cases that use unique contexts, they can share the ports which will make things a bit faster as ports aren't
+ * opened and closed all the time.
  */
 public final class ITestSupport {
 
     static final int PORT1 = AvailablePortFinder.getNextAvailable();
     static final int PORT2 = AvailablePortFinder.getNextAvailable();
-    static final int PORT3 = AvailablePortFinder.getNextAvailable(61616);
-    static final int PORT4 = AvailablePortFinder.getNextAvailable(61616);
+    static final int PORT3 = AvailablePortFinder.getNextAvailable();
+    static final int PORT4 = AvailablePortFinder.getNextAvailable();
 
     static {
         //set them as system properties so Spring can use the property placeholder
@@ -42,13 +40,13 @@ public final class ITestSupport {
 
     private ITestSupport() {
     }
-    
+
     public static int getPort(String name) {
         int port = AvailablePortFinder.getNextAvailable();
         System.setProperty(name, Integer.toString(port));
         return port;
     }
-    
+
     public static int getPort1() {
         return PORT1;
     }

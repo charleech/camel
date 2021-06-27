@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,12 @@
  */
 package org.apache.camel.component.iec60870.client;
 
-import java.time.Instant;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.apache.camel.component.iec60870.Constants;
 import org.apache.camel.component.iec60870.ObjectAddress;
 import org.apache.camel.support.DefaultConsumer;
-import org.apache.camel.support.DefaultMessage;
 import org.eclipse.neoscada.protocol.iec60870.asdu.types.Value;
 
 public class ClientConsumer extends DefaultConsumer {
@@ -52,24 +50,20 @@ public class ClientConsumer extends DefaultConsumer {
     private void updateValue(final ObjectAddress address, final Value<?> value) {
         // Note: we hold the sync lock for the connection
         try {
-            final Exchange exchange = getEndpoint().createExchange();
-            exchange.setIn(mapMessage(value));
-            getAsyncProcessor().process(exchange);
-        } catch (final Exception e) {
-            log.debug("Failed to process message", e);
+            Exchange exchange = createExchange(true);
+            configureMessage(exchange.getIn(), value);
+            getProcessor().process(exchange);
+        } catch (Exception e) {
+            getExceptionHandler().handleException(e);
         }
     }
 
-    private Message mapMessage(final Value<?> value) {
-        final DefaultMessage message = new DefaultMessage(this.endpoint.getCamelContext());
-
+    private void configureMessage(Message message, final Value<?> value) {
         message.setBody(value);
 
-        message.setHeader("value", value.getValue());
-        message.setHeader("timestamp", Instant.ofEpochMilli(value.getTimestamp()));
-        message.setHeader("quality", value.getQualityInformation());
-        message.setHeader("overflow", value.isOverflow());
-
-        return message;
+        message.setHeader(Constants.IEC60870_VALUE, value.getValue());
+        message.setHeader(Constants.IEC60870_TIMESTAMP, value.getTimestamp());
+        message.setHeader(Constants.IEC60870_QUALITY, value.getQualityInformation());
+        message.setHeader(Constants.IEC60870_OVERFLOW, value.isOverflow());
     }
 }

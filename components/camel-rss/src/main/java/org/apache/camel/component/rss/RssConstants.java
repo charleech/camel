@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,13 @@ package org.apache.camel.component.rss;
 public final class RssConstants {
 
     /**
-     * Header key for the {@link com.sun.syndication.feed.synd.SyndFeed} object is stored on the in message on the exchange.
+     * Header key for the {@link com.sun.syndication.feed.synd.SyndFeed} object is stored on the in message on the
+     * exchange.
      */
     public static final String RSS_FEED = "CamelRssFeed";
 
     private RssConstants() {
         // Utility class
     }
-    
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
 /**
- * HL7 MLLP Encoder for Netty4
+ * HL7 MLLP Encoder for Netty
  */
 class HL7MLLPNettyEncoder extends MessageToByteEncoder<Object> {
 
@@ -53,8 +53,9 @@ class HL7MLLPNettyEncoder extends MessageToByteEncoder<Object> {
         } else if (message instanceof byte[]) {
             body = (byte[]) message;
         } else {
-            throw new IllegalArgumentException("The message to encode is not a supported type: "
-                    + message.getClass().getCanonicalName());
+            throw new IllegalArgumentException(
+                    "The message to encode is not a supported type: "
+                                               + message.getClass().getCanonicalName());
         }
         byteBuf.writeByte(config.getStartByte());
         byteBuf.writeBytes(body);

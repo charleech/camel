@@ -1,12 +1,24 @@
 [[dataformat-component]]
-== Data Format Component
+= Data Format Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-dataformat/src/main/docs/dataformat-component.adoc
+:docTitle: Data Format
+:artifactId: camel-dataformat
+:description: Use a Camel Data Format as a regular Camel Component.
+:since: 2.12
+:supportLevel: Stable
+:component-header: Only producer is supported
+:core:
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/dataformat.adoc[opts=optional]
 
-*Available as of Camel version 2.12*
+*Since Camel {since}*
 
-The *dataformat:* component allows to use link:data-format.html[Data
+*{component-header}*
+
+The Dataformat component allows to use xref:manual::data-format.adoc[Data
 Format] as a Camel Component.
 
-=== URI format
+== URI format
 
 [source]
 ----
@@ -15,15 +27,24 @@ dataformat:name:(marshal|unmarshal)[?options]
 
 Where *name* is the name of the Data Format. And
 then followed by the operation which must either be `marshal` or
-`unmarshal`. The options is used for configuring the link:data-format.html[Data
+`unmarshal`. The options is used for configuring the xref:manual::data-format.adoc[Data
 Format] in use. See the Data Format documentation
 for which options it support.
 
-=== DataFormat Options
+== DataFormat Options
 
 
 // component options: START
-The Data Format component has no options.
+The Data Format component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -37,31 +58,31 @@ dataformat:name:operation
 
 with the following path and query parameters:
 
-==== Path Parameters (2 parameters):
+=== Path Parameters (2 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
 | *name* | *Required* Name of data format |  | String
-| *operation* | *Required* Operation to use either marshal or unmarshal |  | String
+| *operation* | *Required* Operation to use either marshal or unmarshal. There are 2 enums and the value can be one of: marshal, unmarshal |  | String
 |===
 
 
-==== Query Parameters (1 parameters):
+=== Query Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 |===
 // endpoint options: END
 
 
-=== Samples
+== Samples
 
-For example to use the <<jaxb-dataformat,JAXB>> link:data-format.html[Data
+For example to use the xref:dataformats:jaxb-dataformat.adoc[JAXB] xref:manual::data-format.adoc[Data
 Format] we can do as follows:
 
 [source,java]
@@ -83,3 +104,5 @@ And in XML DSL you do:
   </route>
 </camelContext>
 ----
+
+include::{page-component-version}@camel-spring-boot::page$dataformat-starter.adoc[]

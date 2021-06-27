@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ribbon.cloud;
 
 import com.netflix.loadbalancer.LoadBalancerBuilder;
 import com.netflix.loadbalancer.RoundRobinRule;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ZoneAwareLoadBalancer;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.cloud.PassThroughServiceFilter;
 import org.apache.camel.impl.cloud.StaticServiceDiscovery;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RibbonServerListTest {
     @Test
     public void testFixedServerList() throws Exception {
-        ZoneAwareLoadBalancer<RibbonServiceDefinition> lb = LoadBalancerBuilder.<RibbonServiceDefinition>newBuilder()
-            .withDynamicServerList(new RibbonServiceLoadBalancer.RibbonServerList(
-                "unknown",
-                StaticServiceDiscovery.forServices(
-                    new RibbonServiceDefinition("unknown", "localhost", 9090),
-                    new RibbonServiceDefinition("unknown", "localhost", 9091)
-                ),
-                new PassThroughServiceFilter()))
-            .withRule(new RoundRobinRule())
-            .buildDynamicServerListLoadBalancer();
+        ZoneAwareLoadBalancer<RibbonServiceDefinition> lb = LoadBalancerBuilder.<RibbonServiceDefinition> newBuilder()
+                .withDynamicServerList(new RibbonServiceLoadBalancer.RibbonServerList(
+                        new DefaultCamelContext(),
+                        "unknown",
+                        StaticServiceDiscovery.forServices(
+                                new RibbonServiceDefinition("unknown", "localhost", 9090),
+                                new RibbonServiceDefinition("unknown", "localhost", 9091)),
+                        new PassThroughServiceFilter()))
+                .withRule(new RoundRobinRule())
+                .buildDynamicServerListLoadBalancer();
 
         Server server = lb.chooseServer();
         assertEquals("localhost", server.getHost());

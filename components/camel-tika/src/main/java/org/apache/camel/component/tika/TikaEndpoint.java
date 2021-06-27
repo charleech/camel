@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,20 @@
  */
 package org.apache.camel.component.tika;
 
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.DefaultEndpoint;
 
-@UriEndpoint(firstVersion = "2.19.0", scheme = "tika", title = "Tika", syntax = "tika:operation", producerOnly = true, label = "document,transformation")
+/**
+ * Parse documents and extract metadata and text using Apache Tika.
+ */
+@UriEndpoint(firstVersion = "2.19.0", scheme = "tika", title = "Tika", syntax = "tika:operation", producerOnly = true,
+             category = { Category.DOCUMENT, Category.TRANSFORMATION })
 public class TikaEndpoint extends DefaultEndpoint {
 
     @UriParam
@@ -43,11 +48,6 @@ public class TikaEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new UnsupportedOperationException("Consumer does not supported for Tika component:" + getEndpointUri());
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     public TikaConfiguration getTikaConfiguration() {

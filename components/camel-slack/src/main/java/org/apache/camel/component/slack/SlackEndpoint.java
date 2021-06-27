@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,26 +16,24 @@
  */
 package org.apache.camel.component.slack;
 
+import com.slack.api.model.ConversationType;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
-import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.slack.helper.SlackMessage;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.ScheduledPollEndpoint;
 import org.apache.camel.util.ObjectHelper;
-import org.json.simple.JSONObject;
 
 /**
- * The slack component allows you to send messages to Slack.
+ * Send and receive messages to/from Slack.
  */
-@UriEndpoint(firstVersion = "2.16.0", scheme = "slack", title = "Slack", syntax = "slack:channel", label = "social")
+@UriEndpoint(firstVersion = "2.16.0", scheme = "slack", title = "Slack", syntax = "slack:channel",
+             category = { Category.SOCIAL })
 public class SlackEndpoint extends ScheduledPollEndpoint {
 
     @UriPath
@@ -44,33 +42,47 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     @UriParam(label = "producer")
     private String webhookUrl;
     @UriParam(label = "producer", secret = true)
+    @Deprecated
     private String username;
     @UriParam(label = "producer")
+    @Deprecated
     private String iconUrl;
     @UriParam(label = "producer")
+    @Deprecated
     private String iconEmoji;
-    @UriParam(label = "consumer", secret = true)
+    @UriParam(secret = true)
     private String token;
     @UriParam(label = "consumer", defaultValue = "10")
     private String maxResults = "10";
     @UriParam(label = "consumer", defaultValue = "https://slack.com")
     private String serverUrl = "https://slack.com";
+    @UriParam(label = "consumer", defaultValue = "false", javaType = "boolean",
+              description = "Create exchanges in natural order (oldest to newest) or not")
+    private boolean naturalOrder;
+    @UriParam(label = "consumer", enums = "PUBLIC_CHANNEL,PRIVATE_CHANNEL,MPIM,IM", defaultValue = "PUBLIC_CHANNEL",
+              description = "Type of conversation")
+    private ConversationType conversationType = ConversationType.PUBLIC_CHANNEL;
 
     /**
      * Constructor for SlackEndpoint
      *
-     * @param uri the full component url
+     * @param uri         the full component url
      * @param channelName the channel or username the message is directed at
-     * @param component the component that was created
+     * @param component   the component that was created
      */
     public SlackEndpoint(String uri, String channelName, SlackComponent component) {
         super(uri, component);
         this.webhookUrl = component.getWebhookUrl();
+        this.token = component.getToken();
         this.channel = channelName;
     }
 
     @Override
     public Producer createProducer() throws Exception {
+        if (ObjectHelper.isEmpty(token) && ObjectHelper.isEmpty(webhookUrl)) {
+            throw new RuntimeCamelException(
+                    "Missing required endpoint configuration: token or webhookUrl must be defined for Slack producer");
+        }
         SlackProducer producer = new SlackProducer(this);
         return producer;
     }
@@ -78,16 +90,16 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         if (ObjectHelper.isEmpty(token)) {
-            throw new RuntimeCamelException("Missing required endpoint configuration: token must be defined for Slack consumer");
+            throw new RuntimeCamelException(
+                    "Missing required endpoint configuration: token must be defined for Slack consumer");
+        }
+        if (ObjectHelper.isEmpty(channel)) {
+            throw new RuntimeCamelException(
+                    "Missing required endpoint configuration: channel must be defined for Slack consumer");
         }
         SlackConsumer consumer = new SlackConsumer(this, processor);
         configureConsumer(consumer);
         return consumer;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     /**
@@ -106,8 +118,7 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     }
 
     /**
-     * The channel name (syntax #name) or slackuser (syntax @userName) to send a
-     * message directly to an user.
+     * The channel name (syntax #name) or slackuser (syntax @userName) to send a message directly to an user.
      */
     public void setChannel(String channel) {
         this.channel = channel;
@@ -118,8 +129,7 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     }
 
     /**
-     * This is the username that the bot will have when sending messages to a
-     * channel or user.
+     * This is the username that the bot will have when sending messages to a channel or user.
      */
     public void setUsername(String username) {
         this.username = username;
@@ -130,8 +140,7 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     }
 
     /**
-     * The avatar that the component will use when sending message to a channel
-     * or user.
+     * The avatar that the component will use when sending message to a channel or user.
      */
     public void setIconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
@@ -173,7 +182,7 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
     public String getServerUrl() {
         return serverUrl;
     }
-    
+
     /**
      * The Server URL of the Slack instance
      */
@@ -181,25 +190,25 @@ public class SlackEndpoint extends ScheduledPollEndpoint {
         this.serverUrl = serverUrl;
     }
 
-    public Exchange createExchange(JSONObject object) {
-        return createExchange(getExchangePattern(), object);
+    /**
+     * Is consuming message in natural order
+     */
+    public void setNaturalOrder(boolean naturalOrder) {
+        this.naturalOrder = naturalOrder;
     }
 
-    public Exchange createExchange(ExchangePattern pattern, JSONObject object) {
-        Exchange exchange = super.createExchange(pattern);
-        SlackMessage slackMessage = new SlackMessage();
-        String text = (String)object.get("text");
-        String username = (String)object.get("username");
-        slackMessage.setText(text);
-        slackMessage.setUsername(username);
-        if (ObjectHelper.isNotEmpty((JSONObject)object.get("icons"))) {
-            JSONObject icons = (JSONObject)object.get("icons");
-            if (ObjectHelper.isNotEmpty((String)icons.get("emoji"))) {
-                slackMessage.setIconEmoji((String)icons.get("emoji"));
-            }
-        }
-        Message message = exchange.getIn();
-        message.setBody(slackMessage);
-        return exchange;
+    public boolean isNaturalOrder() {
+        return naturalOrder;
+    }
+
+    /**
+     * The type of the conversation
+     */
+    public void setConversationType(ConversationType conversationType) {
+        this.conversationType = conversationType;
+    }
+
+    public ConversationType getConversationType() {
+        return conversationType;
     }
 }

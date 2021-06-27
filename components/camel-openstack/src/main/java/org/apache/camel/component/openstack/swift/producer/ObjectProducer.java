@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.openstack.common.AbstractOpenstackProducer;
 import org.apache.camel.component.openstack.common.OpenstackConstants;
+import org.apache.camel.component.openstack.common.OpenstackException;
 import org.apache.camel.component.openstack.swift.SwiftConstants;
 import org.apache.camel.component.openstack.swift.SwiftEndpoint;
 import org.apache.camel.util.StringHelper;
@@ -43,26 +44,26 @@ public class ObjectProducer extends AbstractOpenstackProducer {
         String operation = getOperation(exchange);
 
         switch (operation) {
-        case OpenstackConstants.CREATE:
-            doCreate(exchange);
-            break;
-        case OpenstackConstants.GET:
-            doGet(exchange);
-            break;
-        case OpenstackConstants.GET_ALL:
-            doGetAll(exchange);
-            break;
-        case OpenstackConstants.DELETE:
-            doDelete(exchange);
-            break;
-        case SwiftConstants.GET_METADATA:
-            doGetMetadata(exchange);
-            break;
-        case SwiftConstants.CREATE_UPDATE_METADATA:
-            doUpdateMetadata(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation " + operation);
+            case OpenstackConstants.CREATE:
+                doCreate(exchange);
+                break;
+            case OpenstackConstants.GET:
+                doGet(exchange);
+                break;
+            case OpenstackConstants.GET_ALL:
+                doGetAll(exchange);
+                break;
+            case OpenstackConstants.DELETE:
+                doDelete(exchange);
+                break;
+            case SwiftConstants.GET_METADATA:
+                doGetMetadata(exchange);
+                break;
+            case SwiftConstants.CREATE_UPDATE_METADATA:
+                doUpdateMetadata(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation " + operation);
         }
     }
 
@@ -89,7 +90,8 @@ public class ObjectProducer extends AbstractOpenstackProducer {
 
     private void doGetAll(Exchange exchange) {
         final Message msg = exchange.getIn();
-        final String name = msg.getHeader(SwiftConstants.CONTAINER_NAME, msg.getHeader(OpenstackConstants.NAME, String.class), String.class);
+        final String name = msg.getHeader(SwiftConstants.CONTAINER_NAME, msg.getHeader(OpenstackConstants.NAME, String.class),
+                String.class);
         StringHelper.notEmpty(name, "Container name");
         final List<? extends SwiftObject> out = os.objectStorage().objects().list(name);
         exchange.getIn().setBody(out);
@@ -102,8 +104,7 @@ public class ObjectProducer extends AbstractOpenstackProducer {
         StringHelper.notEmpty(containerName, "Container name");
         StringHelper.notEmpty(objectName, "Object name");
         final ActionResponse out = os.objectStorage().objects().delete(containerName, objectName);
-        msg.setBody(out.getFault());
-        msg.setFault(!out.isSuccess());
+        checkFailure(out, exchange, "Delete container");
     }
 
     private void doGetMetadata(Exchange exchange) {
@@ -122,10 +123,10 @@ public class ObjectProducer extends AbstractOpenstackProducer {
         final String objectName = msg.getHeader(SwiftConstants.OBJECT_NAME, String.class);
         StringHelper.notEmpty(containerName, "Container name");
         StringHelper.notEmpty(objectName, "Object name");
-        final boolean success = os.objectStorage().objects().updateMetadata(ObjectLocation.create(containerName, objectName), msg.getBody(Map.class));
-        msg.setFault(!success);
+        final boolean success = os.objectStorage().objects().updateMetadata(ObjectLocation.create(containerName, objectName),
+                msg.getBody(Map.class));
         if (!success) {
-            msg.setBody("Updating metadata was not successful");
+            exchange.setException(new OpenstackException("Updating metadata was not successful"));
         }
     }
 }

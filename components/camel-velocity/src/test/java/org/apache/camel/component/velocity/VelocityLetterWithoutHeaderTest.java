@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.velocity;
 
 import org.apache.camel.builder.RouteBuilder;
 
 public class VelocityLetterWithoutHeaderTest extends VelocityLetterTest {
-    
+
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
-            public void configure() throws Exception {                
-                from("direct:a").
-                    to("velocity:org/apache/camel/component/velocity/header.vm").
-                    to("velocity:org/apache/camel/component/velocity/letterWithoutHeader.vm").to("mock:result");
+            public void configure() throws Exception {
+                from("direct:a").to("velocity:org/apache/camel/component/velocity/header.vm")
+                        .to("velocity:org/apache/camel/component/velocity/letterWithoutHeader.vm").to("mock:result");
             }
         };
     }

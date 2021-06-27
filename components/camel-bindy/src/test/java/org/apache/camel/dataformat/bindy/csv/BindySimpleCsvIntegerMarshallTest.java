@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,21 +25,22 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 @ContextConfiguration
-public class BindySimpleCsvIntegerMarshallTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+public class BindySimpleCsvIntegerMarshallTest {
 
     private static final String URI_MOCK_RESULT = "mock:result";
     private static final String URI_DIRECT_START = "direct:start";
 
-    @Produce(uri = URI_DIRECT_START)
+    @Produce(URI_DIRECT_START)
     private ProducerTemplate template;
 
-    @EndpointInject(uri = URI_MOCK_RESULT)
+    @EndpointInject(URI_MOCK_RESULT)
     private MockEndpoint result;
 
     @Test
@@ -56,12 +57,13 @@ public class BindySimpleCsvIntegerMarshallTest extends AbstractJUnit4SpringConte
     }
 
     public static class ContextConfig extends RouteBuilder {
+        @Override
         public void configure() {
             BindyCsvDataFormat camelDataFormat = new BindyCsvDataFormat(MyOrder.class);
             camelDataFormat.setLocale("en_US");
 
             from(URI_DIRECT_START).marshal(camelDataFormat)
-                .to(URI_MOCK_RESULT);
+                    .to(URI_MOCK_RESULT);
         }
     }
 
@@ -75,7 +77,6 @@ public class BindySimpleCsvIntegerMarshallTest extends AbstractJUnit4SpringConte
 
         @DataField(pos = 9, precision = 2)
         private BigDecimal price;
-
 
         public String getInstrument() {
             return instrument;

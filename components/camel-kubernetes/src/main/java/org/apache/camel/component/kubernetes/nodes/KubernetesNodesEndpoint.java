@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,19 @@
  */
 package org.apache.camel.component.kubernetes.nodes;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.spi.UriEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The Kubernetes Nodes component provides a producer to execute kubernetes node operations
- * and a consumer to consume node events.
+ * Perform operations on Kubernetes Nodes and get notified on Node changes.
  */
 @UriEndpoint(firstVersion = "2.17.0", scheme = "kubernetes-nodes", title = "Kubernetes Nodes",
-    syntax = "kubernetes-nodes:masterUrl", label = "container,cloud,paas")
+             syntax = "kubernetes-nodes:masterUrl", category = { Category.CONTAINER, Category.CLOUD, Category.PAAS })
 public class KubernetesNodesEndpoint extends AbstractKubernetesEndpoint {
 
     public KubernetesNodesEndpoint(String uri, KubernetesNodesComponent component, KubernetesConfiguration config) {
@@ -44,7 +42,10 @@ public class KubernetesNodesEndpoint extends AbstractKubernetesEndpoint {
 
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new KubernetesNodesConsumer(this, processor);
+        Consumer consumer = new KubernetesNodesConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
+
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,30 +23,36 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.apache.camel.AsyncProcessor;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedCamelContext;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.component.salesforce.api.dto.PlatformEvent;
 import org.apache.camel.component.salesforce.internal.streaming.SubscriptionHelper;
 import org.apache.camel.spi.ClassResolver;
+import org.apache.camel.spi.ExchangeFactory;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
 import org.cometd.common.HashMapMessage;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SalesforceConsumerTest {
 
     public static class AccountUpdates {
-
         @JsonProperty("Id")
         String id;
 
@@ -77,21 +83,32 @@ public class SalesforceConsumerTest {
     static final SubscriptionHelper NOT_USED = null;
 
     SalesforceEndpointConfig configuration = new SalesforceEndpointConfig();
-
     SalesforceEndpoint endpoint = mock(SalesforceEndpoint.class);
-
-    Exchange exchange = mock(Exchange.class);
-
+    ExtendedExchange exchange = mock(ExtendedExchange.class);
     org.apache.camel.Message in = mock(org.apache.camel.Message.class);
-
     AsyncProcessor processor = mock(AsyncProcessor.class);
-
+    ExtendedCamelContext context = mock(ExtendedCamelContext.class);
+    ExchangeFactory exchangeFactory = mock(ExchangeFactory.class);
     Message pushTopicMessage;
 
-    @Before
+    @Mock
+    private Message mockChangeEvent;
+    @Mock
+    private Map<String, Object> mockChangeEventPayload;
+    @Mock
+    private Map<String, Object> mockChangeEventData;
+    @Mock
+    private Map<String, Object> mockChangeEventMap;
+
+    @BeforeEach
     public void setupMocks() {
         when(endpoint.getConfiguration()).thenReturn(configuration);
-        when(endpoint.createExchange()).thenReturn(exchange);
+        when(endpoint.getCamelContext()).thenReturn(context);
+        when(context.adapt(ExtendedCamelContext.class)).thenReturn(context);
+        when(context.getExchangeFactory()).thenReturn(exchangeFactory);
+        when(exchangeFactory.newExchangeFactory(any())).thenReturn(exchangeFactory);
+        when(exchangeFactory.create(endpoint, true)).thenReturn(exchange);
+        when(exchange.adapt(ExtendedExchange.class)).thenReturn(exchange);
         when(exchange.getIn()).thenReturn(in);
         final SalesforceComponent component = mock(SalesforceComponent.class);
         when(endpoint.getComponent()).thenReturn(component);
@@ -102,6 +119,33 @@ public class SalesforceConsumerTest {
         when(classResolver.resolveClass(AccountUpdates.class.getName())).thenReturn((Class) AccountUpdates.class);
 
         pushTopicMessage = createPushTopicMessage();
+
+        setupMockChangeEvent();
+    }
+
+    private void setupMockChangeEvent() {
+        final Map<String, Object> changeEventHeader = new HashMap<>();
+        changeEventHeader.put("changeType", "CREATE");
+        changeEventHeader.put("changeOrigin", "com/salesforce/api/rest/45.0");
+        changeEventHeader.put("transactionKey", "000bc577-90c7-0d33-cebb-971bb50d75b8");
+        changeEventHeader.put("sequenceNumber", 1L);
+        changeEventHeader.put("isTransactionEnd", Boolean.TRUE);
+        changeEventHeader.put("commitTimestamp", 1558949299000L);
+        changeEventHeader.put("commitUser", "0052p000009cl8uBBB");
+        changeEventHeader.put("commitNumber", 10585193272713L);
+        changeEventHeader.put("entityName", "Account");
+        changeEventHeader.put("recordIds", new Object[] { "0012p00002HHpNlAAL" });
+
+        when(mockChangeEventPayload.get("ChangeEventHeader")).thenReturn(changeEventHeader);
+
+        when(mockChangeEventMap.get("replayId")).thenReturn(4L);
+
+        when(mockChangeEventData.get("schema")).thenReturn("30H2pgzuWcF844p26Ityvg");
+        when(mockChangeEventData.get("payload")).thenReturn(mockChangeEventPayload);
+        when(mockChangeEventData.get("event")).thenReturn(mockChangeEventMap);
+
+        when(mockChangeEvent.getDataAsMap()).thenReturn(mockChangeEventData);
+        when(mockChangeEvent.getChannel()).thenReturn("/data/AccountChangeEvent");
     }
 
     @Test
@@ -238,6 +282,61 @@ public class SalesforceConsumerTest {
         verify(processor).process(same(exchange), any());
 
         verifyNoMoreInteractions(in, processor);
+    }
+
+    @Test
+    public void shouldProcessChangeEvents() throws Exception {
+        when(endpoint.getTopicName()).thenReturn("/data/AccountChangeEvent");
+
+        final SalesforceConsumer consumer = new SalesforceConsumer(endpoint, processor, NOT_USED);
+
+        consumer.processMessage(mock(ClientSessionChannel.class), mockChangeEvent);
+
+        verify(in).setBody(mockChangeEventPayload);
+        verify(in).setHeader("CamelSalesforceChannel", "/data/AccountChangeEvent");
+        verify(in).setHeader("CamelSalesforceReplayId", 4L);
+        verify(in).setHeader("CamelSalesforceChangeEventSchema", "30H2pgzuWcF844p26Ityvg");
+        verify(in).setHeader("CamelSalesforceEventType", "AccountChangeEvent");
+        verify(in).setHeader("CamelSalesforceChangeType", "CREATE");
+        verify(in).setHeader("CamelSalesforceChangeOrigin", "com/salesforce/api/rest/45.0");
+        verify(in).setHeader("CamelSalesforceTransactionKey", "000bc577-90c7-0d33-cebb-971bb50d75b8");
+        verify(in).setHeader("CamelSalesforceSequenceNumber", 1L);
+        verify(in).setHeader("CamelSalesforceIsTransactionEnd", Boolean.TRUE);
+        verify(in).setHeader("CamelSalesforceCommitTimestamp", 1558949299000L);
+        verify(in).setHeader("CamelSalesforceCommitUser", "0052p000009cl8uBBB");
+        verify(in).setHeader("CamelSalesforceCommitNumber", 10585193272713L);
+        verify(in).setHeader("CamelSalesforceEntityName", "Account");
+        verify(in).setHeader("CamelSalesforceRecordIds", new Object[] { "0012p00002HHpNlAAL" });
+
+        verify(mockChangeEventPayload).remove("ChangeEventHeader");
+
+        verify(processor).process(same(exchange), any());
+
+        verifyNoMoreInteractions(in, processor);
+    }
+
+    @Test
+    public void processNoReplayIdChangeEventsShouldNotSetReplayIdHeader() throws Exception {
+        when(endpoint.getTopicName()).thenReturn("/data/AccountChangeEvent");
+        when(mockChangeEventMap.get("replayId")).thenReturn(null);
+
+        final SalesforceConsumer consumer = new SalesforceConsumer(endpoint, processor, NOT_USED);
+
+        consumer.processMessage(mock(ClientSessionChannel.class), mockChangeEvent);
+
+        verify(in, never()).setHeader(eq("CamelSalesforceReplayId"), any());
+    }
+
+    @Test
+    public void processRawPayloadChangeEventsShouldSetInputMessageAsBody() throws Exception {
+        when(endpoint.getTopicName()).thenReturn("/data/AccountChangeEvent");
+        configuration.setRawPayload(true);
+
+        final SalesforceConsumer consumer = new SalesforceConsumer(endpoint, processor, NOT_USED);
+
+        consumer.processMessage(mock(ClientSessionChannel.class), mockChangeEvent);
+
+        verify(in).setBody(mockChangeEvent);
     }
 
     static Message createPushTopicMessage() {

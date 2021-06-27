@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import org.apache.camel.Processor;
 
 public class MyProcessor implements Processor {
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         exchange.getOut().setHeader("Status", "Done");
         String result = exchange.getIn().getBody() + " is processed";

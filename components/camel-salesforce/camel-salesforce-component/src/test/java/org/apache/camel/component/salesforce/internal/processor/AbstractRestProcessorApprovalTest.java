@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,10 +37,10 @@ import org.apache.camel.component.salesforce.internal.client.RestClient;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.support.DefaultMessage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -89,8 +89,10 @@ public class AbstractRestProcessorApprovalTest {
         }
 
         @Override
-        protected void processResponse(final Exchange exchange, final InputStream responseEntity,
-                final Map<String, String> headers, final SalesforceException ex, final AsyncCallback callback) {
+        protected void processResponse(
+                final Exchange exchange, final InputStream responseEntity, final Map<String, String> headers,
+                final SalesforceException ex,
+                final AsyncCallback callback) {
         }
     }
 
@@ -115,7 +117,8 @@ public class AbstractRestProcessorApprovalTest {
 
         final TestRestProcessor processor = sendBodyAndHeader(approvalRequest, template);
 
-        verify(processor).getRequestStream(any(Message.class), eq(new ApprovalRequests(approvalRequest.applyTemplate(template))));
+        verify(processor).getRequestStream(any(Message.class),
+                eq(new ApprovalRequests(approvalRequest.applyTemplate(template))));
     }
 
     @Test
@@ -129,11 +132,11 @@ public class AbstractRestProcessorApprovalTest {
         final ApprovalRequest approvalRequest2 = new ApprovalRequest();
         approvalRequest2.setComments("it should be me second");
 
-        final TestRestProcessor processor = sendBodyAndHeader(Arrays.asList(approvalRequest1, approvalRequest2),
-                template);
+        final TestRestProcessor processor = sendBodyAndHeader(Arrays.asList(approvalRequest1, approvalRequest2), template);
 
-        verify(processor).getRequestStream(any(Message.class), eq(new ApprovalRequests(
-                Arrays.asList(approvalRequest1.applyTemplate(template), approvalRequest2.applyTemplate(template)))));
+        verify(processor).getRequestStream(any(Message.class),
+                eq(new ApprovalRequests(
+                        Arrays.asList(approvalRequest1.applyTemplate(template), approvalRequest2.applyTemplate(template)))));
     }
 
     @Test
@@ -142,9 +145,8 @@ public class AbstractRestProcessorApprovalTest {
             sendBodyAndHeader(Collections.EMPTY_LIST, null);
             fail("SalesforceException should be thrown");
         } catch (final SalesforceException e) {
-            assertEquals("Exception should be about not giving a body or a header",
-                    "Missing approval parameter in header or ApprovalRequest or List of ApprovalRequests body",
-                    e.getMessage());
+            assertEquals("Missing approval parameter in header or ApprovalRequest or List of ApprovalRequests body",
+                    e.getMessage(), "Exception should be about not giving a body or a header");
         }
     }
 
@@ -154,9 +156,8 @@ public class AbstractRestProcessorApprovalTest {
             sendBodyAndHeader(null, null);
             fail("SalesforceException should be thrown");
         } catch (final SalesforceException e) {
-            assertEquals("Exception should be about not giving a body or a header",
-                    "Missing approval parameter in header or ApprovalRequest or List of ApprovalRequests body",
-                    e.getMessage());
+            assertEquals("Missing approval parameter in header or ApprovalRequest or List of ApprovalRequests body",
+                    e.getMessage(), "Exception should be about not giving a body or a header");
         }
     }
 
@@ -204,7 +205,8 @@ public class AbstractRestProcessorApprovalTest {
 
         final TestRestProcessor processor = sendBody(Arrays.asList(approvalRequest1, approvalRequest2));
 
-        verify(processor).getRequestStream(any(Message.class), eq(new ApprovalRequests(Arrays.asList(approvalRequest1, approvalRequest2))));
+        verify(processor).getRequestStream(any(Message.class),
+                eq(new ApprovalRequests(Arrays.asList(approvalRequest1, approvalRequest2))));
     }
 
     @Test
@@ -235,7 +237,8 @@ public class AbstractRestProcessorApprovalTest {
         verify(processor1).getRequestStream(any(Message.class), eq(new ApprovalRequests(requestWithComment("third priority"))));
 
         final TestRestProcessor processor2 = sendBodyAndHeaders(null, template, headers);
-        verify(processor2).getRequestStream(any(Message.class), eq(new ApprovalRequests(requestWithComment("second priority"))));
+        verify(processor2).getRequestStream(any(Message.class),
+                eq(new ApprovalRequests(requestWithComment("second priority"))));
 
         final TestRestProcessor processor3 = sendBodyAndHeaders(body, template, headers);
         verify(processor3).getRequestStream(any(Message.class), eq(new ApprovalRequests(requestWithComment("first priority"))));
@@ -249,8 +252,8 @@ public class AbstractRestProcessorApprovalTest {
         return sendBodyAndHeaders(body, template, Collections.emptyMap());
     }
 
-    TestRestProcessor sendBodyAndHeaders(final Object body, final ApprovalRequest template,
-            final Map<String, Object> headers) throws SalesforceException {
+    TestRestProcessor sendBodyAndHeaders(final Object body, final ApprovalRequest template, final Map<String, Object> headers)
+            throws SalesforceException {
         final TestRestProcessor processor = spy(new TestRestProcessor());
 
         final CamelContext context = new DefaultCamelContext();

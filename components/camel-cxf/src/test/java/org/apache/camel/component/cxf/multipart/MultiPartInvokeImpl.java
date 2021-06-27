@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.multipart;
 
 import javax.xml.ws.Holder;
@@ -29,7 +28,7 @@ import org.slf4j.LoggerFactory;
                       portName = "MultiPartInvokePort",
                       targetNamespace = "http://adapter.ti.tongtech.com/ws",
                       endpointInterface = "org.apache.camel.cxf.multipart.MultiPartInvoke")
-                      
+
 public class MultiPartInvokeImpl implements MultiPartInvoke {
 
     private static final Logger LOG = LoggerFactory.getLogger(MultiPartInvokeImpl.class);
@@ -45,7 +44,7 @@ public class MultiPartInvokeImpl implements MultiPartInvoke {
             InE out1Value = in1;
             out1.value = out1Value;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.warn("I/O error: {}", ex.getMessage(), ex);
             throw new RuntimeException(ex);
         }
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,26 @@
  */
 package org.apache.camel.spring;
 
+import java.util.Optional;
+
 import org.apache.camel.Endpoint;
-import org.apache.camel.component.bean.BeanProcessor;
+import org.apache.camel.ExtendedCamelContext;
+import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.event.EventComponent;
 import org.apache.camel.component.event.EventEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.support.ProcessorEndpoint;
+import org.apache.camel.spi.BeanProcessorFactory;
+import org.apache.camel.spi.BeanRepository;
 import org.apache.camel.spi.Injector;
-import org.apache.camel.spi.ManagementMBeanAssembler;
 import org.apache.camel.spi.ModelJAXBContextFactory;
 import org.apache.camel.spi.Registry;
-import org.apache.camel.spring.spi.ApplicationContextRegistry;
+import org.apache.camel.spring.spi.ApplicationContextBeanRepository;
 import org.apache.camel.spring.spi.SpringInjector;
 import org.apache.camel.spring.spi.SpringManagementMBeanAssembler;
-import org.apache.camel.util.StopWatch;
+import org.apache.camel.support.DefaultRegistry;
+import org.apache.camel.support.ProcessorEndpoint;
+import org.apache.camel.support.ResolverHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -46,27 +52,24 @@ import org.springframework.core.Ordered;
 import static org.apache.camel.RuntimeCamelException.wrapRuntimeCamelException;
 
 /**
- * A Spring aware implementation of {@link org.apache.camel.CamelContext} which
- * will automatically register itself with Springs lifecycle methods plus allows
- * spring to be used to customize a any <a
- * href="http://camel.apache.org/type-converter.html">Type Converters</a>
- * as well as supporting accessing components and beans via the Spring
- * {@link ApplicationContext}
+ * A Spring aware implementation of {@link org.apache.camel.CamelContext} which will automatically register itself with
+ * Springs lifecycle methods plus allows spring to be used to customize a any
+ * <a href="http://camel.apache.org/type-converter.html">Type Converters</a> as well as supporting accessing components
+ * and beans via the Spring {@link ApplicationContext}
  */
-public class SpringCamelContext extends DefaultCamelContext implements Lifecycle, ApplicationContextAware, Phased,
+public class SpringCamelContext extends DefaultCamelContext
+        implements Lifecycle, ApplicationContextAware, Phased,
         ApplicationListener<ApplicationEvent>, Ordered {
 
+    public static final String EXCLUDE_ROUTES = "CamelTestSpringExcludeRoutes";
+
     private static final Logger LOG = LoggerFactory.getLogger(SpringCamelContext.class);
-    private static final ThreadLocal<Boolean> NO_START = new ThreadLocal<>();
     private ApplicationContext applicationContext;
     private EventComponent eventComponent;
     private boolean shutdownEager = true;
 
     public SpringCamelContext() {
         super(false);
-        if (Boolean.getBoolean("org.apache.camel.jmx.disabled")) {
-            disableJMX();
-        }
         setManagementMBeanAssembler(new SpringManagementMBeanAssembler(this));
     }
 
@@ -75,20 +78,13 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
         setApplicationContext(applicationContext);
     }
 
-    public static void setNoStart(boolean b) {
-        if (b) {
-            NO_START.set(true);
-        } else {
-            NO_START.set(null);
-        }
-    }
-
     /**
-     * @deprecated its better to create and boot Spring the standard Spring way and to get hold of CamelContext
-     * using the Spring API.
+     * @deprecated its better to create and boot Spring the standard Spring way and to get hold of CamelContext using
+     *             the Spring API.
      */
     @Deprecated
-    public static SpringCamelContext springCamelContext(ApplicationContext applicationContext, boolean maybeStart) throws Exception {
+    public static SpringCamelContext springCamelContext(ApplicationContext applicationContext, boolean maybeStart)
+            throws Exception {
         if (applicationContext != null) {
             // lets try and look up a configured camel context in the context
             String[] names = applicationContext.getBeanNamesForType(SpringCamelContext.class);
@@ -98,7 +94,7 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
         }
         SpringCamelContext answer = new SpringCamelContext();
         answer.setApplicationContext(applicationContext);
-        answer.init();
+        answer.build();
         if (maybeStart) {
             answer.start();
         }
@@ -107,23 +103,10 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
 
     @Override
     public void start() {
-        // for example from unit testing we want to start Camel later (manually)
-        if (Boolean.TRUE.equals(NO_START.get())) {
-            LOG.trace("Ignoring start() as NO_START is false");
-            return;
-        }
-
-        if (!isStarted() && !isStarting()) {
-            try {
-                StopWatch watch = new StopWatch();
-                super.start();
-                LOG.debug("start() took {} millis", watch.taken());
-            } catch (Exception e) {
-                throw wrapRuntimeCamelException(e);
-            }
-        } else {
-            // ignore as Camel is already started
-            LOG.trace("Ignoring start() as Camel is already started");
+        try {
+            super.start();
+        } catch (Exception e) {
+            throw wrapRuntimeCamelException(e);
         }
     }
 
@@ -140,9 +123,10 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
     public void onApplicationEvent(ApplicationEvent event) {
         LOG.debug("onApplicationEvent: {}", event);
 
-        if (event instanceof ContextRefreshedEvent && ((ContextRefreshedEvent) event).getApplicationContext() == this.applicationContext) {
+        if (event instanceof ContextRefreshedEvent
+                && ((ContextRefreshedEvent) event).getApplicationContext() == this.applicationContext) {
             // nominally we would prefer to use Lifecycle interface that
-            // would invoke start() method, but in order to do that 
+            // would invoke start() method, but in order to do that
             // SpringCamelContext needs to implement SmartLifecycle
             // (look at DefaultLifecycleProcessor::startBeans), but it
             // cannot implement it as it already implements
@@ -203,12 +187,12 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
     }
 
     /**
-     * Whether to shutdown this {@link org.apache.camel.spring.SpringCamelContext} eager (first)
-     * when Spring {@link org.springframework.context.ApplicationContext} is being stopped.
+     * Whether to shutdown this {@link org.apache.camel.spring.SpringCamelContext} eager (first) when Spring
+     * {@link org.springframework.context.ApplicationContext} is being stopped.
      * <p/>
-     * <b>Important:</b> This option is default <tt>true</tt> which ensures we shutdown Camel
-     * before other beans. Setting this to <tt>false</tt> restores old behavior in earlier
-     * Camel releases, which can be used for special cases to behave as before.
+     * <b>Important:</b> This option is default <tt>true</tt> which ensures we shutdown Camel before other beans.
+     * Setting this to <tt>false</tt> restores old behavior in earlier Camel releases, which can be used for special
+     * cases to behave as before.
      *
      * @return <tt>true</tt> to shutdown eager (first), <tt>false</tt> to shutdown last
      */
@@ -229,10 +213,10 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
     @Override
     protected Injector createInjector() {
         if (applicationContext instanceof ConfigurableApplicationContext) {
-            return new SpringInjector((ConfigurableApplicationContext)applicationContext);
+            return new SpringInjector((ConfigurableApplicationContext) applicationContext);
         } else {
-            LOG.warn("Cannot use SpringInjector as applicationContext is not a ConfigurableApplicationContext as its: "
-                      + applicationContext);
+            LOG.warn("Cannot use SpringInjector as applicationContext is not a ConfigurableApplicationContext as its: {}",
+                    applicationContext);
             return super.createInjector();
         }
     }
@@ -250,17 +234,36 @@ public class SpringCamelContext extends DefaultCamelContext implements Lifecycle
             return endpoint;
         }
 
-        return new ProcessorEndpoint(uri, this, new BeanProcessor(bean, this));
+        BeanProcessorFactory bpf = adapt(ExtendedCamelContext.class).getBeanProcessorFactory();
+        try {
+            Processor bp = bpf.createBeanProcessor(this, bean, null);
+            return new ProcessorEndpoint(uri, this, bp);
+        } catch (Exception e) {
+            throw RuntimeCamelException.wrapRuntimeCamelException(e);
+        }
     }
 
     @Override
     protected Registry createRegistry() {
-        return new ApplicationContextRegistry(getApplicationContext());
+        BeanRepository repository = new ApplicationContextBeanRepository(getApplicationContext());
+        return new DefaultRegistry(repository);
     }
 
     @Override
+
     protected ModelJAXBContextFactory createModelJAXBContextFactory() {
-        return new SpringModelJAXBContextFactory();
+        Optional<ModelJAXBContextFactory> result = ResolverHelper.resolveService(
+                getCamelContextReference(),
+                getBootstrapFactoryFinder(),
+                ModelJAXBContextFactory.FACTORY + "-spring",
+                ModelJAXBContextFactory.class);
+
+        if (result.isPresent()) {
+            return result.get();
+        } else {
+            throw new IllegalArgumentException(
+                    "Cannot find ModelJAXBContextFactory on classpath. Add camel-spring-xml to classpath.");
+        }
     }
 
     @Override

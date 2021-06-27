@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,11 +34,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import static java.util.concurrent.CompletableFuture.completedFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 import org.apache.camel.component.milo.client.MiloClientConfiguration;
+import org.apache.camel.component.milo.client.MonitorFilterConfiguration;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
 import org.eclipse.milo.opcua.sdk.client.api.config.OpcUaClientConfigBuilder;
 import org.eclipse.milo.opcua.sdk.client.api.identity.AnonymousProvider;
@@ -47,7 +49,7 @@ import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
 import org.eclipse.milo.opcua.sdk.client.api.subscriptions.UaMonitoredItem;
 import org.eclipse.milo.opcua.sdk.client.api.subscriptions.UaSubscription;
 import org.eclipse.milo.opcua.sdk.client.api.subscriptions.UaSubscriptionManager.SubscriptionListener;
-import org.eclipse.milo.opcua.stack.client.UaTcpStackClient;
+import org.eclipse.milo.opcua.stack.client.DiscoveryClient;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.Identifiers;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
@@ -55,6 +57,7 @@ import org.eclipse.milo.opcua.stack.core.UaException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
@@ -68,18 +71,20 @@ import org.eclipse.milo.opcua.stack.core.types.structured.CallMethodRequest;
 import org.eclipse.milo.opcua.stack.core.types.structured.CallMethodResult;
 import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoredItemCreateRequest;
+import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringFilter;
 import org.eclipse.milo.opcua.stack.core.types.structured.MonitoringParameters;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.camel.component.milo.NodeIds.toNodeId;
 
 public class SubscriptionManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(SubscriptionManager.class);
 
-    private final AtomicLong clientHandleCounter = new AtomicLong(0);
+    private final AtomicLong clientHandleCounter = new AtomicLong();
 
     private final class SubscriptionListenerImpl implements SubscriptionListener {
         @Override
@@ -117,11 +122,14 @@ public class SubscriptionManager {
         private final Double samplingInterval;
 
         private final Consumer<DataValue> valueConsumer;
+        private MonitorFilterConfiguration monitorFilterConfiguration;
 
-        Subscription(ExpandedNodeId nodeId, final Double samplingInterval, final Consumer<DataValue> valueConsumer) {
+        Subscription(ExpandedNodeId nodeId, final Double samplingInterval, final Consumer<DataValue> valueConsumer,
+                     final MonitorFilterConfiguration monitorFilterConfiguration) {
             this.nodeId = nodeId;
             this.samplingInterval = samplingInterval;
             this.valueConsumer = valueConsumer;
+            this.monitorFilterConfiguration = monitorFilterConfiguration;
         }
 
         public ExpandedNodeId getNodeId() {
@@ -134,6 +142,15 @@ public class SubscriptionManager {
 
         public Consumer<DataValue> getValueConsumer() {
             return this.valueConsumer;
+        }
+
+        public ExtensionObject createMonitoringFilter(OpcUaClient client) {
+            if (Objects.isNull(this.monitorFilterConfiguration)
+                    || Objects.isNull(this.monitorFilterConfiguration.getMonitorFilterType())) {
+                return null;
+            }
+            final MonitoringFilter monitorFilter = this.monitorFilterConfiguration.createMonitoringFilter();
+            return ExtensionObject.encode(client.getSerializationContext(), monitorFilter);
         }
     }
 
@@ -172,11 +189,9 @@ public class SubscriptionManager {
                 } else {
                     final ReadValueId itemId = new ReadValueId(node, AttributeId.Value.uid(), null, QualifiedName.NULL_VALUE);
                     Double samplingInterval = s.getSamplingInterval();
-                    if (samplingInterval == null) {
-                        // work around a bug (NPE) in Eclipse Milo 0.1.3
-                        samplingInterval = 0.0;
-                    }
-                    final MonitoringParameters parameters = new MonitoringParameters(entry.getKey(), samplingInterval, null, null, null);
+
+                    final MonitoringParameters parameters = new MonitoringParameters(
+                            entry.getKey(), samplingInterval, s.createMonitoringFilter(client), null, null);
                     items.add(new MonitoredItemCreateRequest(itemId, MonitoringMode.Reporting, parameters));
                 }
             }
@@ -202,7 +217,8 @@ public class SubscriptionManager {
             }
 
             if (!this.badSubscriptions.isEmpty()) {
-                SubscriptionManager.this.executor.schedule(this::resubscribe, SubscriptionManager.this.reconnectTimeout, TimeUnit.MILLISECONDS);
+                SubscriptionManager.this.executor.schedule(this::resubscribe, SubscriptionManager.this.reconnectTimeout,
+                        TimeUnit.MILLISECONDS);
             }
         }
 
@@ -255,13 +271,14 @@ public class SubscriptionManager {
 
             LOG.debug("Looking up namespace on server: {}", namespaceUri);
 
-            final CompletableFuture<DataValue> future = this.client.readValue(0, TimestampsToReturn.Neither, Identifiers.Server_NamespaceArray);
+            final CompletableFuture<DataValue> future
+                    = this.client.readValue(0, TimestampsToReturn.Neither, Identifiers.Server_NamespaceArray);
 
             return future.thenApply(value -> {
                 final Object rawValue = value.getValue().getValue();
 
                 if (rawValue instanceof String[]) {
-                    final String[] namespaces = (String[])rawValue;
+                    final String[] namespaces = (String[]) rawValue;
                     for (int i = 0; i < namespaces.length; i++) {
                         if (namespaces[i].equals(namespaceUri)) {
                             final UShort result = Unsigned.ushort(i);
@@ -314,7 +331,8 @@ public class SubscriptionManager {
             });
         }
 
-        public CompletableFuture<CallMethodResult> call(final ExpandedNodeId nodeId, final ExpandedNodeId methodId, final Variant[] inputArguments) {
+        public CompletableFuture<CallMethodResult> call(
+                final ExpandedNodeId nodeId, final ExpandedNodeId methodId, final Variant[] inputArguments) {
 
             return lookupNamespace(nodeId).thenCompose(node -> {
 
@@ -339,6 +357,16 @@ public class SubscriptionManager {
             });
         }
 
+        public CompletableFuture<List<DataValue>> readValues(List<ExpandedNodeId> expandedNodeIds) {
+
+            final CompletableFuture<NodeId>[] nodeIdFutures
+                    = expandedNodeIds.stream().map(this::lookupNamespace).toArray(CompletableFuture[]::new);
+
+            return CompletableFuture.allOf(nodeIdFutures).thenCompose(param -> {
+                List<NodeId> nodeIds = Stream.of(nodeIdFutures).map(CompletableFuture::join).collect(Collectors.toList());
+                return this.client.readValues(0, TimestampsToReturn.Server, nodeIds);
+            });
+        }
     }
 
     private final MiloClientConfiguration configuration;
@@ -350,7 +378,8 @@ public class SubscriptionManager {
     private Future<?> reconnectJob;
     private final Map<UInteger, Subscription> subscriptions = new HashMap<>();
 
-    public SubscriptionManager(final MiloClientConfiguration configuration, final ScheduledExecutorService executor, final long reconnectTimeout) {
+    public SubscriptionManager(final MiloClientConfiguration configuration, final ScheduledExecutorService executor,
+                               final long reconnectTimeout) {
 
         this.configuration = configuration;
         this.executor = executor;
@@ -428,10 +457,20 @@ public class SubscriptionManager {
 
         // eval enpoint
 
-        final String discoveryUri = getEndpointDiscoveryUri();
+        String discoveryUri = getEndpointDiscoveryUri();
+
+        final URI uri = URI.create(getEndpointDiscoveryUri());
+
+        // milo library doesn't allow user info as a part of the uri, it has to
+        // be
+        // removed before sending to milo
+        final String user = uri.getUserInfo();
+        if (user != null && !user.isEmpty()) {
+            discoveryUri = discoveryUri.replaceFirst(user + "@", "");
+        }
         LOG.debug("Discovering endpoints from: {}", discoveryUri);
 
-        final EndpointDescription endpoint = UaTcpStackClient.getEndpoints(discoveryUri).thenApply(endpoints -> {
+        final EndpointDescription endpoint = DiscoveryClient.getEndpoints(discoveryUri).thenApply(endpoints -> {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Found enpoints:");
                 for (final EndpointDescription ep : endpoints) {
@@ -448,13 +487,9 @@ public class SubscriptionManager {
 
         LOG.debug("Selected endpoint: {}", endpoint);
 
-        final URI uri = URI.create(getEndpointDiscoveryUri());
-
         // set identity providers
-
         final List<IdentityProvider> providers = new LinkedList<>();
 
-        final String user = uri.getUserInfo();
         if (user != null && !user.isEmpty()) {
             final String[] creds = user.split(":", 2);
             if (creds != null && creds.length == 2) {
@@ -471,19 +506,18 @@ public class SubscriptionManager {
 
         // create client
 
-        final OpcUaClient client = new OpcUaClient(cfg.build());
+        final OpcUaClient client = OpcUaClient.create(cfg.build());
         client.connect().get();
 
         try {
-            final UaSubscription manager = client.getSubscriptionManager().createSubscription(1_000.0).get();
+            final UaSubscription manager = client.getSubscriptionManager()
+                    .createSubscription(this.configuration.getRequestedPublishingInterval()).get();
             client.getSubscriptionManager().addSubscriptionListener(new SubscriptionListenerImpl());
 
             return new Connected(client, manager);
-        } catch (final Throwable e) {
-            if (client != null) {
-                // clean up
-                client.disconnect();
-            }
+        } catch (final Exception e) {
+            // clean up
+            client.disconnect();
             throw e;
         }
     }
@@ -533,12 +567,13 @@ public class SubscriptionManager {
         }
     }
 
-    private EndpointDescription findEndpoint(final EndpointDescription[] endpoints) throws URISyntaxException {
+    private EndpointDescription findEndpoint(final List<EndpointDescription> endpoints) throws URISyntaxException {
 
         final Predicate<String> allowed;
         final Set<String> uris = this.configuration.getAllowedSecurityPolicies();
 
-        if (this.configuration.getAllowedSecurityPolicies() == null || this.configuration.getAllowedSecurityPolicies().isEmpty()) {
+        if (this.configuration.getAllowedSecurityPolicies() == null
+                || this.configuration.getAllowedSecurityPolicies().isEmpty()) {
             allowed = uri -> true;
         } else {
             allowed = uris::contains;
@@ -562,15 +597,13 @@ public class SubscriptionManager {
     }
 
     /**
-     * Optionally override the host of the endpoint URL with the configured one.
-     * <br>
-     * The method will call {@link #overrideHost(String)} if the endpoint is not
-     * {@code null} and {@link MiloClientConfiguration#isOverrideHost()} returns
-     * {@code true}.
+     * Optionally override the host of the endpoint URL with the configured one. <br>
+     * The method will call {@link #overrideHost(String)} if the endpoint is not {@code null} and
+     * {@link MiloClientConfiguration#isOverrideHost()} returns {@code true}.
      * 
-     * @param desc The endpoint descriptor to work on
-     * @return Either the provided or updated endpoint descriptor. Only returns
-     *         {@code null} when the input was {@code null}.
+     * @param  desc               The endpoint descriptor to work on
+     * @return                    Either the provided or updated endpoint descriptor. Only returns {@code null} when the
+     *                            input was {@code null}.
      * @throws URISyntaxException on case the URI is malformed
      */
     private EndpointDescription overrideHost(final EndpointDescription desc) throws URISyntaxException {
@@ -582,16 +615,18 @@ public class SubscriptionManager {
             return desc;
         }
 
-        return new EndpointDescription(overrideHost(desc.getEndpointUrl()), desc.getServer(), desc.getServerCertificate(), desc.getSecurityMode(), desc.getSecurityPolicyUri(),
-                                       desc.getUserIdentityTokens(), desc.getTransportProfileUri(), desc.getSecurityLevel());
+        return new EndpointDescription(
+                overrideHost(desc.getEndpointUrl()), desc.getServer(), desc.getServerCertificate(), desc.getSecurityMode(),
+                desc.getSecurityPolicyUri(),
+                desc.getUserIdentityTokens(), desc.getTransportProfileUri(), desc.getSecurityLevel());
     }
 
     /**
      * Override host part of the endpoint URL with the configured one.
      * 
-     * @param endpointUrl the server provided endpoint URL
-     * @return A new endpoint URL with the host part exchanged by the configured
-     *         host. Will be {@code null} when the input is {@code null}.
+     * @param  endpointUrl        the server provided endpoint URL
+     * @return                    A new endpoint URL with the host part exchanged by the configured host. Will be
+     *                            {@code null} when the input is {@code null}.
      * @throws URISyntaxException on case the URI is malformed
      */
     private String overrideHost(final String endpointUrl) throws URISyntaxException {
@@ -603,7 +638,9 @@ public class SubscriptionManager {
         final URI uri = URI.create(endpointUrl);
         final URI originalUri = URI.create(configuration.getEndpointUri());
 
-        return new URI(uri.getScheme(), uri.getUserInfo(), originalUri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+        return new URI(
+                uri.getScheme(), uri.getUserInfo(), originalUri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(),
+                uri.getFragment()).toString();
     }
 
     protected synchronized void whenConnected(final Worker<Connected> worker) {
@@ -622,10 +659,12 @@ public class SubscriptionManager {
         return result;
     }
 
-    public UInteger registerItem(final ExpandedNodeId nodeId, final Double samplingInterval, final Consumer<DataValue> valueConsumer) {
+    public UInteger registerItem(
+            final ExpandedNodeId nodeId, final Double samplingInterval, final Consumer<DataValue> valueConsumer,
+            final MonitorFilterConfiguration monitorFilterConfiguration) {
 
         final UInteger clientHandle = Unsigned.uint(this.clientHandleCounter.incrementAndGet());
-        final Subscription subscription = new Subscription(nodeId, samplingInterval, valueConsumer);
+        final Subscription subscription = new Subscription(nodeId, samplingInterval, valueConsumer, monitorFilterConfiguration);
 
         synchronized (this) {
             this.subscriptions.put(clientHandle, subscription);
@@ -646,7 +685,8 @@ public class SubscriptionManager {
         }
     }
 
-    public CompletableFuture<CallMethodResult> call(final ExpandedNodeId nodeId, final ExpandedNodeId methodId, final Variant[] inputArguments) {
+    public CompletableFuture<CallMethodResult> call(
+            final ExpandedNodeId nodeId, final ExpandedNodeId methodId, final Variant[] inputArguments) {
         synchronized (this) {
             if (this.connected == null) {
                 return newNotConnectedResult();
@@ -676,6 +716,23 @@ public class SubscriptionManager {
                     handleConnectionFailue(e);
                 }
                 return null;
+            }, this.executor);
+        }
+    }
+
+    public CompletableFuture<?> readValues(final List<ExpandedNodeId> nodeIds) {
+        synchronized (this) {
+            if (this.connected == null) {
+                return newNotConnectedResult();
+            }
+
+            return this.connected.readValues(nodeIds).handleAsync((nodes, e) -> {
+                // handle outside the lock, running using
+                // handleAsync
+                if (e != null) {
+                    handleConnectionFailue(e);
+                }
+                return nodes;
             }, this.executor);
         }
     }

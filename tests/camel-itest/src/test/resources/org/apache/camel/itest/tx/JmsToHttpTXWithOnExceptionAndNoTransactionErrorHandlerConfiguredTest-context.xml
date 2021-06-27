@@ -30,7 +30,7 @@
     </bean>
 
     <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="vm://localhost?broker.persistent=false"/>
+        <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;broker.useJmx=false"/>
     </bean>
 
     <!-- Spring JMX TX manager -->
@@ -52,7 +52,7 @@
     </bean>
 
     <!-- ActiveMQ component to be used in Camel -->
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
         <property name="connectionFactory" ref="poolConnectionFactory"/>
         <property name="configuration" ref="jmsConfig"/>
     </bean>
@@ -66,7 +66,7 @@
         <!--use our route -->
         <routeBuilder ref="route"/>
 
-        <endpoint id="data" uri="activemq:queue:data?requestTimeout=5000"/>
+        <endpoint id="data" uri="activemq:queue:JmsToHttpWithOnExceptionAndNoTransactionErrorHandlerConfiguredRoute?requestTimeout=5000"/>
     </camelContext>
 
 </beans>

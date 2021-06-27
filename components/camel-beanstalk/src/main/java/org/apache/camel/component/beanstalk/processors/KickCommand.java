@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,9 +36,8 @@ public class KickCommand extends DefaultCommand {
     public void act(final Client client, final Exchange exchange) throws NoSuchHeaderException, InvalidPayloadException {
         final Integer jobs = exchange.getIn().getMandatoryBody(Integer.class);
         final int result = client.kick(jobs);
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Kick %d jobs. Kicked %d actually.", jobs, result));
-        }
+
+        LOG.debug("Kick {} jobs. Kicked {} actually.", jobs, result);
 
         final Message answer = getAnswerMessage(exchange);
         answer.setBody(result, Integer.class);

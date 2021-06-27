@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.listeners;
 
 import java.util.LinkedHashSet;
@@ -29,7 +28,6 @@ import org.kie.api.event.process.ProcessNodeTriggeredEvent;
 import org.kie.api.event.process.ProcessStartedEvent;
 import org.kie.api.event.process.ProcessVariableChangedEvent;
 import org.kie.internal.runtime.Cacheable;
-
 
 public class CamelProcessEventListener implements ProcessEventListener, Cacheable, JBPMCamelConsumerAware {
 
@@ -49,7 +47,7 @@ public class CamelProcessEventListener implements ProcessEventListener, Cacheabl
         if (consumers.isEmpty()) {
             return;
         }
-        
+
         sendMessage("afterProcessStarted", event);
     }
 
@@ -131,7 +129,7 @@ public class CamelProcessEventListener implements ProcessEventListener, Cacheabl
     public void removeConsumer(JBPMConsumer consumer) {
         this.consumers.remove(consumer);
     }
-    
+
     protected void sendMessage(String eventType, Object event) {
         this.consumers.stream().filter(c -> c.getStatus().isStarted()).forEach(c -> c.sendMessage(eventType, event));
     }

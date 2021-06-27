@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.dataformat.soap;
+
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -30,27 +31,28 @@ import com.example.customerservice.SaveCustomer;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.soap.name.ElementNameStrategy;
 import org.apache.camel.dataformat.soap.name.ServiceInterfaceStrategy;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Checks for interoperability between a CXF client that is attached using the
- * Camel transport for CXF and the SOAP data format
+ * Checks for interoperability between a CXF client that is attached using the Camel transport for CXF and the SOAP data
+ * format
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@CamelSpringTest
 @ContextConfiguration
 public class SoapCxfClientTest extends RouteBuilder {
     private static CustomerServiceImpl serverBean;
-    
+
     @Resource(name = "customerServiceCxfProxy")
     protected CustomerService customerService;
 
-
-    @BeforeClass
+    @BeforeAll
     public static void initServerBean() {
         serverBean = new CustomerServiceImpl();
     }
@@ -60,18 +62,18 @@ public class SoapCxfClientTest extends RouteBuilder {
         GetCustomersByName request = new GetCustomersByName();
         request.setName("test");
         GetCustomersByNameResponse response = customerService.getCustomersByName(request);
-        Assert.assertNotNull(response);
+        assertNotNull(response);
         List<Customer> customers = response.getReturn();
-        Assert.assertEquals(1, customers.size());
-        Assert.assertEquals("test", customers.get(0).getName());
+        assertEquals(1, customers.size());
+        assertEquals("test", customers.get(0).getName());
     }
 
     @Test
     public void testRoundTripGetAllCustomers() throws Exception {
         GetAllCustomersResponse response = customerService.getAllCustomers();
-        Assert.assertEquals(1, response.getReturn().size());
+        assertEquals(1, response.getReturn().size());
         Customer firstCustomer = response.getReturn().get(0);
-        Assert.assertEquals(100000.0, firstCustomer.getRevenue(), 0.00001);
+        assertEquals(100000.0, firstCustomer.getRevenue(), 0.00001);
     }
 
     @Test
@@ -82,7 +84,7 @@ public class SoapCxfClientTest extends RouteBuilder {
         request.setCustomer(testCustomer);
         customerService.saveCustomer(request);
         Customer customer2 = serverBean.getLastSavedCustomer();
-        Assert.assertEquals("testName", customer2.getName());
+        assertEquals("testName", customer2.getName());
     }
 
     @Test
@@ -91,14 +93,15 @@ public class SoapCxfClientTest extends RouteBuilder {
         request.setName("none");
         try {
             customerService.getCustomersByName(request);
-            Assert.fail("NoSuchCustomerException expected");
+            fail("NoSuchCustomerException expected");
         } catch (NoSuchCustomerException e) {
             NoSuchCustomer info = e.getFaultInfo();
-            Assert.assertEquals("none", info.getCustomerId());
+            assertEquals("none", info.getCustomerId());
         }
 
     }
 
+    @Override
     public void configure() throws Exception {
         String jaxbPackage = GetCustomersByName.class.getPackage().getName();
         ElementNameStrategy elNameStrat = new ServiceInterfaceStrategy(CustomerService.class, false);

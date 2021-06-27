@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ import java.io.Serializable;
 public class MyOrderException extends Exception implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final String orderId;
 
     public MyOrderException(String orderId) {

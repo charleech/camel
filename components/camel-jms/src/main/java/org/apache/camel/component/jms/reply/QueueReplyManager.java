@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,12 +45,16 @@ public class QueueReplyManager extends ReplyManagerSupport {
         super(camelContext);
     }
 
-    protected ReplyHandler createReplyHandler(ReplyManager replyManager, Exchange exchange, AsyncCallback callback,
-                                              String originalCorrelationId, String correlationId, long requestTimeout) {
-        return new QueueReplyHandler(replyManager, exchange, callback,
+    @Override
+    protected ReplyHandler createReplyHandler(
+            ReplyManager replyManager, Exchange exchange, AsyncCallback callback,
+            String originalCorrelationId, String correlationId, long requestTimeout) {
+        return new QueueReplyHandler(
+                replyManager, exchange, callback,
                 originalCorrelationId, correlationId, requestTimeout);
-    }  
+    }
 
+    @Override
     public void updateCorrelationId(String correlationId, String newCorrelationId, long requestTimeout) {
         log.trace("Updated provisional correlationId [{}] to expected correlationId [{}]", correlationId, newCorrelationId);
 
@@ -63,6 +67,7 @@ public class QueueReplyManager extends ReplyManagerSupport {
         correlation.put(newCorrelationId, handler, requestTimeout);
     }
 
+    @Override
     protected void handleReplyMessage(String correlationID, Message message, Session session) {
         ReplyHandler handler = correlation.get(correlationID);
         if (handler == null && endpoint.isUseMessageIDAsCorrelationID()) {
@@ -76,11 +81,13 @@ public class QueueReplyManager extends ReplyManagerSupport {
             // we could not correlate the received reply message to a matching request and therefore
             // we cannot continue routing the unknown message
             // log a warn and then ignore the message
-            log.warn("Reply received for unknown correlationID [{}] on reply destination [{}]. Current correlation map size: {}. The message will be ignored: {}",
-                    new Object[]{correlationID, replyTo, correlation.size(), message});
+            log.warn(
+                    "Reply received for unknown correlationID [{}] on reply destination [{}]. Current correlation map size: {}. The message will be ignored: {}",
+                    correlationID, replyTo, correlation.size(), message);
         }
     }
 
+    @Override
     public void setReplyToSelectorHeader(org.apache.camel.Message camelMessage, Message jmsMessage) throws JMSException {
         String replyToSelectorName = endpoint.getReplyToDestinationSelectorName();
         if (replyToSelectorName != null && replyToSelectorValue != null) {
@@ -97,8 +104,11 @@ public class QueueReplyManager extends ReplyManagerSupport {
             this.delegate = delegate;
         }
 
-        public Destination resolveDestinationName(Session session, String destinationName,
-                                                  boolean pubSubDomain) throws JMSException {
+        @Override
+        public Destination resolveDestinationName(
+                Session session, String destinationName,
+                boolean pubSubDomain)
+                throws JMSException {
             synchronized (QueueReplyManager.this) {
                 // resolve the reply to destination
                 if (destination == null) {
@@ -108,8 +118,9 @@ public class QueueReplyManager extends ReplyManagerSupport {
             }
             return destination;
         }
-    };
+    }
 
+    @Override
     protected AbstractMessageListenerContainer createListenerContainer() throws Exception {
         DefaultMessageListenerContainer answer;
 
@@ -124,12 +135,14 @@ public class QueueReplyManager extends ReplyManagerSupport {
             String replyToSelectorName = endpoint.getReplyToDestinationSelectorName();
             if (replyToSelectorName != null) {
                 // create a random selector value we will use for the reply queue
+                // NOSONAR
                 replyToSelectorValue = "ID:" + new BigInteger(24 * 8, new Random()).toString(16);
                 String fixedMessageSelector = replyToSelectorName + "='" + replyToSelectorValue + "'";
                 answer = new SharedQueueMessageListenerContainer(endpoint, fixedMessageSelector);
                 // must use cache level consumer for fixed message selector
                 answer.setCacheLevel(DefaultMessageListenerContainer.CACHE_CONSUMER);
-                log.debug("Using shared queue: {} with fixed message selector [{}] as reply listener: {}", endpoint.getReplyTo(), fixedMessageSelector, answer);
+                log.debug("Using shared queue: {} with fixed message selector [{}] as reply listener: {}",
+                        endpoint.getReplyTo(), fixedMessageSelector, answer);
             } else {
                 // use a dynamic message selector which will select the message we want to receive as reply
                 dynamicMessageSelector = new MessageSelectorCreator(correlation);
@@ -137,11 +150,13 @@ public class QueueReplyManager extends ReplyManagerSupport {
                 // must use cache level session for dynamic message selector,
                 // as otherwise the dynamic message selector will not be updated on-the-fly
                 answer.setCacheLevel(DefaultMessageListenerContainer.CACHE_SESSION);
-                log.debug("Using shared queue: {} with dynamic message selector as reply listener: {}", endpoint.getReplyTo(), answer);
+                log.debug("Using shared queue: {} with dynamic message selector as reply listener: {}", endpoint.getReplyTo(),
+                        answer);
             }
             // shared is not as fast as temporary or exclusive, so log this so the end user may be aware of this
             log.warn("{} is using a shared reply queue, which is not as fast as alternatives."
-                    + " See more detail at the section 'Request-reply over JMS' at http://camel.apache.org/jms", endpoint);
+                     + " See more detail at the section 'Request-reply over JMS' in the JMS component documentation",
+                    endpoint);
         } else if (ReplyToType.Exclusive == type) {
             answer = new ExclusiveQueueMessageListenerContainer(endpoint);
             // must use cache level consumer for exclusive as there is no message selector
@@ -150,7 +165,7 @@ public class QueueReplyManager extends ReplyManagerSupport {
         } else {
             throw new IllegalArgumentException("ReplyToType " + type + " is not supported for reply queues");
         }
-        
+
         String replyToCacheLevelName = endpoint.getConfiguration().getReplyToCacheLevelName();
         if (replyToCacheLevelName != null) {
             answer.setCacheLevelName(replyToCacheLevelName);
@@ -177,7 +192,7 @@ public class QueueReplyManager extends ReplyManagerSupport {
         if (endpoint.getReplyToMaxConcurrentConsumers() > 0) {
             answer.setMaxConcurrentConsumers(endpoint.getReplyToMaxConcurrentConsumers());
         }
-        answer.setConnectionFactory(endpoint.getConnectionFactory());
+        answer.setConnectionFactory(endpoint.getConfiguration().getOrCreateConnectionFactory());
         String clientId = endpoint.getClientId();
         if (clientId != null) {
             clientId += ".CamelReplyManager";
@@ -194,7 +209,9 @@ public class QueueReplyManager extends ReplyManagerSupport {
         if (endpoint.getErrorHandler() != null) {
             answer.setErrorHandler(endpoint.getErrorHandler());
         } else {
-            answer.setErrorHandler(new DefaultSpringErrorHandler(endpoint.getCamelContext(), QueueReplyManager.class, endpoint.getErrorHandlerLoggingLevel(), endpoint.isErrorHandlerLogStackTrace()));
+            answer.setErrorHandler(new DefaultSpringErrorHandler(
+                    endpoint.getCamelContext(), QueueReplyManager.class, endpoint.getErrorHandlerLoggingLevel(),
+                    endpoint.isErrorHandlerLogStackTrace()));
         }
         if (endpoint.getReceiveTimeout() >= 0) {
             answer.setReceiveTimeout(endpoint.getReceiveTimeout());
@@ -215,12 +232,14 @@ public class QueueReplyManager extends ReplyManagerSupport {
         if (answer.getConcurrentConsumers() > 1) {
             if (ReplyToType.Shared == type) {
                 // warn if using concurrent consumer with shared reply queue as that may not work properly
-                log.warn("Using {}-{} concurrent consumer on {} with shared queue {} may not work properly with all message brokers.",
-                        new Object[]{answer.getConcurrentConsumers(), answer.getMaxConcurrentConsumers(), name, endpoint.getReplyTo()});
+                log.warn(
+                        "Using {}-{} concurrent consumer on {} with shared queue {} may not work properly with all message brokers.",
+                        answer.getConcurrentConsumers(), answer.getMaxConcurrentConsumers(), name,
+                        endpoint.getReplyTo());
             } else {
                 // log that we are using concurrent consumers
                 log.info("Using {}-{} concurrent consumers on {}",
-                        new Object[]{answer.getConcurrentConsumers(), answer.getMaxConcurrentConsumers(), name});
+                        answer.getConcurrentConsumers(), answer.getMaxConcurrentConsumers(), name);
             }
         }
 

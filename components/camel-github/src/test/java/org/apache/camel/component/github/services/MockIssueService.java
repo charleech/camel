@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,7 +45,7 @@ public class MockIssueService extends IssueService {
         Comment addedComment = mockPullRequestService.addComment((long) issueNumber, commentText);
         return addedComment;
     }
-    
+
     @Override
     public Issue createIssue(IRepositoryIdProvider repository, Issue issue) {
         Issue finalIssue = new Issue();
@@ -54,7 +54,7 @@ public class MockIssueService extends IssueService {
         issue.setId(1L);
         return finalIssue;
     }
-    
+
     @Override
     public Issue getIssue(IRepositoryIdProvider repository, String issueNumber) {
         Issue issue = new Issue();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.InspectContainerCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -37,13 +36,12 @@ public class InspectContainerCmdHeaderTest extends BaseDockerHeaderTest<InspectC
     private InspectContainerCmd mockObject;
 
     @Test
-    public void inspectContainerHeaderTest() {
+    void inspectContainerHeaderTest() {
 
         String containerId = "9c09acd48a25";
 
         Map<String, Object> headers = getDefaultParameters();
         headers.put(DockerConstants.DOCKER_CONTAINER_ID, containerId);
-
 
         template.sendBodyAndHeaders("direct:in", "", headers);
 

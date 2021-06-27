@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,18 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
-import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategy;
 import org.apache.camel.spi.HeaderFilterStrategyAware;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
+import org.apache.camel.support.DefaultHeaderFilterStrategy;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.StringHelper;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -40,7 +40,6 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.XMPPException.XMPPErrorException;
-import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.packet.StanzaError;
 import org.jivesoftware.smack.packet.StanzaError.Condition;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
@@ -51,20 +50,27 @@ import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.jid.parts.Resourcepart;
 import org.jxmpp.stringprep.XmppStringprepException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * To send and receive messages from a XMPP (chat) server.
+ * Send and receive messages to/from an XMPP chat server.
  */
-@UriEndpoint(firstVersion = "1.0", scheme = "xmpp", title = "XMPP", syntax = "xmpp:host:port/participant", alternativeSyntax = "xmpp:user:password@host:port/participant",
-        label = "chat,messaging")
+@UriEndpoint(firstVersion = "1.0", scheme = "xmpp", title = "XMPP", syntax = "xmpp:host:port/participant",
+             alternativeSyntax = "xmpp:user:password@host:port/participant",
+             category = { Category.CHAT, Category.MESSAGING })
 public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrategyAware {
+
+    private static final Logger LOG = LoggerFactory.getLogger(XmppEndpoint.class);
 
     private volatile XMPPTCPConnection connection;
     private XmppBinding binding;
 
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String host;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private int port;
     @UriPath(label = "common")
     private String participant;
@@ -80,6 +86,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     private boolean createAccount;
     @UriParam(label = "common")
     private String room;
+    @UriParam(label = "security", secret = true)
+    private String roomPassword;
     @UriParam(label = "common")
     private String nickname;
     @UriParam(label = "common")
@@ -104,6 +112,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         super(uri, component);
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         if (room != null) {
             return createGroupChatProducer();
@@ -137,17 +146,11 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         return new XmppPubSubProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         XmppConsumer answer = new XmppConsumer(this, processor);
         configureConsumer(answer);
         return answer;
-    }
-
-    public Exchange createExchange(Stanza packet) {
-        Exchange exchange = super.createExchange();
-        exchange.setProperty(Exchange.BINDING, getBinding());
-        exchange.setIn(new XmppMessage(exchange, packet));
-        return exchange;
     }
 
     @Override
@@ -155,11 +158,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         return "xmpp://" + host + ":" + port + "/" + getParticipant() + "?serviceName=" + serviceName;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
-    public synchronized XMPPTCPConnection createConnection() throws InterruptedException, IOException, SmackException, XMPPException {
+    public synchronized XMPPTCPConnection createConnection()
+            throws InterruptedException, IOException, SmackException, XMPPException {
         if (connection != null && connection.isConnected()) {
             // use existing working connection
             return connection;
@@ -168,7 +168,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         // prepare for creating new connection
         connection = null;
 
-        log.trace("Creating new connection ...");
+        LOG.trace("Creating new connection ...");
         XMPPTCPConnection newConnection = createConnectionInternal();
 
         newConnection.connect();
@@ -178,11 +178,12 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
 
         if (!newConnection.isAuthenticated()) {
             if (user != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Logging in to XMPP as user: {} on connection: {}", user, getConnectionMessage(newConnection));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Logging in to XMPP as user: {} on connection: {}", user, getConnectionMessage(newConnection));
                 }
                 if (password == null) {
-                    log.warn("No password configured for user: {} on connection: {}", user, getConnectionMessage(newConnection));
+                    LOG.warn("No password configured for user: {} on connection: {}", user,
+                            getConnectionMessage(newConnection));
                 }
 
                 if (createAccount) {
@@ -197,8 +198,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
                     }
                 }
             } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Logging in anonymously to XMPP on connection: {}", getConnectionMessage(newConnection));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Logging in anonymously to XMPP on connection: {}", getConnectionMessage(newConnection));
                 }
                 newConnection.login();
             }
@@ -207,7 +208,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         }
 
         // okay new connection was created successfully so assign it as the connection
-        log.debug("Created new connection successfully: {}", newConnection);
+        LOG.debug("Created new connection successfully: {}", newConnection);
         connection = newConnection;
         return connection;
     }
@@ -229,11 +230,25 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         return new XMPPTCPConnection(conf);
     }
 
+    /**
+     * If there is no "@" symbol in the participant, find the service domain JID and return the fully qualified JID for
+     * the participant as user@server.domain
+     */
+    public String resolveParticipant(XMPPConnection connection) {
+        String participant = getParticipant();
+
+        if (participant.indexOf('@', 0) != -1) {
+            return participant;
+        }
+
+        return participant + "@" + connection.getXMPPServiceDomain().toString();
+    }
+
     /*
      * If there is no "@" symbol in the room, find the chat service JID and
      * return fully qualified JID for the room as room@conference.server.domain
      */
-    public String resolveRoom(XMPPConnection connection) throws InterruptedException, SmackException, XMPPException  {
+    public String resolveRoom(XMPPConnection connection) throws InterruptedException, SmackException, XMPPException {
         StringHelper.notEmpty(room, "room");
 
         if (room.indexOf('@', 0) != -1) {
@@ -243,8 +258,12 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         MultiUserChatManager multiUserChatManager = MultiUserChatManager.getInstanceFor(connection);
         List<DomainBareJid> xmppServiceDomains = multiUserChatManager.getXMPPServiceDomains();
         if (xmppServiceDomains.isEmpty()) {
-            throw new XMPPErrorException(null,
-                    StanzaError.from(Condition.item_not_found, "Cannot find any XMPPServiceDomain by MultiUserChatManager on connection: " + getConnectionMessage(connection)).build());
+            throw new XMPPErrorException(
+                    null,
+                    StanzaError.from(Condition.item_not_found,
+                            "Cannot find any XMPPServiceDomain by MultiUserChatManager on connection: "
+                                                               + getConnectionMessage(connection))
+                            .build());
         }
 
         return room + "@" + xmppServiceDomains.iterator().next();
@@ -272,8 +291,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     }
 
     /**
-     * Sets the binding used to convert from a Camel message to and from an XMPP
-     * message
+     * Sets the binding used to convert from a Camel message to and from an XMPP message
      */
     public void setBinding(XmppBinding binding) {
         this.binding = binding;
@@ -361,15 +379,25 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     }
 
     /**
-     * If this option is specified, the component will connect to MUC (Multi User Chat).
-     * Usually, the domain name for MUC is different from the login domain.
-     * For example, if you are superman@jabber.org and want to join the krypton room, then the room URL is
-     * krypton@conference.jabber.org. Note the conference part.
-     * It is not a requirement to provide the full room JID. If the room parameter does not contain the @ symbol,
-     * the domain part will be discovered and added by Camel
+     * If this option is specified, the component will connect to MUC (Multi User Chat). Usually, the domain name for
+     * MUC is different from the login domain. For example, if you are superman@jabber.org and want to join the krypton
+     * room, then the room URL is krypton@conference.jabber.org. Note the conference part. It is not a requirement to
+     * provide the full room JID. If the room parameter does not contain the @ symbol, the domain part will be
+     * discovered and added by Camel
      */
     public void setRoom(String room) {
         this.room = room;
+    }
+
+    /**
+     * Password for room
+     */
+    public void setRoomPassword(String roomPassword) {
+        this.roomPassword = roomPassword;
+    }
+
+    protected String getRoomPassword() {
+        return roomPassword;
     }
 
     public String getParticipant() {
@@ -406,6 +434,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
         return serviceName;
     }
 
+    @Override
     public HeaderFilterStrategy getHeaderFilterStrategy() {
         return headerFilterStrategy;
     }
@@ -413,6 +442,7 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     /**
      * To use a custom HeaderFilterStrategy to filter header to and from Camel message.
      */
+    @Override
     public void setHeaderFilterStrategy(HeaderFilterStrategy headerFilterStrategy) {
         this.headerFilterStrategy = headerFilterStrategy;
     }
@@ -422,7 +452,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     }
 
     /**
-     * To use an existing connection configuration. Currently {@link org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration} is only supported (XMPP over TCP).
+     * To use an existing connection configuration. Currently
+     * {@link org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration} is only supported (XMPP over TCP).
      */
     public void setConnectionConfig(ConnectionConfiguration connectionConfig) {
         this.connectionConfig = connectionConfig;
@@ -434,9 +465,9 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
 
     /**
      * Specifies whether to test the connection on startup. This is used to ensure that the XMPP client has a valid
-     * connection to the XMPP server when the route starts. Camel throws an exception on startup if a connection
-     * cannot be established. When this option is set to false, Camel will attempt to establish a "lazy" connection
-     * when needed by a producer, and will poll for a consumer connection until the connection is established. Default is true.
+     * connection to the XMPP server when the route starts. Camel throws an exception on startup if a connection cannot
+     * be established. When this option is set to false, Camel will attempt to establish a "lazy" connection when needed
+     * by a producer, and will poll for a consumer connection until the connection is established. Default is true.
      */
     public void setTestConnectionOnStartup(boolean testConnectionOnStartup) {
         this.testConnectionOnStartup = testConnectionOnStartup;
@@ -447,9 +478,9 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     }
 
     /**
-     * The amount of time in seconds between polls (in seconds) to verify the health of the XMPP connection, or between attempts
-     * to establish an initial consumer connection. Camel will try to re-establish a connection if it has become inactive.
-     * Default is 10 seconds.
+     * The amount of time in seconds between polls (in seconds) to verify the health of the XMPP connection, or between
+     * attempts to establish an initial consumer connection. Camel will try to re-establish a connection if it has
+     * become inactive. Default is 10 seconds.
      */
     public void setConnectionPollDelay(int connectionPollDelay) {
         this.connectionPollDelay = connectionPollDelay;
@@ -470,8 +501,8 @@ public class XmppEndpoint extends DefaultEndpoint implements HeaderFilterStrateg
     }
 
     /**
-     * Set a doc header on the IN message containing a Document form of the incoming packet;
-     * default is true if presence or pubsub are true, otherwise false
+     * Set a doc header on the IN message containing a Document form of the incoming packet; default is true if presence
+     * or pubsub are true, otherwise false
      */
     public void setDoc(boolean doc) {
         this.doc = doc;

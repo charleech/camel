@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,10 +30,11 @@ public class MapMailMessagesBugRoute extends RouteBuilder {
 
     public static void main(String... args) throws Exception {
         Main main = new Main();
-        main.addRouteBuilder(new MapMailMessagesBugRoute());
+        main.configure().addRoutesBuilder(new MapMailMessagesBugRoute());
         main.run(args);
     }
 
+    @Override
     public void configure() {
         // This is for Office365 host. Set your own host/username/password.
         // When setting option mapMailMessage=true (the default) option peek=true fails with the SEEN flag.
@@ -51,4 +52,3 @@ public class MapMailMessagesBugRoute extends RouteBuilder {
     }
 
 }
-

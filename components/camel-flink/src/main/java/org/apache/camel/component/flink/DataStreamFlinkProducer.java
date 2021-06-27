@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.flink;
 
 import java.util.List;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultProducer;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -32,7 +33,9 @@ public class DataStreamFlinkProducer extends DefaultProducer {
         DataStream ds = resolveDataStream(exchange);
         DataStreamCallback dataStreamCallback = resolveDataStreamCallback(exchange);
         Object body = exchange.getIn().getBody();
-        Object result = body instanceof List ? dataStreamCallback.onDataStream(ds, ((List) body).toArray(new Object[0])) : dataStreamCallback.onDataStream(ds, body);
+        Object result = body instanceof List
+                ? dataStreamCallback.onDataStream(ds, ((List) body).toArray(new Object[0]))
+                : dataStreamCallback.onDataStream(ds, body);
         collectResults(exchange, result);
     }
 

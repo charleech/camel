@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ public class CamelMethodHandler implements HttpHandler {
     private static final String DEFAULT_HANDLER_KEY = "";
     private static final String[] DEFAULT_METHODS;
     static {
-        DEFAULT_METHODS = new String[] {DEFAULT_HANDLER_KEY};
+        DEFAULT_METHODS = new String[] { DEFAULT_HANDLER_KEY };
     }
 
     private final Map<String, MethodEntry> methodMap = new ConcurrentHashMap<>();
@@ -76,7 +76,6 @@ public class CamelMethodHandler implements HttpHandler {
         return result;
     }
 
-
     public boolean remove(String methods) {
         boolean result;
         synchronized (methodMap) { // we lock on methodMap to get a reliable sum of refCounts
@@ -92,6 +91,7 @@ public class CamelMethodHandler implements HttpHandler {
         return result;
     }
 
+    @Override
     public String toString() {
         if (handlerString == null) {
             handlerString = "CamelMethodHandler[" + methodMap + "]";
@@ -120,12 +120,14 @@ public class CamelMethodHandler implements HttpHandler {
                 this.handler = handler;
                 refCount++;
                 return handler;
-            } else if ("OPTIONS".equals(method) || CamelWebSocketHandler.class == this.handler.getClass() && CamelWebSocketHandler.class == handler.getClass()) {
+            } else if ("OPTIONS".equals(method) || CamelWebSocketHandler.class == this.handler.getClass()
+                    && CamelWebSocketHandler.class == handler.getClass()) {
                 refCount++;
                 return this.handler;
             } else {
-                throw new IllegalArgumentException(String.format(
-                        "Duplicate handler for %s method: '%s', '%s'", method, this.handler, handler));
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Duplicate handler for %s method: '%s', '%s'", method, this.handler, handler));
             }
         }
 

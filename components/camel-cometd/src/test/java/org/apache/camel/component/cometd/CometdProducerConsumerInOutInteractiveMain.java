@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.apache.camel.component.cometd;
 
-import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -27,16 +27,16 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultMessage;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore("Run this test manually")
+@Disabled("Run this test manually")
 public class CometdProducerConsumerInOutInteractiveMain {
 
     private static final String URI = "cometd://127.0.0.1:9091/service/test?baseResource=file:./src/test/resources/webapp&"
-            + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
+                                      + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
 
-    private static final String URIS = "cometds://127.0.0.1:9443/service/test?baseResource=file:./src/test/resources/webapp&"
-        + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
+    private static final String URI2 = "cometds://127.0.0.1:9443/service/test?baseResource=file:./src/test/resources/webapp&"
+                                       + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
 
     private CamelContext context;
 
@@ -55,15 +55,21 @@ public class CometdProducerConsumerInOutInteractiveMain {
 
     private RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
-            public void configure() {
+            public void configure() throws URISyntaxException {
                 CometdComponent component = (CometdComponent) context.getComponent("cometds");
                 component.setSslPassword(pwd);
                 component.setSslKeyPassword(pwd);
-                File file = new File("./src/test/resources/jsse/localhost.ks");
-                URI keyStoreUrl = file.toURI();
+                URI keyStoreUrl = CometdProducerConsumerInOutInteractiveMain.class.getResource("/jsse/localhost.p12").toURI();
                 component.setSslKeystore(keyStoreUrl.getPath());
 
-                from(URI, URIS).setExchangePattern(ExchangePattern.InOut).process(new Processor() {
+                from(URI).setExchangePattern(ExchangePattern.InOut).process(new Processor() {
+                    public void process(Exchange exchange) throws Exception {
+                        Message out = new DefaultMessage(exchange.getContext());
+                        out.setBody("reply: " + exchange.getIn().getBody());
+                        exchange.setOut(out);
+                    }
+                });
+                from(URI2).setExchangePattern(ExchangePattern.InOut).process(new Processor() {
                     public void process(Exchange exchange) throws Exception {
                         Message out = new DefaultMessage(exchange.getContext());
                         out.setBody("reply: " + exchange.getIn().getBody());

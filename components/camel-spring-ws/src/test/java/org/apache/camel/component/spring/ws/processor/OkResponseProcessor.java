@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,8 +28,6 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
  * Generates static response on StockQuote webservice requests
  */
@@ -37,9 +35,10 @@ public class OkResponseProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(OkResponseProcessor.class);
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         LOG.info("Crafting standard response in StockQuoteResponseProcessor");
-        InputStream is = getClass().getResourceAsStream("/stockquote-response.xml");
+        InputStream is = getClass().getResourceAsStream("/stockquote-response.txt");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(is);

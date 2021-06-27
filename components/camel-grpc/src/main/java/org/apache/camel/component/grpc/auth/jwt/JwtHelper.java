@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,17 +40,18 @@ public final class JwtHelper {
             throw new IllegalArgumentException("UTF-8 encoding not supported during JWT token creation", e);
         }
     }
-    
-    public static Algorithm selectAlgorithm(JwtAlgorithm algorithmName, String secret) throws IllegalArgumentException, UnsupportedEncodingException {
+
+    public static Algorithm selectAlgorithm(JwtAlgorithm algorithmName, String secret)
+            throws IllegalArgumentException, UnsupportedEncodingException {
         switch (algorithmName) {
-        case HMAC256:
-            return Algorithm.HMAC256(secret);
-        case HMAC384:
-            return Algorithm.HMAC384(secret);
-        case HMAC512:
-            return Algorithm.HMAC512(secret);
-        default:
-            throw new IllegalArgumentException("JWT algorithm " + algorithmName + " not implemented");
+            case HMAC256:
+                return Algorithm.HMAC256(secret);
+            case HMAC384:
+                return Algorithm.HMAC384(secret);
+            case HMAC512:
+                return Algorithm.HMAC512(secret);
+            default:
+                throw new IllegalArgumentException("JWT algorithm " + algorithmName + " not implemented");
         }
     }
 }

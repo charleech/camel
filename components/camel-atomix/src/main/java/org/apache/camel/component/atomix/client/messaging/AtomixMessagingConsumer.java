@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,9 @@ import static org.apache.camel.component.atomix.client.AtomixClientConstants.CHA
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.MEMBER_NAME;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_NAME;
 
-final class AtomixMessagingConsumer extends AbstractAtomixClientConsumer<AtomixMessagingEndpoint> {
+public final class AtomixMessagingConsumer extends AbstractAtomixClientConsumer<AtomixMessagingEndpoint> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AtomixMessagingConsumer.class);
 
     private final List<Listener<Message<Object>>> listeners;
     private final String resultHeader;
@@ -65,15 +67,14 @@ final class AtomixMessagingConsumer extends AbstractAtomixClientConsumer<AtomixM
         super.doStart();
 
         DistributedGroup group = getAtomixEndpoint().getAtomix().getGroup(
-            groupName,
-            new DistributedGroup.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(groupName)),
-            new DistributedGroup.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(groupName))
-        ).join();
+                groupName,
+                new DistributedGroup.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(groupName)),
+                new DistributedGroup.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(groupName))).join();
 
         this.localMember = group.join(memberName).join();
         this.consumer = localMember.messaging().consumer(channelName);
 
-        log.debug("Subscribe to group: {}, member: {}, channel: {}", groupName, memberName, channelName);
+        LOG.debug("Subscribe to group: {}, member: {}, channel: {}", groupName, memberName, channelName);
         this.listeners.add(consumer.onMessage(this::onMessage));
     }
 
@@ -100,7 +101,7 @@ final class AtomixMessagingConsumer extends AbstractAtomixClientConsumer<AtomixM
     // ********************************************
 
     private void onMessage(Message<Object> message) {
-        Exchange exchange = getEndpoint().createExchange();
+        Exchange exchange = createExchange(true);
         exchange.getIn().setHeader(AtomixClientConstants.MESSAGE_ID, message.id());
 
         if (resultHeader == null) {

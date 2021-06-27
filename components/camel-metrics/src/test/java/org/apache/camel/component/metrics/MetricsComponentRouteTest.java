@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.metrics.MetricsConstants.HEADER_HISTOGRAM_VALUE;
 import static org.apache.camel.component.metrics.MetricsConstants.HEADER_METRIC_NAME;
@@ -33,10 +33,10 @@ import static org.apache.camel.component.metrics.MetricsConstants.HEADER_PREFIX;
 
 public class MetricsComponentRouteTest extends CamelTestSupport {
 
-    @Produce(uri = "direct:start-1")
+    @Produce("direct:start-1")
     protected ProducerTemplate template1;
 
-    @Produce(uri = "direct:start-2")
+    @Produce("direct:start-2")
     protected ProducerTemplate template2;
 
     @Test

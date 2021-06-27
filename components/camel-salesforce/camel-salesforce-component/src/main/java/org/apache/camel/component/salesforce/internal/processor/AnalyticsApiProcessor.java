@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,10 +34,7 @@ import org.apache.camel.component.salesforce.internal.client.AnalyticsApiClient;
 import org.apache.camel.component.salesforce.internal.client.DefaultAnalyticsApiClient;
 import org.apache.camel.support.service.ServiceHelper;
 
-import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.INCLUDE_DETAILS;
-import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.INSTANCE_ID;
-import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.REPORT_ID;
-import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.REPORT_METADATA;
+import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.*;
 
 /**
  * Exchange processor for Analytics API.
@@ -46,12 +43,22 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
 
     private AnalyticsApiClient analyticsClient;
 
-    public AnalyticsApiProcessor(SalesforceEndpoint endpoint) throws SalesforceException {
+    public AnalyticsApiProcessor(SalesforceEndpoint endpoint) {
         super(endpoint);
+    }
 
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
         this.analyticsClient = new DefaultAnalyticsApiClient(
-            (String) endpointConfigMap.get(SalesforceEndpointConfig.API_VERSION), session,
-            httpClient);
+                (String) endpointConfigMap.get(SalesforceEndpointConfig.API_VERSION), session, httpClient, loginConfig);
+        ServiceHelper.startService(analyticsClient);
+    }
+
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+        ServiceHelper.stopService(analyticsClient);
     }
 
     @Override
@@ -60,37 +67,36 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
 
         try {
             switch (operationName) {
-            case GET_RECENT_REPORTS:
-                processGetRecentReports(exchange, callback);
-                break;
-            case GET_REPORT_DESCRIPTION:
-                processGetReportDescription(exchange, callback);
-                break;
-            case EXECUTE_SYNCREPORT:
-                processExecuteSyncReport(exchange, callback);
-                break;
-            case EXECUTE_ASYNCREPORT:
-                processExecuteAsyncReport(exchange, callback);
-                break;
-            case GET_REPORT_INSTANCES:
-                processGetReportInstances(exchange, callback);
-                break;
-            case GET_REPORT_RESULTS:
-                processGetReportResults(exchange, callback);
-                break;
-            default:
-                throw new SalesforceException("Unknown operation name: " + operationName.value(), null);
+                case GET_RECENT_REPORTS:
+                    processGetRecentReports(exchange, callback);
+                    break;
+                case GET_REPORT_DESCRIPTION:
+                    processGetReportDescription(exchange, callback);
+                    break;
+                case EXECUTE_SYNCREPORT:
+                    processExecuteSyncReport(exchange, callback);
+                    break;
+                case EXECUTE_ASYNCREPORT:
+                    processExecuteAsyncReport(exchange, callback);
+                    break;
+                case GET_REPORT_INSTANCES:
+                    processGetReportInstances(exchange, callback);
+                    break;
+                case GET_REPORT_RESULTS:
+                    processGetReportResults(exchange, callback);
+                    break;
+                default:
+                    throw new SalesforceException("Unknown operation name: " + operationName.value(), null);
             }
         } catch (SalesforceException e) {
             exchange.setException(new SalesforceException(
-                    String.format("Error processing %s: [%s] \"%s\"",
-                            operationName.value(), e.getStatusCode(), e.getMessage()), e));
+                    String.format("Error processing %s: [%s] \"%s\"", operationName.value(), e.getStatusCode(), e.getMessage()),
+                    e));
             callback.done(true);
             done = true;
         } catch (RuntimeException e) {
             exchange.setException(new SalesforceException(
-                    String.format("Unexpected Error processing %s: \"%s\"",
-                            operationName.value(), e.getMessage()), e));
+                    String.format("Unexpected Error processing %s: \"%s\"", operationName.value(), e.getMessage()), e));
             callback.done(true);
             done = true;
         }
@@ -113,12 +119,14 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
 
         final String reportId = getParameter(REPORT_ID, exchange, USE_BODY, NOT_OPTIONAL);
 
-        analyticsClient.getReportDescription(reportId, determineHeaders(exchange), new AnalyticsApiClient.ReportDescriptionResponseCallback() {
-            @Override
-            public void onResponse(ReportDescription reportDescription, Map<String, String> headers, SalesforceException ex) {
-                processResponse(exchange, reportDescription, headers, ex, callback);
-            }
-        });
+        analyticsClient.getReportDescription(reportId, determineHeaders(exchange),
+                new AnalyticsApiClient.ReportDescriptionResponseCallback() {
+                    @Override
+                    public void onResponse(
+                            ReportDescription reportDescription, Map<String, String> headers, SalesforceException ex) {
+                        processResponse(exchange, reportDescription, headers, ex, callback);
+                    }
+                });
     }
 
     private void processExecuteSyncReport(final Exchange exchange, final AsyncCallback callback) throws SalesforceException {
@@ -135,17 +143,17 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
             }
         } else {
             reportId = getParameter(REPORT_ID, exchange, USE_BODY, NOT_OPTIONAL);
-            reportMetadata = getParameter(REPORT_METADATA, exchange, IGNORE_BODY, IS_OPTIONAL,
-                ReportMetadata.class);
+            reportMetadata = getParameter(REPORT_METADATA, exchange, IGNORE_BODY, IS_OPTIONAL, ReportMetadata.class);
         }
 
         analyticsClient.executeSyncReport(reportId, includeDetails, reportMetadata, determineHeaders(exchange),
-            new AnalyticsApiClient.ReportResultsResponseCallback() {
-                @Override
-                public void onResponse(AbstractReportResultsBase reportResults, Map<String, String> headers, SalesforceException ex) {
-                    processResponse(exchange, reportResults, headers, ex, callback);
-                }
-            });
+                new AnalyticsApiClient.ReportResultsResponseCallback() {
+                    @Override
+                    public void onResponse(
+                            AbstractReportResultsBase reportResults, Map<String, String> headers, SalesforceException ex) {
+                        processResponse(exchange, reportResults, headers, ex, callback);
+                    }
+                });
     }
 
     private void processExecuteAsyncReport(final Exchange exchange, final AsyncCallback callback) throws SalesforceException {
@@ -162,17 +170,16 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
             }
         } else {
             reportId = getParameter(REPORT_ID, exchange, USE_BODY, NOT_OPTIONAL);
-            reportMetadata = getParameter(REPORT_METADATA, exchange, IGNORE_BODY, IS_OPTIONAL,
-                ReportMetadata.class);
+            reportMetadata = getParameter(REPORT_METADATA, exchange, IGNORE_BODY, IS_OPTIONAL, ReportMetadata.class);
         }
 
         analyticsClient.executeAsyncReport(reportId, includeDetails, reportMetadata, determineHeaders(exchange),
-            new AnalyticsApiClient.ReportInstanceResponseCallback() {
-                @Override
-                public void onResponse(ReportInstance reportInstance, Map<String, String> headers, SalesforceException ex) {
-                    processResponse(exchange, reportInstance, headers, ex, callback);
-                }
-            });
+                new AnalyticsApiClient.ReportInstanceResponseCallback() {
+                    @Override
+                    public void onResponse(ReportInstance reportInstance, Map<String, String> headers, SalesforceException ex) {
+                        processResponse(exchange, reportInstance, headers, ex, callback);
+                    }
+                });
     }
 
     private void processGetReportInstances(final Exchange exchange, final AsyncCallback callback) throws SalesforceException {
@@ -180,12 +187,13 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
         final String reportId = getParameter(REPORT_ID, exchange, USE_BODY, NOT_OPTIONAL);
 
         analyticsClient.getReportInstances(reportId, determineHeaders(exchange),
-            new AnalyticsApiClient.ReportInstanceListResponseCallback() {
-                @Override
-                public void onResponse(List<ReportInstance> reportInstances, Map<String, String> headers, SalesforceException ex) {
-                    processResponse(exchange, reportInstances, headers, ex, callback);
-                }
-            });
+                new AnalyticsApiClient.ReportInstanceListResponseCallback() {
+                    @Override
+                    public void onResponse(
+                            List<ReportInstance> reportInstances, Map<String, String> headers, SalesforceException ex) {
+                        processResponse(exchange, reportInstances, headers, ex, callback);
+                    }
+                });
     }
 
     private void processGetReportResults(final Exchange exchange, final AsyncCallback callback) throws SalesforceException {
@@ -194,15 +202,17 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
         final String instanceId = getParameter(INSTANCE_ID, exchange, IGNORE_BODY, NOT_OPTIONAL);
 
         analyticsClient.getReportResults(reportId, instanceId, determineHeaders(exchange),
-            new AnalyticsApiClient.ReportResultsResponseCallback() {
-                @Override
-                public void onResponse(AbstractReportResultsBase reportResults, Map<String, String> headers, SalesforceException ex) {
-                    processResponse(exchange, reportResults, headers, ex, callback);
-                }
-            });
+                new AnalyticsApiClient.ReportResultsResponseCallback() {
+                    @Override
+                    public void onResponse(
+                            AbstractReportResultsBase reportResults, Map<String, String> headers, SalesforceException ex) {
+                        processResponse(exchange, reportResults, headers, ex, callback);
+                    }
+                });
     }
 
-    private void processResponse(Exchange exchange, Object body, Map<String, String> headers, SalesforceException ex, AsyncCallback callback) {
+    private void processResponse(
+            Exchange exchange, Object body, Map<String, String> headers, SalesforceException ex, AsyncCallback callback) {
         final Message out = exchange.getOut();
         if (ex != null) {
             exchange.setException(ex);
@@ -210,25 +220,14 @@ public class AnalyticsApiProcessor extends AbstractSalesforceProcessor {
             out.setBody(body);
         }
 
-        // copy headers and attachments
+        // copy headers
         final Message inboundMessage = exchange.getIn();
         final Map<String, Object> outputHeaders = out.getHeaders();
         outputHeaders.putAll(inboundMessage.getHeaders());
         outputHeaders.putAll(headers);
-        out.copyAttachments(inboundMessage);
 
         // signal exchange completion
         callback.done(false);
     }
 
-    @Override
-    public void start() throws Exception {
-        ServiceHelper.startService(analyticsClient);
-    }
-
-    @Override
-    public void stop() throws Exception {
-        // stop the client
-        ServiceHelper.stopService(analyticsClient);
-    }
 }

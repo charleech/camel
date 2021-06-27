@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,8 @@ public abstract class AbstractMetricsProducer extends DefaultProducer {
         }
     }
 
-    protected abstract void doProcess(Exchange exchange, MetricsEndpoint endpoint, MetricRegistry registry, String metricsName) throws Exception;
+    protected abstract void doProcess(Exchange exchange, MetricsEndpoint endpoint, MetricRegistry registry, String metricsName)
+            throws Exception;
 
     public String getMetricsName(Message in, String defaultValue) {
         return getStringHeader(in, MetricsConstants.HEADER_METRIC_NAME, defaultValue);

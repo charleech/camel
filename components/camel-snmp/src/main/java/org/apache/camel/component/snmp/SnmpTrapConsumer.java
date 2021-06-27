@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.apache.camel.component.snmp;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.snmp4j.CommandResponder;
 import org.snmp4j.CommandResponderEvent;
 import org.snmp4j.MessageException;
@@ -36,6 +38,8 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponder {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SnmpTrapConsumer.class);
+
     private SnmpEndpoint endpoint;
     private Address listenGenericAddress;
     private Snmp snmp;
@@ -45,37 +49,37 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
         super(endpoint, processor);
         this.endpoint = endpoint;
     }
-    
+
     @Override
     protected void doStart() throws Exception {
         super.doStart();
 
         // load connection data only if the endpoint is enabled
-        if (log.isInfoEnabled()) {
-            log.info("Starting trap consumer on {}", this.endpoint.getAddress());
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Starting trap consumer on {}", this.endpoint.getAddress());
         }
 
         this.listenGenericAddress = GenericAddress.parse(this.endpoint.getAddress());
 
         // either tcp or udp
         if ("tcp".equals(endpoint.getProtocol())) {
-            this.transport = new DefaultTcpTransportMapping((TcpAddress)this.listenGenericAddress);
+            this.transport = new DefaultTcpTransportMapping((TcpAddress) this.listenGenericAddress);
         } else if ("udp".equals(endpoint.getProtocol())) {
-            this.transport = new DefaultUdpTransportMapping((UdpAddress)this.listenGenericAddress);
+            this.transport = new DefaultUdpTransportMapping((UdpAddress) this.listenGenericAddress);
         } else {
             throw new IllegalArgumentException("Unknown protocol: " + endpoint.getProtocol());
         }
 
         this.snmp = new Snmp(transport);
         this.snmp.addCommandResponder(this);
-        
+
         // listen to the transport
-        if (log.isDebugEnabled()) {
-            log.debug("Starting trap consumer on {} using {} protocol", endpoint.getAddress(), endpoint.getProtocol());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Starting trap consumer on {} using {} protocol", endpoint.getAddress(), endpoint.getProtocol());
         }
         this.transport.listen();
-        if (log.isInfoEnabled()) {
-            log.info("Started trap consumer on {} using {} protocol", endpoint.getAddress(), endpoint.getProtocol());
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Started trap consumer on {} using {} protocol", endpoint.getAddress(), endpoint.getProtocol());
         }
     }
 
@@ -83,16 +87,17 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
     protected void doStop() throws Exception {
         // stop listening to the transport
         if (this.transport != null && this.transport.isListening()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Stopping trap consumer on {}", this.endpoint.getAddress());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Stopping trap consumer on {}", this.endpoint.getAddress());
             }
             this.transport.close();
-            log.info("Stopped trap consumer on {}", this.endpoint.getAddress());
+            LOG.info("Stopped trap consumer on {}", this.endpoint.getAddress());
         }
-        
+
         super.doStop();
     }
 
+    @Override
     public void processPdu(CommandResponderEvent event) {
         PDU pdu = event.getPDU();
         // check PDU not null
@@ -100,7 +105,7 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
             // check for INFORM
             // code take from the book "Essential SNMP"
             if ((pdu.getType() != PDU.TRAP) && (pdu.getType() != PDU.V1TRAP) && (pdu.getType() != PDU.REPORT)
-                && (pdu.getType() != PDU.RESPONSE)) {
+                    && (pdu.getType() != PDU.RESPONSE)) {
                 // first response the inform-message and then process the
                 // message
                 pdu.setErrorIndex(0);
@@ -110,13 +115,13 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
                 StateReference ref = event.getStateReference();
                 try {
                     event.getMessageDispatcher().returnResponsePdu(event.getMessageProcessingModel(),
-                                                                   event.getSecurityModel(),
-                                                                   event.getSecurityName(),
-                                                                   event.getSecurityLevel(), pdu,
-                                                                   event.getMaxSizeResponsePDU(), ref,
-                                                                   statusInformation);
-                    if (log.isDebugEnabled()) {
-                        log.debug("response to INFORM sent");
+                            event.getSecurityModel(),
+                            event.getSecurityName(),
+                            event.getSecurityLevel(), pdu,
+                            event.getMaxSizeResponsePDU(), ref,
+                            statusInformation);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("response to INFORM sent");
                     }
                 } catch (MessageException ex) {
                     getExceptionHandler().handleException(ex);
@@ -124,15 +129,15 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
             }
             processPDU(pdu, event);
         } else {
-            log.debug("Received invalid trap PDU");
+            LOG.debug("Received invalid trap PDU");
         }
     }
-    
+
     public void processPDU(PDU pdu, CommandResponderEvent event) {
-        if (log.isDebugEnabled()) {
-            log.debug("Received trap event for {} : {}", this.endpoint.getAddress(), pdu);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received trap event for {} : {}", this.endpoint.getAddress(), pdu);
         }
-        Exchange exchange = endpoint.createExchange(pdu, event);
+        Exchange exchange = createExchange(pdu, event);
         try {
             getProcessor().process(exchange);
         } catch (Exception e) {
@@ -141,5 +146,20 @@ public class SnmpTrapConsumer extends DefaultConsumer implements CommandResponde
         if (exchange.getException() != null) {
             getExceptionHandler().handleException(exchange.getException());
         }
+        releaseExchange(exchange, false);
     }
+
+    /**
+     * creates an exchange for the given message
+     *
+     * @param  pdu   the pdu
+     * @param  event a snmp4j CommandResponderEvent
+     * @return       an exchange
+     */
+    public Exchange createExchange(PDU pdu, CommandResponderEvent event) {
+        Exchange exchange = createExchange(false);
+        exchange.setIn(new SnmpMessage(getEndpoint().getCamelContext(), pdu, event));
+        return exchange;
+    }
+
 }

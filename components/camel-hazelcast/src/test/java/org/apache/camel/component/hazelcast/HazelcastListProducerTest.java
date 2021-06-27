@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,16 +19,20 @@ package org.apache.camel.component.hazelcast;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.hazelcast.collection.IList;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IList;
-
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
 
@@ -37,7 +41,7 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
 
     @Override
     protected void trainHazelcastInstance(HazelcastInstance hazelcastInstance) {
-        when(hazelcastInstance.<String>getList("bar")).thenReturn(list);
+        when(hazelcastInstance.<String> getList("bar")).thenReturn(list);
     }
 
     @Override
@@ -45,14 +49,15 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
         verify(hazelcastInstance, atLeastOnce()).getList("bar");
     }
 
-    @After
+    @AfterEach
     public final void verifyListMock() {
         verifyNoMoreInteractions(list);
     }
 
-    @Test(expected = CamelExecutionException.class)
+    @Test
     public void testWithInvalidOperation() {
-        template.sendBody("direct:addInvalid", "bar");
+        assertThrows(CamelExecutionException.class,
+                () -> template.sendBody("direct:addInvalid", "bar"));
     }
 
     @Test
@@ -104,13 +109,13 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
         template.sendBody("direct:removeValue", "foo1");
         verify(list).remove("foo1");
     }
-    
+
     @Test
     public void clearList() {
         template.sendBody("direct:clear", "");
         verify(list).clear();
     }
-    
+
     @Test
     public void addAll() throws InterruptedException {
         Collection t = new ArrayList();
@@ -119,7 +124,7 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
         template.sendBody("direct:addall", t);
         verify(list).addAll(t);
     }
-    
+
     @Test
     public void removeAll() throws InterruptedException {
         Collection t = new ArrayList();
@@ -128,7 +133,7 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
         template.sendBody("direct:removeAll", t);
         verify(list).removeAll(t);
     }
-    
+
     @Test
     public void retainAll() throws InterruptedException {
         Collection t = new ArrayList();
@@ -144,19 +149,25 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
             @Override
             public void configure() throws Exception {
 
-                from("direct:addInvalid").setHeader(HazelcastConstants.OPERATION, constant("bogus")).toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
+                from("direct:addInvalid").setHeader(HazelcastConstants.OPERATION, constant("bogus")).toF("hazelcast-%sbar",
+                        HazelcastConstants.LIST_PREFIX);
 
-                from("direct:add").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.ADD)).toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
+                from("direct:add").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.ADD))
+                        .toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
 
-                from("direct:set").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.SET_VALUE)).toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
+                from("direct:set").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.SET_VALUE))
+                        .toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
 
-                from("direct:get").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.GET)).toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX)
+                from("direct:get").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.GET))
+                        .toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX)
                         .to("seda:out");
 
-                from("direct:removeValue").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.REMOVE_VALUE)).to(
-                        String.format("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX));
+                from("direct:removeValue").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.REMOVE_VALUE))
+                        .to(
+                                String.format("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX));
 
-                from("direct:clear").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.CLEAR)).toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
+                from("direct:clear").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.CLEAR))
+                        .toF("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX);
 
                 from("direct:addall").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.ADD_ALL)).to(
                         String.format("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX));
@@ -167,11 +178,11 @@ public class HazelcastListProducerTest extends HazelcastCamelTestSupport {
                 from("direct:RETAIN_ALL").setHeader(HazelcastConstants.OPERATION, constant(HazelcastOperation.RETAIN_ALL)).to(
                         String.format("hazelcast-%sbar", HazelcastConstants.LIST_PREFIX));
 
-                from("direct:addWithOperationNumber").toF("hazelcast-%sbar?operation=%s", HazelcastConstants.LIST_PREFIX, HazelcastOperation.ADD);
+                from("direct:addWithOperationNumber").toF("hazelcast-%sbar?operation=%s", HazelcastConstants.LIST_PREFIX,
+                        HazelcastOperation.ADD);
                 from("direct:addWithOperationName").toF("hazelcast-%sbar?operation=ADD", HazelcastConstants.LIST_PREFIX);
             }
         };
     }
 
 }
-

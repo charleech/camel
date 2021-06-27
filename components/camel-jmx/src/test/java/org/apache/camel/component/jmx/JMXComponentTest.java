@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,17 @@ import java.util.Map;
 
 import org.apache.camel.ResolveEndpointFailedException;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Test behavior in the component for initializing an endpoint. Not much here beyond
- * checking that the code for the required and mutually exclusive params is working.
+ * Test behavior in the component for initializing an endpoint. Not much here beyond checking that the code for the
+ * required and mutually exclusive params is working.
  */
 public class JMXComponentTest {
 
@@ -38,7 +38,8 @@ public class JMXComponentTest {
 
     @Test
     public void withObjectProperties() throws Exception {
-        JMXEndpoint ep = context.getEndpoint("jmx:platform?objectDomain=FooDomain&key.propOne=prop1&key.propTwo=prop2", JMXEndpoint.class);
+        JMXEndpoint ep = context.getEndpoint("jmx:platform?objectDomain=FooDomain&key.propOne=prop1&key.propTwo=prop2",
+                JMXEndpoint.class);
         assertNotNull(ep);
 
         Map<String, String> props = ep.getObjectProperties();

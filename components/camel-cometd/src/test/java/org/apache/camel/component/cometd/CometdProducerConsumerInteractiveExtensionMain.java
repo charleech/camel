@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.apache.camel.component.cometd;
 
-import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -27,16 +27,16 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.cometd.bayeux.server.BayeuxServer;
 import org.cometd.bayeux.server.ServerMessage;
 import org.cometd.bayeux.server.ServerSession;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore("Run this test manually")
+@Disabled("Run this test manually")
 public class CometdProducerConsumerInteractiveExtensionMain {
 
     private static final String URI = "cometd://127.0.0.1:9091/channel/test?baseResource=file:./src/test/resources/webapp&"
-            + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
+                                      + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
 
     private static final String URIS = "cometds://127.0.0.1:9443/channel/test?baseResource=file:./src/test/resources/webapp&"
-            + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
+                                       + "timeout=240000&interval=0&maxInterval=30000&multiFrameInterval=1500&jsonCommented=true&logLevel=2";
 
     private CamelContext context;
 
@@ -55,7 +55,7 @@ public class CometdProducerConsumerInteractiveExtensionMain {
 
     private RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
-            public void configure() {
+            public void configure() throws URISyntaxException {
                 CometdComponent component = (CometdComponent) context.getComponent("cometds");
                 component.setSslPassword(pwd);
                 component.setSslKeyPassword(pwd);
@@ -64,8 +64,8 @@ public class CometdProducerConsumerInteractiveExtensionMain {
                 Censor bayeuxAuthenticator = new Censor();
                 component2.addExtension(bayeuxAuthenticator);
 
-                File file = new File("./src/test/resources/jsse/localhost.ks");
-                URI keyStoreUrl = file.toURI();
+                URI keyStoreUrl
+                        = CometdProducerConsumerInteractiveExtensionMain.class.getResource("/jsse/localhost.p12").toURI();
                 component.setSslKeystore(keyStoreUrl.getPath());
 
                 from("stream:in").to(URI).to(URIS);
@@ -77,18 +77,22 @@ public class CometdProducerConsumerInteractiveExtensionMain {
 
         private HashSet<String> forbidden = new HashSet<>(Arrays.asList("one", "two"));
 
+        @Override
         public void removed(ServerSession session, boolean timeout) {
             // called on remove of client
         }
 
+        @Override
         public boolean rcv(ServerSession from, ServerMessage.Mutable message) {
             return true;
         }
 
+        @Override
         public boolean rcvMeta(ServerSession from, ServerMessage.Mutable message) {
             return true;
         }
 
+        @Override
         public boolean send(ServerSession from, ServerSession to, ServerMessage.Mutable message) {
             Object data = message.getData();
             if (forbidden.contains(data)) {
@@ -97,6 +101,7 @@ public class CometdProducerConsumerInteractiveExtensionMain {
             return true;
         }
 
+        @Override
         public boolean sendMeta(ServerSession from, ServerMessage.Mutable message) {
             return true;
         }

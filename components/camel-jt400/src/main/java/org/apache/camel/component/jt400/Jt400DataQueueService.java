@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,39 +16,41 @@
  */
 package org.apache.camel.component.jt400;
 
+import java.io.IOException;
+
 import com.ibm.as400.access.AS400;
 import com.ibm.as400.access.BaseDataQueue;
 import com.ibm.as400.access.DataQueue;
 import com.ibm.as400.access.KeyedDataQueue;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.Service;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Pseudo-abstract class that encapsulates Service logic common to
- * {@link Jt400DataQueueConsumer} and {@link Jt400DataQueueProducer}.
+ * Pseudo-abstract class that encapsulates Service logic common to {@link Jt400DataQueueConsumer} and
+ * {@link Jt400DataQueueProducer}.
  */
 class Jt400DataQueueService implements Service {
-    
+
     /**
      * Logging tool.
      */
     private static final Logger LOG = LoggerFactory.getLogger(Jt400DataQueueService.class);
-    
+
     /**
      * Endpoint which this service connects to.
      */
     private final Jt400Endpoint endpoint;
-    
+
     /**
      * Data queue object that corresponds to the endpoint of this service (null if stopped).
      */
     private BaseDataQueue queue;
-    
+
     /**
-     * Creates a {@code Jt400DataQueueService} that connects to the specified
-     * endpoint.
+     * Creates a {@code Jt400DataQueueService} that connects to the specified endpoint.
      * 
      * @param endpoint endpoint which this service connects to
      */
@@ -58,7 +60,7 @@ class Jt400DataQueueService implements Service {
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         if (queue == null) {
             AS400 system = endpoint.getSystem();
             if (endpoint.isKeyed()) {
@@ -68,30 +70,36 @@ class Jt400DataQueueService implements Service {
             }
         }
         if (!queue.getSystem().isConnected(AS400.DATAQUEUE)) {
-            LOG.info("Connecting to {}", endpoint);
-            queue.getSystem().connectService(AS400.DATAQUEUE);
+            LOG.debug("Connecting to {}", endpoint);
+            try {
+                queue.getSystem().connectService(AS400.DATAQUEUE);
+            } catch (Exception e) {
+                throw RuntimeCamelException.wrapRuntimeCamelException(e);
+            }
         }
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         if (queue != null) {
-            LOG.info("Releasing connection to {}", endpoint);
+            LOG.debug("Releasing connection to {}", endpoint);
             AS400 system = queue.getSystem();
             queue = null;
             endpoint.releaseSystem(system);
         }
     }
-    
+
     /**
-     * Returns the data queue object that this service connects to. Returns
-     * {@code null} if the service is stopped.
+     * Returns the data queue object that this service connects to. Returns {@code null} if the service is stopped.
      * 
-     * @return the data queue object that this service connects to, or
-     *         {@code null} if stopped
+     * @return the data queue object that this service connects to, or {@code null} if stopped
      */
     public BaseDataQueue getDataQueue() {
         return queue;
     }
 
+    @Override
+    public void close() throws IOException {
+        stop();
+    }
 }

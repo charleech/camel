@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,11 +37,11 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
 
     private String beanId;
     private ApplicationContext applicationContext;
-    
+
     public CxfSpringEndpoint(CxfComponent component, String address) throws Exception {
         super(address, component);
     }
-    
+
     public CxfSpringEndpoint() {
     }
 
@@ -53,11 +53,11 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
      */
     @Override
     Client createClient() throws Exception {
-        
+
         // get service class
-        Class<?> cls = getServiceClass();    
-        
-        if (getDataFormat().equals(DataFormat.POJO)) { 
+        Class<?> cls = getServiceClass();
+
+        if (getDataFormat().equals(DataFormat.POJO)) {
             ObjectHelper.notNull(cls, CxfConstants.SERVICE_CLASS);
         }
 
@@ -65,13 +65,13 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
             // no WSDL and serviceClass specified, set our default serviceClass
             setServiceClass(org.apache.camel.component.cxf.DefaultSEI.class.getName());
             setDefaultOperationNamespace(CxfConstants.DISPATCH_NAMESPACE);
-            setDefaultOperationName(CxfConstants.DISPATCH_DEFAULT_OPERATION_NAMESPACE);               
-            if (getDataFormat().equals(DataFormat.PAYLOAD)) { 
+            setDefaultOperationName(CxfConstants.DISPATCH_DEFAULT_OPERATION_NAMESPACE);
+            if (getDataFormat().equals(DataFormat.PAYLOAD)) {
                 setSkipPayloadMessagePartCheck(true);
             }
             cls = getServiceClass();
         }
-        
+
         ClientFactoryBean factoryBean;
         if (cls != null) {
             // create client factory bean
@@ -97,7 +97,7 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
         if (factoryBean.getEndpointName() == null && getEndpointLocalName() != null) {
             factoryBean.setEndpointName(new QName(getEndpointNamespace(), getEndpointLocalName()));
         }
-        
+
         if (cls == null) {
             checkName(factoryBean.getEndpointName(), "endpoint/port name");
             checkName(factoryBean.getServiceName(), "service name");
@@ -109,24 +109,23 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
         return client;
     }
 
-
     /**
      * Create a service factory bean
      */
     @Override
-    ServerFactoryBean createServerFactoryBean() throws Exception  {
-        
+    ServerFactoryBean createServerFactoryBean() throws Exception {
+
         // get service class
-        Class<?> cls = getServiceClass();                
-        
+        Class<?> cls = getServiceClass();
+
         if (getWsdlURL() == null && cls == null) {
             // no WSDL and serviceClass specified, set our default serviceClass
             if (getDataFormat().equals(DataFormat.PAYLOAD)) {
                 setServiceClass(org.apache.camel.component.cxf.DefaultPayloadProviderSEI.class.getName());
-            } 
+            }
             cls = getServiceClass();
         }
-        
+
         // create server factory bean
         // Shouldn't use CxfEndpointUtils.getServerFactoryBean(cls) as it is for
         // CxfSoapComponent
@@ -165,26 +164,28 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
 
     // Properties
     // -------------------------------------------------------------------------
+    @Override
     public String getBeanId() {
         return beanId;
     }
-    
+
     // this property will be set by spring
-    public void setBeanId(String id) {       
+    @Override
+    public void setBeanId(String id) {
         this.beanId = id;
     }
-    
+
     public void setServiceNamespace(String serviceNamespace) {
-        QName qn = getServiceName();
+        QName qn = getServiceNameAsQName();
         if (qn == null) {
-            setServiceName(new QName(serviceNamespace, "local"));
+            setServiceNameAsQName(new QName(serviceNamespace, "local"));
         } else {
-            setServiceName(new QName(serviceNamespace, qn.getLocalPart()));
+            setServiceNameAsQName(new QName(serviceNamespace, qn.getLocalPart()));
         }
     }
 
     public String getServiceNamespace() {
-        QName qn = getServiceName();
+        QName qn = getServiceNameAsQName();
         if (qn == null) {
             return null;
         }
@@ -192,16 +193,16 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
     }
 
     public void setServiceLocalName(String serviceLocalName) {
-        QName qn = getServiceName();
+        QName qn = getServiceNameAsQName();
         if (qn == null) {
-            setServiceName(new QName("", serviceLocalName));
+            setServiceNameAsQName(new QName("", serviceLocalName));
         } else {
-            setServiceName(new QName(qn.getNamespaceURI(), serviceLocalName));
+            setServiceNameAsQName(new QName(qn.getNamespaceURI(), serviceLocalName));
         }
     }
 
     public String getServiceLocalName() {
-        QName qn = getServiceName();
+        QName qn = getServiceNameAsQName();
         if (qn == null) {
             return null;
         }
@@ -209,7 +210,7 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
     }
 
     public String getEndpointLocalName() {
-        QName qn = getPortName();
+        QName qn = getPortNameAsQName();
         if (qn == null) {
             return null;
         }
@@ -217,31 +218,32 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
     }
 
     public void setEndpointLocalName(String endpointLocalName) {
-        QName qn = getPortName();
+        QName qn = getPortNameAsQName();
         if (qn == null) {
-            setPortName(new QName("", endpointLocalName));
+            setPortNameAsQName(new QName("", endpointLocalName));
         } else {
-            setPortName(new QName(qn.getNamespaceURI(), endpointLocalName));
+            setPortNameAsQName(new QName(qn.getNamespaceURI(), endpointLocalName));
         }
     }
 
     public void setEndpointNamespace(String endpointNamespace) {
-        QName qn = getPortName();
+        QName qn = getPortNameAsQName();
         if (qn == null) {
-            setPortName(new QName(endpointNamespace, "local"));
+            setPortNameAsQName(new QName(endpointNamespace, "local"));
         } else {
-            setPortName(new QName(endpointNamespace, qn.getLocalPart()));
+            setPortNameAsQName(new QName(endpointNamespace, qn.getLocalPart()));
         }
     }
 
     public String getEndpointNamespace() {
-        QName qn = getPortName();
+        QName qn = getPortNameAsQName();
         if (qn == null) {
             return null;
         }
         return qn.getNamespaceURI();
     }
-    
+
+    @Override
     public void setApplicationContext(ApplicationContext ctx) throws BeansException {
         applicationContext = ctx;
 
@@ -250,7 +252,7 @@ public class CxfSpringEndpoint extends CxfEndpoint implements ApplicationContext
             bus = BusWiringBeanFactoryPostProcessor.addDefaultBus(ctx);
         }
     }
-    
+
     public ApplicationContext getApplicationContext() {
         return applicationContext;
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,12 @@ import info.ganglia.gmetric4j.gmetric.GMetricType;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.support.DefaultProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GangliaProducer extends DefaultProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GangliaProducer.class);
 
     private final Publisher publisher;
     private final GangliaEndpoint gangliaEndpoint;
@@ -34,6 +38,7 @@ public class GangliaProducer extends DefaultProducer {
         this.publisher = publisher;
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         Message message = exchange.getIn();
 
@@ -80,16 +85,16 @@ public class GangliaProducer extends DefaultProducer {
 
         String value = message.getBody(String.class);
         if ((value == null || value.length() == 0)
-            && (type == GMetricType.FLOAT || type == GMetricType.DOUBLE)) {
-            log.debug("Metric {} string value was null, using NaN", metricName);
+                && (type == GMetricType.FLOAT || type == GMetricType.DOUBLE)) {
+            LOG.debug("Metric {} string value was null, using NaN", metricName);
             value = "NaN";
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending metric {} to Ganglia: {}", metricName, value);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending metric {} to Ganglia: {}", metricName, value);
         }
         publisher.publish(groupName,
-            metricName, value, type, slope, tmax, dmax, units);
-        log.trace("Sending metric done");
+                metricName, value, type, slope, tmax, dmax, units);
+        LOG.trace("Sending metric done");
     }
 }

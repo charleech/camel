@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,21 +19,19 @@ package org.apache.camel.component.mail;
 import javax.mail.BodyPart;
 
 /**
- * Resolver to determine Content-Transfer-Encoding for file attachments.
- * <br/>
- * Normally this will be determined automatically, this resolver can be used to
- * override this behavior.
+ * Resolver to determine Content-Transfer-Encoding for file attachments. <br/>
+ * Normally this will be determined automatically, this resolver can be used to override this behavior.
  */
 public interface AttachmentsContentTransferEncodingResolver {
 
     /**
      * Resolves the content-transfer-encoding.
      * <p/>
-     * Return <tt>null</tt> if you cannot resolve a content-transfer-encoding or
-     * want to rely on the mail provider to resolve it for you.
+     * Return <tt>null</tt> if you cannot resolve a content-transfer-encoding or want to rely on the mail provider to
+     * resolve it for you.
      *
-     * @param messageBodyPart the body part
-     * @return the content-transfer-encoding or <tt>null</tt> to rely on the mail provider
+     * @param  messageBodyPart the body part
+     * @return                 the content-transfer-encoding or <tt>null</tt> to rely on the mail provider
      */
     String resolveContentTransferEncoding(BodyPart messageBodyPart);
 

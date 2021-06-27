@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.apache.camel.component.openstack.keystone.producer;
 import org.apache.camel.component.openstack.common.AbstractOpenstackEndpoint;
 import org.apache.camel.component.openstack.common.AbstractOpenstackProducer;
 import org.openstack4j.api.OSClient;
-
 
 public abstract class AbstractKeystoneProducer extends AbstractOpenstackProducer {
 

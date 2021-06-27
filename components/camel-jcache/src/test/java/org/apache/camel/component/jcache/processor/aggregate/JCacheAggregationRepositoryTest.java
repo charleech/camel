@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,37 +16,43 @@
  */
 package org.apache.camel.component.jcache.processor.aggregate;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JCacheAggregationRepositoryTest extends JCacheAggregationRepositoryTestSupport {
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void nonOptimisticRepoFailsOnOptimisticAdd() throws Exception {
         JCacheAggregationRepository repo = createRepository(false);
         repo.start();
 
         try {
-            Exchange oldOne = new DefaultExchange(context());
-            Exchange newOne = new DefaultExchange(context());
-            repo.add(context(), "myKey", oldOne, newOne);
-
-            fail("OptimisticLockingException should has been thrown");
+            final CamelContext context = context();
+            Exchange oldOne = new DefaultExchange(context);
+            Exchange newOne = new DefaultExchange(context);
+            assertThrows(UnsupportedOperationException.class,
+                    () -> repo.add(context, "myKey", oldOne, newOne));
         } finally {
             repo.stop();
         }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void optimisticRepoFailsForNonOptimisticAdd() throws Exception {
         JCacheAggregationRepository repo = createRepository(true);
         repo.start();
 
         try {
-            Exchange ex = new DefaultExchange(context());
-            repo.add(context(), "myKey", ex);
+            final CamelContext context = context();
+            Exchange ex = new DefaultExchange(context);
+            assertThrows(UnsupportedOperationException.class,
+                    () -> repo.add(context, "myKey", ex));
         } finally {
             repo.stop();
         }
@@ -66,7 +72,7 @@ public class JCacheAggregationRepositoryTest extends JCacheAggregationRepository
             Exchange newEx = createExchangeWithBody(testBody);
             Exchange oldEx = repoOne.add(context(), key, null, newEx);
 
-            assertNull("Old exchange should be null.", oldEx);
+            assertNull(oldEx, "Old exchange should be null.");
 
             final String theNewestBody = "This is the newest test body.";
             Exchange theNewestEx = createExchangeWithBody(theNewestBody);
@@ -93,7 +99,7 @@ public class JCacheAggregationRepositoryTest extends JCacheAggregationRepository
             Exchange newEx = createExchangeWithBody(testBody);
             Exchange oldEx = repoOne.add(context(), key, newEx);
 
-            assertNull("Old exchange should be null.", oldEx);
+            assertNull(oldEx, "Old exchange should be null.");
 
             final String theNewestBody = "This is the newest test body.";
             Exchange theNewestEx = createExchangeWithBody(theNewestBody);
@@ -122,7 +128,7 @@ public class JCacheAggregationRepositoryTest extends JCacheAggregationRepository
             repoOne.add(context(), key, null, ex);
 
             Exchange gotEx = repoTwo.get(context(), key);
-            assertEquals("ex and gotEx should be equal", gotEx.getIn().getBody(), ex.getIn().getBody());
+            assertEquals(gotEx.getIn().getBody(), ex.getIn().getBody(), "ex and gotEx should be equal");
         } finally {
             repoOne.stop();
             repoTwo.stop();
@@ -145,7 +151,7 @@ public class JCacheAggregationRepositoryTest extends JCacheAggregationRepository
             repoOne.add(context(), key, ex);
 
             Exchange gotEx = repoTwo.get(context(), key);
-            assertEquals("ex and gotEx should be equal", gotEx.getIn().getBody(), ex.getIn().getBody());
+            assertEquals(gotEx.getIn().getBody(), ex.getIn().getBody(), "ex and gotEx should be equal");
         } finally {
             repoOne.stop();
             repoTwo.stop();

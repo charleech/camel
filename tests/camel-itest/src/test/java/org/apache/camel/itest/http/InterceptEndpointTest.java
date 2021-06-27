@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,25 +20,26 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
+@CamelSpringTest
 @ContextConfiguration
-public class InterceptEndpointTest extends AbstractJUnit4SpringContextTests {
+public class InterceptEndpointTest {
 
     @Autowired
     protected CamelContext camelContext;
 
-    @EndpointInject(uri = "direct:start")
+    @EndpointInject("direct:start")
     protected ProducerTemplate producer;
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint mock;
 
     @Test
-    public void testMocksIsValid() throws Exception {
+    void testMocksIsValid() throws Exception {
         mock.expectedBodiesReceived("Simulated response from Google");
 
         producer.sendBody(null);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.kubernetes.cloud;
 
 import java.util.Collections;
@@ -35,7 +34,8 @@ public class KubernetesDnsServiceDiscovery extends KubernetesServiceDiscovery {
     public KubernetesDnsServiceDiscovery(KubernetesConfiguration configuration) {
         super(configuration);
 
-        this.namespace = configuration.getNamespace() != null ? configuration.getNamespace() : System.getenv("KUBERNETES_NAMESPACE");
+        this.namespace
+                = configuration.getNamespace() != null ? configuration.getNamespace() : System.getenv("KUBERNETES_NAMESPACE");
         this.zone = configuration.getDnsDomain();
 
         // validation
@@ -52,16 +52,11 @@ public class KubernetesDnsServiceDiscovery extends KubernetesServiceDiscovery {
 
     private ServiceDefinition newService(String name) {
         return new DefaultServiceDefinition(
-            name,
-            name + "." + getConfiguration().getNamespace() + ".svc." + getConfiguration().getDnsDomain(),
-            -1);
+                name, name + "." + getConfiguration().getNamespace() + ".svc." + getConfiguration().getDnsDomain(), -1);
     }
 
     @Override
     public String toString() {
-        return "KubernetesDnsServiceDiscovery{"
-            + "namespace='" + namespace + '\''
-            + ", zone='" + zone + '\''
-            + '}';
+        return "KubernetesDnsServiceDiscovery{" + "namespace='" + namespace + '\'' + ", zone='" + zone + '\'' + '}';
     }
 }

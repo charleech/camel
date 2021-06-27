@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,14 +25,14 @@ import org.apache.commons.csv.CSVRecord;
  * The {@link org.apache.camel.dataformat.csv.CsvRecordConverters} class defines common converters.
  *
  * @param <T> Conversion type
- * @see org.apache.camel.dataformat.csv.CsvRecordConverters
+ * @see       org.apache.camel.dataformat.csv.CsvRecordConverters
  */
 public interface CsvRecordConverter<T> {
     /**
      * Converts the CSV record into another type.
      *
-     * @param record CSV record to convert
-     * @return converted CSV record
+     * @param  record CSV record to convert
+     * @return        converted CSV record
      */
     T convertRecord(CSVRecord record);
 }

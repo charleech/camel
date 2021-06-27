@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,12 +17,14 @@
 package org.apache.camel.component.apns.factory;
 
 import com.notnoop.apns.ApnsService;
-
 import org.apache.camel.component.apns.model.ConnectionStrategy;
 import org.apache.camel.component.apns.util.ApnsUtils;
 import org.apache.camel.component.apns.util.TestConstants;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ApnsServiceFactoryTest {
 
@@ -34,12 +36,11 @@ public class ApnsServiceFactoryTest {
         doBasicAsserts(apnsService);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testApnsServiceFactoryAsPool0() throws Exception {
         ApnsServiceFactory apnsServiceFactory = createApnsServiceFactoryWithFixedCertificatesAsPool(0);
-        ApnsService apnsService = apnsServiceFactory.getApnsService();
-
-        doBasicAsserts(apnsService);
+        assertThrows(IllegalArgumentException.class,
+                () -> apnsServiceFactory.getApnsService());
     }
 
     @Test
@@ -51,12 +52,12 @@ public class ApnsServiceFactoryTest {
     }
 
     private void doBasicAsserts(Object apnsService) {
-        Assert.assertNotNull(apnsService);
-        Assert.assertTrue(apnsService instanceof ApnsService);
+        assertNotNull(apnsService);
+        assertTrue(apnsService instanceof ApnsService);
     }
 
-    public static ApnsServiceFactory createApnsServiceFactoryWithFixedCertificates() 
-        throws Exception {
+    public static ApnsServiceFactory createApnsServiceFactoryWithFixedCertificates()
+            throws Exception {
         ApnsServiceFactory apnsServiceFactory = new ApnsServiceFactory();
 
         apnsServiceFactory.setFeedbackHost(TestConstants.TEST_HOST);
@@ -68,8 +69,8 @@ public class ApnsServiceFactoryTest {
         return apnsServiceFactory;
     }
 
-    private ApnsServiceFactory createApnsServiceFactoryWithFixedCertificatesAsPool(int poolSize) 
-        throws Exception {
+    private ApnsServiceFactory createApnsServiceFactoryWithFixedCertificatesAsPool(int poolSize)
+            throws Exception {
         ApnsServiceFactory apnsServiceFactory = createApnsServiceFactoryWithFixedCertificates();
         apnsServiceFactory.setConnectionStrategy(ConnectionStrategy.POOL);
 

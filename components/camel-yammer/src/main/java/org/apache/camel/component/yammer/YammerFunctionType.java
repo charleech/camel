@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,15 @@
 package org.apache.camel.component.yammer;
 
 public enum YammerFunctionType {
-    MESSAGES, MY_FEED, ALGO, FOLLOWING, SENT, PRIVATE, RECEIVED, 
-    USERS, CURRENT,
-    RELATIONSHIPS;
+    MESSAGES,
+    MY_FEED,
+    ALGO,
+    FOLLOWING,
+    SENT,
+    PRIVATE,
+    RECEIVED,
+    USERS,
+    CURRENT;
 
     public static YammerFunctionType fromUri(String uri) {
         for (YammerFunctionType endpointType : YammerFunctionType.values()) {

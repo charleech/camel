@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,9 @@ import org.springframework.jms.support.destination.DestinationResolver;
 
 public class MyDestinationResolver implements DestinationResolver {
 
-    public Destination resolveDestinationName(Session session, String destinationName, boolean pubSubDomain) throws JMSException {
+    @Override
+    public Destination resolveDestinationName(Session session, String destinationName, boolean pubSubDomain)
+            throws JMSException {
         if ("logicalNameForTestBQueue".equals(destinationName)) {
             return session.createQueue("test.b");
         } else {

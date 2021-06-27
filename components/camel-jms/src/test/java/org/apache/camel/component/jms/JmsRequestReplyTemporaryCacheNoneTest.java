@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,15 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelExecutionException;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -35,6 +37,7 @@ public class JmsRequestReplyTemporaryCacheNoneTest extends CamelTestSupport {
 
     protected String componentName = "activemq";
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -56,11 +59,9 @@ public class JmsRequestReplyTemporaryCacheNoneTest extends CamelTestSupport {
             public void configure() throws Exception {
                 from("direct:start").to("activemq:queue:hello?replyToCacheLevelName=CACHE_NONE");
 
-                from("activemq:queue:hello").process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        exchange.getIn().setBody("Bye World");
-                        assertNotNull(exchange.getIn().getHeader("JMSReplyTo"));
-                    }
+                from("activemq:queue:hello").process(exchange -> {
+                    exchange.getIn().setBody("Bye World");
+                    assertNotNull(exchange.getIn().getHeader("JMSReplyTo"));
                 }).to("mock:result");
             }
         });
@@ -71,7 +72,9 @@ public class JmsRequestReplyTemporaryCacheNoneTest extends CamelTestSupport {
             fail("Should throw exception");
         } catch (CamelExecutionException e) {
             IllegalArgumentException iae = assertIsInstanceOf(IllegalArgumentException.class, e.getCause().getCause());
-            assertEquals("ReplyToCacheLevelName cannot be CACHE_NONE when using temporary reply queues. The value must be either CACHE_CONSUMER, or CACHE_SESSION", iae.getMessage());
+            assertEquals(
+                    "ReplyToCacheLevelName cannot be CACHE_NONE when using temporary reply queues. The value must be either CACHE_CONSUMER, or CACHE_SESSION",
+                    iae.getMessage());
         }
     }
 }

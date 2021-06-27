@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ public enum HazelcastQueueConsumerMode {
     LISTEN("listen"),
     POLL("poll");
 
-
     private static HazelcastQueueConsumerMode[] values = values();
     private final String mode;
 
@@ -34,13 +33,15 @@ public enum HazelcastQueueConsumerMode {
             return null;
         }
         for (HazelcastQueueConsumerMode hazelcastQueueConsumerMode : values) {
-            if (hazelcastQueueConsumerMode.toString().equalsIgnoreCase(name) || hazelcastQueueConsumerMode.name().equalsIgnoreCase(name)) {
+            if (hazelcastQueueConsumerMode.toString().equalsIgnoreCase(name)
+                    || hazelcastQueueConsumerMode.name().equalsIgnoreCase(name)) {
                 return hazelcastQueueConsumerMode;
             }
         }
         throw new IllegalArgumentException(String.format("Mode '%s' is not supported by this component.", name));
     }
 
+    @Override
     public String toString() {
         return mode;
     }

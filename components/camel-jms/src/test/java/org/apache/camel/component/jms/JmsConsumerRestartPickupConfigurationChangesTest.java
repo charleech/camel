@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,9 @@ package org.apache.camel.component.jms;
 import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
 
@@ -32,11 +30,7 @@ public class JmsConsumerRestartPickupConfigurationChangesTest extends CamelTestS
     @Test
     public void testRestartJmsConsumerPickupChanges() throws Exception {
         JmsEndpoint endpoint = context.getEndpoint("activemq:queue:foo", JmsEndpoint.class);
-        JmsConsumer consumer = endpoint.createConsumer(new Processor() {
-            public void process(Exchange exchange) throws Exception {
-                template.send("mock:result", exchange);
-            }
-        });
+        JmsConsumer consumer = endpoint.createConsumer(exchange -> template.send("mock:result", exchange));
 
         consumer.start();
 
@@ -62,6 +56,7 @@ public class JmsConsumerRestartPickupConfigurationChangesTest extends CamelTestS
         consumer.stop();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 

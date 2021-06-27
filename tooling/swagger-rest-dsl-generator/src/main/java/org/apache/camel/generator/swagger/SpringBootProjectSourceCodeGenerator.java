@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.generator.swagger;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
 import javax.annotation.Generated;
 import javax.lang.model.element.Modifier;
 
@@ -63,14 +64,15 @@ public class SpringBootProjectSourceCodeGenerator {
         final String classNameToUse = "CamelRestController";
 
         final AnnotationSpec.Builder generatedAnnotation = AnnotationSpec.builder(Generated.class).addMember("value",
-            "$S", getClass().getName());
-        final AnnotationSpec.Builder restAnnotation = AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.RestController"));
+                "$S", getClass().getName());
+        final AnnotationSpec.Builder restAnnotation
+                = AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.RestController"));
 
         TypeSpec.Builder builder = TypeSpec.classBuilder(classNameToUse)
-            .addModifiers(Modifier.PUBLIC, Modifier.FINAL).addMethod(methodSpec)
-            .addAnnotation(generatedAnnotation.build())
-            .addAnnotation(restAnnotation.build())
-            .addJavadoc("Forward requests to the Camel servlet so it can service REST requests.\n");
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL).addMethod(methodSpec)
+                .addAnnotation(generatedAnnotation.build())
+                .addAnnotation(restAnnotation.build())
+                .addJavadoc("Forward requests to the Camel servlet so it can service REST requests.\n");
         TypeSpec generatedRestController = builder.build();
 
         return JavaFile.builder(packageName, generatedRestController).indent(indent).build();
@@ -80,18 +82,21 @@ public class SpringBootProjectSourceCodeGenerator {
         ClassName req = ClassName.bestGuess("javax.servlet.http.HttpServletRequest");
         ClassName res = ClassName.bestGuess("javax.servlet.http.HttpServletResponse");
 
-        final AnnotationSpec.Builder reqAnnotation = AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.RequestMapping"))
-            .addMember("value", "\"/**\"");
+        final AnnotationSpec.Builder reqAnnotation
+                = AnnotationSpec.builder(ClassName.bestGuess("org.springframework.web.bind.annotation.RequestMapping"))
+                        .addMember("value", "\"/**\"");
 
         final MethodSpec.Builder forward = MethodSpec.methodBuilder("camelServlet").addModifiers(Modifier.PUBLIC)
-            .addParameter(req, "request")
-            .addParameter(res, "response")
-            .addAnnotation(reqAnnotation.build())
-            .returns(void.class);
+                .addParameter(req, "request")
+                .addParameter(res, "response")
+                .addAnnotation(reqAnnotation.build())
+                .returns(void.class);
 
         forward.addCode("try {\n");
         forward.addCode("    String path = request.getRequestURI();\n");
-        forward.addCode("    request.getServletContext().getRequestDispatcher(\"/camel/\" + path).forward(request, response);\n");
+        forward.addCode("    String camelPrefix = (path != null && path.startsWith(\"/\")) ? \"/camel\" : \"/camel/\";\n");
+        forward.addCode(
+                "    request.getServletContext().getRequestDispatcher(camelPrefix + path).forward(request, response);\n");
         forward.addCode("} catch (Exception e) {\n");
         forward.addCode("    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);\n");
         forward.addCode("}\n");

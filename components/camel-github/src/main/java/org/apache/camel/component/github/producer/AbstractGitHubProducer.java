@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,13 @@ import org.eclipse.egit.github.core.service.GitHubService;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 public abstract class AbstractGitHubProducer extends DefaultProducer {
-    
+
     private final GitHubEndpoint endpoint;
-    
+
     private RepositoryService repositoryService;
-    
+
     private Repository repository;
-    
+
     public AbstractGitHubProducer(GitHubEndpoint endpoint) throws Exception {
         super(endpoint);
         this.endpoint = endpoint;
@@ -47,22 +47,19 @@ public abstract class AbstractGitHubProducer extends DefaultProducer {
         initService(repositoryService);
         repository = repositoryService.getRepository(endpoint.getRepoOwner(), endpoint.getRepoName());
     }
-    
+
     protected void initService(GitHubService service) {
-        if (endpoint.hasOauth()) {
-            service.getClient().setOAuth2Token(endpoint.getOauthToken());
-        } else {
-            service.getClient().setCredentials(endpoint.getUsername(), endpoint.getPassword());
-        }
+        service.getClient().setOAuth2Token(endpoint.getOauthToken());
     }
-    
+
     protected RepositoryService getRepositoryService() {
         return repositoryService;
     }
-    
+
     protected Repository getRepository() {
         return repository;
     }
 
+    @Override
     public abstract void process(Exchange exchange) throws Exception;
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,8 @@ public abstract class DigitalOceanProducer extends DefaultProducer {
     }
 
     protected DigitalOceanOperations determineOperation(Exchange exchange) {
-        DigitalOceanOperations operation = exchange.getIn().getHeader(DigitalOceanHeaders.OPERATION, DigitalOceanOperations.class);
+        DigitalOceanOperations operation
+                = exchange.getIn().getHeader(DigitalOceanHeaders.OPERATION, DigitalOceanOperations.class);
         return ObjectHelper.isNotEmpty(operation) ? operation : configuration.getOperation();
     }
 

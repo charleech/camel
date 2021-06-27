@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,28 +21,45 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DigitalOceanTestSupport extends CamelTestSupport {
+    private static final Logger LOG = LoggerFactory.getLogger(DigitalOceanTestSupport.class);
 
     protected final Properties properties;
 
     protected DigitalOceanTestSupport() {
-        URL url = getClass().getResource("/test-options.properties");
+        properties = loadProperties();
+    }
+
+    // This is used by JUnit to automatically determine whether or not to run the integration tests
+    @SuppressWarnings("unused")
+    private static boolean hasCredentials() {
+        Properties properties = loadProperties();
+
+        return !properties.getProperty("oAuthToken", "").isEmpty();
+    }
+
+    private static Properties loadProperties() {
+        URL url = DigitalOceanTestSupport.class.getResource("/test-options.properties");
 
         InputStream inStream;
         try {
             inStream = url.openStream();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("I/O error opening the stream: {}", e.getMessage(), e);
             throw new IllegalAccessError("test-options.properties could not be found");
         }
 
-        properties = new Properties();
+        Properties properties = new Properties();
         try {
             properties.load(inStream);
+
+            return properties;
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("I/O error reading the stream: {}", e.getMessage(), e);
             throw new IllegalAccessError("test-options.properties could not be found");
         }
     }

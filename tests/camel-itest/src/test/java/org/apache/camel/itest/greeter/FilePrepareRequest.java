@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,11 @@ import org.apache.camel.Processor;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 
 public class FilePrepareRequest implements Processor {
-    public void process(Exchange exchange) throws Exception {
-        String request = exchange.getIn().getBody(String.class);       
-        exchange.getOut().setBody(request);
-        exchange.getOut().setHeader(CxfConstants.OPERATION_NAME, "greetMeOneWay");
+    @Override
+    public void process(Exchange exchange) {
+        String request = exchange.getIn().getBody(String.class);
+        exchange.getMessage().setBody(request);
+        exchange.getMessage().setHeader(CxfConstants.OPERATION_NAME, "greetMeOneWay");
     }
 
 }

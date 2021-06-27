@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MllpTcpClientProducerRequiredEndOfDataWithoutValidationTest extends TcpClientProducerEndOfDataAndValidationTestSupport {
+public class MllpTcpClientProducerRequiredEndOfDataWithoutValidationTest
+        extends TcpClientProducerEndOfDataAndValidationTestSupport {
 
     @Override
     boolean requireEndOfData() {
@@ -30,7 +30,6 @@ public class MllpTcpClientProducerRequiredEndOfDataWithoutValidationTest extends
     boolean validatePayload() {
         return false;
     }
-
 
     @Override
     @Test
@@ -91,6 +90,5 @@ public class MllpTcpClientProducerRequiredEndOfDataWithoutValidationTest extends
 
         runSendMultipleMessagesWithoutSomeEndOfDataByte();
     }
-
 
 }

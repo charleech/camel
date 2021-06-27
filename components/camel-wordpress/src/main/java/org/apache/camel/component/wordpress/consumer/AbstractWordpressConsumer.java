@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.component.wordpress.WordpressComponentConfiguration;
+import org.apache.camel.component.wordpress.WordpressConfiguration;
 import org.apache.camel.component.wordpress.WordpressEndpoint;
 import org.apache.camel.support.ScheduledPollConsumer;
 import org.slf4j.Logger;
@@ -30,21 +30,22 @@ public abstract class AbstractWordpressConsumer extends ScheduledPollConsumer {
 
     protected static final Logger LOG = LoggerFactory.getLogger(AbstractWordpressConsumer.class);
 
-    private WordpressComponentConfiguration configuration;
+    private WordpressConfiguration configuration;
 
     public AbstractWordpressConsumer(WordpressEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        this.configuration = endpoint.getConfig();
+        this.configuration = endpoint.getConfiguration();
         this.initConsumer();
     }
 
-    public AbstractWordpressConsumer(WordpressEndpoint endpoint, Processor processor, ScheduledExecutorService scheduledExecutorService) {
+    public AbstractWordpressConsumer(WordpressEndpoint endpoint, Processor processor,
+                                     ScheduledExecutorService scheduledExecutorService) {
         super(endpoint, processor, scheduledExecutorService);
-        this.configuration = endpoint.getConfig();
+        this.configuration = endpoint.getConfiguration();
         this.initConsumer();
     }
 
-    public WordpressComponentConfiguration getConfiguration() {
+    public WordpressConfiguration getConfiguration() {
         return configuration;
     }
 
@@ -62,27 +63,24 @@ public abstract class AbstractWordpressConsumer extends ScheduledPollConsumer {
      * 
      * @param configuration the endpoint configuration
      */
-    protected void configureService(WordpressComponentConfiguration configuration) {
-
+    protected void configureService(WordpressConfiguration configuration) {
+        // noop
     }
 
     @Override
     protected abstract int poll() throws Exception;
 
-    /**
-     * Message processor
-     * 
-     * @param result
-     */
     protected final void process(final Object result) {
-        Exchange exchange = getEndpoint().createExchange();
+        Exchange exchange = createExchange(false);
         try {
             exchange.getIn().setBody(result);
             getProcessor().process(exchange);
         } catch (Exception e) {
-            if (exchange.getException() != null) {
-                getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-            }
+            exchange.setException(e);
         }
+        if (exchange.getException() != null) {
+            getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
+        }
+        releaseExchange(exchange, false);
     }
 }

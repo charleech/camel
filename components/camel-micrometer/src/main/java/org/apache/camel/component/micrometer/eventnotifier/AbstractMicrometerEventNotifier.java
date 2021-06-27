@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,8 @@ import org.apache.camel.support.service.ServiceHelper;
 import static org.apache.camel.component.micrometer.MicrometerConstants.METRICS_REGISTRY_NAME;
 import static org.apache.camel.component.micrometer.MicrometerConstants.SERVICE_NAME;
 
-public abstract class AbstractMicrometerEventNotifier<T extends CamelEvent> extends EventNotifierSupport implements CamelContextAware {
+public abstract class AbstractMicrometerEventNotifier<T extends CamelEvent> extends EventNotifierSupport
+        implements CamelContextAware {
 
     private final Class<T> eventType;
 
@@ -41,7 +42,6 @@ public abstract class AbstractMicrometerEventNotifier<T extends CamelEvent> exte
     private TimeUnit durationUnit = TimeUnit.MILLISECONDS;
 
     public AbstractMicrometerEventNotifier(Class<T> eventType) {
-        super();
         this.eventType = eventType;
     }
 

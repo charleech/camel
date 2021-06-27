@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ehcache;
 
 import java.util.Collections;
 
+import org.apache.camel.BindToRegistry;
+import org.apache.camel.Component;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.ehcache.Cache;
 import org.ehcache.config.CacheRuntimeConfiguration;
 import org.ehcache.config.ResourceType;
@@ -31,43 +31,40 @@ import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
 import org.ehcache.core.Ehcache;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EhcacheConfigurationTest extends CamelTestSupport {
-    @EndpointInject(uri = "ehcache:globalConfig")
+    @EndpointInject("ehcache:globalConfig")
     EhcacheEndpoint globalConfig;
-    @EndpointInject(uri = "ehcache:customConfig")
+    @EndpointInject("ehcache:customConfig")
     EhcacheEndpoint customConfig;
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
+    @BindToRegistry("ehcache")
+    public Component createEhcacheComponent() {
         EhcacheComponent component = new EhcacheComponent();
         component.setCacheConfiguration(
-            CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                String.class,
-                String.class,
-                ResourcePoolsBuilder.newResourcePoolsBuilder()
-                    .heap(100, EntryUnit.ENTRIES)
-                    .offheap(1, MemoryUnit.MB))
-                .build()
-        );
-        component.setCachesConfigurations(
-            Collections.singletonMap(
-                "customConfig",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                    String.class,
-                    String.class,
-                    ResourcePoolsBuilder.newResourcePoolsBuilder()
-                        .heap(200, EntryUnit.ENTRIES)
-                        .offheap(2, MemoryUnit.MB))
-                    .build()
-            )
-        );
+                        String.class,
+                        String.class,
+                        ResourcePoolsBuilder.newResourcePoolsBuilder()
+                                .heap(100, EntryUnit.ENTRIES)
+                                .offheap(1, MemoryUnit.MB))
+                        .build());
+        component.setCachesConfigurations(
+                Collections.singletonMap(
+                        "customConfig",
+                        CacheConfigurationBuilder.newCacheConfigurationBuilder(
+                                String.class,
+                                String.class,
+                                ResourcePoolsBuilder.newResourcePoolsBuilder()
+                                        .heap(200, EntryUnit.ENTRIES)
+                                        .offheap(2, MemoryUnit.MB))
+                                .build()));
 
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("ehcache", component);
-
-        return registry;
+        return component;
     }
 
     // *****************************
@@ -75,9 +72,11 @@ public class EhcacheConfigurationTest extends CamelTestSupport {
     // *****************************
 
     @Test
-    public void testConfiguration() throws Exception {
-        Cache<String, String> globalConfigCache = globalConfig.getManager().getCache("globalConfig", String.class, String.class);
-        Cache<String, String> customConfigCache = customConfig.getManager().getCache("customConfig", String.class, String.class);
+    void testConfiguration() throws Exception {
+        Cache<String, String> globalConfigCache
+                = globalConfig.getManager().getCache("globalConfig", String.class, String.class);
+        Cache<String, String> customConfigCache
+                = customConfig.getManager().getCache("customConfig", String.class, String.class);
 
         assertTrue(globalConfigCache instanceof Ehcache);
         assertTrue(customConfigCache instanceof Ehcache);
@@ -100,12 +99,12 @@ public class EhcacheConfigurationTest extends CamelTestSupport {
     // ****************************
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:ehcache")
-                    .to(globalConfig)
-                    .to(customConfig);
+                        .to(globalConfig)
+                        .to(customConfig);
             }
         };
     }

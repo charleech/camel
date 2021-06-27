@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,9 +18,9 @@ package org.apache.camel.builder.saxon;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class XQueryRecipientListTest extends CamelTestSupport {
 
@@ -48,7 +48,7 @@ public class XQueryRecipientListTest extends CamelTestSupport {
     }
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -56,14 +56,14 @@ public class XQueryRecipientListTest extends CamelTestSupport {
         tampaEndpoint = getMockEndpoint("mock:foo.Tampa");
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 // TODO is there a nicer way to do this with XQuery?
-                
+
                 // START SNIPPET: example
-                from("direct:start").
-                        recipientList().xquery("concat('mock:foo.', /person/@city)", String.class);
+                from("direct:start").recipientList().xquery("concat('mock:foo.', /person/@city)", String.class);
                 // END SNIPPET: example
             }
         };

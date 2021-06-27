@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,9 +25,9 @@ public interface WordpressServicePosts extends WordpressCrudService<Post, PostSe
     /**
      * Default endpoint.
      * 
-     * @param postId
-     * @param context
-     * @param password
+     * @param  postId
+     * @param  context
+     * @param  password
      * @return
      */
     Post retrieve(Integer postId, Context context, String password);

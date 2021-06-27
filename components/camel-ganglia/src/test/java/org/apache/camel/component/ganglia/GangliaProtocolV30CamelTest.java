@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,29 +26,24 @@ import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageDecoder;
-
 import org.acplt.oncrpc.OncRpcException;
 import org.acplt.oncrpc.XdrBufferDecodingStream;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static info.ganglia.gmetric4j.gmetric.GMetricSlope.NEGATIVE;
 import static info.ganglia.gmetric4j.gmetric.GMetricType.FLOAT;
-
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_DMAX;
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_METRIC_NAME;
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_SLOPE;
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_TMAX;
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_TYPE;
 import static org.apache.camel.component.ganglia.GangliaConfiguration.DEFAULT_UNITS;
-
 import static org.apache.camel.component.ganglia.GangliaConstants.GROUP_NAME;
 import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_DMAX;
 import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_NAME;
@@ -56,19 +51,20 @@ import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_SLOPE;
 import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_TMAX;
 import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_TYPE;
 import static org.apache.camel.component.ganglia.GangliaConstants.METRIC_UNITS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
- * {@code GangliaProtocolV30CamelTest} is not shipped with an embedded gmond
- * agent. The gmond agent is mocked with the help of camel-netty4 codecs and a
- * mock endpoint. As underlying UDP packets are not guaranteed to be delivered,
- * loose assertions are performed.
+ * {@code GangliaProtocolV30CamelTest} is not shipped with an embedded gmond agent. The gmond agent is mocked with the
+ * help of camel-netty codecs and a mock endpoint. As underlying UDP packets are not guaranteed to be delivered, loose
+ * assertions are performed.
  */
 public class GangliaProtocolV30CamelTest extends CamelGangliaTestSupport {
 
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    @BindToRegistry("protocolV30Decoder")
+    private ProtocolV30Decoder protocolV30Decoder = new ProtocolV30Decoder();
 
-    @EndpointInject(uri = "mock:gmond")
+    @EndpointInject("mock:gmond")
     private MockEndpoint mockGmond;
 
     private String getTestUri() {
@@ -84,7 +80,7 @@ public class GangliaProtocolV30CamelTest extends CamelGangliaTestSupport {
             @Override
             public void process(Exchange exchange) throws Exception {
                 Ganglia_message gangliaMessage = exchange.getIn().getBody(Ganglia_message.class);
-                assertNotNull("The gmond mock should only receive a non-null ganglia message", gangliaMessage);
+                assertNotNull(gangliaMessage, "The gmond mock should only receive a non-null ganglia message");
                 assertEquals(DEFAULT_METRIC_NAME, gangliaMessage.gmetric.name);
                 assertEquals(DEFAULT_TYPE.getGangliaType(), gangliaMessage.gmetric.type);
                 assertEquals(DEFAULT_SLOPE.getGangliaSlope(), gangliaMessage.gmetric.slope);
@@ -109,7 +105,7 @@ public class GangliaProtocolV30CamelTest extends CamelGangliaTestSupport {
             @Override
             public void process(Exchange exchange) throws Exception {
                 Ganglia_message gangliaMessage = exchange.getIn().getBody(Ganglia_message.class);
-                assertNotNull("The gmond mock should only receive a non-null ganglia message", gangliaMessage);
+                assertNotNull(gangliaMessage, "The gmond mock should only receive a non-null ganglia message");
                 assertEquals("depth", gangliaMessage.gmetric.name);
                 assertEquals("float", gangliaMessage.gmetric.type);
                 assertEquals(2, gangliaMessage.gmetric.slope);
@@ -134,17 +130,10 @@ public class GangliaProtocolV30CamelTest extends CamelGangliaTestSupport {
     }
 
     @Override
-    public JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("protocolV30Decoder", new ProtocolV30Decoder());
-        return jndi;
-    }
-
-    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("netty4:udp://localhost:" + getTestPort() + "/?decoders=#protocolV30Decoder").to(mockGmond);
+                from("netty:udp://localhost:" + getTestPort() + "/?decoders=#protocolV30Decoder").to(mockGmond);
             }
         };
     }
@@ -152,7 +141,8 @@ public class GangliaProtocolV30CamelTest extends CamelGangliaTestSupport {
     @Sharable
     public static class ProtocolV30Decoder extends MessageToMessageDecoder<DatagramPacket> {
         @Override
-        protected void decode(ChannelHandlerContext ctx, DatagramPacket packet, List<Object> out) throws OncRpcException, IOException {
+        protected void decode(ChannelHandlerContext ctx, DatagramPacket packet, List<Object> out)
+                throws OncRpcException, IOException {
             byte[] bytes = new byte[packet.content().readableBytes()];
             packet.content().readBytes(bytes);
 

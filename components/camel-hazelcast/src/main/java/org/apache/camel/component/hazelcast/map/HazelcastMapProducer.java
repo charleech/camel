@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.query.SqlPredicate;
-
+import com.hazelcast.map.IMap;
+import com.hazelcast.query.impl.predicates.SqlPredicate;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.hazelcast.HazelcastComponentHelper;
 import org.apache.camel.component.hazelcast.HazelcastConstants;
@@ -41,6 +40,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         this.cache = hazelcastInstance.getMap(cacheName);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
 
         Map<String, Object> headers = exchange.getIn().getHeaders();
@@ -55,7 +55,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         if (headers.containsKey(HazelcastConstants.OBJECT_ID)) {
             oid = headers.get(HazelcastConstants.OBJECT_ID);
         }
-        
+
         if (headers.containsKey(HazelcastConstants.OBJECT_VALUE)) {
             ovalue = headers.get(HazelcastConstants.OBJECT_VALUE);
         }
@@ -67,7 +67,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         if (headers.containsKey(HazelcastConstants.TTL_UNIT)) {
             ttlUnit = headers.get(HazelcastConstants.TTL_UNIT);
         }
-        
+
         if (headers.containsKey(HazelcastConstants.QUERY)) {
             query = (String) headers.get(HazelcastConstants.QUERY);
         }
@@ -75,72 +75,74 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         final HazelcastOperation operation = lookupOperation(exchange);
         switch (operation) {
 
-        case PUT:
-            if (ObjectHelper.isEmpty(ttl) && ObjectHelper.isEmpty(ttlUnit)) {
-                this.put(oid, exchange);
-            } else {
-                this.put(oid, ttl, ttlUnit, exchange);
-            }
-            break;
-            
-        case PUT_IF_ABSENT:
-            if (ObjectHelper.isEmpty(ttl) && ObjectHelper.isEmpty(ttlUnit)) {
-                this.putIfAbsent(oid, exchange);
-            } else {
-                this.putIfAbsent(oid, ttl, ttlUnit, exchange);
-            }
-            break;
+            case PUT:
+                if (ObjectHelper.isEmpty(ttl) && ObjectHelper.isEmpty(ttlUnit)) {
+                    this.put(oid, exchange);
+                } else {
+                    this.put(oid, ttl, ttlUnit, exchange);
+                }
+                break;
 
-        case GET:
-            this.get(oid, exchange);
-            break;
-            
-        case GET_ALL:
-            this.getAll(oid, exchange);
-            break;
+            case PUT_IF_ABSENT:
+                if (ObjectHelper.isEmpty(ttl) && ObjectHelper.isEmpty(ttlUnit)) {
+                    this.putIfAbsent(oid, exchange);
+                } else {
+                    this.putIfAbsent(oid, ttl, ttlUnit, exchange);
+                }
+                break;
 
-        case GET_KEYS:
-            this.getKeys(exchange);
-            break;
+            case GET:
+                this.get(oid, exchange);
+                break;
 
-        case CONTAINS_KEY:
-            this.containsKey(oid, exchange);
-            break;
-            
-        case CONTAINS_VALUE:
-            this.containsValue(exchange);
-            break;
+            case GET_ALL:
+                this.getAll(oid, exchange);
+                break;
 
-        case DELETE:
-            this.delete(oid);
-            break;
+            case GET_KEYS:
+                this.getKeys(exchange);
+                break;
 
-        case UPDATE:
-            if (ObjectHelper.isEmpty(ovalue)) {
-                this.update(oid, exchange);
-            } else {
-                this.update(oid, ovalue, exchange);
-            }
-            break;
+            case CONTAINS_KEY:
+                this.containsKey(oid, exchange);
+                break;
 
-        case QUERY:
-            this.query(query, exchange);
-            break;
-            
-        case CLEAR:
-            this.clear(exchange);
-            break;
-            
-        case EVICT:
-            this.evict(oid);
-            break;
+            case CONTAINS_VALUE:
+                this.containsValue(exchange);
+                break;
 
-        case EVICT_ALL:
-            this.evictAll();
-            break;
-            
-        default:
-            throw new IllegalArgumentException(String.format("The value '%s' is not allowed for parameter '%s' on the MAP cache.", operation, HazelcastConstants.OPERATION));
+            case DELETE:
+                this.delete(oid);
+                break;
+
+            case UPDATE:
+                if (ObjectHelper.isEmpty(ovalue)) {
+                    this.update(oid, exchange);
+                } else {
+                    this.update(oid, ovalue, exchange);
+                }
+                break;
+
+            case QUERY:
+                this.query(query, exchange);
+                break;
+
+            case CLEAR:
+                this.clear();
+                break;
+
+            case EVICT:
+                this.evict(oid);
+                break;
+
+            case EVICT_ALL:
+                this.evictAll();
+                break;
+
+            default:
+                throw new IllegalArgumentException(
+                        String.format("The value '%s' is not allowed for parameter '%s' on the MAP cache.", operation,
+                                HazelcastConstants.OPERATION));
         }
 
         // finally copy headers
@@ -157,7 +159,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         } else {
             result = this.cache.values();
         }
-        exchange.getOut().setBody(result);
+        exchange.getMessage().setBody(result);
     }
 
     /**
@@ -169,7 +171,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         this.cache.replace(oid, body);
         this.cache.unlock(oid);
     }
-    
+
     /**
      * Replaces the entry for given id with a specific value in the body, only if currently mapped to a given value
      */
@@ -191,15 +193,14 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
      * find an object by the given id and give it back
      */
     private void get(Object oid, Exchange exchange) {
-        exchange.getOut().setBody(this.cache.get(oid));
+        exchange.getMessage().setBody(this.cache.get(oid));
     }
-    
-    
+
     /**
      * GET All objects and give it back
      */
     private void getAll(Object oid, Exchange exchange) {
-        exchange.getOut().setBody(this.cache.getAll((Set<Object>) oid));
+        exchange.getMessage().setBody(this.cache.getAll((Set<Object>) oid));
     }
 
     /**
@@ -209,7 +210,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         Object body = exchange.getIn().getBody();
         this.cache.put(oid, body);
     }
-    
+
     /**
      * PUT a new object into the cache with a specific time to live
      */
@@ -217,7 +218,7 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         Object body = exchange.getIn().getBody();
         this.cache.put(oid, body, (long) ttl, (TimeUnit) ttlUnit);
     }
-    
+
     /**
      * if the specified key is not already associated with a value, associate it with the given value.
      */
@@ -225,55 +226,56 @@ public class HazelcastMapProducer extends HazelcastDefaultProducer {
         Object body = exchange.getIn().getBody();
         this.cache.putIfAbsent(oid, body);
     }
-    
+
     /**
-     * Puts an entry into this map with a given ttl (time to live) value if the specified key is not already associated with a value.
+     * Puts an entry into this map with a given ttl (time to live) value if the specified key is not already associated
+     * with a value.
      */
     private void putIfAbsent(Object oid, Object ttl, Object ttlUnit, Exchange exchange) {
         Object body = exchange.getIn().getBody();
         this.cache.putIfAbsent(oid, body, (long) ttl, (TimeUnit) ttlUnit);
     }
-    
+
     /**
      * Clear all the entries
      */
-    private void clear(Exchange exchange) {
+    private void clear() {
         this.cache.clear();
     }
-    
+
     /**
      * Eviction operation for a specific key
      */
     private void evict(Object oid) {
         this.cache.evict(oid);
     }
-    
+
     /**
-     * Evict All operation 
+     * Evict All operation
      */
     private void evictAll() {
         this.cache.evictAll();
     }
-    
+
     /**
      * Check for a specific key in the cache and return true if it exists or false otherwise
      */
     private void containsKey(Object oid, Exchange exchange) {
-        exchange.getOut().setBody(this.cache.containsKey(oid));
+        exchange.getMessage().setBody(this.cache.containsKey(oid));
     }
-    
+
     /**
      * Check for a specific value in the cache and return true if it exists or false otherwise
      */
     private void containsValue(Exchange exchange) {
         Object body = exchange.getIn().getBody();
-        exchange.getOut().setBody(this.cache.containsValue(body));
+        exchange.getMessage().setBody(this.cache.containsValue(body));
     }
 
     /**
-    * GET keys set of objects and give it back
-    */
+     * GET keys set of objects and give it back
+     */
     private void getKeys(Exchange exchange) {
-        exchange.getOut().setBody(this.cache.keySet());
+        exchange.getMessage().setBody(this.cache.keySet());
     }
 }

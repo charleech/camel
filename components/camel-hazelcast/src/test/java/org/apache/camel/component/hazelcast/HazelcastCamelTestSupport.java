@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,12 @@ package org.apache.camel.component.hazelcast;
 
 import com.hazelcast.core.HazelcastInstance;
 import org.apache.camel.CamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class HazelcastCamelTestSupport extends CamelTestSupport {
 
@@ -31,7 +32,7 @@ public class HazelcastCamelTestSupport extends CamelTestSupport {
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         CamelContext context = super.createCamelContext();
         HazelcastCamelTestHelper.registerHazelcastComponents(context, hazelcastInstance);
         trainHazelcastInstance(hazelcastInstance);
@@ -46,11 +47,10 @@ public class HazelcastCamelTestSupport extends CamelTestSupport {
 
     }
 
-    @After
+    @AfterEach
     public final void verifyHazelcastInstanceMock() {
         verifyHazelcastInstance(hazelcastInstance);
         verifyNoMoreInteractions(hazelcastInstance);
     }
-
 
 }

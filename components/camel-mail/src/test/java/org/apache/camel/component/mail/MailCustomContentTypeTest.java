@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,12 @@ import javax.mail.Message;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test for contentType option.
@@ -56,7 +59,7 @@ public class MailCustomContentTypeTest extends CamelTestSupport {
         assertEquals("text/html; charset=iso-8859-1", msg.getContentType());
         assertEquals("<html><body><h1>Hello</h1>World</body></html>", msg.getContent());
     }
-    
+
     @Test
     public void testNullBody() throws Exception {
         Mailbox.clearAll();
@@ -107,6 +110,7 @@ public class MailCustomContentTypeTest extends CamelTestSupport {
         assertEquals("Hello World", msg.getContent());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
 
-
 public class RawMessageWSDLGetOutInterceptor extends AbstractPhaseInterceptor<Message> {
     public static final RawMessageWSDLGetOutInterceptor INSTANCE = new RawMessageWSDLGetOutInterceptor();
 
@@ -37,9 +36,10 @@ public class RawMessageWSDLGetOutInterceptor extends AbstractPhaseInterceptor<Me
         super(Phase.PRE_STREAM);
     }
 
+    @Override
     public void handleMessage(Message message) throws Fault {
 
-        Document doc = (Document)message.get(RawMessageWSDLGetInterceptor.DOCUMENT_HOLDER);
+        Document doc = (Document) message.get(RawMessageWSDLGetInterceptor.DOCUMENT_HOLDER);
         if (doc == null) {
             return;
         }

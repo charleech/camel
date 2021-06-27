@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,7 @@ public class ClassPathURIResolver implements URIResolver {
     private final URIResolver clientUriResolver;
 
     /**
-     * Constructor setter for rules directory path, and the fallback URIResolver used
-     * for schematron includes.
+     * Constructor setter for rules directory path, and the fallback URIResolver used for schematron includes.
      */
     public ClassPathURIResolver(final String rulesDir, URIResolver clientUriResolver) {
         this.rulesDir = rulesDir;

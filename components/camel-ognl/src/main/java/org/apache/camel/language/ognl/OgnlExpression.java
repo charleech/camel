@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ public class OgnlExpression extends ExpressionSupport {
         return new OgnlExpression(new OgnlLanguage(), expression, Object.class);
     }
 
+    @Override
     public <T> T evaluate(Exchange exchange, Class<T> tClass) {
         OgnlContext oglContext = new OgnlContext();
         // setup the class resolver from camel
@@ -58,11 +59,12 @@ public class OgnlExpression extends ExpressionSupport {
             throw new ExpressionEvaluationException(this, exchange, e);
         }
     }
-    
+
     public Class<?> getType() {
         return type;
     }
 
+    @Override
     protected String assertionFailureMessage(Exchange exchange) {
         return expressionString;
     }

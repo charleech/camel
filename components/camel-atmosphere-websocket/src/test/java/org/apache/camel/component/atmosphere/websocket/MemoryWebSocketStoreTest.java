@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,37 +19,39 @@ package org.apache.camel.component.atmosphere.websocket;
 import java.util.UUID;
 
 import org.atmosphere.websocket.WebSocket;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class MemoryWebSocketStoreTest extends Assert {
-    
+public class MemoryWebSocketStoreTest {
+
     @Test
-    public void testAddAndRemove() throws Exception {
+    void testAddAndRemove() {
         MemoryWebSocketStore store = new MemoryWebSocketStore();
         WebSocket webSocket1 = Mockito.mock(WebSocket.class);
         WebSocket webSocket2 = Mockito.mock(WebSocket.class);
-        
+
         String connectionKey1 = UUID.randomUUID().toString();
         String connectionKey2 = UUID.randomUUID().toString();
-        
+
         store.addWebSocket(connectionKey1, webSocket1);
         verifyGet(store, connectionKey1, webSocket1, true);
         assertEquals(1, store.getAllWebSockets().size());
-        
+
         store.addWebSocket(connectionKey2, webSocket2);
         verifyGet(store, connectionKey2, webSocket2, true);
         verifyGet(store, connectionKey1, webSocket1, true);
         assertEquals(2, store.getAllWebSockets().size());
-        
+
         store.removeWebSocket(connectionKey1);
         verifyGet(store, connectionKey1, webSocket1, false);
 
         store.removeWebSocket(webSocket2);
         verifyGet(store, connectionKey2, webSocket2, false);
-        
+
         assertEquals(0, store.getAllWebSockets().size());
     }
 

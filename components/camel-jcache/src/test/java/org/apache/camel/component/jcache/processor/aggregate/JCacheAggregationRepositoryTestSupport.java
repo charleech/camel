@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,10 @@
 package org.apache.camel.component.jcache.processor.aggregate;
 
 import org.apache.camel.component.jcache.JCacheConfiguration;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.component.jcache.support.HazelcastTest;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
+@HazelcastTest
 class JCacheAggregationRepositoryTestSupport extends CamelTestSupport {
 
     protected JCacheAggregationRepository createRepository(boolean optimistic) throws Exception {

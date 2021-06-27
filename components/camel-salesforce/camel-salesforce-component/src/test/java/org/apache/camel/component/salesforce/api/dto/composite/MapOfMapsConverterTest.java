@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,15 +25,14 @@ import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.xml.XppDomReader;
 import com.thoughtworks.xstream.io.xml.xppdom.XppDom;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MapOfMapsConverterTest {
 
@@ -62,8 +61,7 @@ public class MapOfMapsConverterTest {
 
     @Test
     public void shoulUnmarshallWithAttributesToMapTrivialCase() throws Exception {
-        final Object object = converter.unmarshal(readerFor("<holder><some attr=\"attrVal\">value</some></holder>"),
-            null);
+        final Object object = converter.unmarshal(readerFor("<holder><some attr=\"attrVal\">value</some></holder>"), null);
 
         assertNotNull(object);
         assertTrue(object instanceof Map);
@@ -87,8 +85,8 @@ public class MapOfMapsConverterTest {
 
     @Test
     public void shoulUnmarshallToMapWithTwoElements() throws Exception {
-        final Object object = converter
-            .unmarshal(readerFor("<holder><some1>value1</some1><some2>value2</some2></holder>"), null);
+        final Object object
+                = converter.unmarshal(readerFor("<holder><some1>value1</some1><some2>value2</some2></holder>"), null);
 
         assertNotNull(object);
         assertTrue(object instanceof Map);
@@ -103,8 +101,7 @@ public class MapOfMapsConverterTest {
 
     @Test
     public void shoulUnmarshallToMapWithNestedMap() throws Exception {
-        final Object object = converter.unmarshal(readerFor("<holder><some1><some2>value2</some2></some1></holder>"),
-            null);
+        final Object object = converter.unmarshal(readerFor("<holder><some1><some2>value2</some2></some1></holder>"), null);
 
         assertNotNull(object);
         assertTrue(object instanceof Map);
@@ -119,7 +116,7 @@ public class MapOfMapsConverterTest {
     @Test
     public void shoulUnmarshallToMapWithNestedMapAndAttributes() throws Exception {
         final Object object = converter.unmarshal(
-            readerFor("<holder><some1 attr1=\"val1\"><some2 attr2=\"val2\">value2</some2></some1></holder>"), null);
+                readerFor("<holder><some1 attr1=\"val1\"><some2 attr2=\"val2\">value2</some2></some1></holder>"), null);
 
         assertNotNull(object);
         assertTrue(object instanceof Map);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,21 +33,21 @@ public class DigitalOceanActionsProducer extends DigitalOceanProducer {
         super(endpoint, configuration);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         switch (determineOperation(exchange)) {
 
-        case list:
-            getActions(exchange);
-            break;
-        case get:
-            getAction(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation");
+            case list:
+                getActions(exchange);
+                break;
+            case get:
+                getAction(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation");
         }
 
     }
-
 
     private void getAction(Exchange exchange) throws Exception {
         Integer actionId = exchange.getIn().getHeader(DigitalOceanHeaders.ID, Integer.class);
@@ -61,8 +61,10 @@ public class DigitalOceanActionsProducer extends DigitalOceanProducer {
     }
 
     private void getActions(Exchange exchange) throws Exception {
-        Actions actions = getEndpoint().getDigitalOceanClient().getAvailableActions(configuration.getPage(), configuration.getPerPage());
-        LOG.trace("All Actions : page {} / {} per page [{}] ", configuration.getPage(), configuration.getPerPage(), actions.getActions());
+        Actions actions = getEndpoint().getDigitalOceanClient().getAvailableActions(configuration.getPage(),
+                configuration.getPerPage());
+        LOG.trace("All Actions : page {} / {} per page [{}] ", configuration.getPage(), configuration.getPerPage(),
+                actions.getActions());
         exchange.getOut().setBody(actions.getActions());
     }
 }

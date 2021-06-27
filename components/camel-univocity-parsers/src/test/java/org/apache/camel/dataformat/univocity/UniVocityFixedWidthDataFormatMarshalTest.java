@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,17 +24,19 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.dataformat.univocity.UniVocityTestHelper.asMap;
 import static org.apache.camel.dataformat.univocity.UniVocityTestHelper.join;
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This class tests the marshalling of {@link org.apache.camel.dataformat.univocity.UniVocityFixedWidthDataFormat}.
  */
 public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSupport {
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     MockEndpoint result;
 
     /**
@@ -44,8 +46,7 @@ public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSup
     public void shouldMarshalWithDefaultConfiguration() throws Exception {
         template.sendBody("direct:default", Arrays.asList(
                 asMap("A", "1", "B", "2", "C", "3"),
-                asMap("A", "one", "B", "two", "C", "three")
-        ));
+                asMap("A", "one", "B", "two", "C", "three")));
 
         result.expectedMessageCount(1);
         result.assertIsSatisfied();
@@ -75,8 +76,7 @@ public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSup
     public void shouldMarshalAndAddNewColumns() throws Exception {
         template.sendBody("direct:default", Arrays.asList(
                 asMap("A", "1", "B", "2"),
-                asMap("C", "three", "A", "one", "B", "two")
-        ));
+                asMap("C", "three", "A", "one", "B", "two")));
 
         result.expectedMessageCount(1);
         result.assertIsSatisfied();
@@ -92,8 +92,7 @@ public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSup
     public void shouldMarshalWithSpecificHeaders() throws Exception {
         template.sendBody("direct:header", Arrays.asList(
                 asMap("A", "1", "B", "2", "C", "3"),
-                asMap("A", "one", "B", "two", "C", "three")
-        ));
+                asMap("A", "one", "B", "two", "C", "three")));
 
         result.expectedMessageCount(1);
         result.assertIsSatisfied();
@@ -109,8 +108,7 @@ public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSup
     public void shouldMarshalUsingAdvancedConfiguration() throws Exception {
         template.sendBody("direct:advanced", Arrays.asList(
                 asMap("A", null, "B", ""),
-                asMap("A", "one", "B", "two")
-        ));
+                asMap("A", "one", "B", "two")));
 
         result.expectedMessageCount(1);
         result.assertIsSatisfied();
@@ -125,22 +123,19 @@ public final class UniVocityFixedWidthDataFormatMarshalTest extends CamelTestSup
 
         // Default writing of fixed-width
         tests.put("default", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3, 5})
-        );
+                .setFieldLengths(new int[] { 3, 3, 5 }));
 
         // Write a fixed-width with specific headers
         tests.put("header", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 5})
-                        .setHeaders(new String[]{"A", "C"})
-        );
+                .setFieldLengths(new int[] { 3, 5 })
+                .setHeaders(new String[] { "A", "C" }));
 
         // Write a fixed-width with an advanced configuration
         tests.put("advanced", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{5, 5})
-                        .setNullValue("N/A")
-                        .setEmptyValue("empty")
-                        .setPadding('_')
-        );
+                .setFieldLengths(new int[] { 5, 5 })
+                .setNullValue("N/A")
+                .setEmptyValue("empty")
+                .setPadding('_'));
 
         return new RouteBuilder() {
             @Override

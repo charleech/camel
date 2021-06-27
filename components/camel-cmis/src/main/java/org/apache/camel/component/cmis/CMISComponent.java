@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
 
@@ -34,7 +35,9 @@ public class CMISComponent extends DefaultComponent {
     public CMISComponent() {
     }
 
-    protected Endpoint createEndpoint(String uri, final String remaining, final Map<String, Object> parameters) throws Exception {
+    @Override
+    protected Endpoint createEndpoint(String uri, final String remaining, final Map<String, Object> parameters)
+            throws Exception {
         CMISEndpoint endpoint = new CMISEndpoint(uri, this, remaining);
 
         // create a copy of parameters which we need to store on the endpoint which are in use from the session factory
@@ -62,6 +65,7 @@ public class CMISComponent extends DefaultComponent {
     /**
      * To use a custom CMISSessionFacadeFactory to create the CMISSessionFacade instances
      */
+    @Metadata(label = "advanced")
     public void setSessionFacadeFactory(CMISSessionFacadeFactory sessionFacadeFactory) {
         this.sessionFacadeFactory = sessionFacadeFactory;
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,8 @@ public final class SwaggerHelper {
     }
 
     /**
-     * Clears all the vendor extension on the swagger model. This may be needed as some API tooling does not support this.
+     * Clears all the vendor extension on the swagger model. This may be needed as some API tooling does not support
+     * this.
      */
     public static void clearVendorExtensions(Swagger swagger) {
         if (swagger.getVendorExtensions() != null) {

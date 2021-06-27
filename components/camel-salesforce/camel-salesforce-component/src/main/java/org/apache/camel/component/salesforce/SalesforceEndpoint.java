@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,68 +16,82 @@
  */
 package org.apache.camel.component.salesforce;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.salesforce.internal.OperationName;
 import org.apache.camel.component.salesforce.internal.streaming.SubscriptionHelper;
-import org.apache.camel.support.DefaultEndpoint;
-import org.apache.camel.impl.SynchronousDelegateProducer;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.eclipse.jetty.client.HttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * The salesforce component is used for integrating Camel with the massive Salesforce API.
+ * Communicate with Salesforce using Java DTOs.
  */
-@UriEndpoint(firstVersion = "2.12.0", scheme = "salesforce", title = "Salesforce", syntax = "salesforce:operationName:topicName", label = "api,cloud,crm")
+@UriEndpoint(firstVersion = "2.12.0", scheme = "salesforce", title = "Salesforce",
+             syntax = "salesforce:operationName:topicName", category = { Category.CLOUD, Category.API, Category.CRM })
 public class SalesforceEndpoint extends DefaultEndpoint {
 
-    @UriPath(label = "producer", description = "The operation to use", enums = "getVersions,getResources,"
-        + "getGlobalObjects,getBasicInfo,getDescription,getSObject,createSObject,updateSObject,deleteSObject,"
-        + "getSObjectWithId,upsertSObject,deleteSObjectWithId,getBlobField,query,queryMore,queryAll,search,apexCall,"
-        + "recent,createJob,getJob,closeJob,abortJob,createBatch,getBatch,getAllBatches,getRequest,getResults,"
-        + "createBatchQuery,getQueryResultIds,getQueryResult,getRecentReports,getReportDescription,executeSyncReport,"
-        + "executeAsyncReport,getReportInstances,getReportResults,limits,approval,approvals,composite-tree,"
-        + "composite-batch,composite")
+    private static final Logger LOG = LoggerFactory.getLogger(SalesforceEndpoint.class);
+
+    //CHECKSTYLE:OFF
+    @UriPath(label = "producer", description = "The operation to use", enums = "getVersions,"
+            + "getResources,getGlobalObjects,getBasicInfo,getDescription,getSObject,createSObject,"
+            + "updateSObject,deleteSObject,getSObjectWithId,upsertSObject,deleteSObjectWithId,"
+            + "getBlobField,query,queryMore,queryAll,search,apexCall,recent,createJob,getJob,"
+            + "closeJob,abortJob,createBatch,getBatch,getAllBatches,getRequest,getResults,"
+            + "createBatchQuery,getQueryResultIds,getQueryResult,getRecentReports,"
+            + "getReportDescription,executeSyncReport,executeAsyncReport,getReportInstances,"
+            + "getReportResults,limits,approval,approvals,composite-tree,composite-batch,composite,"
+            + "compositeRetrieveSObjectCollections,compositeCreateSObjectCollections,"
+            + "compositeUpdateSObjectCollections,compositeUpsertSObjectCollections,"
+            + "compositeDeleteSObjectCollections,"
+            + "bulk2GetAllJobs,bulk2CreateJob,bulk2GetJob,bulk2CreateBatch,bulk2CloseJob,"
+            + "bulk2AbortJob,bulk2DeleteJob,bulk2GetSuccessfulResults,bulk2GetFailedResults,"
+            + "bulk2GetUnprocessedRecords,bulk2CreateQueryJob,bulk2GetQueryJob,"
+            + "bulk2GetAllQueryJobs,bulk2GetQueryJobResults,bulk2AbortQueryJob,bulk2DeleteQueryJob")
     private final OperationName operationName;
-    @UriPath(label = "consumer", description = "The name of the topic to use")
+    //CHECKSTYLE:ON
+    @UriPath(label = "consumer", description = "The name of the topic/channel to use")
     private final String topicName;
     @UriParam
-    private final SalesforceEndpointConfig config;
+    private final SalesforceEndpointConfig configuration;
 
     @UriParam(label = "consumer", description = "The replayId value to use when subscribing")
     private Long replayId;
 
-    public SalesforceEndpoint(String uri, SalesforceComponent salesforceComponent,
-                              SalesforceEndpointConfig config, OperationName operationName, String topicName) {
+    public SalesforceEndpoint(String uri, SalesforceComponent salesforceComponent, SalesforceEndpointConfig configuration,
+                              OperationName operationName, String topicName) {
         super(uri, salesforceComponent);
 
-        this.config = config;
+        this.configuration = configuration;
         this.operationName = operationName;
         this.topicName = topicName;
     }
 
+    @Override
     public Producer createProducer() throws Exception {
-        // producer requires an operation, topicName must be the invalid operation name
+        // producer requires an operation, topicName must be the invalid
+        // operation name
         if (operationName == null) {
             throw new IllegalArgumentException(String.format("Invalid Operation %s", topicName));
         }
 
-        SalesforceProducer producer = new SalesforceProducer(this);
-        if (isSynchronous()) {
-            return new SynchronousDelegateProducer(producer);
-        } else {
-            return producer;
-        }
+        return new SalesforceProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        // consumer requires a topicName, operation name must be the invalid topic name
+        // consumer requires a topicName, operation name must be the invalid
+        // topic name
         if (topicName == null) {
-            throw new IllegalArgumentException(String.format("Invalid topic name %s, matches a producer operation name",
-                    operationName.value()));
+            throw new IllegalArgumentException(
+                    String.format("Invalid topic name %s, matches a producer operation name", operationName.value()));
         }
 
         final SubscriptionHelper subscriptionHelper = getComponent().getSubscriptionHelper();
@@ -91,14 +105,8 @@ public class SalesforceEndpoint extends DefaultEndpoint {
         return (SalesforceComponent) super.getComponent();
     }
 
-    public boolean isSingleton() {
-        // re-use endpoint instance across multiple threads
-        // the description of this method is a little confusing
-        return true;
-    }
-
     public SalesforceEndpointConfig getConfiguration() {
-        return config;
+        return configuration;
     }
 
     public OperationName getOperationName() {
@@ -123,12 +131,15 @@ public class SalesforceEndpoint extends DefaultEndpoint {
             super.doStart();
         } finally {
             // check if this endpoint has its own http client that needs to be started
-            final HttpClient httpClient = getConfiguration().getHttpClient();
-            if (httpClient != null && getComponent().getConfig().getHttpClient() != httpClient) {
+            HttpClient httpClient = getConfiguration().getHttpClient();
+            if (httpClient == null) {
+                httpClient = getComponent().getHttpClient();
+            }
+            if (httpClient != null && getComponent().getHttpClient() != httpClient) {
                 final String endpointUri = getEndpointUri();
-                log.debug("Starting http client for {} ...", endpointUri);
+                LOG.debug("Starting http client for {} ...", endpointUri);
                 httpClient.start();
-                log.debug("Started http client for {}", endpointUri);
+                LOG.debug("Started http client for {}", endpointUri);
             }
         }
     }
@@ -139,12 +150,15 @@ public class SalesforceEndpoint extends DefaultEndpoint {
             super.doStop();
         } finally {
             // check if this endpoint has its own http client that needs to be stopped
-            final HttpClient httpClient = getConfiguration().getHttpClient();
-            if (httpClient != null && getComponent().getConfig().getHttpClient() != httpClient) {
+            HttpClient httpClient = getConfiguration().getHttpClient();
+            if (httpClient == null) {
+                httpClient = getComponent().getHttpClient();
+            }
+            if (httpClient != null && getComponent().getHttpClient() != httpClient) {
                 final String endpointUri = getEndpointUri();
-                log.debug("Stopping http client for {} ...", endpointUri);
+                LOG.debug("Stopping http client for {} ...", endpointUri);
                 httpClient.stop();
-                log.debug("Stopped http client for {}", endpointUri);
+                LOG.debug("Stopped http client for {}", endpointUri);
             }
         }
     }

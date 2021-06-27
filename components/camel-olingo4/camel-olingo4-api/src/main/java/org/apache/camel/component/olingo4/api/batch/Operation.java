@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.apache.camel.component.olingo4.api.batch;
 
 /**
-* OData operation used by {@link org.apache.camel.component.olingo4.api.batch.Olingo4BatchChangeRequest}.
-*/
+ * OData operation used by {@link org.apache.camel.component.olingo4.api.batch.Olingo4BatchChangeRequest}.
+ */
 public enum Operation {
 
     CREATE("POST"),

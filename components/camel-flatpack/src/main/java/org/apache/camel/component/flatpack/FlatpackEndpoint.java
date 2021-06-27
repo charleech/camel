@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import net.sf.flatpack.DataSet;
 import net.sf.flatpack.DefaultParserFactory;
 import net.sf.flatpack.Parser;
 import net.sf.flatpack.ParserFactory;
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
@@ -45,17 +46,20 @@ import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
 
 /**
- * The flatpack component supports fixed width and delimited file parsing via the FlatPack library.
+ * Parse fixed width and delimited files using the FlatPack library.
  */
-@UriEndpoint(firstVersion = "1.4.0", scheme = "flatpack", title = "Flatpack", syntax = "flatpack:type:resourceUri", label = "transformation")
+@UriEndpoint(firstVersion = "1.4.0", scheme = "flatpack", title = "Flatpack", syntax = "flatpack:type:resourceUri",
+             category = { Category.TRANSFORMATION })
 public class FlatpackEndpoint extends DefaultPollingEndpoint {
 
     private LoadBalancer loadBalancer = new RoundRobinLoadBalancer();
     private ParserFactory parserFactory = DefaultParserFactory.getInstance();
 
-    @UriPath @Metadata(required = false, defaultValue = "delim")
+    @UriPath
+    @Metadata(required = false, defaultValue = "delim")
     private FlatpackType type;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String resourceUri;
 
     @UriParam(defaultValue = "true")
@@ -81,16 +85,16 @@ public class FlatpackEndpoint extends DefaultPollingEndpoint {
         this.resourceUri = resourceUri;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
+    @Override
     public Producer createProducer() throws Exception {
         return new FlatpackProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new FlatpackConsumer(this, processor, loadBalancer);
+        FlatpackConsumer consumer = new FlatpackConsumer(this, processor, loadBalancer);
+        configureConsumer(consumer);
+        return consumer;
     }
 
     public void processDataSet(Exchange originalExchange, DataSet dataSet, int counter) throws Exception {
@@ -102,9 +106,10 @@ public class FlatpackEndpoint extends DefaultPollingEndpoint {
     }
 
     public Parser createParser(Exchange exchange) throws Exception {
-        Reader bodyReader = exchange.getIn().getMandatoryBody(Reader.class);
+        Reader bodyReader = null;
         try {
             if (FlatpackType.fixed == type) {
+                bodyReader = exchange.getIn().getMandatoryBody(Reader.class);
                 return createFixedParser(resourceUri, bodyReader);
             } else {
                 return createDelimitedParser(exchange);
@@ -154,7 +159,6 @@ public class FlatpackEndpoint extends DefaultPollingEndpoint {
 
         return parser;
     }
-
 
     // Properties
     //-------------------------------------------------------------------------

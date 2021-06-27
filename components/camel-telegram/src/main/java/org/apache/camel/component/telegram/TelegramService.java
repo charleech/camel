@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 package org.apache.camel.component.telegram;
 
+import org.apache.camel.AsyncCallback;
+import org.apache.camel.Exchange;
 import org.apache.camel.component.telegram.model.OutgoingMessage;
 import org.apache.camel.component.telegram.model.UpdateResult;
 
@@ -24,9 +26,12 @@ import org.apache.camel.component.telegram.model.UpdateResult;
  */
 public interface TelegramService {
 
+    UpdateResult getUpdates(Long offset, Integer limit, Integer timeoutSeconds);
 
-    UpdateResult getUpdates(String authorizationToken, Long offset, Integer limit, Integer timeoutSeconds);
+    void sendMessage(Exchange exchange, AsyncCallback callback, OutgoingMessage message);
 
-    void sendMessage(String authorizationToken, OutgoingMessage message);
+    boolean setWebhook(String url);
+
+    boolean removeWebhook();
 
 }

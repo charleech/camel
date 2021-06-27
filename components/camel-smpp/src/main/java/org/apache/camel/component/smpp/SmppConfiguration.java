@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class SmppConfiguration implements Cloneable {
     @UriParam(label = "security", defaultValue = "smppclient", secret = true)
     private String systemId = "smppclient";
     @UriParam(label = "security", secret = true)
-    private String password = "password";
+    private String password;
     @UriParam(label = "common", defaultValue = "")
     private String systemType = "";
     @UriParam(label = "codec")
@@ -56,8 +56,8 @@ public class SmppConfiguration implements Cloneable {
     private byte alphabet = Alphabet.ALPHA_DEFAULT.value();
     @UriParam(label = "codec", defaultValue = "ISO-8859-1")
     private String encoding = "ISO-8859-1";
-    @UriParam(label = "advanced", defaultValue = "5000")
-    private Integer enquireLinkTimer = 5000;
+    @UriParam(label = "advanced", defaultValue = "60000")
+    private Integer enquireLinkTimer = 60000;
     @UriParam(label = "advanced", defaultValue = "10000")
     private Integer transactionTimer = 10000;
     @UriParam(label = "producer", enums = "0,1,2")
@@ -115,13 +115,25 @@ public class SmppConfiguration implements Cloneable {
 
     /**
      * A POJO which contains all necessary configuration parameters for the SMPP connection
-     * 
+     *
      * @param uri the full URI of the endpoint
      */
     public void configureFromURI(URI uri) {
-        setSystemId(uri.getUserInfo());
-        setHost(uri.getHost());
-        setPort(uri.getPort());
+        String userInfo = uri.getUserInfo();
+        if (userInfo != null) {
+            setSystemId(uri.getUserInfo());
+        }
+
+        String host = uri.getHost();
+        if (host != null) {
+            setHost(host);
+        }
+
+        int port = uri.getPort();
+        if (port > 0) {
+            setPort(port);
+        }
+
         if (uri.getScheme().startsWith("smpps")) {
             setUsingSSL(true);
         }
@@ -174,26 +186,25 @@ public class SmppConfiguration implements Cloneable {
     public String getPassword() {
         return password;
     }
-    
+
     public byte getDataCoding() {
         return dataCoding;
     }
 
     /**
-     * Defines the data coding according the SMPP 3.4 specification, section 5.2.19.
-     * Example data encodings are:
+     * Defines the data coding according the SMPP 3.4 specification, section 5.2.19. Example data encodings are:
      * <ul>
-     *     <li>0: SMSC Default Alphabet</li>
-     *     <li>3: Latin 1 (ISO-8859-1)</li>
-     *     <li>4: Octet unspecified (8-bit binary)</li>
-     *     <li>8: UCS2 (ISO/IEC-10646)</li>
-     *     <li>13: Extended Kanji JIS(X 0212-1990)</li>
+     * <li>0: SMSC Default Alphabet</li>
+     * <li>3: Latin 1 (ISO-8859-1)</li>
+     * <li>4: Octet unspecified (8-bit binary)</li>
+     * <li>8: UCS2 (ISO/IEC-10646)</li>
+     * <li>13: Extended Kanji JIS(X 0212-1990)</li>
      * </ul>
      */
     public void setDataCoding(byte dataCoding) {
         this.dataCoding = dataCoding;
     }
-    
+
     public byte getAlphabet() {
         return alphabet;
     }
@@ -201,9 +212,9 @@ public class SmppConfiguration implements Cloneable {
     /**
      * Defines encoding of data according the SMPP 3.4 specification, section 5.2.19.
      * <ul>
-     *     <li>0: SMSC Default Alphabet
-     *     <li>4: 8 bit Alphabet</li>
-     *     <li>8: UCS2 Alphabet</li></li>
+     * <li>0: SMSC Default Alphabet
+     * <li>4: 8 bit Alphabet</li>
+     * <li>8: UCS2 Alphabet</li></li>
      * </ul>
      */
     public void setAlphabet(byte alphabet) {
@@ -215,8 +226,7 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the encoding scheme of the short message user data.
-     * Only for SubmitSm, ReplaceSm and SubmitMulti.
+     * Defines the encoding scheme of the short message user data. Only for SubmitSm, ReplaceSm and SubmitMulti.
      */
     public void setEncoding(String encoding) {
         if (!Charset.isSupported(encoding)) {
@@ -234,8 +244,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the interval in milliseconds between the confidence checks.
-     * The confidence check is used to test the communication path between an ESME and an SMSC.
+     * Defines the interval in milliseconds between the confidence checks. The confidence check is used to test the
+     * communication path between an ESME and an SMSC.
      */
     public void setEnquireLinkTimer(Integer enquireLinkTimer) {
         this.enquireLinkTimer = enquireLinkTimer;
@@ -246,9 +256,9 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the maximum period of inactivity allowed after a transaction, after which
-     * an SMPP entity may assume that the session is no longer active.
-     * This timer may be active on either communicating SMPP entity (i.e. SMSC or ESME).
+     * Defines the maximum period of inactivity allowed after a transaction, after which an SMPP entity may assume that
+     * the session is no longer active. This timer may be active on either communicating SMPP entity (i.e. SMSC or
+     * ESME).
      */
     public void setTransactionTimer(Integer transactionTimer) {
         this.transactionTimer = transactionTimer;
@@ -259,7 +269,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * This parameter is used to categorize the type of ESME (External Short Message Entity) that is binding to the SMSC (max. 13 characters).
+     * This parameter is used to categorize the type of ESME (External Short Message Entity) that is binding to the SMSC
+     * (max. 13 characters).
      */
     public void setSystemType(String systemType) {
         this.systemType = systemType;
@@ -270,11 +281,12 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Is used to request an SMSC delivery receipt and/or SME originated acknowledgements. The following values are defined:
+     * Is used to request an SMSC delivery receipt and/or SME originated acknowledgements. The following values are
+     * defined:
      * <ul>
-     *     <li>0: No SMSC delivery receipt requested.</li>
-     *     <li>1: SMSC delivery receipt requested where final delivery outcome is success or failure.</li>
-     *     <li>2: SMSC delivery receipt requested where the final delivery outcome is delivery failure.</li>
+     * <li>0: No SMSC delivery receipt requested.</li>
+     * <li>1: SMSC delivery receipt requested where final delivery outcome is success or failure.</li>
+     * <li>2: SMSC delivery receipt requested where the final delivery outcome is delivery failure.</li>
      * </ul>
      */
     public void setRegisteredDelivery(byte registeredDelivery) {
@@ -286,15 +298,15 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * The service type parameter can be used to indicate the SMS Application service associated with the message.
-     * The following generic service_types are defined:
+     * The service type parameter can be used to indicate the SMS Application service associated with the message. The
+     * following generic service_types are defined:
      * <ul>
-     *     <li>CMT: Cellular Messaging</li>
-     *     <li>CPT: Cellular Paging</li>
-     *     <li>VMN: Voice Mail Notification</li>
-     *     <li>VMA: Voice Mail Alerting</li>
-     *     <li>WAP: Wireless Application Protocol</li>
-     *     <li>USSD: Unstructured Supplementary Services Data</li>
+     * <li>CMT: Cellular Messaging</li>
+     * <li>CPT: Cellular Paging</li>
+     * <li>VMN: Voice Mail Notification</li>
+     * <li>VMA: Voice Mail Alerting</li>
+     * <li>WAP: Wireless Application Protocol</li>
+     * <li>USSD: Unstructured Supplementary Services Data</li>
      * </ul>
      */
     public void setServiceType(String serviceType) {
@@ -306,16 +318,16 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the type of number (TON) to be used in the SME originator address parameters.
-     * The following TON values are defined:
+     * Defines the type of number (TON) to be used in the SME originator address parameters. The following TON values
+     * are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: International</li>
-     *     <li>2: National</li>
-     *     <li>3: Network Specific</li>
-     *     <li>4: Subscriber Number</li>
-     *     <li>5: Alphanumeric</li>
-     *     <li>6: Abbreviated</li>
+     * <li>0: Unknown</li>
+     * <li>1: International</li>
+     * <li>2: National</li>
+     * <li>3: Network Specific</li>
+     * <li>4: Subscriber Number</li>
+     * <li>5: Alphanumeric</li>
+     * <li>6: Abbreviated</li>
      * </ul>
      */
     public void setSourceAddrTon(byte sourceAddrTon) {
@@ -327,17 +339,16 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the type of number (TON) to be used in the SME destination address parameters.
-     * Only for SubmitSm, SubmitMulti, CancelSm and DataSm.
-     * The following TON values are defined:
+     * Defines the type of number (TON) to be used in the SME destination address parameters. Only for SubmitSm,
+     * SubmitMulti, CancelSm and DataSm. The following TON values are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: International</li>
-     *     <li>2: National</li>
-     *     <li>3: Network Specific</li>
-     *     <li>4: Subscriber Number</li>
-     *     <li>5: Alphanumeric</li>
-     *     <li>6: Abbreviated</li>
+     * <li>0: Unknown</li>
+     * <li>1: International</li>
+     * <li>2: National</li>
+     * <li>3: Network Specific</li>
+     * <li>4: Subscriber Number</li>
+     * <li>5: Alphanumeric</li>
+     * <li>6: Abbreviated</li>
      * </ul>
      */
     public void setDestAddrTon(byte destAddrTon) {
@@ -349,19 +360,19 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the numeric plan indicator (NPI) to be used in the SME originator address parameters.
-     * The following NPI values are defined:
+     * Defines the numeric plan indicator (NPI) to be used in the SME originator address parameters. The following NPI
+     * values are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: ISDN (E163/E164)</li>
-     *     <li>2: Data (X.121)</li>
-     *     <li>3: Telex (F.69)</li>
-     *     <li>6: Land Mobile (E.212)</li>
-     *     <li>8: National</li>
-     *     <li>9: Private</li>
-     *     <li>10: ERMES</li>
-     *     <li>13: Internet (IP)</li>
-     *     <li>18: WAP Client Id (to be defined by WAP Forum)</li>
+     * <li>0: Unknown</li>
+     * <li>1: ISDN (E163/E164)</li>
+     * <li>2: Data (X.121)</li>
+     * <li>3: Telex (F.69)</li>
+     * <li>6: Land Mobile (E.212)</li>
+     * <li>8: National</li>
+     * <li>9: Private</li>
+     * <li>10: ERMES</li>
+     * <li>13: Internet (IP)</li>
+     * <li>18: WAP Client Id (to be defined by WAP Forum)</li>
      * </ul>
      */
     public void setSourceAddrNpi(byte sourceAddrNpi) {
@@ -373,20 +384,19 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the type of number (TON) to be used in the SME destination address parameters.
-     * Only for SubmitSm, SubmitMulti, CancelSm and DataSm.
-     * The following NPI values are defined:
+     * Defines the type of number (TON) to be used in the SME destination address parameters. Only for SubmitSm,
+     * SubmitMulti, CancelSm and DataSm. The following NPI values are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: ISDN (E163/E164)</li>
-     *     <li>2: Data (X.121)</li>
-     *     <li>3: Telex (F.69)</li>
-     *     <li>6: Land Mobile (E.212)</li>
-     *     <li>8: National</li>
-     *     <li>9: Private</li>
-     *     <li>10: ERMES</li>
-     *     <li>13: Internet (IP)</li>
-     *     <li>18: WAP Client Id (to be defined by WAP Forum)</li>
+     * <li>0: Unknown</li>
+     * <li>1: ISDN (E163/E164)</li>
+     * <li>2: Data (X.121)</li>
+     * <li>3: Telex (F.69)</li>
+     * <li>6: Land Mobile (E.212)</li>
+     * <li>8: National</li>
+     * <li>9: Private</li>
+     * <li>10: ERMES</li>
+     * <li>13: Internet (IP)</li>
+     * <li>18: WAP Client Id (to be defined by WAP Forum)</li>
      * </ul>
      */
     public void setDestAddrNpi(byte destAddrNpi) {
@@ -409,14 +419,13 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Allows the originating SME to assign a priority level to the short message.
-     * Only for SubmitSm and SubmitMulti.
+     * Allows the originating SME to assign a priority level to the short message. Only for SubmitSm and SubmitMulti.
      * Four Priority Levels are supported:
      * <ul>
-     *     <li>0: Level 0 (lowest) priority</li>
-     *     <li>1: Level 1 priority</li>
-     *     <li>2: Level 2 priority</li>
-     *     <li>3: Level 3 (highest) priority</li>
+     * <li>0: Level 0 (lowest) priority</li>
+     * <li>1: Level 1 priority</li>
+     * <li>2: Level 2 priority</li>
+     * <li>3: Level 3 (highest) priority</li>
      * </ul>
      */
     public void setPriorityFlag(byte priorityFlag) {
@@ -428,13 +437,12 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Used to request the SMSC to replace a previously submitted message, that is still pending delivery.
-     * The SMSC will replace an existing message provided that the source address, destination address and service
-     * type match the same fields in the new message.
-     * The following replace if present flag values are defined:
+     * Used to request the SMSC to replace a previously submitted message, that is still pending delivery. The SMSC will
+     * replace an existing message provided that the source address, destination address and service type match the same
+     * fields in the new message. The following replace if present flag values are defined:
      * <ul>
-     *     <li>0: Don't replace</li>
-     *     <li>1: Replace</li>
+     * <li>0: Don't replace</li>
+     * <li>1: Replace</li>
      * </ul>
      */
     public void setReplaceIfPresentFlag(byte replaceIfPresentFlag) {
@@ -457,28 +465,27 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the destination SME address. For mobile terminated messages, this is the directory number of the recipient MS.
-     * Only for SubmitSm, SubmitMulti, CancelSm and DataSm.
+     * Defines the destination SME address. For mobile terminated messages, this is the directory number of the
+     * recipient MS. Only for SubmitSm, SubmitMulti, CancelSm and DataSm.
      */
     public void setDestAddr(String destAddr) {
         this.destAddr = destAddr;
     }
-    
+
     public byte getTypeOfNumber() {
         return typeOfNumber;
     }
 
     /**
-     * Defines the type of number (TON) to be used in the SME.
-     * The following TON values are defined:
+     * Defines the type of number (TON) to be used in the SME. The following TON values are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: International</li>
-     *     <li>2: National</li>
-     *     <li>3: Network Specific</li>
-     *     <li>4: Subscriber Number</li>
-     *     <li>5: Alphanumeric</li>
-     *     <li>6: Abbreviated</li>
+     * <li>0: Unknown</li>
+     * <li>1: International</li>
+     * <li>2: National</li>
+     * <li>3: Network Specific</li>
+     * <li>4: Subscriber Number</li>
+     * <li>5: Alphanumeric</li>
+     * <li>6: Abbreviated</li>
      * </ul>
      */
     public void setTypeOfNumber(byte typeOfNumber) {
@@ -490,26 +497,25 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the numeric plan indicator (NPI) to be used in the SME.
-     * The following NPI values are defined:
+     * Defines the numeric plan indicator (NPI) to be used in the SME. The following NPI values are defined:
      * <ul>
-     *     <li>0: Unknown</li>
-     *     <li>1: ISDN (E163/E164)</li>
-     *     <li>2: Data (X.121)</li>
-     *     <li>3: Telex (F.69)</li>
-     *     <li>6: Land Mobile (E.212)</li>
-     *     <li>8: National</li>
-     *     <li>9: Private</li>
-     *     <li>10: ERMES</li>
-     *     <li>13: Internet (IP)</li>
-     *     <li>18: WAP Client Id (to be defined by WAP Forum)</li>
+     * <li>0: Unknown</li>
+     * <li>1: ISDN (E163/E164)</li>
+     * <li>2: Data (X.121)</li>
+     * <li>3: Telex (F.69)</li>
+     * <li>6: Land Mobile (E.212)</li>
+     * <li>8: National</li>
+     * <li>9: Private</li>
+     * <li>10: ERMES</li>
+     * <li>13: Internet (IP)</li>
+     * <li>18: WAP Client Id (to be defined by WAP Forum)</li>
      * </ul>
      */
     public void setNumberingPlanIndicator(byte numberingPlanIndicator) {
         this.numberingPlanIndicator = numberingPlanIndicator;
     }
 
-    public boolean getUsingSSL() {
+    public boolean isUsingSSL() {
         return usingSSL;
     }
 
@@ -519,13 +525,14 @@ public class SmppConfiguration implements Cloneable {
     public void setUsingSSL(boolean usingSSL) {
         this.usingSSL = usingSSL;
     }
-    
+
     public long getInitialReconnectDelay() {
         return initialReconnectDelay;
     }
 
     /**
-     * Defines the initial delay in milliseconds after the consumer/producer tries to reconnect to the SMSC, after the connection was lost.
+     * Defines the initial delay in milliseconds after the consumer/producer tries to reconnect to the SMSC, after the
+     * connection was lost.
      */
     public void setInitialReconnectDelay(long initialReconnectDelay) {
         this.initialReconnectDelay = initialReconnectDelay;
@@ -536,7 +543,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Defines the interval in milliseconds between the reconnect attempts, if the connection to the SMSC was lost and the previous was not succeed.
+     * Defines the interval in milliseconds between the reconnect attempts, if the connection to the SMSC was lost and
+     * the previous was not succeed.
      */
     public void setReconnectDelay(long reconnectDelay) {
         this.reconnectDelay = reconnectDelay;
@@ -558,9 +566,9 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * Sessions can be lazily created to avoid exceptions, if the SMSC is not available when the Camel producer is started.
-     * Camel will check the in message headers 'CamelSmppSystemId' and 'CamelSmppPassword' of the first exchange.
-     * If they are present, Camel will use these data to connect to the SMSC.
+     * Sessions can be lazily created to avoid exceptions, if the SMSC is not available when the Camel producer is
+     * started. Camel will check the in message headers 'CamelSmppSystemId' and 'CamelSmppPassword' of the first
+     * exchange. If they are present, Camel will use these data to connect to the SMSC.
      */
     public void setLazySessionCreation(boolean lazySessionCreation) {
         this.lazySessionCreation = lazySessionCreation;
@@ -571,7 +579,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * If you need to tunnel SMPP through a HTTP proxy, set this attribute to the hostname or ip address of your HTTP proxy.
+     * If you need to tunnel SMPP through a HTTP proxy, set this attribute to the hostname or ip address of your HTTP
+     * proxy.
      */
     public void setHttpProxyHost(String httpProxyHost) {
         this.httpProxyHost = httpProxyHost;
@@ -593,7 +602,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * If your HTTP proxy requires basic authentication, set this attribute to the username required for your HTTP proxy.
+     * If your HTTP proxy requires basic authentication, set this attribute to the username required for your HTTP
+     * proxy.
      */
     public void setHttpProxyUsername(String httpProxyUsername) {
         this.httpProxyUsername = httpProxyUsername;
@@ -604,7 +614,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * If your HTTP proxy requires basic authentication, set this attribute to the password required for your HTTP proxy.
+     * If your HTTP proxy requires basic authentication, set this attribute to the password required for your HTTP
+     * proxy.
      */
     public void setHttpProxyPassword(String httpProxyPassword) {
         this.httpProxyPassword = httpProxyPassword;
@@ -615,7 +626,8 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     * You can refer to a org.jsmpp.session.SessionStateListener in the Registry to receive callbacks when the session state changed.
+     * You can refer to a org.jsmpp.session.SessionStateListener in the Registry to receive callbacks when the session
+     * state changed.
      */
     public void setSessionStateListener(SessionStateListener sessionStateListener) {
         this.sessionStateListener = sessionStateListener;
@@ -626,8 +638,9 @@ public class SmppConfiguration implements Cloneable {
     }
 
     /**
-     *  You can specify the address range for the SmppConsumer as defined in section 5.2.7 of the SMPP 3.4 specification.
-     *  The SmppConsumer will receive messages only from SMSC's which target an address (MSISDN or IP address) within this range.
+     * You can specify the address range for the SmppConsumer as defined in section 5.2.7 of the SMPP 3.4 specification.
+     * The SmppConsumer will receive messages only from SMSC's which target an address (MSISDN or IP address) within
+     * this range.
      */
     public void setAddressRange(String addressRange) {
         this.addressRange = addressRange;
@@ -640,10 +653,12 @@ public class SmppConfiguration implements Cloneable {
     /**
      * You can specify a policy for handling long messages:
      * <ul>
-     *     <li>ALLOW - the default, long messages are split to 140 bytes per message</li>
-     *     <li>TRUNCATE - long messages are split and only the first fragment will be sent to the SMSC.
-     *     Some carriers drop subsequent fragments so this reduces load on the SMPP connection sending parts of a message that will never be delivered.</li>
-     *     <li>REJECT - if a message would need to be split, it is rejected with an SMPP NegativeResponseException and the reason code signifying the message is too long.</li>
+     * <li>ALLOW - the default, long messages are split to 140 bytes per message</li>
+     * <li>TRUNCATE - long messages are split and only the first fragment will be sent to the SMSC. Some carriers drop
+     * subsequent fragments so this reduces load on the SMPP connection sending parts of a message that will never be
+     * delivered.</li>
+     * <li>REJECT - if a message would need to be split, it is rejected with an SMPP NegativeResponseException and the
+     * reason code signifying the message is too long.</li>
      * </ul>
      */
     public void setSplittingPolicy(SmppSplittingPolicy splittingPolicy) {
@@ -663,41 +678,41 @@ public class SmppConfiguration implements Cloneable {
 
     @Override
     public String toString() {
-        return "SmppConfiguration[usingSSL=" + usingSSL 
-            + ", enquireLinkTimer=" + enquireLinkTimer
-            + ", host=" + host 
-            + ", password=" + password 
-            + ", port=" + port 
-            + ", systemId=" + systemId 
-            + ", systemType=" + systemType
-            + ", dataCoding=" + dataCoding
-            + ", alphabet=" + alphabet
-            + ", encoding=" + encoding
-            + ", transactionTimer=" + transactionTimer
-            + ", registeredDelivery=" + registeredDelivery
-            + ", serviceType=" + serviceType 
-            + ", sourceAddrTon=" + sourceAddrTon 
-            + ", destAddrTon=" + destAddrTon
-            + ", sourceAddrNpi=" + sourceAddrNpi 
-            + ", destAddrNpi=" + destAddrNpi 
-            + ", addressRange=" + addressRange
-            + ", protocolId=" + protocolId
-            + ", priorityFlag=" + priorityFlag 
-            + ", replaceIfPresentFlag=" + replaceIfPresentFlag 
-            + ", sourceAddr=" + sourceAddr 
-            + ", destAddr=" + destAddr 
-            + ", typeOfNumber=" + typeOfNumber 
-            + ", numberingPlanIndicator=" + numberingPlanIndicator
-            + ", initialReconnectDelay=" + initialReconnectDelay
-            + ", reconnectDelay=" + reconnectDelay
-            + ", maxReconnect=" + maxReconnect
-            + ", lazySessionCreation=" + lazySessionCreation
-            + ", httpProxyHost=" + httpProxyHost
-            + ", httpProxyPort=" + httpProxyPort
-            + ", httpProxyUsername=" + httpProxyUsername
-            + ", httpProxyPassword=" + httpProxyPassword
-            + ", splittingPolicy=" + splittingPolicy
-            + ", proxyHeaders=" + proxyHeaders
-            + "]";
+        return "SmppConfiguration[usingSSL=" + usingSSL
+               + ", enquireLinkTimer=" + enquireLinkTimer
+               + ", host=" + host
+               + ", password=" + password
+               + ", port=" + port
+               + ", systemId=" + systemId
+               + ", systemType=" + systemType
+               + ", dataCoding=" + dataCoding
+               + ", alphabet=" + alphabet
+               + ", encoding=" + encoding
+               + ", transactionTimer=" + transactionTimer
+               + ", registeredDelivery=" + registeredDelivery
+               + ", serviceType=" + serviceType
+               + ", sourceAddrTon=" + sourceAddrTon
+               + ", destAddrTon=" + destAddrTon
+               + ", sourceAddrNpi=" + sourceAddrNpi
+               + ", destAddrNpi=" + destAddrNpi
+               + ", addressRange=" + addressRange
+               + ", protocolId=" + protocolId
+               + ", priorityFlag=" + priorityFlag
+               + ", replaceIfPresentFlag=" + replaceIfPresentFlag
+               + ", sourceAddr=" + sourceAddr
+               + ", destAddr=" + destAddr
+               + ", typeOfNumber=" + typeOfNumber
+               + ", numberingPlanIndicator=" + numberingPlanIndicator
+               + ", initialReconnectDelay=" + initialReconnectDelay
+               + ", reconnectDelay=" + reconnectDelay
+               + ", maxReconnect=" + maxReconnect
+               + ", lazySessionCreation=" + lazySessionCreation
+               + ", httpProxyHost=" + httpProxyHost
+               + ", httpProxyPort=" + httpProxyPort
+               + ", httpProxyUsername=" + httpProxyUsername
+               + ", httpProxyPassword=" + httpProxyPassword
+               + ", splittingPolicy=" + splittingPolicy
+               + ", proxyHeaders=" + proxyHeaders
+               + "]";
     }
 }

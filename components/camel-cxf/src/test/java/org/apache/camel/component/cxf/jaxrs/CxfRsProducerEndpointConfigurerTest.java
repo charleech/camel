@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,15 +25,16 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.apache.camel.component.cxf.jaxrs.testbean.Customer;
 import org.apache.camel.component.cxf.jaxrs.testbean.CustomerService;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.AbstractJAXRSFactoryBean;
 import org.apache.cxf.jaxrs.client.Client;
 import org.apache.cxf.message.MessageContentsList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CxfRsProducerEndpointConfigurerTest extends CamelTestSupport {
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
@@ -42,7 +43,7 @@ public class CxfRsProducerEndpointConfigurerTest extends CamelTestSupport {
                 endpoint.setCamelContext(context);
                 endpoint.setResourceClasses(CustomerService.class);
                 endpoint.setEndpointUriIfNotSpecified("cxfrs:simple");
-                endpoint.setCxfRsEndpointConfigurer(new MyCxfRsEndpointConfigurer());
+                endpoint.setCxfRsConfigurer(new MyCxfRsConfigurer());
 
                 from("direct:start")
                         .to(endpoint)
@@ -86,7 +87,7 @@ public class CxfRsProducerEndpointConfigurerTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
-    public static class MyCxfRsEndpointConfigurer implements CxfRsEndpointConfigurer {
+    public static class MyCxfRsConfigurer implements CxfRsConfigurer {
 
         @Override
         public void configure(AbstractJAXRSFactoryBean factoryBean) {

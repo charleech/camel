@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.emitters;
 
 import java.util.Collection;
@@ -26,19 +25,19 @@ import org.jbpm.persistence.api.integration.InstanceView;
 import org.jbpm.persistence.api.integration.base.BaseEventCollection;
 
 public class CamelEventEmitter implements EventEmitter {
-    
+
     private JBPMConsumer consumer;
     private boolean sendItems;
-    
+
     public CamelEventEmitter(JBPMConsumer consumer, boolean sendItems) {
-        this.consumer = consumer; 
+        this.consumer = consumer;
         this.sendItems = sendItems;
     }
 
     @Override
     public void deliver(Collection<InstanceView<?>> data) {
         // no-op
-        
+
     }
 
     @Override
@@ -46,12 +45,12 @@ public class CamelEventEmitter implements EventEmitter {
         if (consumer == null || data.isEmpty()) {
             return;
         }
-        
+
         if (sendItems) {
-            
+
             data.forEach(item -> consumer.sendMessage("Emitter", item));
         } else {
-        
+
             consumer.sendMessage("Emitter", data);
         }
     }
@@ -59,7 +58,7 @@ public class CamelEventEmitter implements EventEmitter {
     @Override
     public void drop(Collection<InstanceView<?>> data) {
         // no-op
-        
+
     }
 
     @Override

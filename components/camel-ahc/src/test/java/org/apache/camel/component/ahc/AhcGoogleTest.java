@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,14 +17,14 @@
 package org.apache.camel.component.ahc;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * Requires online internet connection for testing.
  */
-@Ignore("Run this test manual as it requires online internet")
+@Disabled("Run this test manual as it requires online internet")
 public class AhcGoogleTest extends CamelTestSupport {
 
     @Test
@@ -42,11 +42,11 @@ public class AhcGoogleTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("ahc:http://www.google.se")
-                    .to("log:result?showAll=true")
-                    .convertBodyTo(String.class)
-                    .log("Google responded with body:\n${body}")
-                    .to("mock:result");
+                        .to("ahc:http://www.google.se")
+                        .to("log:result?showAll=true")
+                        .convertBodyTo(String.class)
+                        .log("Google responded with body:\n${body}")
+                        .to("mock:result");
             }
         };
     }

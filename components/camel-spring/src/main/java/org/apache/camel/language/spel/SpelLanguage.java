@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.apache.camel.language.spel;
 
 import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
-import org.apache.camel.Service;
+import org.apache.camel.StaticService;
 import org.apache.camel.spi.annotations.Language;
 import org.apache.camel.spring.SpringCamelContext;
 import org.apache.camel.spring.util.RegistryBeanResolver;
@@ -32,22 +32,28 @@ import org.springframework.expression.BeanResolver;
  * A Spring Expression {@link org.apache.camel.spi.Language} plugin
  */
 @Language("spel")
-public class SpelLanguage extends LanguageSupport implements Service {
+public class SpelLanguage extends LanguageSupport implements StaticService {
 
     private BeanResolver beanResolver;
 
+    @Override
     public Predicate createPredicate(String expression) {
         expression = loadResource(expression);
-        return new SpelExpression(expression, Boolean.class, beanResolver);
-    }
-
-    public Expression createExpression(String expression) {
-        expression = loadResource(expression);
-        return new SpelExpression(expression, Object.class, beanResolver);
+        Predicate answer = new SpelExpression(expression, Boolean.class, beanResolver);
+        answer.init(getCamelContext());
+        return answer;
     }
 
     @Override
-    public void start() throws Exception {
+    public Expression createExpression(String expression) {
+        expression = loadResource(expression);
+        Expression answer = new SpelExpression(expression, Object.class, beanResolver);
+        answer.init(getCamelContext());
+        return answer;
+    }
+
+    @Override
+    public void init() {
         ObjectHelper.notNull(getCamelContext(), "CamelContext", this);
 
         if (getCamelContext() instanceof SpringCamelContext) {
@@ -59,7 +65,12 @@ public class SpelLanguage extends LanguageSupport implements Service {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void start() {
+        // noop
+    }
+
+    @Override
+    public void stop() {
         // noop
     }
 }

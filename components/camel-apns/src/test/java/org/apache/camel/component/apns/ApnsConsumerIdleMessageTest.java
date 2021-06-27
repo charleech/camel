@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,43 +18,44 @@ package org.apache.camel.component.apns;
 
 import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.utils.ApnsServerStub;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.apns.factory.ApnsServiceFactory;
 import org.apache.camel.component.apns.util.ApnsUtils;
 import org.apache.camel.component.apns.util.TestConstants;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
- * Test to verify that the polling consumer delivers an empty Exchange when the
- * sendEmptyMessageWhenIdle property is set and a polling event yields no results.
+ * Test to verify that the polling consumer delivers an empty Exchange when the sendEmptyMessageWhenIdle property is set
+ * and a polling event yields no results.
  */
-@Ignore // TODO Figure out why this test is failing and fix it.
+@Disabled // TODO Figure out why this test is failing and fix it.
 public class ApnsConsumerIdleMessageTest extends CamelTestSupport {
-    
+
     ApnsServerStub server;
 
-    @Before
+    @BeforeEach
     public void startup() throws InterruptedException {
         server = ApnsUtils.prepareAndStartServer(TestConstants.TEST_GATEWAY_PORT, TestConstants.TEST_FEEDBACK_PORT);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         server.stop();
     }
-    
+
     @Test
     public void testConsumeIdleMessages() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMinimumMessageCount(2);
-        
+
         Thread.sleep(1100);
         // cycling the server after first polling cycle because it can not handle reconnects for fast-cycle polling
         server.stop();
@@ -62,10 +63,10 @@ public class ApnsConsumerIdleMessageTest extends CamelTestSupport {
         Thread.sleep(1100);
         server.stop();
         assertMockEndpointsSatisfied();
-        assertTrue(mock.getExchanges().get(0).getIn().getBody() == null);
-        assertTrue(mock.getExchanges().get(1).getIn().getBody() == null);
+        assertNull(mock.getExchanges().get(0).getIn().getBody());
+        assertNull(mock.getExchanges().get(1).getIn().getBody());
     }
-    
+
     @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
@@ -84,9 +85,9 @@ public class ApnsConsumerIdleMessageTest extends CamelTestSupport {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 from("apns:consumer?initialDelay=1&delay=1&timeUnit=SECONDS&useFixedDelay=true"
-                      + "&sendEmptyMessageWhenIdle=true")
-                    .to("log:com.apache.camel.component.apns?showAll=true&multiline=true")
-                    .to("mock:result");
+                     + "&sendEmptyMessageWhenIdle=true")
+                             .to("log:com.apache.camel.component.apns?showAll=true&multiline=true")
+                             .to("mock:result");
             }
         };
     }

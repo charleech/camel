@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.apns.util;
 
 /**
@@ -25,7 +24,7 @@ public final class TestConstants {
     public static final int TEST_GATEWAY_PORT = 7654;
     public static final int TEST_FEEDBACK_PORT = 7843;
     public static final String TEST_HOST = "localhost";
-    
+
     private TestConstants() {
     }
 }

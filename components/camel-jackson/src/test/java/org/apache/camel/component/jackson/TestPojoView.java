@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 public class TestPojoView {
 
-    //START SNIPPET: jsonview
+    // START SNIPPET: jsonview
     @JsonView(Views.Age.class)
     private int age = 30;
 
@@ -28,7 +28,7 @@ public class TestPojoView {
 
     @JsonView(Views.Weight.class)
     private int weight = 70;
-    //END SNIPPET: jsonview
+    // END SNIPPET: jsonview
 
     public int getAge() {
         return age;

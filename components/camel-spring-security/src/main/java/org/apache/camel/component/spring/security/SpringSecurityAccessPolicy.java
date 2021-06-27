@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ public class SpringSecurityAccessPolicy {
         Assert.isTrue(access != null, "The access attribute must not be null.");
         configAttributes = SecurityConfig.createListFromCommaDelimitedString(access);
     }
-    
+
     public List<ConfigAttribute> getConfigAttributes() {
         return configAttributes;
     }

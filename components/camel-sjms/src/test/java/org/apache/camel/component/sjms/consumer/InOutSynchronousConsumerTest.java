@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,50 +16,41 @@
  */
 package org.apache.camel.component.sjms.consumer;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.sjms.support.JmsTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InOutSynchronousConsumerTest extends JmsTestSupport {
 
     private static String beforeThreadName;
     private static String afterThreadName;
-    private String url = "sjms:queue:in?namedReplyTo=response.queue";
+    private String url = "sjms:queue:in?replyTo=response.queue&synchronous=true";
 
     @Test
     public void testSynchronous() throws Exception {
         String reply = template.requestBody("direct:start", "Hello World", String.class);
         assertEquals("Bye World", reply);
 
-        assertTrue("Should use same threads", beforeThreadName.equalsIgnoreCase(afterThreadName));
+        assertTrue(beforeThreadName.equalsIgnoreCase(afterThreadName), "Should use same threads");
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("log:before")
-                    .process(new Processor() {
-                        public void process(Exchange exchange) throws Exception {
-                            beforeThreadName = Thread.currentThread().getName();
-                        }
-                    })
-                    .inOut(url)
-                    .process(new Processor() {
-                        public void process(Exchange exchange) throws Exception {
-                            afterThreadName = Thread.currentThread().getName();
-                        }
-                    })
-                    .to("log:after")
-                    .to("mock:result");
+                        .to("log:before")
+                        .process(exchange -> beforeThreadName = Thread.currentThread().getName())
+                        .to(ExchangePattern.InOut, url)
+                        .process(exchange -> afterThreadName = Thread.currentThread().getName())
+                        .to("log:after")
+                        .to("mock:result");
 
-                from("sjms:queue:in?exchangePattern=InOut").process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        exchange.getOut().setBody("Bye World");
-                    }
-                });
+                from("sjms:queue:in").process(exchange -> exchange.getMessage().setBody("Bye World"));
             }
         };
     }

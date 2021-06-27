@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.hazelcast.queue;
 import java.util.concurrent.ExecutorService;
 
 import com.hazelcast.core.HazelcastInstance;
-
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
@@ -28,25 +28,34 @@ import org.apache.camel.component.hazelcast.HazelcastCommand;
 import org.apache.camel.component.hazelcast.HazelcastDefaultEndpoint;
 import org.apache.camel.component.hazelcast.HazelcastOperation;
 import org.apache.camel.spi.UriEndpoint;
+import org.apache.camel.spi.UriParam;
 
 /**
- * The hazelcast-queue component is used to access <a href="http://www.hazelcast.com/">Hazelcast</a> distributed queue.
+ * Perform operations on <a href="http://www.hazelcast.com/">Hazelcast</a> distributed queue.
  */
-@UriEndpoint(firstVersion = "2.7.0", scheme = "hazelcast-queue", title = "Hazelcast Queue", syntax = "hazelcast-queue:cacheName", label = "cache,datagrid")
+@UriEndpoint(firstVersion = "2.7.0", scheme = "hazelcast-queue", title = "Hazelcast Queue",
+             syntax = "hazelcast-queue:cacheName", category = { Category.CACHE, Category.DATAGRID, Category.MESSAGING })
 public class HazelcastQueueEndpoint extends HazelcastDefaultEndpoint {
-    
+
+    @UriParam
     private final HazelcastQueueConfiguration configuration;
 
-    public HazelcastQueueEndpoint(HazelcastInstance hazelcastInstance, String endpointUri, Component component, String cacheName, final HazelcastQueueConfiguration configuration) {
+    public HazelcastQueueEndpoint(HazelcastInstance hazelcastInstance, String endpointUri, Component component,
+                                  String cacheName, final HazelcastQueueConfiguration configuration) {
         super(hazelcastInstance, endpointUri, component, cacheName);
         this.configuration = configuration;
         setCommand(HazelcastCommand.queue);
         setDefaultOperation(HazelcastOperation.ADD);
     }
 
+    public HazelcastQueueConfiguration getConfiguration() {
+        return configuration;
+    }
+
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        HazelcastQueueConsumer answer = new HazelcastQueueConsumer(hazelcastInstance, this, processor, cacheName, configuration);
+        HazelcastQueueConsumer answer
+                = new HazelcastQueueConsumer(hazelcastInstance, this, processor, cacheName, configuration);
         configureConsumer(answer);
         return answer;
     }
@@ -55,9 +64,10 @@ public class HazelcastQueueEndpoint extends HazelcastDefaultEndpoint {
     public Producer createProducer() throws Exception {
         return new HazelcastQueueProducer(hazelcastInstance, this, cacheName);
     }
-    
+
     public ExecutorService createExecutor() {
-        return getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "QueueConsumer", configuration.getPoolSize());
+        return getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "QueueConsumer",
+                configuration.getPoolSize());
     }
 
 }

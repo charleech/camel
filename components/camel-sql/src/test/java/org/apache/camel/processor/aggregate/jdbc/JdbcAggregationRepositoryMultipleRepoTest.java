@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,11 @@ package org.apache.camel.processor.aggregate.jdbc;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JdbcAggregationRepositoryMultipleRepoTest extends CamelSpringTestSupport {
 
@@ -29,9 +30,11 @@ public class JdbcAggregationRepositoryMultipleRepoTest extends CamelSpringTestSu
     public void testMultipeRepo() {
         JdbcAggregationRepository repo1 = applicationContext.getBean("repo1", JdbcAggregationRepository.class);
         repo1.setReturnOldExchange(true);
+        repo1.start();
 
         JdbcAggregationRepository repo2 = applicationContext.getBean("repo2", JdbcAggregationRepository.class);
         repo2.setReturnOldExchange(true);
+        repo2.start();
 
         // Can't get something we have not put in...
         Exchange actual = repo1.get(context, "missing");
@@ -51,8 +54,9 @@ public class JdbcAggregationRepositoryMultipleRepoTest extends CamelSpringTestSu
         assertEquals("counter:1", actual.getIn().getBody());
         assertEquals(null, repo2.get(context, "foo"));
 
-        // Change it..
+        // Change it after reading the current exchange with version
         Exchange exchange2 = new DefaultExchange(context);
+        exchange2 = repo1.get(context, "foo");
         exchange2.getIn().setBody("counter:2");
         actual = repo1.add(context, "foo", exchange2);
         // the old one
@@ -78,8 +82,10 @@ public class JdbcAggregationRepositoryMultipleRepoTest extends CamelSpringTestSu
     @Test
     public void testMultipeRepoSameKeyDifferentContent() {
         JdbcAggregationRepository repo1 = applicationContext.getBean("repo1", JdbcAggregationRepository.class);
+        repo1.start();
 
         JdbcAggregationRepository repo2 = applicationContext.getBean("repo2", JdbcAggregationRepository.class);
+        repo2.start();
 
         Exchange exchange1 = new DefaultExchange(context);
         exchange1.getIn().setBody("Hello World");
@@ -97,7 +103,7 @@ public class JdbcAggregationRepositoryMultipleRepoTest extends CamelSpringTestSu
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/processor/aggregate/jdbc/JdbcSpringDataSource.xml");
+        return newAppContext("JdbcSpringDataSource.xml");
     }
 
 }

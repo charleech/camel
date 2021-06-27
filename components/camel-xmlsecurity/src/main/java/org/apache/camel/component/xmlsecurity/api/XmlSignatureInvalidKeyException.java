@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,8 @@
  */
 package org.apache.camel.component.xmlsecurity.api;
 
-
 /**
- * Exception thrown during signing or verifying if the key type does not fit to
- * the signature algorithm.
+ * Exception thrown during signing or verifying if the key type does not fit to the signature algorithm.
  */
 public class XmlSignatureInvalidKeyException extends XmlSignatureException {
 

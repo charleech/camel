@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,13 @@ package org.apache.camel.component.cxf.holder;
 import org.apache.camel.builder.RouteBuilder;
 
 public class CXFHolderRouteTest extends CxfHolderConsumerTest {
-    
+
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from(CXF_ENDPOINT_URI).wireTap("seda:tap").process(new MyProcessor());
-                
+
                 from("seda:tap").to("log:myEndpoint");
             }
         };

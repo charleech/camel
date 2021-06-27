@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import org.apache.camel.Exchange;
  */
 public class QueueReplyHandler extends TemporaryQueueReplyHandler {
 
-    public QueueReplyHandler(ReplyManager replyManager, Exchange exchange, AsyncCallback callback,
-                             String originalCorrelationId, String correlationId, long timeout) {
+    public QueueReplyHandler(ReplyManager replyManager, Exchange exchange, AsyncCallback callback, String originalCorrelationId,
+                             String correlationId, long timeout) {
         super(replyManager, exchange, callback, originalCorrelationId, correlationId, timeout);
     }
 

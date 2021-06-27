@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.listeners;
 
 import java.util.LinkedHashSet;
@@ -26,11 +25,10 @@ import org.kie.api.task.TaskEvent;
 import org.kie.api.task.TaskLifeCycleEventListener;
 import org.kie.internal.runtime.Cacheable;
 
-
 public class CamelTaskEventListener implements Cacheable, TaskLifeCycleEventListener, JBPMCamelConsumerAware {
 
     private Set<JBPMConsumer> consumers = new LinkedHashSet<>();
-    
+
     @Override
     public void beforeTaskActivatedEvent(TaskEvent event) {
         if (consumers.isEmpty()) {
@@ -299,23 +297,22 @@ public class CamelTaskEventListener implements Cacheable, TaskLifeCycleEventList
     }
 
     @Override
-    public void close() {        
+    public void close() {
 
     }
 
     @Override
     public void addConsumer(JBPMConsumer consumer) {
-        this.consumers.add(consumer);        
+        this.consumers.add(consumer);
     }
 
     @Override
     public void removeConsumer(JBPMConsumer consumer) {
         this.consumers.remove(consumer);
     }
-    
+
     protected void sendMessage(String eventType, Object event) {
         this.consumers.stream().filter(c -> c.getStatus().isStarted()).forEach(c -> c.sendMessage(eventType, event));
     }
-
 
 }

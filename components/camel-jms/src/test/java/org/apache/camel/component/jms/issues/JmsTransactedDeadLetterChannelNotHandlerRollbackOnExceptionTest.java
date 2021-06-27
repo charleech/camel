@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,19 @@
  */
 package org.apache.camel.component.jms.issues;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class JmsTransactedDeadLetterChannelNotHandlerRollbackOnExceptionTest extends JmsTransactedDeadLetterChannelHandlerRollbackOnExceptionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class JmsTransactedDeadLetterChannelNotHandlerRollbackOnExceptionTest
+        extends JmsTransactedDeadLetterChannelHandlerRollbackOnExceptionTest {
 
     @Override
     protected boolean isHandleNew() {
         return false;
     }
 
+    @Override
     @Test
     public void shouldNotLoseMessagesOnExceptionInErrorHandler() throws Exception {
         template.sendBody(testingEndpoint, "Hello World");
@@ -34,6 +38,5 @@ public class JmsTransactedDeadLetterChannelNotHandlerRollbackOnExceptionTest ext
         Object dlqBody = consumer.receiveBody("activemq:ActiveMQ.DLQ", 2000);
         assertEquals("Hello World", dlqBody);
     }
-
 
 }

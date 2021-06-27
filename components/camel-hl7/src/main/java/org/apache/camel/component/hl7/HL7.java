@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.ValueBuilder;
+import org.apache.camel.model.language.Hl7TerserExpression;
 import org.apache.camel.support.ExpressionAdapter;
 
 public final class HL7 {
@@ -32,8 +33,8 @@ public final class HL7 {
         // Helper class
     }
 
-    public static ValueBuilder terser(String expression) {
-        return new ValueBuilder(new TerserExpression(expression));
+    public static ValueBuilder hl7terser(String expression) {
+        return new ValueBuilder(new Hl7TerserExpression(expression));
     }
 
     public static ValueBuilder ack() {

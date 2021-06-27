@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ public final class StringTemplateConstants {
 
     public static final String STRINGTEMPLATE_RESOURCE_URI = "CamelStringTemplateResourceUri";
     public static final String STRINGTEMPLATE_VARIABLE_MAP = "CamelStringTemplateVariableMap";
+    public static final String STRINGTEMPLATE_TEMPLATE = "CamelStringTemplateTemplate";
 
     private StringTemplateConstants() {
         // Utility class

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,49 +16,56 @@
  */
 package org.apache.camel.component.file.remote;
 
-import org.apache.camel.Endpoint;
-import org.apache.camel.Exchange;
-import org.apache.camel.Producer;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.HashMap;
+import java.util.Map;
 
-public class FromFtpClientSoTimeoutTest extends FtpServerTestSupport {
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.commons.net.ftp.FTPFile;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+/**
+ * Test re-creating operations
+ * 
+ * @see {org.apache.camel.component.file.remote.RemoteFileConsumer#recoverableConnectIfNecessary}
+ */
+public class FromFtpClientSoTimeoutTest extends CamelTestSupport {
+
+    int port = AvailablePortFinder.getNextAvailable();
 
     private String getFtpUrl() {
-        return "ftp://admin@localhost:" + getPort() + "/timeout/?password=admin&ftpClient.soTimeout=5000";
-    }
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        prepareFtpServer();
+        return "ftp://admin@localhost:" + port + "/timeout/?soTimeout=5000";
     }
 
     @Test
-    public void testTimeout() throws Exception {
-        MockEndpoint mock = getMockEndpoint("mock:result");
-        mock.expectedBodiesReceived("Hello World");
+    public void test() throws Exception {
+        @SuppressWarnings("unchecked")
+        FtpEndpoint<FTPFile> ftpEndpoint = context.getEndpoint(getFtpUrl(), FtpEndpoint.class);
 
-        mock.assertIsSatisfied();
+        // set "ftp://admin@localhost:21/timeout/?ftpClient.soTimeout=10"
+        Map<String, Object> ftpClientParameters = new HashMap<>();
+        ftpClientParameters.put("soTimeout", "10");
+        ftpEndpoint.setFtpClientParameters(ftpClientParameters);
+
+        // test RemoteFileConsumer#buildConsumer
+        assertEquals("10", ftpClientParameters.get("soTimeout"));
+        ftpEndpoint.createRemoteFileOperations();
+
+        // test RemoteFileConsumer#recoverableConnectIfNecessary
+        // recover by re-creating operations which should most likely be able to
+        // recover
+        assertEquals("10", ftpClientParameters.get("soTimeout"));
+        ftpEndpoint.createRemoteFileOperations();
     }
 
-    private void prepareFtpServer() throws Exception {
-        // prepares the FTP Server by creating a file on the server
-        Endpoint endpoint = context.getEndpoint(getFtpUrl());
-        Exchange exchange = endpoint.createExchange();
-        exchange.getIn().setBody("Hello World");
-        exchange.getIn().setHeader(Exchange.FILE_NAME, "hello.txt");
-        Producer producer = endpoint.createProducer();
-        producer.start();
-        producer.process(exchange);
-        producer.stop();
-    }
-
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
+
+            @Override
             public void configure() throws Exception {
                 from(getFtpUrl()).to("mock:result");
             }

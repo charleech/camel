@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.milo.client;
 
 import java.util.Objects;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -29,11 +30,13 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
 
 /**
- * Connect to OPC UA servers using the binary protocol for acquiring telemetry
- * data
+ * Connect to OPC UA servers using the binary protocol for acquiring telemetry data.
  */
-@UriEndpoint(firstVersion = "2.19.0", scheme = "milo-client", syntax = "milo-client:endpointUri", title = "OPC UA Client", label = "iot")
+@UriEndpoint(firstVersion = "2.19.0", scheme = "milo-client", syntax = "milo-client:endpointUri", title = "OPC UA Client",
+             category = { Category.IOT })
 public class MiloClientEndpoint extends DefaultEndpoint {
+
+    private final MiloClientConnectionManager connectionManager;
 
     /**
      * The OPC UA server endpoint
@@ -46,25 +49,25 @@ public class MiloClientEndpoint extends DefaultEndpoint {
      * The node definition (see Node ID)
      */
     @UriParam
-    private ExpandedNodeId node;
+    private String node;
 
     /**
      * The method definition (see Method ID)
      */
     @UriParam
-    private ExpandedNodeId method;
+    private String method;
 
     /**
      * The sampling interval in milliseconds
      */
-    @UriParam
-    private Double samplingInterval;
+    @UriParam(defaultValue = "0.0")
+    private Double samplingInterval = 0.0;
 
     /**
      * The client configuration
      */
     @UriParam
-    private MiloClientConfiguration client;
+    private MiloClientConfiguration configuration;
 
     /**
      * Default "await" setting for writes
@@ -72,92 +75,92 @@ public class MiloClientEndpoint extends DefaultEndpoint {
     @UriParam
     private boolean defaultAwaitWrites;
 
-    private final MiloClientConnection connection;
-    private final MiloClientComponent component;
+    @UriParam
+    private MonitorFilterConfiguration monitorFilterConfiguration;
 
-    public MiloClientEndpoint(final String uri, final MiloClientComponent component, final MiloClientConnection connection, final String endpointUri) {
+    @UriParam
+    private MonitorFilterType monitorFilterType;
+
+    public MiloClientEndpoint(final String uri, final MiloClientComponent component, final String endpointUri,
+                              final MiloClientConnectionManager connectionManager) {
         super(uri, component);
 
         Objects.requireNonNull(component);
-        Objects.requireNonNull(connection);
         Objects.requireNonNull(endpointUri);
+        Objects.requireNonNull(connectionManager);
 
         this.endpointUri = endpointUri;
-
-        this.component = component;
-        this.connection = connection;
+        this.setMonitorFilterConfiguration(new MonitorFilterConfiguration());
+        this.connectionManager = connectionManager;
     }
 
-    @Override
-    protected void doStart() throws Exception {
-        super.doStart();
+    public void setConfiguration(MiloClientConfiguration configuration) {
+        this.configuration = configuration;
     }
 
-    @Override
-    protected void doStop() throws Exception {
-        this.component.disposed(this);
-        super.doStop();
+    public MiloClientConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public MonitorFilterConfiguration getMonitorFilterConfiguration() {
+        return monitorFilterConfiguration;
+    }
+
+    public void setMonitorFilterConfiguration(MonitorFilterConfiguration monitorFilterConfiguration) {
+        this.monitorFilterConfiguration = monitorFilterConfiguration;
     }
 
     @Override
     public Producer createProducer() throws Exception {
-        return new MiloClientProducer(this, this.connection, this.defaultAwaitWrites);
+        return new MiloClientProducer(this, this.defaultAwaitWrites);
     }
 
     @Override
     public Consumer createConsumer(final Processor processor) throws Exception {
-        return new MiloClientConsumer(this, processor, this.connection);
+        MiloClientConsumer consumer = new MiloClientConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
     }
 
-    @Override
-    public boolean isSingleton() {
-        return false;
+    public MiloClientConnection createConnection() {
+        return this.connectionManager.createConnection(configuration, monitorFilterConfiguration);
     }
 
-    public MiloClientConnection getConnection() {
-        return this.connection;
+    public void releaseConnection(MiloClientConnection connection) {
+        this.connectionManager.releaseConnection(connection);
     }
 
     // item configuration
-
-    public void setMethod(final String method) {
-        if (method == null) {
-            this.method = null;
-        } else {
-            this.method = ExpandedNodeId.parse(method);
-        }
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getMethod() {
-        if (this.method != null) {
-            return this.method.toParseableString();
-        } else {
-            return null;
-        }
+        return method;
     }
 
     public void setNode(final String node) {
-        if (node == null) {
-            this.node = null;
-        } else {
-            this.node = ExpandedNodeId.parse(node);
-        }
+        this.node = node;
     }
 
     public String getNode() {
+        return node;
+    }
+
+    ExpandedNodeId getNodeId() {
         if (this.node != null) {
-            return this.node.toParseableString();
+            return ExpandedNodeId.parse(this.node);
         } else {
             return null;
         }
     }
 
-    ExpandedNodeId getNodeId() {
-        return this.node;
-    }
-
     ExpandedNodeId getMethodId() {
-        return this.method;
+        if (this.method != null) {
+            return ExpandedNodeId.parse(this.method);
+        } else {
+            return null;
+        }
     }
 
     public Double getSamplingInterval() {
@@ -174,5 +177,13 @@ public class MiloClientEndpoint extends DefaultEndpoint {
 
     public void setDefaultAwaitWrites(final boolean defaultAwaitWrites) {
         this.defaultAwaitWrites = defaultAwaitWrites;
+    }
+
+    public MonitorFilterType getMonitorFilterType() {
+        return monitorFilterType;
+    }
+
+    public void setMonitorFilterType(MonitorFilterType monitorFilterType) {
+        this.monitorFilterType = monitorFilterType;
     }
 }

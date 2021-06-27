@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.soap.headers;
 
 import java.util.Arrays;
@@ -29,14 +28,13 @@ public class CustomHeaderFilter implements MessageHeaderFilter {
     public static final String ACTIVATION_NAMESPACE = "http://cxf.apache.org/bindings/custom";
     public static final List<String> ACTIVATION_NAMESPACES = Arrays.asList(ACTIVATION_NAMESPACE);
 
-
+    @Override
     public List<String> getActivationNamespaces() {
         return ACTIVATION_NAMESPACES;
     }
 
-    public void filter(Direction direction, List<Header> headers) {        
+    @Override
+    public void filter(Direction direction, List<Header> headers) {
     }
-
-
 
 }

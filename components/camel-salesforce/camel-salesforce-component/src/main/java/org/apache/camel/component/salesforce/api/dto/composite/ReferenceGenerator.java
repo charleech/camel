@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,9 +32,8 @@ public interface ReferenceGenerator {
      * Generates unique, within a request, reference identifier for the given object. Reference identifier must start
      * with an alphanumeric.
      *
-     * @param object
-     *            object to generate reference identifier for
-     * @return generated reference identifier
+     * @param  object object to generate reference identifier for
+     * @return        generated reference identifier
      */
     String nextReferenceFor(Object object);
 

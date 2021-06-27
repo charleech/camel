@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,13 @@ import org.apache.camel.spi.UriParams;
 import org.apache.camel.util.ObjectHelper;
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 @UriParams
 public class TwitterConfiguration {
 
-    @UriParam(label = "consumer", defaultValue = "polling", enums = "polling,direct,event")
+    @UriParam(label = "consumer", defaultValue = "polling", enums = "polling,direct")
     private EndpointType type = EndpointType.POLLING;
     @UriParam(label = "security", secret = true)
     private String accessToken;
@@ -45,11 +43,11 @@ public class TwitterConfiguration {
     @UriParam(label = "consumer,filter", defaultValue = "true")
     private boolean filterOld = true;
     @UriParam(label = "consumer,filter", defaultValue = "1")
-    private long sinceId  = 1;
+    private long sinceId = 1;
     @UriParam(label = "consumer,filter")
     private String lang;
-    @UriParam(label = "consumer,filter")
-    private Integer count;
+    @UriParam(label = "consumer,filter", defaultValue = "5")
+    private Integer count = 5;
     @UriParam(label = "consumer,filter", defaultValue = "1")
     private Integer numberOfPages = 1;
     @UriParam(label = "consumer,sort", defaultValue = "true")
@@ -76,24 +74,20 @@ public class TwitterConfiguration {
     private boolean extendedMode = true;
 
     /**
-     * Singleton, on demand instances of Twitter4J's Twitter & TwitterStream.
-     * This should not be created by an endpoint's doStart(), etc., since
-     * instances of twitter and/or twitterStream can be supplied by the route
-     * itself.  Further, as an example, we don't want to initialize twitter
-     * if we only need twitterStream.
+     * Singleton, on demand instances of Twitter4J's Twitter. This should not be created by an endpoint's doStart(),
+     * etc., since instances of twitter can be supplied by the route itself.
      */
     private Twitter twitter;
-
-    @UriParam(label = "consumer,advanced")
-    private TwitterStream twitterStream;
 
     /**
      * Ensures required fields are available.
      */
     public void checkComplete() {
-        if (twitter == null && twitterStream == null
-                && (ObjectHelper.isEmpty(consumerKey) || ObjectHelper.isEmpty(consumerSecret) || ObjectHelper.isEmpty(accessToken) ||  ObjectHelper.isEmpty(accessTokenSecret))) {
-            throw new IllegalArgumentException("twitter or twitterStream or all of consumerKey, consumerSecret, accessToken, and accessTokenSecret must be set!");
+        if (twitter == null
+                && (ObjectHelper.isEmpty(consumerKey) || ObjectHelper.isEmpty(consumerSecret)
+                        || ObjectHelper.isEmpty(accessToken) || ObjectHelper.isEmpty(accessTokenSecret))) {
+            throw new IllegalArgumentException(
+                    "twitter or all of consumerKey, consumerSecret, accessToken, and accessTokenSecret must be set!");
         }
     }
 
@@ -122,7 +116,7 @@ public class TwitterConfiguration {
         if (httpProxyPort != null) {
             confBuilder.setHttpProxyPort(httpProxyPort);
         }
-        
+
         return confBuilder.build();
     }
 
@@ -135,24 +129,6 @@ public class TwitterConfiguration {
 
     public void setTwitter(Twitter twitter) {
         this.twitter = twitter;
-    }
-
-    public TwitterStream getTwitterStream() {
-        return twitterStream;
-    }
-
-    /**
-     * To use a custom instance of TwitterStream
-     */
-    public void setTwitterStream(TwitterStream twitterStream) {
-        this.twitterStream = twitterStream;
-    }
-
-    public TwitterStream createTwitterStream() {
-        if (twitterStream == null) {
-            twitterStream = new TwitterStreamFactory(getConfiguration()).getInstance();
-        }
-        return twitterStream;
     }
 
     public String getConsumerKey() {
@@ -198,13 +174,13 @@ public class TwitterConfiguration {
     public void setAccessTokenSecret(String accessTokenSecret) {
         this.accessTokenSecret = accessTokenSecret;
     }
-    
+
     public EndpointType getType() {
         return type;
     }
 
     /**
-     * Endpoint type to use. Only streaming supports event type.
+     * Endpoint type to use.
      */
     public void setType(EndpointType type) {
         this.type = type;
@@ -215,7 +191,8 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Bounding boxes, created by pairs of lat/lons. Can be used for streaming/filter. A pair is defined as lat,lon. And multiple paris can be separated by semi colon.
+     * Bounding boxes, created by pairs of lat/lons. Can be used for filter. A pair is defined as lat,lon. And multiple
+     * paris can be separated by semi colon.
      */
     public void setLocations(String locations) {
         this.locations = locations;
@@ -226,7 +203,7 @@ public class TwitterConfiguration {
     }
 
     /**
-     * To filter by user ids for streaming/filter. Multiple values can be separated by comma.
+     * To filter by user ids for filter. Multiple values can be separated by comma.
      */
     public void setUserIds(String userIds) {
         this.userIds = userIds;
@@ -237,8 +214,8 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Filter out old tweets, that has previously been polled.
-     * This state is stored in memory only, and based on last tweet id.
+     * Filter out old tweets, that has previously been polled. This state is stored in memory only, and based on last
+     * tweet id.
      */
     public void setFilterOld(boolean filterOld) {
         this.filterOld = filterOld;
@@ -249,7 +226,8 @@ public class TwitterConfiguration {
     }
 
     /**
-     * The last tweet id which will be used for pulling the tweets. It is useful when the camel route is restarted after a long running.
+     * The last tweet id which will be used for pulling the tweets. It is useful when the camel route is restarted after
+     * a long running.
      */
     public void setSinceId(long sinceId) {
         this.sinceId = sinceId;
@@ -300,18 +278,20 @@ public class TwitterConfiguration {
     }
 
     /**
-     * The http proxy host which can be used for the camel-twitter. Can also be configured on the TwitterComponent level instead.
+     * The http proxy host which can be used for the camel-twitter. Can also be configured on the TwitterComponent level
+     * instead.
      */
     public void setHttpProxyHost(String httpProxyHost) {
         this.httpProxyHost = httpProxyHost;
     }
-    
+
     public String getHttpProxyHost() {
         return httpProxyHost;
     }
 
     /**
-     * The http proxy user which can be used for the camel-twitter. Can also be configured on the TwitterComponent level instead.
+     * The http proxy user which can be used for the camel-twitter. Can also be configured on the TwitterComponent level
+     * instead.
      */
     public void setHttpProxyUser(String httpProxyUser) {
         this.httpProxyUser = httpProxyUser;
@@ -322,7 +302,8 @@ public class TwitterConfiguration {
     }
 
     /**
-     * The http proxy password which can be used for the camel-twitter. Can also be configured on the TwitterComponent level instead.
+     * The http proxy password which can be used for the camel-twitter. Can also be configured on the TwitterComponent
+     * level instead.
      */
     public void setHttpProxyPassword(String httpProxyPassword) {
         this.httpProxyPassword = httpProxyPassword;
@@ -333,7 +314,8 @@ public class TwitterConfiguration {
     }
 
     /**
-     * The http proxy port which can be used for the camel-twitter. Can also be configured on the TwitterComponent level instead.
+     * The http proxy port which can be used for the camel-twitter. Can also be configured on the TwitterComponent level
+     * instead.
      */
     public void setHttpProxyPort(Integer httpProxyPort) {
         this.httpProxyPort = httpProxyPort;
@@ -348,7 +330,7 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Used by the non-stream geography search to search by longitude.
+     * Used by the geography search to search by longitude.
      * <p/>
      * You need to configure all the following options: longitude, latitude, radius, and distanceMetric.
      */
@@ -361,7 +343,7 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Used by the non-stream geography search to search by latitude.
+     * Used by the geography search to search by latitude.
      * <p/>
      * You need to configure all the following options: longitude, latitude, radius, and distanceMetric.
      */
@@ -374,7 +356,7 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Used by the non-stream geography search to search by radius.
+     * Used by the geography search to search by radius.
      * <p/>
      * You need to configure all the following options: longitude, latitude, radius, and distanceMetric.
      */
@@ -387,7 +369,7 @@ public class TwitterConfiguration {
     }
 
     /**
-     * Used by the non-stream geography search, to search by radius using the configured metrics.
+     * Used by the geography search, to search by radius using the configured metrics.
      * <p/>
      * The unit can either be mi for miles, or km for kilometers.
      * <p/>
@@ -396,7 +378,7 @@ public class TwitterConfiguration {
     public void setDistanceMetric(String distanceMetric) {
         this.distanceMetric = distanceMetric;
     }
-    
+
     /**
      * Used for enabling full text from twitter (eg receive tweets that contains more than 140 characters).
      */

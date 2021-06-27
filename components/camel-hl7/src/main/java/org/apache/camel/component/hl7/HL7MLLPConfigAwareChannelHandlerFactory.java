@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,7 @@ package org.apache.camel.component.hl7;
 
 import java.nio.charset.Charset;
 
-import org.apache.camel.component.netty4.DefaultChannelHandlerFactory;
+import org.apache.camel.component.netty.DefaultChannelHandlerFactory;
 
 /**
  * Abstract helper for Netty decoder and encoder factory
@@ -34,7 +34,7 @@ abstract class HL7MLLPConfigAwareChannelHandlerFactory extends DefaultChannelHan
     HL7MLLPConfigAwareChannelHandlerFactory(HL7MLLPConfig config) {
         this.config = config;
     }
-    
+
     public void setValidate(boolean validate) {
         config.setValidate(validate);
     }

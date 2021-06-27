@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,10 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.soap.name.ElementNameStrategy;
 import org.apache.camel.dataformat.soap.name.TypeNameStrategy;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
  * Checks the soap data format by using fixed request and expected response
@@ -34,7 +36,7 @@ import org.junit.Test;
  */
 public class SoapServerTest extends CamelTestSupport {
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate producer;
 
     @Test
@@ -70,9 +72,9 @@ public class SoapServerTest extends CamelTestSupport {
                         .handled(true) //
                         .marshal(soapDataFormat) //
                         .end() //
-                    .unmarshal(soapDataFormat) //
-                    .bean(serverBean) //
-                    .marshal(soapDataFormat);
+                        .unmarshal(soapDataFormat) //
+                        .bean(serverBean) //
+                        .marshal(soapDataFormat);
             }
         };
     }

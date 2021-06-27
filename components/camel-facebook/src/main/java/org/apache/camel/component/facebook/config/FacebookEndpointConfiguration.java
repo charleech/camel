@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import facebook4j.PostUpdate;
 import facebook4j.Reading;
 import facebook4j.TagUpdate;
 import facebook4j.TestUser;
-
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 
@@ -242,6 +241,7 @@ public class FacebookEndpointConfiguration extends FacebookConfiguration {
 
     /**
      * The checkin to be created. Deprecated, instead create a Post with an attached location
+     * 
      * @deprecated instead create a Post with an attached location
      */
     @Deprecated
@@ -425,7 +425,7 @@ public class FacebookEndpointConfiguration extends FacebookConfiguration {
         this.ids = ids;
     }
 
-    public Boolean isIncludeRead() {
+    public Boolean getIncludeRead() {
         return includeRead;
     }
 
@@ -920,7 +920,7 @@ public class FacebookEndpointConfiguration extends FacebookConfiguration {
         this.tabId = tabId;
     }
 
-    public Boolean isHidden() {
+    public Boolean getIsHidden() {
         return isHidden;
     }
 

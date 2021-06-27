@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,15 @@
  */
 package org.apache.camel.component.servlet;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.HttpNotFoundException;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
-import com.meterware.servletunit.ServletUnitClient;
+import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.DeploymentInfo;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MultiServletConsumerTest extends ServletCamelRouterTestSupport {
-
-    protected String getConfiguration() {
-        return "/org/apache/camel/component/servlet/multiServletWeb.xml";
-    }
 
     @Test
     public void testMultiServletsConsumers() throws Exception {
@@ -57,13 +53,13 @@ public class MultiServletConsumerTest extends ServletCamelRouterTestSupport {
     }
 
     public String getService(String path) throws Exception {
-        WebRequest req = new GetMethodWebRequest(CONTEXT_URL + path);
-        ServletUnitClient client = newClient();
-        WebResponse response = client.getResponse(req);
+        WebRequest req = new GetMethodWebRequest(contextUrl + path);
+        WebResponse response = query(req);
 
         return response.getText();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() {
@@ -72,6 +68,18 @@ public class MultiServletConsumerTest extends ServletCamelRouterTestSupport {
                 from("servlet:/echo?servletName=CamelServlet2").transform(simple("${header.name} ${header.name}"));
             }
         };
+    }
+
+    @Override
+    protected DeploymentInfo getDeploymentInfo() {
+        return Servlets.deployment()
+                .setClassLoader(getClass().getClassLoader())
+                .setContextPath(CONTEXT)
+                .setDeploymentName(getClass().getName())
+                .addServlet(Servlets.servlet("CamelServlet1", CamelHttpTransportServlet.class)
+                        .addMapping("/services1/*"))
+                .addServlet(Servlets.servlet("CamelServlet2", CamelHttpTransportServlet.class)
+                        .addMapping("/services2/*"));
     }
 
 }

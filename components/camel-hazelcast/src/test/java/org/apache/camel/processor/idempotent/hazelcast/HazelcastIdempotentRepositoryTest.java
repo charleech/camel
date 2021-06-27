@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,16 +15,25 @@
  * limitations under the License.
  */
 package org.apache.camel.processor.idempotent.hazelcast;
+
+import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
+import com.hazelcast.map.IMap;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class HazelcastIdempotentRepositoryTest extends CamelTestSupport {
 
     private IMap<String, Boolean> cache;
@@ -34,22 +43,24 @@ public class HazelcastIdempotentRepositoryTest extends CamelTestSupport {
     private String key01 = "123";
     private String key02 = "456";
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeAll
+    void setupHazelcast() throws Exception {
+        Config config = new Config();
+        config.getNetworkConfig().getJoin().getTcpIpConfig().setEnabled(false);
+        config.getNetworkConfig().getJoin().getAutoDetectionConfig().setEnabled(false);
         hazelcastInstance = Hazelcast.newHazelcastInstance(null);
         cache = hazelcastInstance.getMap("myRepo");
         repo = new HazelcastIdempotentRepository(hazelcastInstance, "myRepo");
-        super.setUp();
-        cache.clear();
-        repo.start();
     }
 
-    @After
-    public void tearDown() throws Exception {
-        repo.stop();
-        super.tearDown();
+    @AfterAll
+    void teardownHazelcast() {
+        hazelcastInstance.getLifecycleService().terminate();
+    }
+
+    @BeforeEach
+    void clearCache() {
         cache.clear();
-        hazelcastInstance.getLifecycleService().shutdown();
     }
 
     @Test
@@ -98,7 +109,7 @@ public class HazelcastIdempotentRepositoryTest extends CamelTestSupport {
         repo.clear();
         assertEquals(0, cache.size());
     }
-    
+
     @Test
     public void testClear() throws Exception {
         // ADD key to remove
@@ -120,7 +131,7 @@ public class HazelcastIdempotentRepositoryTest extends CamelTestSupport {
         // c is a duplicate
 
         // should be started
-        assertEquals("Should be started", true, repo.getStatus().isStarted());
+        assertTrue(repo.getStatus().isStarted(), "Should be started");
 
         // send 3 message with one duplicated key (key01)
         template.sendBodyAndHeader("direct://in", "a", "messageId", key01);
@@ -130,13 +141,14 @@ public class HazelcastIdempotentRepositoryTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
                 from("direct://in")
-                    .idempotentConsumer(header("messageId"), repo)
-                    .to("mock://out");
+                        .idempotentConsumer(header("messageId"), repo)
+                        .to("mock://out");
             }
         };
     }

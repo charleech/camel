@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,42 +16,41 @@
  */
 package org.apache.camel.component.milo.client;
 
-import static java.util.Objects.requireNonNull;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.milo.Messages;
 import org.apache.camel.component.milo.client.MiloClientConnection.MonitorHandle;
 import org.apache.camel.support.DefaultConsumer;
-import org.apache.camel.support.DefaultMessage;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MiloClientConsumer extends DefaultConsumer {
 
-    private final MiloClientConnection connection;
+    private static final Logger LOG = LoggerFactory.getLogger(MiloClientConsumer.class);
 
+    private MiloClientConnection connection;
     private MonitorHandle handle;
-
     private ExpandedNodeId node;
-
     private Double samplingInterval;
 
-    public MiloClientConsumer(final MiloClientEndpoint endpoint, final Processor processor, final MiloClientConnection connection) {
+    public MiloClientConsumer(final MiloClientEndpoint endpoint, final Processor processor) {
         super(endpoint, processor);
-
-        requireNonNull(connection);
-
-        this.connection = connection;
         this.node = endpoint.getNodeId();
         this.samplingInterval = endpoint.getSamplingInterval();
     }
 
     @Override
+    public MiloClientEndpoint getEndpoint() {
+        return (MiloClientEndpoint) super.getEndpoint();
+    }
+
+    @Override
     protected void doStart() throws Exception {
         super.doStart();
-
+        this.connection = getEndpoint().createConnection();
         this.handle = this.connection.monitorValue(this.node, this.samplingInterval, this::handleValueUpdate);
     }
 
@@ -61,32 +60,28 @@ public class MiloClientConsumer extends DefaultConsumer {
             this.handle.unregister();
             this.handle = null;
         }
-
+        if (this.connection != null) {
+            getEndpoint().releaseConnection(connection);
+        }
         super.doStop();
     }
 
     private void handleValueUpdate(final DataValue value) {
-        log.debug("Handle item update - {} = {}", node, value);
+        LOG.debug("Handle item update - {} = {}", node, value);
 
-        final Exchange exchange = getEndpoint().createExchange();
-        exchange.setIn(mapMessage(value));
+        final Exchange exchange = createExchange(true);
         try {
-            getAsyncProcessor().process(exchange);
+            mapToMessage(value, exchange.getMessage());
+            getProcessor().process(exchange);
         } catch (final Exception e) {
-            log.debug("Failed to process message", e);
+            getExceptionHandler().handleException("Error processing exchange", e);
         }
     }
 
-    private Message mapMessage(final DataValue value) {
-        if (value == null) {
-            return null;
+    private void mapToMessage(final DataValue value, final Message message) {
+        if (value != null) {
+            Messages.fillFromDataValue(value, message);
         }
-
-        final DefaultMessage result = new DefaultMessage(getEndpoint().getCamelContext());
-
-        Messages.fillFromDataValue(value, result);
-
-        return result;
     }
 
 }

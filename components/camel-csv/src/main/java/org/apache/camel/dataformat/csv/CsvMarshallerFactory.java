@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,9 +33,9 @@ public interface CsvMarshallerFactory {
     /**
      * Creates and returns a new {@link CsvMarshaller}.
      *
-     * @param format     the <b>CSV</b> format. Can NOT be <code>null</code>.
-     * @param dataFormat the <b>CSV</b> data format. Can NOT be <code>null</code>.
-     * @return a new {@link CsvMarshaller}. Never <code>null</code>.
+     * @param  format     the <b>CSV</b> format. Can NOT be <code>null</code>.
+     * @param  dataFormat the <b>CSV</b> data format. Can NOT be <code>null</code>.
+     * @return            a new {@link CsvMarshaller}. Never <code>null</code>.
      */
     CsvMarshaller create(CSVFormat format, CsvDataFormat dataFormat);
 }

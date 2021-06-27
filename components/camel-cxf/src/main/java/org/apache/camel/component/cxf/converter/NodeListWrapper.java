@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,10 +29,12 @@ public class NodeListWrapper implements NodeList {
         this.elementList = elementList;
     }
 
+    @Override
     public int getLength() {
         return elementList.size();
     }
 
+    @Override
     public Node item(int index) {
         return elementList.get(index);
     }

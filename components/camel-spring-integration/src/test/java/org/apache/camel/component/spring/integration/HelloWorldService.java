@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,11 +28,11 @@ public class HelloWorldService {
         count++;
         return "Hello " + name;
     }
-    
-    public void greet(String name) {        
+
+    public void greet(String name) {
         greetName = name;
     }
-    
+
     public String getGreetName() {
         return greetName;
     }

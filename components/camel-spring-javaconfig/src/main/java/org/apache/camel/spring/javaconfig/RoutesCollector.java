@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,7 +79,8 @@ public class RoutesCollector implements ApplicationListener<ContextRefreshedEven
                 try {
                     boolean skip = "true".equalsIgnoreCase(System.getProperty("skipStartingCamelContext"));
                     if (skip) {
-                        LOG.info("Skipping starting CamelContext(s) as system property skipStartingCamelContext is set to be true.");
+                        LOG.info(
+                                "Skipping starting CamelContext(s) as system property skipStartingCamelContext is set to be true.");
                     } else {
                         // start camel
                         camelContext.start();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,8 @@ public class Header {
 
     @Override
     public String toString() {
-        return Header.class.getName() + " --> 8: " + this.beginString + ", 9: " + this.bodyLength + ", 34: " + this.msgSeqNum + " , 35: " + this.msgType + ", 49: "
+        return Header.class.getName() + " --> 8: " + this.beginString + ", 9: " + this.bodyLength + ", 34: " + this.msgSeqNum
+               + " , 35: " + this.msgType + ", 49: "
                + this.sendCompId + ", 56: " + this.targetCompId + ", 777: " + this.created;
     }
 

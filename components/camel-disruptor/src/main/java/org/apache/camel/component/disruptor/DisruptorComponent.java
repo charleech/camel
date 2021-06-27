@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,13 +27,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An implementation of the <a href="https://github.com/sirchia/camel-disruptor">Disruptor component</a>
- * for asynchronous SEDA exchanges on an
- * <a href="https://github.com/LMAX-Exchange/disruptor">LMAX Disruptor</a> within a CamelContext
+ * An implementation of the <a href="https://github.com/sirchia/camel-disruptor">Disruptor component</a> for
+ * asynchronous SEDA exchanges on an <a href="https://github.com/LMAX-Exchange/disruptor">LMAX Disruptor</a> within a
+ * CamelContext
  */
 @Component("disruptor")
 public class DisruptorComponent extends DefaultComponent {
-    
+
     public static final int DEFAULT_BUFFER_SIZE = 1024;
     public static final int MAX_CONCURRENT_CONSUMERS = 500;
 
@@ -41,9 +41,6 @@ public class DisruptorComponent extends DefaultComponent {
 
     @Metadata(defaultValue = "" + DEFAULT_BUFFER_SIZE)
     private int bufferSize = -1;
-    //for SEDA compatibility only
-    private int queueSize = -1;
-
     @Metadata(label = "consumer", defaultValue = "1")
     private int defaultConcurrentConsumers = 1;
     @Metadata(label = "consumer")
@@ -62,20 +59,25 @@ public class DisruptorComponent extends DefaultComponent {
     }
 
     @Override
-    protected Endpoint createEndpoint(final String uri, final String remaining,
-                                      final Map<String, Object> parameters) throws Exception {
+    protected Endpoint createEndpoint(
+            final String uri, final String remaining,
+            final Map<String, Object> parameters)
+            throws Exception {
 
-        final int concurrentConsumers = getAndRemoveParameter(parameters, "concurrentConsumers", Integer.class, defaultConcurrentConsumers);
-        final boolean limitConcurrentConsumers = getAndRemoveParameter(parameters, "limitConcurrentConsumers", Boolean.class, true);
+        final int concurrentConsumers
+                = getAndRemoveParameter(parameters, "concurrentConsumers", Integer.class, defaultConcurrentConsumers);
+        final boolean limitConcurrentConsumers
+                = getAndRemoveParameter(parameters, "limitConcurrentConsumers", Boolean.class, true);
 
         if (limitConcurrentConsumers && concurrentConsumers > MAX_CONCURRENT_CONSUMERS) {
             throw new IllegalArgumentException(
                     "The limitConcurrentConsumers flag in set to true. ConcurrentConsumers cannot be set at a value greater than "
-                            + MAX_CONCURRENT_CONSUMERS + " was " + concurrentConsumers);
+                                               + MAX_CONCURRENT_CONSUMERS + " was " + concurrentConsumers);
         }
 
         if (concurrentConsumers < 0) {
-            throw new IllegalArgumentException("concurrentConsumers found to be " + concurrentConsumers 
+            throw new IllegalArgumentException(
+                    "concurrentConsumers found to be " + concurrentConsumers
                                                + ", must be greater than 0");
         }
 
@@ -93,23 +95,31 @@ public class DisruptorComponent extends DefaultComponent {
             throw new IllegalArgumentException("The 'pollTimeout' argument is not supported by the Disruptor component");
         }
 
-        final DisruptorWaitStrategy waitStrategy = getAndRemoveParameter(parameters, "waitStrategy", DisruptorWaitStrategy.class, defaultWaitStrategy);
-        final DisruptorProducerType producerType = getAndRemoveParameter(parameters, "producerType", DisruptorProducerType.class, defaultProducerType);
-        final boolean multipleConsumers = getAndRemoveParameter(parameters, "multipleConsumers", boolean.class, defaultMultipleConsumers);
-        final boolean blockWhenFull = getAndRemoveParameter(parameters, "blockWhenFull", boolean.class, defaultBlockWhenFull);
+        DisruptorWaitStrategy waitStrategy
+                = getAndRemoveParameter(parameters, "waitStrategy", DisruptorWaitStrategy.class, defaultWaitStrategy);
+        DisruptorProducerType producerType
+                = getAndRemoveParameter(parameters, "producerType", DisruptorProducerType.class, defaultProducerType);
+        boolean multipleConsumers
+                = getAndRemoveParameter(parameters, "multipleConsumers", boolean.class, defaultMultipleConsumers);
+        boolean blockWhenFull = getAndRemoveParameter(parameters, "blockWhenFull", boolean.class, defaultBlockWhenFull);
 
-        final DisruptorReference disruptorReference = getOrCreateDisruptor(uri, remaining, size, producerType, waitStrategy);
-        final DisruptorEndpoint disruptorEndpoint = new DisruptorEndpoint(uri, this, disruptorReference, concurrentConsumers, multipleConsumers, blockWhenFull);
-        disruptorEndpoint.setWaitStrategy(waitStrategy);
-        disruptorEndpoint.setProducerType(producerType);
-        disruptorEndpoint.configureProperties(parameters);
+        DisruptorReference disruptorReference = getOrCreateDisruptor(uri, remaining, size, producerType, waitStrategy);
+        DisruptorEndpoint answer = new DisruptorEndpoint(uri, this, disruptorReference);
+        answer.setConcurrentConsumers(concurrentConsumers);
+        answer.setMultipleConsumers(multipleConsumers);
+        answer.setBlockWhenFull(blockWhenFull);
+        answer.setWaitStrategy(waitStrategy);
+        answer.setProducerType(producerType);
+        setProperties(answer, parameters);
 
-        return disruptorEndpoint;
+        return answer;
     }
 
-    private DisruptorReference getOrCreateDisruptor(final String uri, final String name, final int size,
-                                                    final DisruptorProducerType producerType,
-                                                    final DisruptorWaitStrategy waitStrategy) throws Exception {
+    private DisruptorReference getOrCreateDisruptor(
+            final String uri, final String name, final int size,
+            final DisruptorProducerType producerType,
+            final DisruptorWaitStrategy waitStrategy)
+            throws Exception {
         final String key = getDisruptorKey(uri);
 
         int sizeToUse;
@@ -117,8 +127,6 @@ public class DisruptorComponent extends DefaultComponent {
             sizeToUse = size;
         } else if (bufferSize > 0) {
             sizeToUse = bufferSize;
-        } else if (queueSize > 0) {
-            sizeToUse = queueSize;
         } else {
             sizeToUse = DEFAULT_BUFFER_SIZE;
         }
@@ -136,7 +144,7 @@ public class DisruptorComponent extends DefaultComponent {
                     // there is already a queue, so make sure the size matches
                     throw new IllegalArgumentException(
                             "Cannot use existing queue " + key + " as the existing queue size "
-                                    + ref.getBufferSize() + " does not match given queue size " + sizeToUse);
+                                                       + ref.getBufferSize() + " does not match given queue size " + sizeToUse);
                 }
                 LOGGER.debug("Reusing disruptor {} for key {}", ref, key);
             }
@@ -235,19 +243,6 @@ public class DisruptorComponent extends DefaultComponent {
      */
     public void setDefaultBlockWhenFull(boolean defaultBlockWhenFull) {
         this.defaultBlockWhenFull = defaultBlockWhenFull;
-    }
-
-    /**
-     * To configure the ring buffer size
-     */
-    @Deprecated
-    public void setQueueSize(final int size) {
-        queueSize = size;
-    }
-
-    @Deprecated
-    public int getQueueSize() {
-        return queueSize;
     }
 
     /**

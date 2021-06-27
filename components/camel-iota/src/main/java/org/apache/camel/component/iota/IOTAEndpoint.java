@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,38 +18,38 @@ package org.apache.camel.component.iota;
 
 import java.net.URL;
 
-import jota.IotaAPI;
-
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
+import org.iota.jota.IotaAPI;
 
 /**
- * Component for integrate IOTA DLT
+ * Manage financial transactions using IOTA distributed ledger.
  */
-@UriEndpoint(firstVersion = "2.23.0", scheme = "iota", title = "IOTA", syntax = "iota:name", label = "dlt")
+@UriEndpoint(firstVersion = "2.23.0", scheme = "iota", title = "IOTA", syntax = "iota:name",
+             category = { Category.LEDGER, Category.API }, producerOnly = true)
 public class IOTAEndpoint extends DefaultEndpoint {
 
-    private IotaAPI apiClient;
+    private volatile IotaAPI apiClient;
 
     @UriPath
     @Metadata(required = true)
     private String name;
-
     @UriParam
+    @Metadata(required = true)
     private String url;
-
-    @UriParam
+    @UriParam(enums = "sendTransfer,getNewAddress,getTransfers")
+    @Metadata(required = true)
     private String operation;
     @UriParam
     private String tag;
-    @UriParam(defaultValue = "1")
+    @UriParam(label = "security", defaultValue = "1")
     private Integer securityLevel = 1;
     @UriParam(defaultValue = "14")
     private Integer minWeightMagnitude = IOTAConstants.MIN_WEIGHT_MAGNITUDE;
@@ -63,22 +63,20 @@ public class IOTAEndpoint extends DefaultEndpoint {
         super(uri, component);
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new IOTAProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new UnsupportedOperationException("IOTAConsumer is not supported!");
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     @Override
     protected void doStart() throws Exception {
         final URL u = new URL(url);
-        apiClient = new IotaAPI.Builder().protocol(u.getProtocol()).host(u.getHost()).port(String.valueOf(u.getPort())).build();
+        apiClient = new IotaAPI.Builder().protocol(u.getProtocol()).host(u.getHost()).port(u.getPort()).build();
 
         super.doStart();
     }
@@ -96,8 +94,6 @@ public class IOTAEndpoint extends DefaultEndpoint {
 
     /**
      * Component name
-     * 
-     * @param url
      */
     public void setName(String name) {
         this.name = name;
@@ -109,8 +105,6 @@ public class IOTAEndpoint extends DefaultEndpoint {
 
     /**
      * Node url
-     * 
-     * @param url
      */
     public void setUrl(String url) {
         this.url = url;
@@ -122,8 +116,6 @@ public class IOTAEndpoint extends DefaultEndpoint {
 
     /**
      * TAG
-     * 
-     * @param tag
      */
     public void setTag(String tag) {
         this.tag = tag;
@@ -135,8 +127,6 @@ public class IOTAEndpoint extends DefaultEndpoint {
 
     /**
      * Address security level
-     * 
-     * @param security level
      */
     public void setSecurityLevel(Integer securityLevel) {
         this.securityLevel = securityLevel;
@@ -147,11 +137,8 @@ public class IOTAEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * The minWeightMagnitude is the minimum number of zeroes that a
-     * proof-of-work output/transaction hash must end with to be considered
-     * valid by full nodes
-     * 
-     * @param minWeightMagnitude
+     * The minWeightMagnitude is the minimum number of zeroes that a proof-of-work output/transaction hash must end with
+     * to be considered valid by full nodes
      */
 
     public void setMinWeightMagnitude(Integer minWeightMagnitude) {
@@ -164,8 +151,6 @@ public class IOTAEndpoint extends DefaultEndpoint {
 
     /**
      * The depth determines how deep the tangle is analysed for getting Tips
-     * 
-     * @param depth
      */
     public void setDepth(Integer depth) {
         this.depth = depth;
@@ -180,9 +165,7 @@ public class IOTAEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * Supported operations are 'sendTransfer', 'getNewAddress'
-     * 
-     * @param operation
+     * Which operation to perform, one of: sendTransfer, getNewAddress, getTransfers
      */
     public void setOperation(String operation) {
         this.operation = operation;

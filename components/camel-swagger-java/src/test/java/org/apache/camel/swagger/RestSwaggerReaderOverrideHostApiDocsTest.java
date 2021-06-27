@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,21 +21,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Swagger;
-import org.apache.camel.impl.DefaultClassResolver;
-import org.junit.Test;
+import org.apache.camel.impl.engine.DefaultClassResolver;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RestSwaggerReaderOverrideHostApiDocsTest extends RestSwaggerReaderApiDocsTest {
 
+    private static final Logger LOG = LoggerFactory.getLogger(RestSwaggerReaderOverrideHostApiDocsTest.class);
+
+    @Override
     @Test
     public void testReaderRead() throws Exception {
         BeanConfig config = new BeanConfig();
         config.setHost("localhost:8080");
-        config.setSchemes(new String[]{"http"});
+        config.setSchemes(new String[] { "http" });
         config.setBasePath("/api");
         config.setHost("http:mycoolserver:8888/myapi");
         RestSwaggerReader reader = new RestSwaggerReader();
 
-        Swagger swagger = reader.read(context.getRestDefinitions(), null, config, context.getName(), new DefaultClassResolver());
+        Swagger swagger
+                = reader.read(context.getRestDefinitions(), null, config, context.getName(), new DefaultClassResolver());
         assertNotNull(swagger);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -43,7 +53,7 @@ public class RestSwaggerReaderOverrideHostApiDocsTest extends RestSwaggerReaderA
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String json = mapper.writeValueAsString(swagger);
 
-        log.info(json);
+        LOG.info(json);
 
         assertTrue(json.contains("\"host\" : \"http:mycoolserver:8888/myapi\""));
         assertTrue(json.contains("\"basePath\" : \"/api\""));

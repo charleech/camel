@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,8 @@ public class PubNubConfiguration {
     }
 
     /**
-     * The subscribe key obtained from your PubNub account. Required when subscribing to channels or listening for presence events
+     * The subscribe key obtained from your PubNub account. Required when subscribing to channels or listening for
+     * presence events
      */
     public String getSubscribeKey() {
         return this.subscribeKey;
@@ -100,7 +101,7 @@ public class PubNubConfiguration {
     }
 
     /**
-     * If cipher is passed, all communicatons to/from PubNub will be encrypted.
+     * If cipher is passed, all communications to/from PubNub will be encrypted.
      */
     public String getCipherKey() {
         return cipherKey;
@@ -147,10 +148,13 @@ public class PubNubConfiguration {
      * The operation to perform.
      * <ul>
      * <li>PUBLISH: Default. Send a message to all subscribers of a channel.</li>
-     * <li>FIRE: allows the client to send a message to BLOCKS Event Handlers. These messages will go directly to any Event Handlers registered on the channel.</li>
-     * <li>HERENOW: Obtain information about the current state of a channel including a list of unique user-ids currently subscribed to the channel and the total occupancy count.</li>
+     * <li>FIRE: allows the client to send a message to BLOCKS Event Handlers. These messages will go directly to any
+     * Event Handlers registered on the channel.</li>
+     * <li>HERENOW: Obtain information about the current state of a channel including a list of unique user-ids
+     * currently subscribed to the channel and the total occupancy count.</li>
      * <li>WHERENOW: Obtain information about the current list of channels to which a uuid is subscribed to.</li>
-     * <li>GETSTATE: Used to get key/value pairs specific to a subscriber uuid. State information is supplied as a JSON object of key/value pairs</li>
+     * <li>GETSTATE: Used to get key/value pairs specific to a subscriber uuid. State information is supplied as a JSON
+     * object of key/value pairs</li>
      * <li>SETSTATE: Used to set key/value pairs specific to a subscriber uuid</li>
      * <li>GETHISTORY: Fetches historical messages of a channel.</li>
      * </ul>
@@ -170,7 +174,7 @@ public class PubNubConfiguration {
         this.withPresence = withPresence;
     }
 
-    public boolean withPresence() {
+    public boolean isWithPresence() {
         return withPresence;
     }
 

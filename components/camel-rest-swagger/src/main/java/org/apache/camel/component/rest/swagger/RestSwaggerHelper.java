@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,7 @@ final class RestSwaggerHelper {
 
         if (!matcher.matches()) {
             throw new IllegalArgumentException(
-                "host must be an apsolute URI (e.g. http://api.example.com), given: `" + hostUri + "`");
+                    "host must be an absolute URI (e.g. http://api.example.com), given: `" + hostUri + "`");
         }
 
         return hostUri;

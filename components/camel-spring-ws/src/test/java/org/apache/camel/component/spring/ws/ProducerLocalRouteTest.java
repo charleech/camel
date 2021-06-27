@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,29 +23,31 @@ import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.StringSource;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.apache.camel.util.xml.StringSource;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@CamelSpringTest
 @ContextConfiguration
-public class ProducerLocalRouteTest extends AbstractJUnit4SpringContextTests {
+public class ProducerLocalRouteTest {
 
     private final String stockQuoteWebserviceUri = "http://localhost/";
-    private final String xmlRequestForGoogleStockQuote = "<GetQuote xmlns=\"http://www.webserviceX.NET/\"><symbol>GOOG</symbol></GetQuote>";
+    private final String xmlRequestForGoogleStockQuote
+            = "<GetQuote xmlns=\"http://www.webserviceX.NET/\"><symbol>GOOG</symbol></GetQuote>";
 
     @Produce
     private ProducerTemplate template;
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint resultEndpoint;
 
-    @EndpointInject(uri = "mock:inOnly")
+    @EndpointInject("mock:inOnly")
     private MockEndpoint inOnlyEndpoint;
 
     @Test
@@ -60,7 +62,8 @@ public class ProducerLocalRouteTest extends AbstractJUnit4SpringContextTests {
     public void consumeStockQuoteWebserviceAndPreserveHeaders() throws Exception {
         resultEndpoint.expectedHeaderReceived("helloHeader", "hello world!");
 
-        Object result = template.requestBodyAndHeader("direct:stockQuoteWebserviceMock", xmlRequestForGoogleStockQuote, "helloHeader", "hello world!");
+        Object result = template.requestBodyAndHeader("direct:stockQuoteWebserviceMock", xmlRequestForGoogleStockQuote,
+                "helloHeader", "hello world!");
 
         assertNotNull(result);
         resultEndpoint.assertIsSatisfied();
@@ -84,7 +87,8 @@ public class ProducerLocalRouteTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void consumeStockQuoteWebserviceWithNonDefaultMessageFactory() throws Exception {
-        Object result = template.requestBody("direct:stockQuoteWebserviceWithNonDefaultMessageFactory", xmlRequestForGoogleStockQuote);
+        Object result = template.requestBody("direct:stockQuoteWebserviceWithNonDefaultMessageFactory",
+                xmlRequestForGoogleStockQuote);
 
         assertNotNull(result);
         assertTrue(result instanceof Source);
@@ -102,8 +106,9 @@ public class ProducerLocalRouteTest extends AbstractJUnit4SpringContextTests {
 
     @Test
     public void consumeStockQuoteWebserviceAndProvideEndpointUriByHeader() throws Exception {
-        Object result = template.requestBodyAndHeader("direct:stockQuoteWebserviceWithoutDefaultUri", xmlRequestForGoogleStockQuote,
-                SpringWebserviceConstants.SPRING_WS_ENDPOINT_URI, stockQuoteWebserviceUri);
+        Object result
+                = template.requestBodyAndHeader("direct:stockQuoteWebserviceWithoutDefaultUri", xmlRequestForGoogleStockQuote,
+                        SpringWebserviceConstants.SPRING_WS_ENDPOINT_URI, stockQuoteWebserviceUri);
 
         assertNotNull(result);
         assertTrue(result instanceof String);
@@ -129,6 +134,6 @@ public class ProducerLocalRouteTest extends AbstractJUnit4SpringContextTests {
         assertTrue(resultMessage.contains("Google Inc."));
 
         Object bar = in.getHeader("foo");
-        assertEquals("The header value should have been preserved", "bar", bar);
+        assertEquals("bar", bar, "The header value should have been preserved");
     }
 }

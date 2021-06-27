@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,11 @@ package org.apache.camel.component.mail;
 import javax.mail.search.SearchTerm;
 
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
 
 import static org.apache.camel.component.mail.SearchTermBuilder.Op;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MailSearchTermNotSpamTest extends MailSearchTermTest {
 
@@ -35,6 +36,7 @@ public class MailSearchTermNotSpamTest extends MailSearchTermTest {
         return build.build();
     }
 
+    @Override
     @Test
     public void testSearchTerm() throws Exception {
         Mailbox mailbox = Mailbox.get("bill@localhost");

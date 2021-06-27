@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoLocation;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.query.SortQuery;
@@ -44,39 +50,39 @@ public class RedisClient {
     }
 
     public Collection<Object> hmget(String key, Collection<String> fields) {
-        return redisTemplate.<String, Object>opsForHash().multiGet(key, fields);
+        return redisTemplate.<String, Object> opsForHash().multiGet(key, fields);
     }
 
     public Set<String> hkeys(String key) {
-        return redisTemplate.<String, Object>opsForHash().keys(key);
+        return redisTemplate.<String, Object> opsForHash().keys(key);
     }
 
     public Long hlen(String key) {
-        return redisTemplate.<String, Object>opsForHash().size(key);
+        return redisTemplate.<String, Object> opsForHash().size(key);
     }
 
     public Long hincrBy(String key, String field, Long value) {
-        return redisTemplate.<String, Object>opsForHash().increment(key, field, value);
+        return redisTemplate.<String, Object> opsForHash().increment(key, field, value);
     }
 
     public Map<String, Object> hgetAll(String key) {
-        return redisTemplate.<String, Object>opsForHash().entries(key);
+        return redisTemplate.<String, Object> opsForHash().entries(key);
     }
 
     public Boolean hexists(String key, String field) {
-        return redisTemplate.<String, Object>opsForHash().hasKey(key, field);
+        return redisTemplate.<String, Object> opsForHash().hasKey(key, field);
     }
 
     public Object hget(String key, String field) {
-        return redisTemplate.<String, Object>opsForHash().get(key, field);
+        return redisTemplate.<String, Object> opsForHash().get(key, field);
     }
 
     public void hdel(String key, String field) {
-        redisTemplate.<String, Object>opsForHash().delete(key, field);
+        redisTemplate.<String, Object> opsForHash().delete(key, field);
     }
 
     public void hset(String key, String field, Object value) {
-        redisTemplate.<String, Object>opsForHash().put(key, field, value);
+        redisTemplate.<String, Object> opsForHash().put(key, field, value);
     }
 
     public void quit() {
@@ -91,11 +97,11 @@ public class RedisClient {
     }
 
     public Collection<Object> hvals(String key) {
-        return redisTemplate.<String, Object>opsForHash().values(key);
+        return redisTemplate.<String, Object> opsForHash().values(key);
     }
 
     public Boolean hsetnx(String key, String field, Object value) {
-        return redisTemplate.<String, Object>opsForHash().putIfAbsent(key, field, value);
+        return redisTemplate.<String, Object> opsForHash().putIfAbsent(key, field, value);
     }
 
     public Long decr(String key) {
@@ -459,5 +465,43 @@ public class RedisClient {
 
     public void zunionstore(String key, Collection<String> keys, String destination) {
         redisTemplate.opsForZSet().unionAndStore(key, keys, destination);
+    }
+
+    public Long geoadd(String key, double latitude, double longitude, Object member) {
+        Point point = new Point(latitude, longitude);
+        return redisTemplate.opsForGeo().add(key, point, member);
+    }
+
+    public Distance geodist(String key, Object member1, Object member2) {
+        return redisTemplate.opsForGeo().distance(key, member1, member2);
+    }
+
+    public List<String> geohash(String key, Object member) {
+        return redisTemplate.opsForGeo().hash(key, member);
+    }
+
+    public List<Point> geopos(String key, Object member) {
+        return redisTemplate.opsForGeo().position(key, member);
+    }
+
+    public GeoResults<GeoLocation<Object>> georadius(String key, double latitude, double longitude, double radius, Long limit) {
+        Point point = new Point(latitude, longitude);
+        Circle within = new Circle(point, radius);
+        GeoRadiusCommandArgs args
+                = GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance().sortAscending();
+        if (limit != null) {
+            args.limit(limit);
+        }
+        return redisTemplate.opsForGeo().radius(key, within, args);
+    }
+
+    public GeoResults<GeoLocation<Object>> georadius(String key, Object member, double radius, Long limit) {
+        Distance distance = new Distance(radius);
+        GeoRadiusCommandArgs args
+                = GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance().sortAscending();
+        if (limit != null) {
+            args.limit(limit);
+        }
+        return redisTemplate.opsForGeo().radius(key, member, distance, args);
     }
 }

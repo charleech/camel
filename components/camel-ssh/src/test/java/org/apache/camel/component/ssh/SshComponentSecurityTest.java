@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class SshComponentSecurityTest extends SshComponentTestSupport {
 
@@ -52,6 +52,58 @@ public class SshComponentSecurityTest extends SshComponentTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Test
+    public void testRsaFilePKCS8() throws Exception {
+        final String msg = "test";
+
+        MockEndpoint mock = getMockEndpoint("mock:rsapkcs8");
+        mock.expectedMinimumMessageCount(1);
+        mock.expectedBodiesReceived(msg);
+
+        template.sendBody("direct:ssh-rsapkcs8", msg);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testEncryptedRsaFile() throws Exception {
+        final String msg = "test";
+
+        MockEndpoint mock = getMockEndpoint("mock:encrsaFile");
+        mock.expectedMinimumMessageCount(1);
+        mock.expectedBodiesReceived(msg);
+
+        template.sendBody("direct:ssh-encrsaFile", msg);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testECFile() throws Exception {
+        final String msg = "test";
+
+        MockEndpoint mock = getMockEndpoint("mock:ecFile");
+        mock.expectedMinimumMessageCount(1);
+        mock.expectedBodiesReceived(msg);
+
+        template.sendBody("direct:ssh-ecFile", msg);
+
+        assertMockEndpointsSatisfied();
+    }
+
+    @Test
+    public void testECFilePKCS8() throws Exception {
+        final String msg = "test";
+
+        MockEndpoint mock = getMockEndpoint("mock:ecFilepkcs8");
+        mock.expectedMinimumMessageCount(1);
+        mock.expectedBodiesReceived(msg);
+
+        template.sendBody("direct:ssh-ecFilepkcs8", msg);
+
+        assertMockEndpointsSatisfied();
+    }
+
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
@@ -62,11 +114,12 @@ public class SshComponentSecurityTest extends SshComponentTestSupport {
                         .to("mock:error");
 
                 SshComponent sshComponent = new SshComponent();
-                sshComponent.setHost("localhost");
-                sshComponent.setPort(port);
-                sshComponent.setUsername("smx");
-                sshComponent.setKeyPairProvider(new FileKeyPairProvider(Paths.get("src/test/resources/hostkey.pem")));
-                sshComponent.setKeyType(KeyPairProvider.SSH_RSA);
+                sshComponent.getConfiguration().setHost("localhost");
+                sshComponent.getConfiguration().setPort(port);
+                sshComponent.getConfiguration().setUsername("smx");
+                sshComponent.getConfiguration()
+                        .setKeyPairProvider(new FileKeyPairProvider(Paths.get("src/test/resources/hostkey.pem")));
+                sshComponent.getConfiguration().setKeyType(KeyPairProvider.SSH_RSA);
 
                 getContext().addComponent("ssh-rsa", sshComponent);
 
@@ -77,6 +130,23 @@ public class SshComponentSecurityTest extends SshComponentTestSupport {
                 from("direct:ssh-rsaFile")
                         .to("ssh://smx@localhost:" + port + "?certResource=file:src/test/resources/hostkey.pem")
                         .to("mock:rsaFile");
+
+                from("direct:ssh-rsapkcs8")
+                        .to("ssh://smx@localhost:" + port + "?certResource=file:src/test/resources/rsa.pem")
+                        .to("mock:rsapkcs8");
+
+                from("direct:ssh-encrsaFile")
+                        .to("ssh://smx@localhost:" + port
+                            + "?certResource=file:src/test/resources/encrsa.pem&certResourcePassword=security")
+                        .to("mock:encrsaFile");
+
+                from("direct:ssh-ecFile")
+                        .to("ssh://smx@localhost:" + port + "?certResource=file:src/test/resources/ec.pem")
+                        .to("mock:ecFile");
+
+                from("direct:ssh-ecFilepkcs8")
+                        .to("ssh://smx@localhost:" + port + "?certResource=file:src/test/resources/ecpkcs8.pem")
+                        .to("mock:ecFilepkcs8");
             }
         };
     }

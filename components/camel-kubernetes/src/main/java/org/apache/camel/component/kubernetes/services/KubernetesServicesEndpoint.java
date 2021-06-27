@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,19 @@
  */
 package org.apache.camel.component.kubernetes.services;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.spi.UriEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The Kubernetes Service Accounts component provides a producer to execute service operations
- * and a consumer to consume service events.
+ * Perform operations on Kubernetes Services and get notified on Service changes.
  */
 @UriEndpoint(firstVersion = "2.17.0", scheme = "kubernetes-services", title = "Kubernetes Services",
-    syntax = "kubernetes-services:masterUrl", label = "container,cloud,paas")
+             syntax = "kubernetes-services:masterUrl", category = { Category.CONTAINER, Category.CLOUD, Category.PAAS })
 public class KubernetesServicesEndpoint extends AbstractKubernetesEndpoint {
 
     public KubernetesServicesEndpoint(String uri, KubernetesServicesComponent component, KubernetesConfiguration config) {
@@ -44,7 +42,10 @@ public class KubernetesServicesEndpoint extends AbstractKubernetesEndpoint {
 
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new KubernetesServicesConsumer(this, processor);
+        Consumer consumer = new KubernetesServicesConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
+
     }
 
 }

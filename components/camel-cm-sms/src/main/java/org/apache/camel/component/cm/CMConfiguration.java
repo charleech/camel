@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,14 +28,18 @@ import org.apache.camel.spi.UriParams;
 @UriParams
 public class CMConfiguration {
 
-    @UriParam @Metadata(required = true)
     @NotNull
+    @UriParam(javaType = "java.lang.String")
+    @Metadata(required = true)
     private String productToken;
-    @UriParam
-    @NotNull @Size(min = 1, max = 11)
+    @NotNull
+    @Size(min = 1, max = 11)
+    @UriParam(javaType = "java.lang.String")
+    @Metadata(required = true)
     private String defaultFrom;
-    @UriParam(defaultValue = "8")
-    @Min(1) @Max(8)
+    @Min(1)
+    @Max(8)
+    @UriParam(defaultValue = "8", javaType = "int")
     private int defaultMaxNumberOfParts = 8;
     @UriParam
     private boolean testConnectionOnStartup;
@@ -67,9 +71,9 @@ public class CMConfiguration {
     }
 
     /**
-     * If it is a multipart message forces the max number. Message can be truncated.
-     * Technically the gateway will first check if a message is larger than 160 characters,
-     * if so, the message will be cut into multiple 153 characters parts limited by these parameters.
+     * If it is a multipart message forces the max number. Message can be truncated. Technically the gateway will first
+     * check if a message is larger than 160 characters, if so, the message will be cut into multiple 153 characters
+     * parts limited by these parameters.
      */
     public void setDefaultMaxNumberOfParts(final int defaultMaxNumberOfParts) {
         this.defaultMaxNumberOfParts = defaultMaxNumberOfParts;

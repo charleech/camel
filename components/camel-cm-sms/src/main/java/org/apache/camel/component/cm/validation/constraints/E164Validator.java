@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,8 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 /**
- * Checks that a given character sequence (e.g. string) is a valid E164 formatted phonenumber. https://www.cmtelecom.com/newsroom/how-to-format-international-telephone- numbers
+ * Checks that a given character sequence (e.g. string) is a valid E164 formatted phonenumber.
+ * https://www.cmtelecom.com/newsroom/how-to-format-international-telephone- numbers
  * https://github.com/googlei18n/libphonenumber
  */
 public class E164Validator implements ConstraintValidator<E164, String> {

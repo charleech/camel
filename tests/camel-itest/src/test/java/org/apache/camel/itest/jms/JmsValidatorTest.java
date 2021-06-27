@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,21 @@
  */
 package org.apache.camel.itest.jms;
 
-import javax.jms.ConnectionFactory;
-import javax.naming.Context;
-
 import org.apache.camel.ValidationException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
-import org.apache.camel.itest.CamelJmsTestHelper;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.jndi.JndiContext;
-import org.junit.Test;
-
-import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import org.apache.camel.itest.utils.extensions.JmsServiceExtension;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class JmsValidatorTest extends CamelTestSupport {
+    @RegisterExtension
+    public static JmsServiceExtension jmsServiceExtension = JmsServiceExtension.createExtension();
 
     @Test
-    public void testJmsValidator() throws Exception {
+    void testJmsValidator() throws Exception {
         getMockEndpoint("mock:valid").expectedMessageCount(1);
         getMockEndpoint("mock:invalid").expectedMessageCount(0);
         getMockEndpoint("mock:finally").expectedMessageCount(1);
@@ -44,7 +42,7 @@ public class JmsValidatorTest extends CamelTestSupport {
     }
 
     @Test
-    public void testJmsValidatorInvalid() throws Exception {
+    void testJmsValidatorInvalid() throws Exception {
         getMockEndpoint("mock:valid").expectedMessageCount(0);
         getMockEndpoint("mock:invalid").expectedMessageCount(1);
         getMockEndpoint("mock:finally").expectedMessageCount(1);
@@ -56,33 +54,30 @@ public class JmsValidatorTest extends CamelTestSupport {
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        JndiContext answer = new JndiContext();
-
+    protected void bindToRegistry(Registry registry) {
         // add ActiveMQ with embedded broker
-        ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
-        JmsComponent amq = jmsComponentAutoAcknowledge(connectionFactory);
+        JmsComponent amq = jmsServiceExtension.getComponent();
+
         amq.setCamelContext(context);
 
-        answer.bind("jms", amq);
-        return answer;
+        registry.bind("jms", amq);
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("jms:queue:inbox")
-                    .convertBodyTo(String.class)
-                    .doTry()
+                        .convertBodyTo(String.class)
+                        .doTry()
                         .to("validator:file:src/test/resources/myschema.xsd")
                         .to("jms:queue:valid")
-                    .doCatch(ValidationException.class)
+                        .doCatch(ValidationException.class)
                         .to("jms:queue:invalid")
-                    .doFinally()
+                        .doFinally()
                         .to("jms:queue:finally")
-                    .end();
+                        .end();
 
                 from("jms:queue:valid").to("mock:valid");
                 from("jms:queue:invalid").to("mock:invalid");

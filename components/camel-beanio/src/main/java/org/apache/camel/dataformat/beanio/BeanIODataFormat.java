@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,10 +34,10 @@ import org.apache.camel.NoTypeConversionAvailableException;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.spi.annotations.Dataformat;
+import org.apache.camel.support.ObjectHelper;
+import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.IOHelper;
-import org.apache.camel.support.ResourceHelper;
-import org.apache.camel.support.ObjectHelper;
 import org.beanio.BeanReader;
 import org.beanio.BeanReaderErrorHandler;
 import org.beanio.BeanWriter;
@@ -47,8 +47,7 @@ import org.beanio.Unmarshaller;
 import static org.apache.camel.dataformat.beanio.BeanIOHelper.getOrCreateBeanReaderErrorHandler;
 
 /**
- * A <a href="http://camel.apache.org/data-format.html">data format</a> (
- * {@link DataFormat}) for beanio data.
+ * A <a href="http://camel.apache.org/data-format.html">data format</a> ( {@link DataFormat}) for beanio data.
  */
 @Dataformat("beanio")
 public class BeanIODataFormat extends ServiceSupport implements DataFormat, DataFormatName, CamelContextAware {
@@ -71,23 +70,25 @@ public class BeanIODataFormat extends ServiceSupport implements DataFormat, Data
     }
 
     @Override
-    protected void doStart() throws Exception {
+    protected void doInit() throws Exception {
+        super.doInit();
+
         org.apache.camel.util.ObjectHelper.notNull(getStreamName(), "Stream name not configured.");
         if (factory == null) {
             // Create the stream factory that will be used to read/write objects.
             factory = StreamFactory.newInstance();
-
-            // Load the mapping file using the resource helper to ensure it can be loaded in OSGi and other environments
-            InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(getCamelContext(), getMapping());
-            try {
-                if (getProperties() != null) {
-                    factory.load(is, getProperties());
-                } else {
-                    factory.load(is);
-                }
-            } finally {
-                IOHelper.close(is);
+            if (ResourceHelper.isClasspathUri(getMapping())) {
+                loadMappingResource();
             }
+        }
+    }
+
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+
+        if (!ResourceHelper.isClasspathUri(getMapping())) {
+            loadMappingResource();
         }
     }
 
@@ -96,10 +97,12 @@ public class BeanIODataFormat extends ServiceSupport implements DataFormat, Data
         factory = null;
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
@@ -108,16 +111,32 @@ public class BeanIODataFormat extends ServiceSupport implements DataFormat, Data
         return factory;
     }
 
+    @Override
     public void marshal(Exchange exchange, Object body, OutputStream stream) throws Exception {
         List<Object> models = getModels(exchange, body);
         writeModels(stream, models);
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream stream) throws Exception {
         if (isUnmarshalSingleObject()) {
             return readSingleModel(exchange, stream);
         } else {
             return readModels(exchange, stream);
+        }
+    }
+
+    private void loadMappingResource() throws Exception {
+        // Load the mapping file using the resource helper to ensure it can be loaded in OSGi and other environments
+        InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(getCamelContext(), getMapping());
+        try {
+            if (getProperties() != null) {
+                factory.load(is, getProperties());
+            } else {
+                factory.load(is);
+            }
+        } finally {
+            IOHelper.close(is);
         }
     }
 
@@ -242,7 +261,7 @@ public class BeanIODataFormat extends ServiceSupport implements DataFormat, Data
     public Charset getEncoding() {
         return configuration.getEncoding();
     }
-    
+
     public BeanReaderErrorHandler getBeanReaderErrorHandler() {
         return configuration.getBeanReaderErrorHandler();
     }

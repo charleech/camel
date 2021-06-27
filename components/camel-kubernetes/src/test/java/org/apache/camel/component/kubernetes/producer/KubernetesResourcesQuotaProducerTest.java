@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,34 +21,35 @@ import java.util.List;
 import io.fabric8.kubernetes.api.model.ResourceQuota;
 import io.fabric8.kubernetes.api.model.ResourceQuotaBuilder;
 import io.fabric8.kubernetes.api.model.ResourceQuotaListBuilder;
-import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
-
+import io.fabric8.kubernetes.client.KubernetesClient;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.KubernetesServer;
 import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.KubernetesTestSupport;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class KubernetesResourcesQuotaProducerTest extends KubernetesTestSupport {
 
-    @Rule
+    @RegisterExtension
     public KubernetesServer server = new KubernetesServer();
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("kubernetesClient", server.getClient());
-        return registry;
+    @BindToRegistry("kubernetesClient")
+    public KubernetesClient getClient() throws Exception {
+        return server.getClient();
     }
-    
+
     @Test
     public void listTest() throws Exception {
-        server.expect().withPath("/api/v1/resourcequotas").andReturn(200, new ResourceQuotaListBuilder().addNewItem().and().addNewItem().and().addNewItem().and().build()).once();
-        List<ResourceQuota> result = template.requestBody("direct:list", "",
-                List.class);
+        server.expect().withPath("/api/v1/resourcequotas")
+                .andReturn(200, new ResourceQuotaListBuilder().addNewItem().and().addNewItem().and().addNewItem().and().build())
+                .once();
+        List<ResourceQuota> result = template.requestBody("direct:list", "", List.class);
 
         assertEquals(3, result.size());
     }
@@ -58,20 +59,12 @@ public class KubernetesResourcesQuotaProducerTest extends KubernetesTestSupport 
         ResourceQuota rq1 = new ResourceQuotaBuilder().withNewMetadata().withName("rq1").withNamespace("test").and().build();
         server.expect().withPath("/api/v1/namespaces/test/resourcequotas/rq1").andReturn(200, rq1).once();
 
-        Exchange ex = template.request("direct:delete", new Processor() {
-
-            @Override
-            public void process(Exchange exchange) throws Exception {
-                exchange.getIn().setHeader(
-                        KubernetesConstants.KUBERNETES_NAMESPACE_NAME,
-                        "test");
-                exchange.getIn().setHeader(
-                        KubernetesConstants.KUBERNETES_RESOURCES_QUOTA_NAME,
-                        "rq1");
-            }
+        Exchange ex = template.request("direct:delete", exchange -> {
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, "test");
+            exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_RESOURCES_QUOTA_NAME, "rq1");
         });
 
-        boolean rqDeleted = ex.getOut().getBody(Boolean.class);
+        boolean rqDeleted = ex.getMessage().getBody(Boolean.class);
 
         assertTrue(rqDeleted);
     }

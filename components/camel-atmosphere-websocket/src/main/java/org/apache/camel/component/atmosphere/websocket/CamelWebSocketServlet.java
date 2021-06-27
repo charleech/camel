@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.atmosphere.websocket;
 
 import java.io.IOException;
 import java.util.Map;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,9 +30,8 @@ import org.apache.camel.http.common.HttpConsumer;
 /**
  * This servlet is used to add some websocket specific handling at the moment.
  * 
- * REVISIT
- * we might be able to get rid of this servlet by overriding some of the binding
- * code that is executed between the servlet and the consumer.
+ * REVISIT we might be able to get rid of this servlet by overriding some of the binding code that is executed between
+ * the servlet and the consumer.
  */
 public class CamelWebSocketServlet extends CamelHttpTransportServlet {
     private static final long serialVersionUID = 1764707448550670635L;
@@ -57,17 +57,17 @@ public class CamelWebSocketServlet extends CamelHttpTransportServlet {
             log.debug("No consumer to service request {}", request);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
-        }       
-        
+        }
+
         // are we suspended?
         if (consumer.isSuspended()) {
             log.debug("Consumer suspended, cannot service request {}", request);
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             return;
         }
-        
-        if (consumer.getEndpoint().getHttpMethodRestrict() != null 
-            && !consumer.getEndpoint().getHttpMethodRestrict().equals(request.getMethod())) {
+
+        if (consumer.getEndpoint().getHttpMethodRestrict() != null
+                && !consumer.getEndpoint().getHttpMethodRestrict().equals(request.getMethod())) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
@@ -82,9 +82,9 @@ public class CamelWebSocketServlet extends CamelHttpTransportServlet {
             response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
             return;
         }
-        
+
         log.debug("Dispatching to Websocket Consumer at {}", consumer.getPath());
-        ((WebsocketConsumer)consumer).service(request, response);
+        ((WebsocketConsumer) consumer).service(request, response);
     }
 
     private void initParameters(ServletConfig config) {

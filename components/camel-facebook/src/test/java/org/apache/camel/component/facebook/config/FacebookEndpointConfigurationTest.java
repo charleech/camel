@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,32 +16,33 @@
  */
 package org.apache.camel.component.facebook.config;
 
-
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.component.facebook.FacebookComponent;
 import org.apache.camel.component.facebook.FacebookEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FacebookEndpointConfigurationTest extends CamelTestSupport {
 
     @Test
     public void testConfigurationBeanUriParam() throws Exception {
         FacebookComponent component = new FacebookComponent(context);
-        FacebookEndpoint facebookEndpoint = (FacebookEndpoint) component.createEndpoint("facebook://getFeed?configuration=#configuration");
-        assertTrue("Configuration bean wasn't taken into account!", "fakeId".equals(facebookEndpoint.getConfiguration().getOAuthAppId()));
-        assertTrue("Configuration bean wasn't taken into account!", "fakeSecret".equals(facebookEndpoint.getConfiguration().getOAuthAppSecret()));
+        FacebookEndpoint facebookEndpoint
+                = (FacebookEndpoint) component.createEndpoint("facebook://getFeed?configuration=#configuration");
+        assertEquals("fakeId", facebookEndpoint.getConfiguration().getOAuthAppId(),
+                "Configuration bean wasn't taken into account!");
+        assertEquals("fakeSecret", facebookEndpoint.getConfiguration().getOAuthAppSecret(),
+                "Configuration bean wasn't taken into account!");
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
+    @BindToRegistry("configuration")
+    public FacebookEndpointConfiguration createConf() throws Exception {
         FacebookEndpointConfiguration facebookEndpointConfiguration = new FacebookEndpointConfiguration();
         facebookEndpointConfiguration.setOAuthAppId("fakeId");
         facebookEndpointConfiguration.setOAuthAppSecret("fakeSecret");
-        jndi.bind("configuration", facebookEndpointConfiguration);
-        return jndi;
+        return facebookEndpointConfiguration;
     }
 
 }

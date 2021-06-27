@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,30 @@ public interface GitHubConstants {
     String GITHUB_REPOSITORY_SERVICE = "githubRepositoryService";
 
     String GITHUB_COMMIT_SERVICE = "githubCommitService";
-    
+
     String GITHUB_DATA_SERVICE = "githubDataService";
 
     String GITHUB_PULL_REQUEST_SERVICE = "githubPullRequestService";
-    
+
     String GITHUB_ISSUE_SERVICE = "githbIssueService";
-    
+
     String GITHUB_PULLREQUEST = "GitHubPullRequest";
-    
+
     String GITHUB_INRESPONSETO = "GitHubInResponseTo";
-    
+
     String GITHUB_PULLREQUEST_HEAD_COMMIT_SHA = "GitHubPullRequestHeadCommitSHA";
-    
+
     String GITHUB_ISSUE_TITLE = "GitHubIssueTitle";
+
+    String GITHUB_EVENT_SERVICE = "GitHubEventService";
+
+    String GITHUB_COMMIT_AUTHOR = "CamelGitHubCommitAuthor";
+
+    String GITHUB_COMMIT_COMMITTER = "CamelGitHubCommitCommitter";
+
+    String GITHUB_COMMIT_SHA = "CamelGitHubCommitSha";
+
+    String GITHUB_COMMIT_URL = "CamelGitHubCommitUrl";
+
+    String GITHUB_EVENT_PAYLOAD = "CamelGitHubEventPayload";
 }

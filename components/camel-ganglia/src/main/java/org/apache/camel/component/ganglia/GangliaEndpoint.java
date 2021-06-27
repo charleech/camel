@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.component.ganglia;
 import info.ganglia.gmetric4j.Publisher;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import info.ganglia.gmetric4j.gmetric.GMetricPublisher;
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
@@ -29,9 +30,10 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 
 /**
- * The ganglia component is used for sending metrics to the Ganglia monitoring system.
+ * Send metrics to Ganglia monitoring system.
  */
-@UriEndpoint(firstVersion = "2.15.0", scheme = "ganglia", title = "Ganglia", syntax = "ganglia:host:port", producerOnly = true, label = "monitoring")
+@UriEndpoint(firstVersion = "2.15.0", scheme = "ganglia", title = "Ganglia", syntax = "ganglia:host:port", producerOnly = true,
+             category = { Category.MONITORING })
 public class GangliaEndpoint extends DefaultEndpoint {
 
     private Publisher publisher;
@@ -46,17 +48,15 @@ public class GangliaEndpoint extends DefaultEndpoint {
         super(endpointUri, component);
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         ObjectHelper.notNull(configuration, "configuration");
         return new GangliaProducer(this, getPublisher());
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new UnsupportedOperationException("Ganglia consumer not supported");
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     public GangliaConfiguration getConfiguration() {

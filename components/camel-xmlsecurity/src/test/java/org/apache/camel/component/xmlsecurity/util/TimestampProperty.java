@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,19 +34,19 @@ import org.w3c.dom.Document;
 import org.apache.camel.component.xmlsecurity.api.XmlSignatureHelper;
 import org.apache.camel.component.xmlsecurity.api.XmlSignatureProperties;
 
-
 /**
- * Example for a XmlSignatureProperties implementation which adds a timestamp
- * signature property.
+ * Example for a XmlSignatureProperties implementation which adds a timestamp signature property.
  */
 public class TimestampProperty implements XmlSignatureProperties {
 
     @Override
     public Output get(Input input) throws Exception {
 
-        Transform transform = input.getSignatureFactory().newTransform(CanonicalizationMethod.INCLUSIVE, (TransformParameterSpec) null);
+        Transform transform
+                = input.getSignatureFactory().newTransform(CanonicalizationMethod.INCLUSIVE, (TransformParameterSpec) null);
         Reference ref = input.getSignatureFactory().newReference("#propertiesObject",
-                input.getSignatureFactory().newDigestMethod(input.getContentDigestAlgorithm(), null), Collections.singletonList(transform),
+                input.getSignatureFactory().newDigestMethod(input.getContentDigestAlgorithm(), null),
+                Collections.singletonList(transform),
                 null, null);
 
         String doc2 = "<ts:timestamp xmlns:ts=\"http:/timestamp\">" + System.currentTimeMillis() + "</ts:timestamp>";
@@ -56,9 +56,11 @@ public class TimestampProperty implements XmlSignatureProperties {
 
         SignatureProperty prop = input.getSignatureFactory().newSignatureProperty(Collections.singletonList(structure),
                 input.getSignatureId(), "property");
-        SignatureProperties properties = input.getSignatureFactory().newSignatureProperties(Collections.singletonList(prop), "properties");
-        XMLObject propertiesObject = input.getSignatureFactory().newXMLObject(Collections.singletonList(properties), "propertiesObject",
-                null, null);
+        SignatureProperties properties
+                = input.getSignatureFactory().newSignatureProperties(Collections.singletonList(prop), "properties");
+        XMLObject propertiesObject
+                = input.getSignatureFactory().newXMLObject(Collections.singletonList(properties), "propertiesObject",
+                        null, null);
 
         XmlSignatureProperties.Output result = new Output();
         result.setReferences(Collections.singletonList(ref));

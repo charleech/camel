@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.listeners;
 
 import java.util.LinkedHashSet;
@@ -35,11 +34,10 @@ import org.jbpm.casemgmt.api.event.CaseRoleAssignmentEvent;
 import org.jbpm.casemgmt.api.event.CaseStartEvent;
 import org.kie.internal.runtime.Cacheable;
 
+public class CamelCaseEventListener implements CaseEventListener, Cacheable, JBPMCamelConsumerAware {
 
-public class CamelCaseEventListener implements CaseEventListener, Cacheable, JBPMCamelConsumerAware {    
-    
     private Set<JBPMConsumer> consumers = new LinkedHashSet<>();
-    
+
     @Override
     public void beforeCaseStarted(CaseStartEvent event) {
         if (consumers.isEmpty()) {
@@ -278,7 +276,7 @@ public class CamelCaseEventListener implements CaseEventListener, Cacheable, JBP
     public void removeConsumer(JBPMConsumer consumer) {
         this.consumers.remove(consumer);
     }
-    
+
     protected void sendMessage(String eventType, Object event) {
         this.consumers.stream().filter(c -> c.getStatus().isStarted()).forEach(c -> c.sendMessage(eventType, event));
     }

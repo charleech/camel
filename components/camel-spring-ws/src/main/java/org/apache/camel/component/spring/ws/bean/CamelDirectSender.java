@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import org.springframework.ws.transport.WebServiceConnection;
 import org.springframework.ws.transport.WebServiceMessageSender;
 
 /**
- * Use this class with conjuctions of wsa:replyTo custom routing using prefix
- * direct Received message will be route like this: <to uri="direct:uri" />
+ * Use this class with conjuctions of wsa:replyTo custom routing using prefix direct Received message will be route like
+ * this: <to uri="direct:uri" />
  */
 public class CamelDirectSender implements WebServiceMessageSender {
 

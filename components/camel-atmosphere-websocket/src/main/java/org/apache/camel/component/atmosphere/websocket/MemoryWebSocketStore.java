@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,27 +29,27 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryWebSocketStore implements WebSocketStore {
     private static final transient Logger LOG = LoggerFactory.getLogger(MemoryWebSocketStore.class);
-    
+
     private Map<String, WebSocket> values;
     private Map<WebSocket, String> keys;
-    
+
     public MemoryWebSocketStore() {
         values = new ConcurrentHashMap<>();
         keys = new ConcurrentHashMap<>();
     }
-    
+
     /* (non-Javadoc)
      * @see org.apache.camel.Service#start()
      */
     @Override
-    public void start() throws Exception {
+    public void start() {
     }
 
     /* (non-Javadoc)
      * @see org.apache.camel.Service#stop()
      */
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         values.clear();
         keys.clear();
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,14 +37,15 @@ public class BeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
      * Bean definition parser
      *
      * @param type     the type, can be null
-     * @param assignId whether to allow assigning id from the id attribute on the type
-     *                 (there must be getter/setter id on type class).
+     * @param assignId whether to allow assigning id from the id attribute on the type (there must be getter/setter id
+     *                 on type class).
      */
     public BeanDefinitionParser(Class<?> type, boolean assignId) {
         this.type = type;
         this.assignId = assignId;
     }
 
+    @Override
     protected Class<?> getBeanClass(Element element) {
         return type;
     }
@@ -58,6 +59,7 @@ public class BeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
                 && !attributeName.equals("xmlns") && !attributeName.startsWith("xmlns:");
     }
 
+    @Override
     protected void doParse(Element element, BeanDefinitionBuilder builder) {
         NamedNodeMap attributes = element.getAttributes();
         for (int x = 0; x < attributes.getLength(); x++) {
@@ -80,29 +82,28 @@ public class BeanDefinitionParser extends AbstractSingleBeanDefinitionParser {
         postProcess(builder, element);
     }
 
-
     /**
      * Extract a JavaBean property name from the supplied attribute name.
-     * <p>The default implementation uses the
-     * {@link Conventions#attributeNameToPropertyName(String)}
-     * method to perform the extraction.
-     * <p>The name returned must obey the standard JavaBean property name
-     * conventions. For example for a class with a setter method
-     * '<code>setBingoHallFavourite(String)</code>', the name returned had
-     * better be '<code>bingoHallFavourite</code>' (with that exact casing).
+     * <p>
+     * The default implementation uses the {@link Conventions#attributeNameToPropertyName(String)} method to perform the
+     * extraction.
+     * <p>
+     * The name returned must obey the standard JavaBean property name conventions. For example for a class with a
+     * setter method '<code>setBingoHallFavourite(String)</code>', the name returned had better be
+     * '<code>bingoHallFavourite</code>' (with that exact casing).
      *
-     * @param attributeName the attribute name taken straight from the
-     *                      XML element being parsed (never <code>null</code>)
-     * @return the extracted JavaBean property name (must never be <code>null</code>)
+     * @param  attributeName the attribute name taken straight from the XML element being parsed (never
+     *                       <code>null</code>)
+     * @return               the extracted JavaBean property name (must never be <code>null</code>)
      */
     protected String extractPropertyName(String attributeName) {
         return Conventions.attributeNameToPropertyName(attributeName);
     }
 
     /**
-     * Hook method that derived classes can implement to inspect/change a
-     * bean definition after parsing is complete.
-     * <p>The default implementation does nothing.
+     * Hook method that derived classes can implement to inspect/change a bean definition after parsing is complete.
+     * <p>
+     * The default implementation does nothing.
      *
      * @param beanDefinition the parsed (and probably totally defined) bean definition being built
      * @param element        the XML element that was the source of the bean definition's metadata

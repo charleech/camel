@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,11 @@
  */
 package org.apache.camel.component.jbpm;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -35,24 +34,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The jbpm component provides integration with jBPM (Business Process
- * Management).
+ * Interact with jBPM workflow engine over REST.
  */
-@UriEndpoint(firstVersion = "2.6.0", scheme = "jbpm", title = "JBPM", syntax = "jbpm:connectionURL", label = "process")
+@UriEndpoint(firstVersion = "2.6.0", scheme = "jbpm", title = "JBPM", syntax = "jbpm:connectionURL",
+             category = { Category.API, Category.WORKFLOW })
 public class JBPMEndpoint extends DefaultEndpoint {
     private static final transient Logger LOGGER = LoggerFactory.getLogger(JBPMEndpoint.class);
 
     @UriParam
     private JBPMConfiguration configuration;
+    @UriParam(defaultValue = "false", label = "consumer,advanced",
+              description = "Sets whether synchronous processing should be strictly used")
+    private boolean synchronous;
 
-    public JBPMEndpoint(String uri, JBPMComponent component, JBPMConfiguration configuration) throws URISyntaxException, MalformedURLException {
+    public JBPMEndpoint(String uri, JBPMComponent component, JBPMConfiguration configuration) {
         super(uri, component);
         this.configuration = configuration;
     }
 
     public Producer createProducer() throws Exception {
-        KieServicesConfiguration kieConfiguration = KieServicesFactory.newRestConfiguration(configuration.getConnectionURL().toExternalForm(), configuration.getUserName(),
-                                                                                            configuration.getPassword());
+        KieServicesConfiguration kieConfiguration = KieServicesFactory.newRestConfiguration(
+                configuration.getConnectionURL().toExternalForm(), configuration.getUserName(),
+                configuration.getPassword());
 
         if (configuration.getTimeout() != null) {
             kieConfiguration.setTimeout(configuration.getTimeout());
@@ -69,11 +72,9 @@ public class JBPMEndpoint extends DefaultEndpoint {
 
     public Consumer createConsumer(Processor processor) throws Exception {
         LOGGER.debug("JBPM Consumer created and configured for deployment {}", configuration.getDeploymentId());
-        return new JBPMConsumer(this, processor);
-    }
-
-    public boolean isSingleton() {
-        return true;
+        JBPMConsumer consumer = new JBPMConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
     }
 
     public void setConfiguration(JBPMConfiguration configuration) {
@@ -82,5 +83,13 @@ public class JBPMEndpoint extends DefaultEndpoint {
 
     public JBPMConfiguration getConfiguration() {
         return configuration;
+    }
+
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
     }
 }

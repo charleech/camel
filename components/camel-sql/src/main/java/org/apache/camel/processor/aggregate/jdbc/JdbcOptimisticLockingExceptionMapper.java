@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,16 +17,18 @@
 package org.apache.camel.processor.aggregate.jdbc;
 
 /**
- * Mapper allowing different JDBC vendors to be mapped with vendor specific error codes
- * to an {@link JdbcAggregationRepository.OptimisticLockingException}}.
+ * Mapper allowing different JDBC vendors to be mapped with vendor specific error codes to an
+ * {@link JdbcAggregationRepository.OptimisticLockingException}}.
  */
 public interface JdbcOptimisticLockingExceptionMapper {
 
     /**
-     * Checks the caused exception whether its to be considered as an {@link JdbcAggregationRepository.OptimisticLockingException}.
+     * Checks the caused exception whether its to be considered as an
+     * {@link JdbcAggregationRepository.OptimisticLockingException}.
      *
-     * @param cause the caused exception
-     * @return <tt>true</tt> if the caused should be rethrown as an {@link JdbcAggregationRepository.OptimisticLockingException}.
+     * @param  cause the caused exception
+     * @return       <tt>true</tt> if the caused should be rethrown as an
+     *               {@link JdbcAggregationRepository.OptimisticLockingException}.
      */
     boolean isOptimisticLocking(Exception cause);
 

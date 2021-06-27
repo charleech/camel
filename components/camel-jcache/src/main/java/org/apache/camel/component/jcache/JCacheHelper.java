@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jcache;
 
 import java.lang.reflect.Constructor;
@@ -33,7 +32,7 @@ public final class JCacheHelper {
                 Class<?> type = Class.forName("org.apache.camel.component.jcache.osgi.OSGiCacheManager");
                 Constructor<?> ctor = type.getConstructor(JCacheConfiguration.class);
 
-                return (JCacheManager<K, V>)ctor.newInstance(configuration);
+                return (JCacheManager<K, V>) ctor.newInstance(configuration);
             } catch (Exception e) {
                 throw new RuntimeCamelException(e);
             }
@@ -45,20 +44,19 @@ public final class JCacheHelper {
     @SuppressWarnings("unchecked")
     public static <T> T tcclProxy(final T instance, Class<T> type, final ClassLoader classLoader) {
         return (T) Proxy.newProxyInstance(
-            JCacheHelper.class.getClassLoader(),
-            new Class<?>[] {
-                type
-            },
-            (Object proxy, Method method, Object[] args) -> {
-                final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                try {
-                    Thread.currentThread().setContextClassLoader(classLoader);
-                    return method.invoke(instance, args);
-                } finally {
-                    Thread.currentThread().setContextClassLoader(tccl);
-                }
-            }
-        );
+                JCacheHelper.class.getClassLoader(),
+                new Class<?>[] {
+                        type
+                },
+                (Object proxy, Method method, Object[] args) -> {
+                    final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(classLoader);
+                        return method.invoke(instance, args);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(tccl);
+                    }
+                });
     }
 
     public static boolean isOSGi() {

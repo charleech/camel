@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,25 +19,24 @@ package org.apache.camel.component.pubnub;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import static org.apache.camel.component.pubnub.PubNubConstants.TIMETOKEN;
 
 public class PubNubFireTest extends PubNubTestBase {
     private String endpoint = "pubnub:someChannel?operation=fire&pubnub=#pubnub";
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint mockResult;
 
     @Test
     public void testFire() throws Exception {
         stubFor(get(urlPathEqualTo("/publish/myPublishKey/mySubscribeKey/0/someChannel/0/%22Hi%22"))
-            .willReturn(aResponse().withBody("[1,\"Sent\",\"14598111595318003\"]")));
+                .willReturn(aResponse().withBody("[1,\"Sent\",\"14598111595318003\"]")));
         mockResult.expectedMessageCount(1);
         mockResult.expectedHeaderReceived(TIMETOKEN, "14598111595318003");
 

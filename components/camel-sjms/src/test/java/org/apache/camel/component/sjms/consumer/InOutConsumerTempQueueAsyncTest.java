@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,39 +17,44 @@
 package org.apache.camel.component.sjms.consumer;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.sjms.support.JmsTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class InOutConsumerTempQueueAsyncTest extends JmsTestSupport {
 
     @Test
-    public void testAynchronous() throws Exception {
+    public void testAsync() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Hello World", "Hello Camel");
 
         template.sendBody("sjms:start", "Hello Camel");
         template.sendBody("sjms:start", "Hello World");
-        Thread.sleep(5000);
+
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("sjms:queue:start?synchronous=false")
-                    .to("sjms:queue:in.out.temp.queue?exchangePattern=InOut&synchronous=false")
-                    .to("mock:result");
+                from("sjms:queue:start?asyncConsumer=true")
+                        .log("Requesting ${body} with thread ${threadName}")
+                        .to(ExchangePattern.InOut, "sjms:queue:in.out.temp.queue?replyToConcurrentConsumers=2")
+                        .log("Result ${body} with thread ${threadName}")
+                        .to("mock:result");
 
-                from("sjms:queue:in.out.temp.queue?exchangePattern=InOut&synchronous=false").to("log:before")
-                    .process(new Processor() {
-                        public void process(Exchange exchange) throws Exception {
-                            String body = (String)exchange.getIn().getBody();
-                            if (body.contains("Camel")) {
-                                Thread.sleep(2000);
+                from("sjms:queue:in.out.temp.queue?concurrentConsumers=2").to("log:before")
+                        .log("Replying ${body} with thread ${threadName}")
+                        .process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                String body = (String) exchange.getIn().getBody();
+                                if (body.contains("Camel")) {
+                                    Thread.sleep(2000);
+                                }
                             }
-                        }
-                    });
+                        });
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,7 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
         super.doStop();
     }
 
+    @Override
     public WebsocketEndpoint getEndpoint() {
         return endpoint;
     }
@@ -56,7 +57,7 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
             final String connectionKey,
             final String message,
             final InetSocketAddress remote) {
-        sendMessage(connectionKey, (Object)message, remote);
+        sendMessage(connectionKey, (Object) message, remote);
     }
 
     public void sendMessage(
@@ -64,21 +65,16 @@ public class WebsocketConsumer extends DefaultConsumer implements WebsocketProdu
             final Object message,
             final InetSocketAddress remote) {
 
-        final Exchange exchange = getEndpoint().createExchange();
+        final Exchange exchange = createExchange(true);
 
         // set header and body
         exchange.getIn().setHeader(WebsocketConstants.REMOTE_ADDRESS, remote);
         exchange.getIn().setHeader(WebsocketConstants.CONNECTION_KEY, connectionKey);
         exchange.getIn().setBody(message);
 
-        // send exchange using the async routing engine
-        getAsyncProcessor().process(exchange, new AsyncCallback() {
-            public void done(boolean doneSync) {
-                if (exchange.getException() != null) {
-                    getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-                }
-            }
-        });
+        // use default consumer callback
+        AsyncCallback cb = defaultConsumerCallback(exchange, true);
+        getAsyncProcessor().process(exchange, cb);
     }
 
 }

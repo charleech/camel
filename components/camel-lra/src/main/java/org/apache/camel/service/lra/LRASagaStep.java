@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,9 +26,6 @@ import org.apache.camel.Expression;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.saga.CamelSagaStep;
 
-/**
- *
- */
 public final class LRASagaStep {
 
     private Optional<Endpoint> compensation;
@@ -77,10 +74,10 @@ public final class LRASagaStep {
     @Override
     public String toString() {
         return "LRASagaStep{"
-                + "compensation=" + compensation
-                + ", completion=" + completion
-                + ", options=" + options
-                + ", timeoutInMilliseconds=" + timeoutInMilliseconds
-                + '}';
+               + "compensation=" + compensation
+               + ", completion=" + completion
+               + ", options=" + options
+               + ", timeoutInMilliseconds=" + timeoutInMilliseconds
+               + '}';
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.camel.CamelExchangeException;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
-import org.apache.camel.impl.HeaderSelectorProducer;
+import org.apache.camel.spi.InvokeOnHeader;
+import org.apache.camel.support.HeaderSelectorProducer;
 import org.ehcache.Cache;
 
 public class EhcacheProducer extends HeaderSelectorProducer {
@@ -32,13 +32,22 @@ public class EhcacheProducer extends HeaderSelectorProducer {
     private final Cache cache;
 
     public EhcacheProducer(EhcacheEndpoint endpoint, String cacheName, EhcacheConfiguration configuration) throws Exception {
-        super(endpoint, EhcacheConstants.ACTION, () -> configuration.getAction());
+        super(endpoint, EhcacheConstants.ACTION, configuration::getAction);
 
         this.configuration = configuration;
         this.manager = endpoint.getManager();
-        this.cache = manager.getCache(cacheName, configuration.getKeyType(), configuration.getValueType());
+
+        Class<?> kt = null;
+        if (configuration.getKeyType() != null) {
+            kt = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getKeyType());
+        }
+        Class<?> vt = null;
+        if (configuration.getValueType() != null) {
+            vt = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getValueType());
+        }
+        this.cache = manager.getCache(cacheName, kt, vt);
     }
-    
+
     // ****************************
     // Handlers
     // ****************************
@@ -59,7 +68,7 @@ public class EhcacheProducer extends HeaderSelectorProducer {
 
     @InvokeOnHeader(EhcacheConstants.ACTION_PUT_ALL)
     public void onPutAll(Message message) throws Exception {
-        cache.putAll((Map)getValue(message, Map.class));
+        cache.putAll((Map) getValue(message, Map.class));
 
         setResult(message, true, null, null);
     }
@@ -81,8 +90,7 @@ public class EhcacheProducer extends HeaderSelectorProducer {
     @InvokeOnHeader(EhcacheConstants.ACTION_GET_ALL)
     public void onGetAll(Message message) throws Exception {
         Object result = cache.getAll(
-            message.getHeader(EhcacheConstants.KEYS, Collections::emptySet, Set.class)
-        );
+                message.getHeader(EhcacheConstants.KEYS, Collections::emptySet, Set.class));
 
         setResult(message, true, result, null);
     }
@@ -103,8 +111,7 @@ public class EhcacheProducer extends HeaderSelectorProducer {
     @InvokeOnHeader(EhcacheConstants.ACTION_REMOVE_ALL)
     public void onRemoveAll(Message message) throws Exception {
         cache.removeAll(
-            message.getHeader(EhcacheConstants.KEYS, Collections::emptySet, Set.class)
-        );
+                message.getHeader(EhcacheConstants.KEYS, Collections::emptySet, Set.class));
 
         setResult(message, true, null, null);
     }
@@ -130,32 +137,44 @@ public class EhcacheProducer extends HeaderSelectorProducer {
     // ****************************
 
     private Object getKey(final Message message) throws Exception {
-        Object value = message.getHeader(EhcacheConstants.KEY, cache.getRuntimeConfiguration().getKeyType());
+        Object value;
+        if (configuration.getKeyType() != null) {
+            Class<?> clazz = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getKeyType());
+            value = message.getHeader(EhcacheConstants.KEY, clazz);
+        } else {
+            value = message.getHeader(EhcacheConstants.KEY);
+        }
         if (value == null) {
             value = configuration.getKey();
         }
 
         if (value == null) {
             throw new CamelExchangeException(
-                "No value provided in header or as default value (" + EhcacheConstants.KEY + ")",
-                message.getExchange()
-            );
+                    "No value provided in header or as default value (" + EhcacheConstants.KEY + ")",
+                    message.getExchange());
         }
 
         return value;
     }
 
-    private Object getValue(final Message message, final Class<?> type)  throws Exception {
-        Object value = message.getHeader(EhcacheConstants.VALUE, type);
+    @SuppressWarnings("unchecked")
+    private Object getValue(final Message message, final Object type) throws Exception {
+        Object value = message.getHeader(EhcacheConstants.VALUE);
         if (value == null) {
-            value = message.getBody(type);
+            if (type instanceof String) {
+                Class<?> clazz = getEndpoint().getCamelContext().getClassResolver().resolveClass((String) type);
+                value = message.getBody(clazz);
+            } else if (type instanceof Class) {
+                value = message.getBody((Class) type);
+            } else {
+                value = message.getBody();
+            }
         }
 
         if (value == null) {
             throw new CamelExchangeException(
-                "No value provided in header or body (" + EhcacheConstants.VALUE + ")",
-                message.getExchange()
-            );
+                    "No value provided in header or body (" + EhcacheConstants.VALUE + ")",
+                    message.getExchange());
         }
 
         return value;

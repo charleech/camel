@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,21 +35,19 @@ public class NsqProducer extends DefaultProducer {
 
     public NsqProducer(NsqEndpoint endpoint) {
         super(endpoint);
-        this.configuration = endpoint.getNsqConfiguration();
+        this.configuration = endpoint.getConfiguration();
     }
 
     @Override
     public NsqEndpoint getEndpoint() {
-        return (NsqEndpoint)super.getEndpoint();
+        return (NsqEndpoint) super.getEndpoint();
     }
 
     @Override
     public void process(Exchange exchange) throws Exception {
-
         String topic = exchange.getIn().getHeader(NsqConstants.NSQ_MESSAGE_TOPIC, configuration.getTopic(), String.class);
 
         LOG.debug("Publishing to topic: {}", topic);
-
         byte[] body = exchange.getIn().getBody(byte[].class);
         producer.produce(topic, body);
     }
@@ -59,7 +57,7 @@ public class NsqProducer extends DefaultProducer {
         super.doStart();
         LOG.debug("Starting NSQ Producer");
 
-        NsqConfiguration config = getEndpoint().getNsqConfiguration();
+        NsqConfiguration config = getEndpoint().getConfiguration();
         producer = new NSQProducer();
         for (ServerAddress server : config.getServerAddresses()) {
             producer.addAddress(server.getHost(), server.getPort() == 0 ? config.getPort() : server.getPort());

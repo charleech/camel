@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,12 @@ import org.slf4j.LoggerFactory;
 public class HelloWorldImpl implements HelloWorld {
     private static Logger logger = LoggerFactory.getLogger(HelloWorldImpl.class);
 
+    @Override
     public String sayHi(String text) {
         logger.info("***** Entering Implementation Code ******");
-        
+
         logger.info("***** Leaving Implementation Code ******");
         return "Hello " + text;
 
     }
 }
-

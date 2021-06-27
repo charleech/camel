@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,11 +64,6 @@ public abstract class AbstractOpenstackEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new IllegalStateException("There is no consumer available for OpenStack");
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return false;
     }
 
     private OSClient.OSClientV3 createV3Client() {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.apache.camel.zipkin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import zipkin2.reporter.Reporter;
 
 public class LogSpanReporterTest<S> implements Reporter<S> {

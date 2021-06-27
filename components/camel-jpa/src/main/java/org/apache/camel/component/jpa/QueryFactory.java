@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,12 @@ import javax.persistence.Query;
  * A Strategy to create a query to search for objects in a database
  */
 public interface QueryFactory {
+
     /**
      * Creates a new query to find objects to be processed
      *
-     * @param entityManager
-     * @return the query configured with any parameters etc
+     * @param  entityManager the enity manager
+     * @return               the query configured with any parameters etc
      */
     Query createQuery(EntityManager entityManager);
 }

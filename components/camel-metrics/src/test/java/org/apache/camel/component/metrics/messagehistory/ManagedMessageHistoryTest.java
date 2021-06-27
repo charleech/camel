@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,19 +17,30 @@
 package org.apache.camel.component.metrics.messagehistory;
 
 import java.util.Set;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import com.codahale.metrics.MetricRegistry;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.metrics.MetricsComponent;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ManagedMessageHistoryTest extends CamelTestSupport {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @BindToRegistry(MetricsComponent.METRIC_REGISTRY_NAME)
     private MetricRegistry metricRegistry = new MetricRegistry();
 
     @Override
@@ -39,14 +50,6 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
 
     protected MBeanServer getMBeanServer() {
         return context.getManagementStrategy().getManagementAgent().getMBeanServer();
-    }
-    
-    // Setup the common MetricsRegistry for MetricsComponent and MetricsMessageHistoryFactory to use
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind(MetricsComponent.METRIC_REGISTRY_NAME, metricRegistry);
-        return registry;
     }
 
     @Override
@@ -86,12 +89,13 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
         assertEquals(3, set.size());
 
         // get the message history service using JMX
-        String name = String.format("org.apache.camel:context=%s,type=services,name=MetricsMessageHistoryService", context.getManagementName());
+        String name = String.format("org.apache.camel:context=%s,type=services,name=MetricsMessageHistoryService",
+                context.getManagementName());
         ObjectName on = ObjectName.getInstance(name);
         String json = (String) getMBeanServer().invoke(on, "dumpStatisticsAsJson", null, null);
         assertNotNull(json);
         log.info(json);
-        
+
         assertTrue(json.contains("foo.history"));
         assertTrue(json.contains("bar.history"));
         assertTrue(json.contains("baz.history"));
@@ -120,12 +124,9 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("seda:foo")
-                        .to("mock:foo").id("foo");
+                from("seda:foo").to("mock:foo").id("foo");
 
-                from("seda:bar")
-                        .to("mock:bar").id("bar")
-                        .to("mock:baz").id("baz");
+                from("seda:bar").to("mock:bar").id("bar").to("mock:baz").id("baz");
             }
         };
     }

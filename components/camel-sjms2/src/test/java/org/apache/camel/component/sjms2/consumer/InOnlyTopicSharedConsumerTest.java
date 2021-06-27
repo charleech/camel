@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.sjms2.consumer;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.sjms2.support.Jms2TestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class InOnlyTopicSharedConsumerTest extends Jms2TestSupport {
 
@@ -47,12 +47,6 @@ public class InOnlyTopicSharedConsumerTest extends Jms2TestSupport {
         mock2.assertIsSatisfied();
     }
 
-    /**
-     * @see org.apache.camel.test.junit4.CamelTestSupport#createRouteBuilder()
-     *
-     * @return
-     * @throws Exception
-     */
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {

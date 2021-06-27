@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,9 +40,9 @@ public class StompGlobalSslConsumerTest extends StompConsumerTest {
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                fromF("stomp:test?brokerURL=ssl://localhost:%d", getPort())
-                    .transform(body().convertToString())
-                    .to("mock:result");
+                fromF("stomp:test?brokerURL=ssl://localhost:%d", service.getPort())
+                        .transform(body().convertToString())
+                        .to("mock:result");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,16 @@ package org.apache.camel.component.spring.ws.addressing;
 
 import java.net.URISyntaxException;
 
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.ws.soap.addressing.client.ActionCallback;
 import org.springframework.ws.soap.addressing.core.MessageAddressingProperties;
 
+@CamelSpringTest
 public class ConsumerWSASameChannelParamsActionTests extends AbstractConsumerTests {
 
+    @Override
     public ActionCallback channelIn(String actionUri) throws URISyntaxException {
         // same channel
         return action(actionUri);
@@ -37,7 +40,8 @@ public class ConsumerWSASameChannelParamsActionTests extends AbstractConsumerTes
 
     @Override
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext(new String[] {"org/apache/camel/component/spring/ws/addresing/ConsumerWSAParamsActionTests-context.xml"});
+        return new ClassPathXmlApplicationContext(
+                new String[] { "org/apache/camel/component/spring/ws/addresing/ConsumerWSAParamsActionTests-context.xml" });
     }
 
 }

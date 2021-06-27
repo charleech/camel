@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ public class ByteFormatFactory extends AbstractFormatFactory {
         supportedClasses.add(byte.class);
         supportedClasses.add(Byte.class);
     }
+
     @Override
     public boolean canBuild(FormattingOptions formattingOptions) {
         return super.canBuild(formattingOptions)
@@ -41,10 +42,12 @@ public class ByteFormatFactory extends AbstractFormatFactory {
 
     private static class ByteFormat implements Format<Byte> {
 
+        @Override
         public String format(Byte object) throws Exception {
             return object.toString();
         }
 
+        @Override
         public Byte parse(String string) throws Exception {
             return new Byte(string);
         }

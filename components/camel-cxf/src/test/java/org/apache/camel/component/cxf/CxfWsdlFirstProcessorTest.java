@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,35 +15,37 @@
  * limitations under the License.
  */
 package org.apache.camel.component.cxf;
+
 import javax.xml.ws.Endpoint;
 
 import org.apache.camel.wsdl_first.JaxwsTestHandler;
 import org.apache.camel.wsdl_first.PersonImpl;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class CxfWsdlFirstProcessorTest extends AbstractCxfWsdlFirstTest {
-    @Override
-    public boolean isCreateCamelContextPerClass() {
-        return true;
-    }
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class CxfWsdlFirstProcessorTest extends AbstractCxfWsdlFirstTest {
+
+    @Override
     protected ClassPathXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/cxf/WsdlFirstProcessor.xml");
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startService() {
         Object implementor = new PersonImpl();
-        String address = "http://localhost:" + getPort1() 
-            + "/CxfWsdlFirstProcessorTest/PersonService/";
+        String address = "http://localhost:" + getPort1()
+                         + "/CxfWsdlFirstProcessorTest/PersonService/";
         Endpoint.publish(address, implementor);
     }
-    
+
     @Override
     protected void verifyJaxwsHandlers(JaxwsTestHandler fromHandler, JaxwsTestHandler toHandler) {
         assertEquals(2, fromHandler.getFaultCount());
         assertEquals(4, fromHandler.getMessageCount());
-        assertEquals(0, toHandler.getGetHeadersCount());   
+        assertEquals(0, toHandler.getGetHeadersCount());
     }
 }

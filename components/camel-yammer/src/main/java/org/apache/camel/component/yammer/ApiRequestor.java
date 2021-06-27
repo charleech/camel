@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,10 @@
  */
 package org.apache.camel.component.yammer;
 
-
 public interface ApiRequestor {
 
     String get() throws Exception;
+
     String post(String params) throws Exception;
-    
+
 }

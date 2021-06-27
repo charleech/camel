@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,22 +17,25 @@
 package org.apache.camel.component.ehcache;
 
 import org.apache.camel.EndpointInject;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.ehcache.Cache;
 import org.ehcache.config.ResourcePools;
 import org.ehcache.config.ResourceType;
 import org.ehcache.config.SizedResourcePool;
 import org.ehcache.config.units.EntryUnit;
 import org.ehcache.config.units.MemoryUnit;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class EhcacheSpringConfigurationTest extends CamelSpringTestSupport {
 
-    @EndpointInject(uri = "ehcache://myProgrammaticCacheConf?configuration=#myProgrammaticConfiguration")
+    @EndpointInject("ehcache://myProgrammaticCacheConf?configuration=#myProgrammaticConfiguration")
     private EhcacheEndpoint ehcacheConf;
-    @EndpointInject(uri = "ehcache://myFileCacheConf?keyType=java.lang.String&valueType=java.lang.String&configurationUri=classpath:ehcache/ehcache-file-config.xml")
+    @EndpointInject("ehcache://myFileCacheConf?keyType=java.lang.String&valueType=java.lang.String&configurationUri=classpath:ehcache/ehcache-file-config.xml")
     private EhcacheEndpoint ehcacheFileConf;
 
     @Override
@@ -45,7 +48,7 @@ public class EhcacheSpringConfigurationTest extends CamelSpringTestSupport {
     // *****************************
 
     @Test
-    public void testProgrammaticConfiguration() throws Exception {
+    void testProgrammaticConfiguration() throws Exception {
         Cache<String, String> cache = getCache(ehcacheConf, "myProgrammaticCacheConf");
         ResourcePools pools = cache.getRuntimeConfiguration().getResourcePools();
 
@@ -61,7 +64,7 @@ public class EhcacheSpringConfigurationTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testFileConfiguration() throws Exception {
+    void testFileConfiguration() throws Exception {
         Cache<String, String> cache = getCache(ehcacheFileConf, "myFileCacheConf");
         ResourcePools pools = cache.getRuntimeConfiguration().getResourcePools();
 

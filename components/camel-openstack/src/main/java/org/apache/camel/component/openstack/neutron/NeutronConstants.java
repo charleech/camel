@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -55,6 +55,7 @@ public final class NeutronConstants extends OpenstackConstants {
     public static final String ATTACH_INTERFACE = "attachInterface";
     public static final String DETACH_INTERFACE = "detachInterface";
 
-    private NeutronConstants() { }
+    private NeutronConstants() {
+    }
 
 }

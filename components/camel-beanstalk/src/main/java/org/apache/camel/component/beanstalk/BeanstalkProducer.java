@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ public class BeanstalkProducer extends DefaultAsyncProducer {
     public boolean process(final Exchange exchange, final AsyncCallback callback) {
         try {
             executor.submit(new RunCommand(exchange, callback));
-        } catch (Throwable t) {
+        } catch (Exception t) {
             exchange.setException(t);
             callback.done(true);
             return true;
@@ -76,12 +76,9 @@ public class BeanstalkProducer extends DefaultAsyncProducer {
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        executor = getEndpoint().getCamelContext().getExecutorServiceManager().newSingleThreadExecutor(this, "Beanstalk-Producer");
-        executor.execute(new Runnable() {
-            public void run() {
-                initClient();
-            }
-        });
+        executor = getEndpoint().getCamelContext().getExecutorServiceManager().newSingleThreadExecutor(this,
+                "Beanstalk-Producer");
+        executor.execute(() -> initClient());
     }
 
     @Override
@@ -112,19 +109,23 @@ public class BeanstalkProducer extends DefaultAsyncProducer {
         @Override
         public void run() {
             try {
-                try {
-                    command.act(client, exchange);
-                } catch (BeanstalkException e) {
-                    /* Retry one time */
-                    resetClient();
-                    command.act(client, exchange);
-                }
-            } catch (Throwable t) {
+                doRun();
+            } catch (Exception t) {
                 exchange.setException(t);
             } finally {
                 if (callback != null) {
                     callback.done(false);
                 }
+            }
+        }
+
+        private void doRun() throws Exception {
+            try {
+                command.act(client, exchange);
+            } catch (BeanstalkException e) {
+                /* Retry one time */
+                resetClient();
+                command.act(client, exchange);
             }
         }
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,15 @@ package org.apache.camel.component.redis;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -34,7 +35,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisSortedSetTest extends RedisTestSupport {
 
     @Mock
@@ -43,10 +44,10 @@ public class RedisSortedSetTest extends RedisTestSupport {
     private ZSetOperations<String, String> zSetOperations;
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
+    protected Registry createCamelRegistry() throws Exception {
         when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
 
-        JndiRegistry registry = super.createRegistry();
+        Registry registry = new SimpleRegistry();
         registry.bind("redisTemplate", redisTemplate);
         return registry;
     }
@@ -137,7 +138,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         assertEquals(keys, result);
     }
 
-
     @Test
     public void shouldExecuteZRANGEWithScores() {
         when(zSetOperations.rangeWithScores(anyString(), anyLong(), anyLong())).thenReturn(null);
@@ -152,7 +152,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).rangeWithScores("key", 1, 3);
         assertEquals(null, result);
     }
-
 
     @Test
     public void shouldExecuteZRANGEBYSCORE() {
@@ -170,7 +169,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).rangeByScore("key", 1.0, 2.0);
         assertEquals(keys, result);
     }
-
 
     @Test
     public void shouldExecuteZRANK() {
@@ -198,7 +196,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         assertEquals(1L, result);
     }
 
-
     @Test
     public void shouldExecuteZREMRANGEBYRANK() {
         sendHeaders(
@@ -221,7 +218,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).removeRangeByScore("key", 1.0, 2.0);
     }
 
-
     @Test
     public void shouldExecuteZREVRANGE() {
         Set<String> keys = new HashSet<>();
@@ -239,7 +235,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         assertEquals(keys, result);
     }
 
-
     @Test
     public void shouldExecuteZREVRANGEWithScores() {
         when(zSetOperations.reverseRangeWithScores(anyString(), anyLong(), anyLong())).thenReturn(null);
@@ -254,7 +249,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).reverseRangeWithScores("key", 1, 3);
         assertEquals(null, result);
     }
-
 
     @Test
     public void shouldExecuteZREVRANGEBYSCORE() {
@@ -272,7 +266,6 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).reverseRangeByScore("key", 1.0, 2.0);
         assertEquals(keys, result);
     }
-
 
     @Test
     public void shouldExecuteZREVRANK() {
@@ -301,4 +294,3 @@ public class RedisSortedSetTest extends RedisTestSupport {
         verify(zSetOperations).unionAndStore("key", keys, "destination");
     }
 }
-

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,8 +52,8 @@ public class Order {
 
     @GET
     @Path("products/{productId}/")
-    public Product getProduct(@PathParam("productId")int productId) {
-        Product p = products.get(new Long(productId));
+    public Product getProduct(@PathParam("productId") int productId) {
+        Product p = products.get(Long.valueOf(productId));
         return p;
     }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.apache.camel.component.kubernetes;
 import java.util.concurrent.ExecutorService;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
-
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.support.DefaultEndpoint;
 
@@ -36,6 +35,10 @@ public abstract class AbstractKubernetesEndpoint extends DefaultEndpoint {
     public AbstractKubernetesEndpoint(String uri, AbstractKubernetesComponent component, KubernetesConfiguration config) {
         super(uri, component);
         this.configuration = config;
+    }
+
+    public KubernetesConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -56,9 +59,10 @@ public abstract class AbstractKubernetesEndpoint extends DefaultEndpoint {
             client.close();
         }
     }
-    
+
     public ExecutorService createExecutor() {
-        return getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "KubernetesConsumer", configuration.getPoolSize());
+        return getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, "KubernetesConsumer",
+                configuration.getPoolSize());
     }
 
     public KubernetesClient getKubernetesClient() {
@@ -71,6 +75,5 @@ public abstract class AbstractKubernetesEndpoint extends DefaultEndpoint {
     public KubernetesConfiguration getKubernetesConfiguration() {
         return configuration;
     }
-
 
 }

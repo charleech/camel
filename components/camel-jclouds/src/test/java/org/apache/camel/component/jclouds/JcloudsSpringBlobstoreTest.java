@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.jclouds;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,26 +23,29 @@ import java.util.Map;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class JcloudsSpringBlobstoreTest extends CamelSpringTestSupport {
 
-    @EndpointInject(uri = "mock:result-foo")
+    @EndpointInject("mock:result-foo")
     protected MockEndpoint resultFoo;
 
-    @EndpointInject(uri = "mock:result-bar")
+    @EndpointInject("mock:result-bar")
     protected MockEndpoint resultBar;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
-        BlobStore blobStore = ContextBuilder.newBuilder("transient").credentials("id", "credential").buildView(BlobStoreContext.class).getBlobStore();
+        BlobStore blobStore = ContextBuilder.newBuilder("transient").credentials("id", "credential")
+                .buildView(BlobStoreContext.class).getBlobStore();
         blobStore.createContainerInLocation(null, "foo");
         blobStore.createContainerInLocation(null, "bar");
     }
@@ -71,37 +75,37 @@ public class JcloudsSpringBlobstoreTest extends CamelSpringTestSupport {
         template.sendBody("direct:start-with-url-parameters", "Some message");
         resultBar.assertIsSatisfied();
     }
-    
+
     @Test
     public void testBlobStoreCount() throws InterruptedException {
         Long count = template.requestBody("direct:count", "Some message", Long.class);
-        assertEquals(new Long(1), count);
+        assertEquals(Long.valueOf(1), count);
     }
-    
+
     @Test
     public void testBlobStoreRemove() throws InterruptedException {
         Long count = template.requestBody("direct:remove", "Some message", Long.class);
-        assertEquals(new Long(0), count);
+        assertEquals(Long.valueOf(0), count);
     }
-    
+
     @Test
     public void testBlobStoreClear() throws InterruptedException {
         Long count = template.requestBody("direct:clear", "Some message", Long.class);
-        assertEquals(new Long(0), count);
+        assertEquals(Long.valueOf(0), count);
     }
-    
+
     @Test
     public void testBlobStoreDelete() throws InterruptedException {
         Boolean result = template.requestBody("direct:delete", "Some message", Boolean.class);
         assertEquals(false, result);
     }
-    
+
     @Test
     public void testBlobStoreContainerExists() throws InterruptedException {
         Boolean result = template.requestBody("direct:exists", "Some message", Boolean.class);
         assertEquals(true, result);
     }
-    
+
     @Test
     public void testBlobStoreRemoveBlobs() throws InterruptedException {
         Boolean result = template.requestBody("direct:exists", "Some message", Boolean.class);
@@ -114,6 +118,6 @@ public class JcloudsSpringBlobstoreTest extends CamelSpringTestSupport {
         headers.put(JcloudsConstants.BLOB_NAME_LIST, blobsToRemove);
         template.sendBodyAndHeaders("direct:remove-blobs", null, headers);
         Long count = template.requestBody("direct:count-after-remove-blobs", null, Long.class);
-        assertEquals(new Long(0), count);
+        assertEquals(Long.valueOf(0), count);
     }
 }

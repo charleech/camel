@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 // assert that the generated files directory exists
-File sourceDir = new File( basedir, "target/generated-sources/camel-component" );
+File sourceDir = new File( basedir, "src/generated/java" );
 File testDir = new File( basedir, "target/generated-test-sources/camel-component" );
 
 assert sourceDir.isDirectory()

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,11 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.sjms.SjmsComponent;
 import org.apache.camel.component.sjms.support.MyAsyncComponent;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class AsyncQueueProducerTest extends CamelTestSupport {
 
@@ -45,13 +48,14 @@ public class AsyncQueueProducerTest extends CamelTestSupport {
 
         assertMockEndpointsSatisfied();
 
-        assertFalse("Should use different threads", beforeThreadName.equalsIgnoreCase(afterThreadName));
-        assertFalse("Should use different threads", beforeThreadName.equalsIgnoreCase(sedaThreadName));
-        assertFalse("Should use different threads", afterThreadName.equalsIgnoreCase(sedaThreadName));
+        assertFalse(beforeThreadName.equalsIgnoreCase(afterThreadName), "Should use different threads");
+        assertFalse(beforeThreadName.equalsIgnoreCase(sedaThreadName), "Should use different threads");
+        assertFalse(afterThreadName.equalsIgnoreCase(sedaThreadName), "Should use different threads");
 
         assertEquals("AB", route);
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -85,9 +89,9 @@ public class AsyncQueueProducerTest extends CamelTestSupport {
                                 afterThreadName = Thread.currentThread().getName();
                             }
                         })
-                        .to("sjms:queue:foo?synchronous=false");
+                        .to("sjms:queue:foo");
 
-                from("sjms:queue:foo?synchronous=false")
+                from("sjms:queue:foo?asyncConsumer=true")
                         .to("mock:after")
                         .to("log:after")
                         .delay(1000)

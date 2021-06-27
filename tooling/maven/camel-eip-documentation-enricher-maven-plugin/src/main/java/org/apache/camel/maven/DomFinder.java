@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,12 @@ public class DomFinder {
     public NodeList findAttributesElements(String name) throws XPathExpressionException {
         return (NodeList) xPath.compile(
                 "/xs:schema/xs:complexType[@name='" + name + "']//xs:attribute")
+                .evaluate(document, XPathConstants.NODESET);
+    }
+
+    public NodeList findElementsElements(String name) throws XPathExpressionException {
+        return (NodeList) xPath.compile(
+                "/xs:schema/xs:complexType[@name='" + name + "']//xs:element")
                 .evaluate(document, XPathConstants.NODESET);
     }
 

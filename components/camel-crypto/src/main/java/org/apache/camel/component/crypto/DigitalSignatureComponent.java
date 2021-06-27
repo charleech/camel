@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.apache.camel.util.ObjectHelper;
 public class DigitalSignatureComponent extends DefaultComponent {
 
     @Metadata(label = "advanced")
-    private DigitalSignatureConfiguration configuration;
+    private DigitalSignatureConfiguration configuration = new DigitalSignatureConfiguration();
 
     public DigitalSignatureComponent() {
     }
@@ -40,26 +40,27 @@ public class DigitalSignatureComponent extends DefaultComponent {
         super(context);
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         ObjectHelper.notNull(getCamelContext(), "CamelContext");
 
         DigitalSignatureConfiguration config = getConfiguration().copy();
 
-        setProperties(config, parameters);
         config.setCamelContext(getCamelContext());
         try {
             config.setCryptoOperation(new URI(remaining).getScheme());
         } catch (Exception e) {
-            throw new MalformedURLException(String.format("An invalid crypto uri was provided '%s'."
-                    + " Check the uri matches the format crypto:sign or crypto:verify", uri));
+            throw new MalformedURLException(
+                    String.format("An invalid crypto uri was provided '%s'."
+                                  + " Check the uri matches the format crypto:sign or crypto:verify",
+                            uri));
         }
-        return new DigitalSignatureEndpoint(uri, this, config);
+        Endpoint endpoint = new DigitalSignatureEndpoint(uri, this, config);
+        setProperties(endpoint, parameters);
+        return endpoint;
     }
 
     public DigitalSignatureConfiguration getConfiguration() {
-        if (configuration == null) {
-            configuration = new DigitalSignatureConfiguration();
-        }
         return configuration;
     }
 

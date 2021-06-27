@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
+
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,8 +32,8 @@ import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.servicenow.annotations.ServiceNowSysParm;
 import org.apache.camel.component.servicenow.auth.AuthenticationRequestFilter;
-import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.support.jsse.SSLContextParameters;
+import org.apache.camel.util.ObjectHelper;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -52,13 +53,11 @@ public final class ServiceNowClient {
         this.camelContext = camelContext;
         this.configuration = configuration;
         this.client = WebClient.create(
-            configuration.getApiUrl(),
-            Arrays.asList(
-                new AuthenticationRequestFilter(configuration),
-                new JacksonJsonProvider(configuration.getOrCreateMapper())
-            ),
-            true
-        );
+                configuration.getApiUrl(),
+                Arrays.asList(
+                        new AuthenticationRequestFilter(configuration),
+                        new JacksonJsonProvider(configuration.getOrCreateMapper())),
+                true);
 
         configureRequestContext(camelContext, configuration, client);
         configureTls(camelContext, configuration, client);
@@ -178,31 +177,29 @@ public final class ServiceNowClient {
 
         // Only ServiceNow known error status codes are mapped
         // See http://wiki.servicenow.com/index.php?title=REST_API#REST_Response_HTTP_Status_Codes
-        switch(code) {
-        case 200:
-        case 201:
-        case 204:
-            // Success
-            break;
-        case 400:
-        case 401:
-        case 403:
-        case 404:
-        case 405:
-        case 406:
-        case 415:
-            ServiceNowExceptionModel model = response.readEntity(ServiceNowExceptionModel.class);
-            throw new ServiceNowException(
-                code,
-                model.getStatus(),
-                model.getError().get("message"),
-                model.getError().get("detail")
-            );
-        default:
-            throw new ServiceNowException(
-                code,
-                response.readEntity(Map.class)
-            );
+        switch (code) {
+            case 200:
+            case 201:
+            case 204:
+                // Success
+                break;
+            case 400:
+            case 401:
+            case 403:
+            case 404:
+            case 405:
+            case 406:
+            case 415:
+                ServiceNowExceptionModel model = response.readEntity(ServiceNowExceptionModel.class);
+                throw new ServiceNowException(
+                        code,
+                        model.getStatus(),
+                        model.getError().get("message"),
+                        model.getError().get("detail"));
+            default:
+                throw new ServiceNowException(
+                        code,
+                        response.readEntity(Map.class));
         }
 
         return response;
@@ -212,12 +209,12 @@ public final class ServiceNowClient {
             CamelContext context, ServiceNowConfiguration configuration, WebClient client) {
 
         WebClient.getConfig(client)
-            .getRequestContext()
-            .put("org.apache.cxf.http.header.split", true);
+                .getRequestContext()
+                .put("org.apache.cxf.http.header.split", true);
     }
 
     private static void configureTls(
-        CamelContext camelContext, ServiceNowConfiguration configuration, WebClient client) {
+            CamelContext camelContext, ServiceNowConfiguration configuration, WebClient client) {
 
         SSLContextParameters sslContextParams = configuration.getSslContextParameters();
         if (sslContextParams != null) {

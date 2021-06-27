@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,6 @@ public class LumberjackComponent extends DefaultComponent implements SSLContextP
     }
 
     protected LumberjackComponent(Class<? extends LumberjackEndpoint> endpointClass) {
-        super();
     }
 
     @Override
@@ -75,8 +74,8 @@ public class LumberjackComponent extends DefaultComponent implements SSLContextP
     }
 
     /**
-     * Sets the default SSL configuration to use for all the endpoints. You can also configure it directly at
-     * the endpoint level.
+     * Sets the default SSL configuration to use for all the endpoints. You can also configure it directly at the
+     * endpoint level.
      */
     public void setSslContextParameters(SSLContextParameters sslContextParameters) {
         this.sslContextParameters = sslContextParameters;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,9 +42,9 @@ public class PutCommand extends DefaultCommand {
         final int timeToRun = BeanstalkExchangeHelper.getTimeToRun(endpoint, in);
 
         final long jobId = client.put(priority, delay, timeToRun, in.getBody(byte[].class));
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Created job %d with priority %d, delay %d seconds and time to run %d", jobId, priority, delay, timeToRun));
-        }
+
+        LOG.debug("Created job {} with priority {}, delay {} seconds and time to run {}", jobId, priority, delay,
+                timeToRun);
 
         answerWith(exchange, Headers.JOB_ID, jobId);
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,9 @@ public class SqlProducerInMultiQueryEndpointTest extends SqlProducerInMultiTest 
                 getContext().getComponent("sql", SqlComponent.class).setDataSource(db);
 
                 from("direct:query")
-                    .to("sql:select * from projects where project in (:#in:names) and license in (:#in:licenses) order by id")
-                    .to("log:query")
-                    .to("mock:query");
+                        .to("sql:select * from projects where project in (:#in:names) and license in (:#in:licenses) order by id")
+                        .to("log:query")
+                        .to("mock:query");
             }
         };
     }

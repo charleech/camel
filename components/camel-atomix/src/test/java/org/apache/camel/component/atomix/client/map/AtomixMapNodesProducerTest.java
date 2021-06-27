@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.atomix.client.map;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -28,15 +29,18 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.apache.camel.component.atomix.client.AtomixClientTestSupport;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class AtomixMapNodesProducerTest extends AtomixClientTestSupport {
 
     private static final String MAP_NAME = UUID.randomUUID().toString();
     private DistributedMap<Object, Object> map;
 
-    @EndpointInject(uri = "direct:start")
+    @EndpointInject("direct:start")
     private FluentProducerTemplate fluent;
 
     // ************************************
@@ -56,9 +60,11 @@ public class AtomixMapNodesProducerTest extends AtomixClientTestSupport {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
-        map.close();
+        if (map != null) {
+            map.close();
+        }
 
         super.tearDown();
     }
@@ -68,17 +74,17 @@ public class AtomixMapNodesProducerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Test
-    public void testPut() throws Exception {
+    void testPut() {
         final String key = context().getUuidGenerator().generateUuid();
         final String val = context().getUuidGenerator().generateUuid();
 
         Message result;
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixMap.Action.PUT)
-            .withHeader(AtomixClientConstants.RESOURCE_KEY, key)
-            .withBody(val)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixMap.Action.PUT)
+                .withHeader(AtomixClientConstants.RESOURCE_KEY, key)
+                .withBody(val)
+                .request(Message.class);
 
         assertFalse(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertEquals(val, result.getBody());
@@ -90,11 +96,11 @@ public class AtomixMapNodesProducerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Override
-    protected RoutesBuilder createRouteBuilder() throws Exception {
+    protected RoutesBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:start")
-                    .toF("atomix-map:%s?nodes=%s:%d", MAP_NAME, replicaAddress.host(), replicaAddress.port());
+                        .toF("atomix-map:%s?nodes=%s:%d", MAP_NAME, replicaAddress.host(), replicaAddress.port());
             }
         };
     }

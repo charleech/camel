@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Message.Builder;
@@ -29,7 +30,9 @@ import org.apache.camel.CamelContextAware;
 import org.apache.camel.CamelException;
 import org.apache.camel.Exchange;
 import org.apache.camel.InvalidPayloadException;
+import org.apache.camel.NoTypeConversionAvailableException;
 import org.apache.camel.spi.DataFormat;
+import org.apache.camel.spi.DataFormatContentTypeHeader;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.spi.annotations.Dataformat;
 import org.apache.camel.support.service.ServiceSupport;
@@ -38,7 +41,8 @@ import org.apache.camel.util.StringHelper;
 import org.apache.commons.io.IOUtils;
 
 @Dataformat("protobuf")
-public class ProtobufDataFormat extends ServiceSupport implements DataFormat, DataFormatName, CamelContextAware {
+public class ProtobufDataFormat extends ServiceSupport
+        implements DataFormat, DataFormatName, DataFormatContentTypeHeader, CamelContextAware {
 
     public static final String CONTENT_TYPE_FORMAT_NATIVE = "native";
     public static final String CONTENT_TYPE_FORMAT_JSON = "json";
@@ -49,7 +53,7 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
     private CamelContext camelContext;
     private Message defaultInstance;
     private String instanceClassName;
-    private boolean contentTypeHeader;
+    private boolean contentTypeHeader = true;
     private String contentTypeFormat = CONTENT_TYPE_FORMAT_NATIVE;
 
     public ProtobufDataFormat() {
@@ -69,10 +73,12 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
         return "protobuf";
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
@@ -83,9 +89,10 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
 
     public void setDefaultInstance(Object instance) {
         if (instance instanceof Message) {
-            this.defaultInstance = (Message)instance;
+            this.defaultInstance = (Message) instance;
         } else {
-            throw new IllegalArgumentException("The argument for setDefaultInstance should be subClass of com.google.protobuf.Message");
+            throw new IllegalArgumentException(
+                    "The argument for setDefaultInstance should be subClass of com.google.protobuf.Message");
         }
     }
 
@@ -117,24 +124,36 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
      * @see org.apache.camel.spi.DataFormat#marshal(org.apache.camel.Exchange,
      * java.lang.Object, java.io.OutputStream)
      */
+    @Override
     public void marshal(final Exchange exchange, final Object graph, final OutputStream outputStream) throws Exception {
+        final Message inputMessage = convertGraphToMessage(exchange, graph);
+
         String contentTypeHeader = CONTENT_TYPE_HEADER_NATIVE;
         if (contentTypeFormat.equals(CONTENT_TYPE_FORMAT_JSON)) {
-            IOUtils.write(JsonFormat.printer().print((Message)graph), outputStream, "UTF-8");
+            IOUtils.write(JsonFormat.printer().print(inputMessage), outputStream, "UTF-8");
             contentTypeHeader = CONTENT_TYPE_HEADER_JSON;
         } else if (contentTypeFormat.equals(CONTENT_TYPE_FORMAT_NATIVE)) {
-            ((Message)graph).writeTo(outputStream);
+            inputMessage.writeTo(outputStream);
         } else {
             throw new CamelException("Invalid protobuf content type format: " + contentTypeFormat);
         }
 
         if (isContentTypeHeader()) {
-            if (exchange.hasOut()) {
-                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, contentTypeHeader);
-            } else {
-                exchange.getIn().setHeader(Exchange.CONTENT_TYPE, contentTypeHeader);
+            exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, contentTypeHeader);
+        }
+    }
+
+    private Message convertGraphToMessage(final Exchange exchange, final Object inputData)
+            throws NoTypeConversionAvailableException {
+        if (!(inputData instanceof Message)) {
+            // we just need to make sure input data is not a proto type
+            final Map<?, ?> messageInMap
+                    = exchange.getContext().getTypeConverter().tryConvertTo(Map.class, exchange, inputData);
+            if (messageInMap != null) {
+                return ProtobufConverter.toProto(messageInMap, defaultInstance);
             }
         }
+        return exchange.getContext().getTypeConverter().mandatoryConvertTo(Message.class, exchange, inputData);
     }
 
     /*
@@ -142,6 +161,7 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
      * @see org.apache.camel.spi.DataFormat#unmarshal(org.apache.camel.Exchange,
      * java.io.InputStream)
      */
+    @Override
     public Object unmarshal(final Exchange exchange, final InputStream inputStream) throws Exception {
         ObjectHelper.notNull(defaultInstance, "defaultInstance or instanceClassName must be set", this);
         Builder builder = defaultInstance.newBuilderForType();
@@ -162,17 +182,20 @@ public class ProtobufDataFormat extends ServiceSupport implements DataFormat, Da
         return builder.build();
     }
 
-    protected Message loadDefaultInstance(final String className, final CamelContext context) throws CamelException, ClassNotFoundException {
+    protected Message loadDefaultInstance(final String className, final CamelContext context)
+            throws CamelException, ClassNotFoundException {
         Class<?> instanceClass = context.getClassResolver().resolveMandatoryClass(className);
         if (Message.class.isAssignableFrom(instanceClass)) {
             try {
                 Method method = instanceClass.getMethod("getDefaultInstance");
-                return (Message)method.invoke(null);
+                return (Message) method.invoke(null);
             } catch (final Exception ex) {
-                throw new CamelException("Can't set the defaultInstance of ProtobufferDataFormat with " + className + ", caused by " + ex);
+                throw new CamelException(
+                        "Can't set the defaultInstance of ProtobufferDataFormat with " + className + ", caused by " + ex);
             }
         } else {
-            throw new CamelException("Can't set the defaultInstance of ProtobufferDataFormat with " + className
+            throw new CamelException(
+                    "Can't set the defaultInstance of ProtobufferDataFormat with " + className
                                      + ", as the class is not a subClass of com.google.protobuf.Message");
         }
     }

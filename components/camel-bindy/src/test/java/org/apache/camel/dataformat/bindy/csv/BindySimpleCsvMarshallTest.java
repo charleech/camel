@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,15 +31,15 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.model.simple.oneclass.Order;
-
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 @ContextConfiguration
-public class BindySimpleCsvMarshallTest extends AbstractJUnit4SpringContextTests {
-    
+@CamelSpringTest
+public class BindySimpleCsvMarshallTest {
+
     private static final String URI_MOCK_RESULT = "mock:result";
     private static final String URI_MOCK_ERROR = "mock:error";
     private static final String URI_DIRECT_START = "direct:start";
@@ -47,10 +47,10 @@ public class BindySimpleCsvMarshallTest extends AbstractJUnit4SpringContextTests
     private List<Map<String, Object>> models = new ArrayList<>();
     private String expected;
 
-    @Produce(uri = URI_DIRECT_START)
+    @Produce(URI_DIRECT_START)
     private ProducerTemplate template;
 
-    @EndpointInject(uri = URI_MOCK_RESULT)
+    @EndpointInject(URI_MOCK_RESULT)
     private MockEndpoint result;
 
     @Test
@@ -100,9 +100,11 @@ public class BindySimpleCsvMarshallTest extends AbstractJUnit4SpringContextTests
 
     public static class ContextConfig extends RouteBuilder {
 
+        @Override
         public void configure() {
 
-            BindyCsvDataFormat camelDataFormat = new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.model.simple.oneclass.Order.class);
+            BindyCsvDataFormat camelDataFormat
+                    = new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.model.simple.oneclass.Order.class);
             camelDataFormat.setLocale("en");
 
             // default should errors go to mock:error

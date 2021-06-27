@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.component.browse;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
@@ -33,14 +34,17 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.support.DefaultProducer;
 
 /**
- * The browse component is used for viewing the messages received on endpoints that supports {@link BrowsableEndpoint}.
+ * Inspect the messages received on endpoints supporting {@link BrowsableEndpoint}.
  *
- * This can be useful for testing, visualisation tools or debugging. The exchanges sent to the endpoint are all available to be browsed.
+ * This can be useful for testing, visualisation tools or debugging. The exchanges sent to the endpoint are all
+ * available to be browsed.
  */
-@UriEndpoint(firstVersion = "1.3.0", scheme = "browse", title = "Browse", syntax = "browse:name", label = "core,monitoring")
+@UriEndpoint(firstVersion = "1.3.0", scheme = "browse", title = "Browse", syntax = "browse:name",
+             category = { Category.CORE, Category.MONITORING })
 public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint {
 
-    @UriPath(description = "A name which can be any string to uniquely identify the endpoint") @Metadata(required = true)
+    @UriPath(description = "A name which can be any string to uniquely identify the endpoint")
+    @Metadata(required = true)
     private String name;
 
     private List<Exchange> exchanges;
@@ -53,10 +57,7 @@ public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint
         super(uri, component);
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
+    @Override
     public List<Exchange> getExchanges() {
         if (exchanges == null) {
             exchanges = createExchangeList();
@@ -64,6 +65,7 @@ public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint
         return exchanges;
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new DefaultProducer(this) {
             public void process(Exchange exchange) throws Exception {
@@ -72,6 +74,7 @@ public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint
         };
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         this.onExchangeProcessor = processor;
 
@@ -95,7 +98,7 @@ public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint
     /**
      * Invoked on a message exchange being sent by a producer
      *
-     * @param exchange the exchange
+     * @param  exchange  the exchange
      * @throws Exception is thrown if failed to process the exchange
      */
     protected void onExchange(Exchange exchange) throws Exception {
@@ -108,9 +111,9 @@ public class BrowseEndpoint extends DefaultEndpoint implements BrowsableEndpoint
     }
 
     @Override
-    protected void doStart() throws Exception {
+    protected void doInit() throws Exception {
+        super.doInit();
         exchanges = createExchangeList();
-        super.doStart();
     }
 
     @Override

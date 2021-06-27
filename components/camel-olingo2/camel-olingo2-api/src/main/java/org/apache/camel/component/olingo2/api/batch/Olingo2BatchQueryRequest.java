@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,12 +38,9 @@ public class Olingo2BatchQueryRequest extends Olingo2BatchRequest {
 
     @Override
     public String toString() {
-        return new StringBuilder("Batch Query Request{ ")
-            .append(resourcePath)
-            .append(", headers=").append(headers)
-            .append(", queryParams=").append(queryParams)
-            .append('}')
-            .toString();
+        return new StringBuilder("Batch Query Request{ ").append(resourcePath).append(", headers=").append(headers)
+                .append(", queryParams=").append(queryParams).append('}')
+                .toString();
     }
 
     public static class Olingo2BatchQueryRequestBuilder {

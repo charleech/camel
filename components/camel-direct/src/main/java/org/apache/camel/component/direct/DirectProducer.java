@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,57 +19,82 @@ package org.apache.camel.component.direct;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultAsyncProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The direct producer.
  */
 public class DirectProducer extends DefaultAsyncProducer {
 
-    private final DirectEndpoint endpoint;
+    private static final Logger LOG = LoggerFactory.getLogger(DirectProducer.class);
 
-    public DirectProducer(DirectEndpoint endpoint) {
+    private volatile DirectConsumer consumer;
+    private int stateCounter;
+
+    private final DirectEndpoint endpoint;
+    private final DirectComponent component;
+    private final String key;
+    private final boolean block;
+    private final long timeout;
+
+    public DirectProducer(DirectEndpoint endpoint, String key) {
         super(endpoint);
         this.endpoint = endpoint;
+        this.component = (DirectComponent) endpoint.getComponent();
+        this.key = key;
+        this.block = endpoint.isBlock();
+        this.timeout = endpoint.getTimeout();
     }
 
     @Override
-    protected void doStart() throws Exception {
-        super.doStart();
-        endpoint.addProducer(this);
-    }
-
-    @Override
-    protected void doStop() throws Exception {
-        endpoint.removeProducer(this);
-        super.doStop();
-    }
-
     public void process(Exchange exchange) throws Exception {
-        DirectConsumer consumer = endpoint.getConsumer();
+        if (consumer == null || stateCounter != component.getStateCounter()) {
+            stateCounter = component.getStateCounter();
+            consumer = component.getConsumer(key, block, timeout);
+        }
         if (consumer == null) {
             if (endpoint.isFailIfNoConsumers()) {
                 throw new DirectConsumerNotAvailableException("No consumers available on endpoint: " + endpoint, exchange);
             } else {
-                log.debug("message ignored, no consumers available on endpoint: {}", endpoint);
+                LOG.debug("message ignored, no consumers available on endpoint: {}", endpoint);
             }
         } else {
             consumer.getProcessor().process(exchange);
         }
     }
 
+    @Override
     public boolean process(Exchange exchange, AsyncCallback callback) {
         try {
-            DirectConsumer consumer = endpoint.getConsumer();
+            // we may be forced synchronous
+            if (endpoint.isSynchronous()) {
+                process(exchange);
+                callback.done(true);
+                return true;
+            }
+            if (consumer == null || stateCounter != component.getStateCounter()) {
+                stateCounter = component.getStateCounter();
+                consumer = component.getConsumer(key, block, timeout);
+            }
             if (consumer == null) {
                 if (endpoint.isFailIfNoConsumers()) {
-                    exchange.setException(new DirectConsumerNotAvailableException("No consumers available on endpoint: " + endpoint, exchange));
+                    exchange.setException(new DirectConsumerNotAvailableException(
+                            "No consumers available on endpoint: " + endpoint, exchange));
                 } else {
-                    log.debug("message ignored, no consumers available on endpoint: {}", endpoint);
+                    LOG.debug("message ignored, no consumers available on endpoint: {}", endpoint);
                 }
                 callback.done(true);
                 return true;
             } else {
-                return consumer.getAsyncProcessor().process(exchange, callback);
+                // the consumer may be forced synchronous
+                if (consumer.getEndpoint().isSynchronous()) {
+                    consumer.getProcessor().process(exchange);
+                    callback.done(true);
+                    return true;
+                } else {
+                    return consumer.getAsyncProcessor().process(exchange, callback);
+                }
             }
         } catch (Exception e) {
             exchange.setException(e);

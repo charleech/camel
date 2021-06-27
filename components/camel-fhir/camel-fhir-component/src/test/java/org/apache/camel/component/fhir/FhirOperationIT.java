@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,28 +22,30 @@ import java.util.Map;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.fhir.internal.FhirApiCollection;
 import org.apache.camel.component.fhir.internal.FhirOperationApiMethod;
-
 import org.hl7.fhir.dstu3.model.Bundle;
 import org.hl7.fhir.dstu3.model.IdType;
-import org.hl7.fhir.dstu3.model.IntegerType;
 import org.hl7.fhir.dstu3.model.Parameters;
 import org.hl7.fhir.dstu3.model.Patient;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test class for {@link org.apache.camel.component.fhir.api.FhirOperation} APIs.
  */
 public class FhirOperationIT extends AbstractFhirTestSupport {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FhirOperationIntegrationTest.class);
-    private static final String PATH_PREFIX = FhirApiCollection.getCollection().getApiName(FhirOperationApiMethod.class).getName();
+    private static final Logger LOG = LoggerFactory.getLogger(FhirOperationIT.class);
+    private static final String PATH_PREFIX
+            = FhirApiCollection.getCollection().getApiName(FhirOperationApiMethod.class).getName();
 
     @Test
     public void testOnInstance() throws Exception {
-        final Map<String, Object> headers = new HashMap<String, Object>();
+        final Map<String, Object> headers = new HashMap<>();
         // parameter type is org.hl7.fhir.instance.model.api.IIdType
         headers.put("CamelFhir.id", this.patient.getIdElement());
         // parameter type is String
@@ -61,16 +63,16 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
         final Parameters result = requestBodyAndHeaders("direct://ON_INSTANCE", null, headers);
 
         LOG.debug("onInstance: " + result);
-        assertNotNull("onInstance result", result);
+        assertNotNull(result, "onInstance result");
         Bundle bundle = (Bundle) result.getParameter().get(0).getResource();
-        assertNotNull("onInstance result", bundle);
+        assertNotNull(bundle, "onInstance result");
         IdType id = bundle.getEntry().get(0).getResource().getIdElement().toUnqualifiedVersionless();
         assertEquals(patient.getIdElement().toUnqualifiedVersionless(), id);
     }
 
     @Test
     public void testOnInstanceVersion() throws Exception {
-        final Map<String, Object> headers = new HashMap<String, Object>();
+        final Map<String, Object> headers = new HashMap<>();
         // parameter type is org.hl7.fhir.instance.model.api.IIdType
         headers.put("CamelFhir.id", this.patient.getIdElement());
         // parameter type is String
@@ -88,9 +90,9 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
         final Parameters result = requestBodyAndHeaders("direct://ON_INSTANCE_VERSION", null, headers);
 
         LOG.debug("onInstance: " + result);
-        assertNotNull("onInstance result", result);
+        assertNotNull(result, "onInstance result");
         Bundle bundle = (Bundle) result.getParameter().get(0).getResource();
-        assertNotNull("onInstance result", bundle);
+        assertNotNull(bundle, "onInstance result");
         IdType id = bundle.getEntry().get(0).getResource().getIdElement().toUnqualifiedVersionless();
         assertEquals(patient.getIdElement().toUnqualifiedVersionless(), id);
     }
@@ -99,7 +101,7 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
     public void testOnServer() throws Exception {
         final Map<String, Object> headers = new HashMap<>();
         // parameter type is String
-        headers.put("CamelFhir.name", "get-resource-counts");
+        headers.put("CamelFhir.name", "$get-resource-counts");
         // parameter type is org.hl7.fhir.instance.model.api.IBaseParameters
         headers.put("CamelFhir.parameters", null);
         // parameter type is Class
@@ -111,16 +113,12 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
         headers.put("CamelFhir.extraParameters", null);
 
         final Parameters result = requestBodyAndHeaders("direct://ON_SERVER", null, headers);
-
-        assertNotNull("onServer result", result);
-        LOG.debug("onServer: " + result);
-        int resourceCount = Integer.valueOf(((IntegerType)result.getParameter().get(0).getValue()).asStringValue());
-        assertTrue(resourceCount > 0);
+        assertNotNull(result, "onServer result");
     }
 
     @Test
     public void testOnType() throws Exception {
-        final Map<String, Object> headers = new HashMap<String, Object>();
+        final Map<String, Object> headers = new HashMap<>();
         // parameter type is Class
         headers.put("CamelFhir.resourceType", Patient.class);
         // parameter type is String
@@ -137,15 +135,15 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
 
         final org.hl7.fhir.instance.model.api.IBaseResource result = requestBodyAndHeaders("direct://ON_TYPE", null, headers);
 
-        assertNotNull("onType result", result);
+        assertNotNull(result, "onType result");
         LOG.debug("onType: " + result);
     }
 
-    @Ignore("Not implemented yet in HAPI FHIR server side, see"
-    + " https://github.com/jamesagnew/hapi-fhir/blob/master/hapi-fhir-jpaserver-base/src/main/java/ca/uhn/fhir/jpa/dao/dstu3/FhirResourceDaoMessageHeaderDstu3.java#L33")
+    @Disabled("Not implemented yet in HAPI FHIR server side, see"
+              + " https://github.com/jamesagnew/hapi-fhir/blob/master/hapi-fhir-jpaserver-base/src/main/java/ca/uhn/fhir/jpa/dao/dstu3/FhirResourceDaoMessageHeaderDstu3.java#L33")
     @Test
     public void testProcessMessage() throws Exception {
-        final Map<String, Object> headers = new HashMap<String, Object>();
+        final Map<String, Object> headers = new HashMap<>();
         // parameter type is String
         headers.put("CamelFhir.respondToUri", null);
         // parameter type is org.hl7.fhir.instance.model.api.IBaseBundle
@@ -156,9 +154,10 @@ public class FhirOperationIT extends AbstractFhirTestSupport {
         // parameter type is java.util.Map
         headers.put("CamelFhir.extraParameters", null);
 
-        final org.hl7.fhir.instance.model.api.IBaseBundle result = requestBodyAndHeaders("direct://PROCESS_MESSAGE", null, headers);
+        final org.hl7.fhir.instance.model.api.IBaseBundle result
+                = requestBodyAndHeaders("direct://PROCESS_MESSAGE", null, headers);
 
-        assertNotNull("processMessage result", result);
+        assertNotNull(result, "processMessage result");
         LOG.debug("processMessage: " + result);
     }
 

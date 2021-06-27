@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,21 @@ import org.apache.camel.support.jsse.SSLContextParameters;
 
 public class AhcComponentClientConfigSslContextParametersTest extends AhcComponentClientConfigTest {
 
+    @Override
     public void configureComponent() {
         super.configureComponent();
-        
+
         AhcComponent component = context.getComponent("ahc", AhcComponent.class);
-        component.setSslContextParameters(context.getRegistry().lookupByNameAndType("sslContextParameters", SSLContextParameters.class));
+        component.setSslContextParameters(
+                context.getRegistry().lookupByNameAndType("sslContextParameters", SSLContextParameters.class));
     }
 
+    @Override
     protected String getTestServerEndpointUri() {
         return super.getTestServerEndpointUri() + "?sslContextParameters=#sslContextParameters";
     }
-    
+
+    @Override
     protected String getTestServerEndpointTwoUri() {
         return super.getTestServerEndpointTwoUri() + "?sslContextParameters=#sslContextParameters";
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp.internal;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ import java.net.ServerSocket;
 
 import org.apache.camel.Route;
 import org.apache.camel.component.mllp.MllpTcpServerConsumer;
-import org.apache.camel.impl.MDCUnitOfWork;
+import org.apache.camel.spi.UnitOfWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -51,19 +50,18 @@ public class TcpServerBindThread extends Thread {
         this.setName(String.format("%s - %s", this.getClass().getSimpleName(), endpointKey));
     }
 
-
     /**
      * Bind the TCP ServerSocket within the specified timeout.
      */
     @Override
     public void run() {
-        MDC.put(MDCUnitOfWork.MDC_CAMEL_CONTEXT_ID, consumer.getEndpoint().getCamelContext().getName());
+        MDC.put(UnitOfWork.MDC_CAMEL_CONTEXT_ID, consumer.getEndpoint().getCamelContext().getName());
 
         Route route = consumer.getRoute();
         if (route != null) {
             String routeId = route.getId();
             if (routeId != null) {
-                MDC.put(MDCUnitOfWork.MDC_ROUTE_ID, route.getId());
+                MDC.put(UnitOfWork.MDC_ROUTE_ID, route.getId());
             }
         }
 
@@ -100,10 +98,12 @@ public class TcpServerBindThread extends Thread {
                     consumer.startAcceptThread(serverSocket);
                 } catch (BindException bindException) {
                     if (System.currentTimeMillis() > startTicks + consumer.getConfiguration().getBindTimeout()) {
-                        log.error("Failed to bind to address {} within timeout {}", socketAddress, consumer.getConfiguration().getBindTimeout(), bindException);
+                        log.error("Failed to bind to address {} within timeout {}", socketAddress,
+                                consumer.getConfiguration().getBindTimeout(), bindException);
                         break;
                     } else {
-                        log.warn("Failed to bind to address {} - retrying in {} milliseconds", socketAddress, consumer.getConfiguration().getBindRetryInterval());
+                        log.warn("Failed to bind to address {} - retrying in {} milliseconds", socketAddress,
+                                consumer.getConfiguration().getBindRetryInterval());
                         try {
                             Thread.sleep(consumer.getConfiguration().getBindRetryInterval());
                         } catch (InterruptedException interruptedEx) {

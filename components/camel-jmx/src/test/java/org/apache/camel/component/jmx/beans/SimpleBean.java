@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.jmx.beans;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.management.AttributeChangeNotification;
 import javax.management.MBeanServerNotification;
 import javax.management.Notification;
@@ -33,7 +34,7 @@ import javax.management.timer.TimerNotification;
 public class SimpleBean extends NotificationBroadcasterSupport implements ISimpleMXBean {
 
     private static final long serialVersionUID = -1230507995730071242L;
-    
+
     private int mSequence;
     /**
      * Use the same timestamp every time so the assertions are easier
@@ -44,10 +45,12 @@ public class SimpleBean extends NotificationBroadcasterSupport implements ISimpl
     private int mMonitorNumber;
     private long mLongNumber;
 
+    @Override
     public String getStringValue() {
         return mStringValue;
     }
 
+    @Override
     public void setStringValue(String aStringValue) {
         String oldValue = getStringValue();
         mStringValue = aStringValue;
@@ -57,20 +60,25 @@ public class SimpleBean extends NotificationBroadcasterSupport implements ISimpl
         sendNotification(acn);
     }
 
+    @Override
     public Integer getMonitorNumber() {
         return mMonitorNumber;
     }
+
+    @Override
     public void setMonitorNumber(Integer aNumber) {
         mMonitorNumber = aNumber;
     }
 
+    @Override
     public Long getLongNumber() {
         return mLongNumber;
     }
+
+    @Override
     public void setLongNumber(Long aNumber) {
         mLongNumber = aNumber;
     }
-
 
     public int getSequence() {
         return mSequence;
@@ -88,36 +96,44 @@ public class SimpleBean extends NotificationBroadcasterSupport implements ISimpl
         mTimestamp = aTimestamp;
     }
 
+    @Override
     public void userData(String aUserData) {
         Notification n = new Notification("userData", this, mSequence++, mTimestamp, "Here's my user data");
         n.setUserData(aUserData);
         sendNotification(n);
     }
 
+    @Override
     public void touch() {
         Notification n = new Notification("touched", this, mSequence++, mTimestamp, "I was touched");
         sendNotification(n);
     }
 
+    @Override
     public void triggerConnectionNotification() {
-        JMXConnectionNotification n = new JMXConnectionNotification("connection", this,
+        JMXConnectionNotification n = new JMXConnectionNotification(
+                "connection", this,
                 "conn-123", mSequence++, "connection notification", null);
         n.setTimeStamp(mTimestamp);
         sendNotification(n);
     }
 
+    @Override
     public void triggerMBeanServerNotification() throws Exception {
-        MBeanServerNotification n = new MBeanServerNotification("mbeanserver", this, mSequence++, new ObjectName("TestDomain", "name", "foo"));
+        MBeanServerNotification n
+                = new MBeanServerNotification("mbeanserver", this, mSequence++, new ObjectName("TestDomain", "name", "foo"));
         n.setTimeStamp(mTimestamp);
         sendNotification(n);
     }
 
+    @Override
     public void triggerRelationNotification() throws Exception {
         List<ObjectName> list = new ArrayList<>();
         for (int i = 1; i <= 3; i++) {
             list.add(new ObjectName("TestDomain", "name", "mbean-" + i));
         }
-        RelationNotification n = new RelationNotification(RelationNotification.RELATION_BASIC_CREATION,
+        RelationNotification n = new RelationNotification(
+                RelationNotification.RELATION_BASIC_CREATION,
                 new ObjectName("TestDomain", "name", "source"), mSequence++, mTimestamp,
                 "relation message",
                 "relation-id",
@@ -127,8 +143,10 @@ public class SimpleBean extends NotificationBroadcasterSupport implements ISimpl
         sendNotification(n);
     }
 
+    @Override
     public void triggerTimerNotification() {
-        TimerNotification n = new TimerNotification("timer.notification", this, mSequence++, mTimestamp, "timer-notification", 100);
+        TimerNotification n
+                = new TimerNotification("timer.notification", this, mSequence++, mTimestamp, "timer-notification", 100);
         sendNotification(n);
     }
 }

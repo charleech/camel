@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,14 @@ import org.apache.camel.Message;
 
 public interface ServiceNowParam {
     String getId();
+
     String getHeader();
+
     Class<?> getType();
+
     Object getDefaultValue(ServiceNowConfiguration configuration);
+
     Object getHeaderValue(Message message);
+
     Object getHeaderValue(Message message, ServiceNowConfiguration configuration);
 }

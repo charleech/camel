@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,18 +20,23 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.support.ScheduledPollConsumer;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WeatherConsumer extends ScheduledPollConsumer {
     public static final long DEFAULT_CONSUMER_DELAY = 60 * 60 * 1000L;
 
-    private final String query;
+    private static final Logger LOG = LoggerFactory.getLogger(WeatherConsumer.class);
 
-    public WeatherConsumer(WeatherEndpoint endpoint, Processor processor, String query) {
+    private String query;
+
+    public WeatherConsumer(WeatherEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        this.query = query;
     }
 
     @Override
@@ -40,18 +45,25 @@ public class WeatherConsumer extends ScheduledPollConsumer {
     }
 
     @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+        this.query = this.getEndpoint().getWeatherQuery().getQuery();
+    }
+
+    @Override
     protected int poll() throws Exception {
-        log.debug("Going to execute the Weather query {}", query);
-        HttpClient httpClient = ((WeatherComponent) getEndpoint().getComponent()).getHttpClient();
-        GetMethod getMethod = new GetMethod(query);
+        LOG.debug("Going to execute the Weather query {}", query);
+        HttpClient httpClient = getEndpoint().getConfiguration().getHttpClient();
+        HttpGet getMethod = new HttpGet(query);
         try {
-            int status = httpClient.executeMethod(getMethod);
-            if (status != HttpStatus.SC_OK) {
-                log.warn("HTTP call for weather returned error status code {} - {} as a result with query: {}", status, getMethod.getStatusLine(), query);
+            HttpResponse response = httpClient.execute(getMethod);
+            if (HttpStatus.SC_OK != response.getStatusLine().getStatusCode()) {
+                LOG.warn("HTTP call for weather returned error status code {} - {} as a result with query: {}", status,
+                        response.getStatusLine().getStatusCode(), query);
                 return 0;
             }
-            String weather = getEndpoint().getCamelContext().getTypeConverter().mandatoryConvertTo(String.class, getMethod.getResponseBodyAsStream());
-            log.debug("Got back the Weather information {}", weather);
+            String weather = EntityUtils.toString(response.getEntity(), "UTF-8");
+            LOG.debug("Got back the Weather information {}", weather);
             if (ObjectHelper.isEmpty(weather)) {
                 // empty response
                 return 0;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,30 +17,28 @@
 package org.apache.camel.component.spring.ws.converter;
 
 import org.apache.camel.Converter;
-import org.apache.camel.StringSource;
+import org.apache.camel.util.xml.StringSource;
 
 /**
  * A helper class to transform to and from {@link org.springframework.xml.transform.StringSource} implementations
  * available in both Camel and Spring Webservices.
  * <p/>
- * Rationale: most of the time this converter will not be used since both Camel
- * and Spring-WS use the {@Source} interface abstraction. There is
- * however a chance that you may end up with incompatible {@link org.springframework.xml.transform.StringSource}
- * implementations, this converter handles these (corner)cases.
+ * Rationale: most of the time this converter will not be used since both Camel and Spring-WS use the
+ * {@Source} interface abstraction. There is however a chance that you may end up with incompatible
+ * {@link org.springframework.xml.transform.StringSource} implementations, this converter handles these (corner)cases.
  * <p/>
- * Note that conversion options are limited by Spring's {@link org.springframework.xml.transform.StringSource}
- * since it's the most simple one. It has just one constructor that accepts a
- * String as input.
+ * Note that conversion options are limited by Spring's {@link org.springframework.xml.transform.StringSource} since
+ * it's the most simple one. It has just one constructor that accepts a String as input.
  */
-@Converter
+@Converter(generateLoader = true)
 public final class StringSourceConverter {
 
     private StringSourceConverter() {
     }
 
     /**
-     * Converts a Spring-WS {@link org.springframework.xml.transform.StringSource}
-     * to a Camel {@link org.apache.camel.converter.jaxp.StringSource}
+     * Converts a Spring-WS {@link org.springframework.xml.transform.StringSource} to a Camel
+     * {@link org.apache.camel.converter.jaxp.StringSource}
      */
     @Converter
     public static StringSource toStringSourceFromSpring(org.springframework.xml.transform.StringSource springStringSource) {
@@ -48,8 +46,8 @@ public final class StringSourceConverter {
     }
 
     /**
-     * Converts a Camel {@link org.apache.camel.converter.jaxp.StringSource}
-     * to a Spring-WS {@link org.springframework.xml.transform.StringSource}
+     * Converts a Camel {@link org.apache.camel.converter.jaxp.StringSource} to a Spring-WS
+     * {@link org.springframework.xml.transform.StringSource}
      */
     @Converter
     public static org.springframework.xml.transform.StringSource toStringSourceFromCamel(StringSource camelStringSource) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,11 @@
  */
 package org.apache.camel.component.docker;
 
-import org.junit.Test;
+import org.apache.camel.component.docker.exception.DockerException;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Validates the {@link DockerClientProfile}
@@ -26,7 +28,7 @@ import static org.junit.Assert.assertEquals;
 public class DockerClientProfileTest {
 
     @Test
-    public void clientProfileTest() {
+    void clientProfileTest() {
         String host = "host";
         String email = "docker@camel.apache.org";
         String username = "user";
@@ -62,4 +64,30 @@ public class DockerClientProfileTest {
         assertEquals(clientProfile1, clientProfile2);
     }
 
+    @Test
+    void clientProfileUrlTest() throws DockerException {
+        DockerClientProfile profile = new DockerClientProfile();
+        profile.setHost("localhost");
+        profile.setPort(2375);
+        assertEquals("tcp://localhost:2375", profile.toUrl());
+    }
+
+    @Test
+    void clientProfileNoPortSpecifiedUrlTest() throws DockerException {
+        DockerClientProfile profile = new DockerClientProfile();
+        profile.setHost("localhost");
+
+        IllegalArgumentException iaex = assertThrows(IllegalArgumentException.class, () -> profile.toUrl());
+        assertEquals("port must be specified", iaex.getMessage());
+    }
+
+    @Test
+    void clientProfileWithSocketUrlTest() throws DockerException {
+        DockerClientProfile profile = new DockerClientProfile();
+        profile.setHost("/var/run/docker.sock");
+        // Port should be ignored
+        profile.setPort(2375);
+        profile.setSocket(true);
+        assertEquals("unix:///var/run/docker.sock", profile.toUrl());
+    }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,7 +57,6 @@ public enum HazelcastOperation {
     DRAIN_TO("drainTo"),
     REMOVE_IF("removeIf"),
     TAKE("take"),
-    
 
     // topic
     PUBLISH("publish"),
@@ -66,7 +65,6 @@ public enum HazelcastOperation {
     READ_ONCE_HEAD("readOnceHeal"),
     READ_ONCE_TAIL("readOnceTail"),
     CAPACITY("capacity");
-
 
     private static HazelcastOperation[] values = values();
     private final String operation;
@@ -87,6 +85,7 @@ public enum HazelcastOperation {
         throw new IllegalArgumentException(String.format("Operation '%s' is not supported by this component.", name));
     }
 
+    @Override
     public String toString() {
         return operation;
     }

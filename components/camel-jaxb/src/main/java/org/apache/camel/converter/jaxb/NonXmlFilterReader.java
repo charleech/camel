@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * This FilterReader will filter out the non-XML characters, see
- * {@link NonXmlCharFilterer} for details.
+ * This FilterReader will filter out the non-XML characters, see {@link NonXmlCharFilterer} for details.
  */
 public class NonXmlFilterReader extends FilterReader {
     NonXmlCharFilterer nonXmlCharFilterer = new NonXmlCharFilterer();
@@ -34,9 +33,9 @@ public class NonXmlFilterReader extends FilterReader {
     /**
      * Reads characters into a portion of an array.
      * 
-     * @exception IOException
-     *                If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
+    @Override
     public int read(char cbuf[], int off, int len) throws IOException {
         int read = in.read(cbuf, off, len);
         if (read > 0) {

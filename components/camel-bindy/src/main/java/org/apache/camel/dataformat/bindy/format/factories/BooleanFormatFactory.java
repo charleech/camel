@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,10 +35,12 @@ public class BooleanFormatFactory extends AbstractFormatFactory {
 
     private static class BooleanFormat implements Format<Boolean> {
 
+        @Override
         public String format(Boolean object) throws Exception {
             return object.toString();
         }
 
+        @Override
         public Boolean parse(String string) throws Exception {
             return Boolean.valueOf(string);
         }

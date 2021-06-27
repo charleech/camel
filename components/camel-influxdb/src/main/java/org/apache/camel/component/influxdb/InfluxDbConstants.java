@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,10 +22,9 @@ public final class InfluxDbConstants {
     public static final String RETENTION_POLICY_HEADER = "camelInfluxDB.RetentionPolicy";
     public static final String DBNAME_HEADER = "camelInfluxDB.databaseName";
     public static final String INFLUXDB_QUERY = "camelInfluxDB.query";
-    
+
     private InfluxDbConstants() {
 
     }
 
-   
 }

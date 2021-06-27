@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,11 @@
  */
 package org.apache.camel.itest.security;
 
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.springframework.test.context.ContextConfiguration;
 
-@ContextConfiguration(locations = {"CxfMessageCamelContext.xml"})
+@CamelSpringTest
+@ContextConfiguration(locations = { "CxfMessageCamelContext.xml" })
 public class GreeterClientCxfMessageTest extends GreeterClientTest {
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,17 +38,15 @@ import org.apache.camel.dataformat.bindy.BindyKeyValuePairFactory;
 import org.apache.camel.dataformat.bindy.FormatFactory;
 import org.apache.camel.dataformat.bindy.WrappedException;
 import org.apache.camel.dataformat.bindy.util.ConverterUtils;
-import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.annotations.Dataformat;
 import org.apache.camel.support.ExchangeHelper;
-import org.apache.camel.util.IOHelper;
 import org.apache.camel.support.ObjectHelper;
+import org.apache.camel.util.IOHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A <a href="http://camel.apache.org/data-format.html">data format</a> (
- * {@link DataFormat}) using Bindy to marshal to and from CSV files
+ * Marshal and unmarshal between POJOs and key-value pair (KVP) format using Camel Bindy
  */
 @Dataformat("bindy-kvp")
 public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
@@ -67,6 +65,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         return "bindy-kvp";
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void marshal(Exchange exchange, Object body, OutputStream outputStream) throws Exception {
         final BindyAbstractFactory factory = getFactory();
@@ -91,6 +90,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         }
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream inputStream) throws Exception {
         BindyKeyValuePairFactory factory = (BindyKeyValuePairFactory) getFactory();
 
@@ -105,9 +105,10 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         // Use a Stream to stream a file across
         try (Stream<String> lines = new BufferedReader(in).lines()) {
             // Retrieve the pair separator defined to split the record
-            org.apache.camel.util.ObjectHelper.notNull(factory.getPairSeparator(), "The pair separator property of the annotation @Message");
+            org.apache.camel.util.ObjectHelper.notNull(factory.getPairSeparator(),
+                    "The pair separator property of the annotation @Message");
             String separator = factory.getPairSeparator();
-            AtomicInteger count = new AtomicInteger(0);
+            AtomicInteger count = new AtomicInteger();
 
             try {
                 lines.forEachOrdered(line -> {
@@ -119,7 +120,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
 
             // BigIntegerFormatFactory if models list is empty or not
             // If this is the case (correspond to an empty stream, ...)
-            if (models.size() == 0) {
+            if (models.isEmpty() && !isAllowEmptyStream()) {
                 throw new java.lang.IllegalArgumentException("No records have been defined in the CSV");
             } else {
                 return extractUnmarshalResult(models);
@@ -130,7 +131,9 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         }
     }
 
-    private void consumeFile(BindyKeyValuePairFactory factory, List<Map<String, Object>> models, Map<String, List<Object>> lists, String separator, AtomicInteger count, String line) {
+    private void consumeFile(
+            BindyKeyValuePairFactory factory, List<Map<String, Object>> models, Map<String, List<Object>> lists,
+            String separator, AtomicInteger count, String line) {
         try {
             // Trim the line coming in to remove any trailing whitespace
             String trimmedLine = line.trim();
@@ -177,6 +180,7 @@ public class BindyKeyValuePairDataFormat extends BindyAbstractDataFormat {
         }
     }
 
+    @Override
     protected BindyAbstractFactory createModelFactory(FormatFactory formatFactory) throws Exception {
         BindyKeyValuePairFactory bindyKeyValuePairFactory = new BindyKeyValuePairFactory(getClassType());
         bindyKeyValuePairFactory.setFormatFactory(formatFactory);

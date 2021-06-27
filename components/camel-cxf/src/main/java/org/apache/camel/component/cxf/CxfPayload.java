@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,32 +32,32 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.cxf.staxutils.StaxUtils;
 
-
 /**
  * CxfMessage body type when {@link DataFormat#PAYLOAD} is used.
  */
 public class CxfPayload<T> {
-    
+
     private List<Source> body;
     private List<T> headers;
     private Map<String, String> nsMap;
-    
+
     public CxfPayload(List<T> headers, List<Source> body, Map<String, String> nsMap) {
         this.headers = headers;
         this.body = body;
         this.nsMap = nsMap;
     }
+
     public CxfPayload(List<T> headers, List<Element> body) {
         this.headers = headers;
         this.body = new ArrayList<>(body.size());
         for (Element el : body) {
             this.body.add(new DOMSource(el));
         }
-    } 
-    
+    }
+
     /**
-     * Get the body as a List of DOM elements. 
-     * This will cause the Body to be fully read and parsed.
+     * Get the body as a List of DOM elements. This will cause the Body to be fully read and parsed.
+     * 
      * @return
      */
     public List<Element> getBody() {
@@ -105,18 +105,19 @@ public class CxfPayload<T> {
             }
         };
     }
-    
+
     protected static void addNamespace(Element element, Map<String, String> nsMap) {
         if (nsMap != null) {
-            for (String ns : nsMap.keySet()) {
+            for (Map.Entry<String, String> entry : nsMap.entrySet()) {
+                String ns = entry.getKey();
                 // We should not override the namespace setting of the element
                 if (XMLConstants.XMLNS_ATTRIBUTE.equals(ns)) {
                     if (ObjectHelper.isEmpty(element.getAttribute(XMLConstants.XMLNS_ATTRIBUTE))) {
-                        element.setAttribute(ns, nsMap.get(ns));
+                        element.setAttribute(ns, entry.getValue());
                     }
                 } else {
                     if (ObjectHelper.isEmpty(element.getAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + ns))) {
-                        element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + ns, nsMap.get(ns));
+                        element.setAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + ns, entry.getValue());
                     }
                 }
             }
@@ -124,16 +125,24 @@ public class CxfPayload<T> {
     }
 
     /**
-     * Gets the body as a List of source objects.   If possible, the Source objects
-     * will likely be StaxSource or similar that allows streaming.   If you plan to 
-     * modify or use the Source, be careful that the result is still usable by
-     * the Camel runtime.
+     * Gets the body as a List of source objects. If possible, the Source objects will likely be StaxSource or similar
+     * that allows streaming. If you plan to modify or use the Source, be careful that the result is still usable by the
+     * Camel runtime.
+     * 
      * @return
      */
     public List<Source> getBodySources() {
         return body;
     }
-    
+
+    /*
+     * set the body back with cached stream source so
+     * CxfPayload is re-readable
+     */
+    public void setBodySources(List<Source> body) {
+        this.body = body;
+    }
+
     public List<T> getHeaders() {
         return headers;
     }
@@ -142,6 +151,7 @@ public class CxfPayload<T> {
         return nsMap;
     }
 
+    @Override
     public String toString() {
         // do not load or print the payload body etc as we do not want to load that into memory etc
         return super.toString();

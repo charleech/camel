@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,33 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf;
+
 import org.w3c.dom.Document;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * A unit test for java only CXF in payload mode
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CxfJavaOnlyPayloadModeTest extends CamelTestSupport {
-    private static int port1 = CXFTestSupport.getPort1(); 
+    private static int port1 = CXFTestSupport.getPort1();
 
     private String url = "cxf://http://localhost:" + port1 + "/CxfJavaOnlyPayloadModeTest/helloworld"
-        + "?wsdlURL=classpath:person.wsdl"
-        + "&serviceName={http://camel.apache.org/wsdl-first}PersonService"
-        + "&portName={http://camel.apache.org/wsdl-first}soap"
-        + "&dataFormat=PAYLOAD"
-        + "&properties.exceptionMessageCauseEnabled=true&properties.faultStackTraceEnabled=true";
-    @Override
-    public boolean isCreateCamelContextPerClass() {
-        return true;
-    }
+                         + "?wsdlURL=classpath:person.wsdl"
+                         + "&serviceName={http://camel.apache.org/wsdl-first}PersonService"
+                         + "&portName={http://camel.apache.org/wsdl-first}soap"
+                         + "&dataFormat=PAYLOAD"
+                         + "&properties.exceptionMessageCauseEnabled=true&properties.faultStackTraceEnabled=true";
 
     @Test
     public void testCxfJavaOnly() throws Exception {
@@ -71,11 +71,11 @@ public class CxfJavaOnlyPayloadModeTest extends CamelTestSupport {
                     @Override
                     public void process(Exchange exchange) throws Exception {
                         String s = "<GetPersonResponse xmlns=\"http://camel.apache.org/wsdl-first/types\">"
-                                + "<personId>123</personId><ssn>456</ssn><name>Donald Duck</name>"
-                                + "</GetPersonResponse>";
+                                   + "<personId>123</personId><ssn>456</ssn><name>Donald Duck</name>"
+                                   + "</GetPersonResponse>";
 
                         Document xml = context.getTypeConverter().convertTo(Document.class, s);
-                        exchange.getOut().setBody(xml);
+                        exchange.getMessage().setBody(xml);
                     }
                 });
             }

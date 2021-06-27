@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.apache.camel.component.redis.processor.idempotent;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.api.management.ManagedOperation;
 import org.apache.camel.api.management.ManagedResource;
@@ -52,11 +52,10 @@ public class RedisStringIdempotentRepository extends RedisIdempotentRepository {
     @ManagedOperation(description = "Adds the key to the store")
     @Override
     public boolean add(String key) {
-        boolean added = valueOperations.setIfAbsent(createRedisKey(key), key);
         if (expiry > 0) {
-            valueOperations.getOperations().expire(createRedisKey(key), expiry, TimeUnit.SECONDS);
+            return valueOperations.setIfAbsent(createRedisKey(key), key, Duration.ofSeconds(expiry));
         }
-        return added;
+        return valueOperations.setIfAbsent(createRedisKey(key), key);
     }
 
     @ManagedOperation(description = "Remove the key from the store")
@@ -79,8 +78,8 @@ public class RedisStringIdempotentRepository extends RedisIdempotentRepository {
                     byte[] key = cursor.next();
                     binaryKeys.add(key);
                 }
-                if (binaryKeys.size() > 0) {
-                    connection.del(binaryKeys.toArray(new byte[][]{}));
+                if (!binaryKeys.isEmpty()) {
+                    connection.del(binaryKeys.toArray(new byte[][] {}));
                 }
                 return binaryKeys;
             }

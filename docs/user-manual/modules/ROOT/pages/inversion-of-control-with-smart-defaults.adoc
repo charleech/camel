@@ -1,11 +1,11 @@
 [[InversionOfControlWithSmartDefaults-InversionOfControlWithSmartDefaults]]
-=== Inversion Of Control With Smart Defaults
+= Inversion Of Control With Smart Defaults
 
 Inversion of Control is a powerful way of wiring together your beans so
 that the beans themselves can stay simple & be injected with their
-dependencies by their IoC container. One of the downsides of wring
+dependencies by their IoC container. One of the downsides of wiring
 everything together using an IoC container like Spring is that you can
-often en up with huge amounts of XML configuring everything.
+often end up with huge amounts of XML configuring everything.
 
 The Inversion Of Control With Smart Defaults pattern attempts to address
 this by providing in-built smart defaults into the system so that you
@@ -15,7 +15,7 @@ behavior.
 For example with Camel you can configure a
 CamelContext; capable of creating on demand
 Component and Endpoint
-instances along with providing a powerful link:type-converter.html[Type
+instances along with providing a powerful xref:type-converter.adoc[Type
 Converter] registry all by using a single XML element...
 
 [source,java]

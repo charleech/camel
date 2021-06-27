@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,19 +19,24 @@ package org.apache.camel.component.irc.it;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IrcIntegrationTestSupport extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    private static final Logger LOGGER = LoggerFactory.getLogger(IrcIntegrationTestSupport.class);
+
+    @EndpointInject("mock:result")
     protected MockEndpoint resultEndpoint;
 
     protected Properties properties;
 
-    @Before
+    @BeforeEach
     public void doBefore() throws IOException {
         properties = loadProperties();
         resetMock(resultEndpoint);
@@ -53,7 +58,7 @@ public class IrcIntegrationTestSupport extends CamelTestSupport {
         try {
             return loadProperties();
         } catch (IOException e) {
-            log.error("Can't load configuration properties");
+            LOGGER.error("Can't load configuration properties");
             return null;
         }
     }

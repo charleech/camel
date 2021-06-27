@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,26 +27,28 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 import org.apache.camel.dataformat.bindy.annotation.FixedLengthRecord;
 import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ContextConfiguration
-public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest {
 
     private static final String URI_MOCK_RESULT = "mock:result";
     private static final String URI_DIRECT_START = "direct:start";
 
-    @Produce(uri = URI_DIRECT_START)
+    @Produce(URI_DIRECT_START)
     private ProducerTemplate template;
 
-    @EndpointInject(uri = URI_MOCK_RESULT)
+    @EndpointInject(URI_MOCK_RESULT)
     private MockEndpoint result;
 
     private String expected;
-    
+
     @Test
     @DirtiesContext
     public void testUnMarshallMessageWithTrimBoth() throws Exception {
@@ -59,25 +61,27 @@ public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest extends Abstr
         result.assertIsSatisfied();
 
         // check the model
-        
-        BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest.Order order = result.getReceivedExchanges().get(0).getIn().getBody(BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest.Order.class);
-        Assert.assertEquals(10, order.getOrderNr());
+
+        BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest.Order order = result.getReceivedExchanges().get(0).getIn()
+                .getBody(BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest.Order.class);
+        assertEquals(10, order.getOrderNr());
         // the field is not trimmed
-        Assert.assertEquals("Pauline", order.getFirstName());
-        Assert.assertEquals("M    ", order.getLastName()); // no trim
-        Assert.assertEquals("  Hello", order.getComment());
-        Assert.assertEquals("TEST123", order.getCommentBAligned());
+        assertEquals("Pauline", order.getFirstName());
+        assertEquals("M    ", order.getLastName()); // no trim
+        assertEquals("  Hello", order.getComment());
+        assertEquals("TEST123", order.getCommentBAligned());
     }
 
     public static class ContextConfig extends RouteBuilder {
         BindyFixedLengthDataFormat camelDataFormat = new BindyFixedLengthDataFormat(Order.class);
 
+        @Override
         public void configure() {
             from(URI_DIRECT_START).unmarshal(camelDataFormat).to(URI_MOCK_RESULT);
         }
 
     }
-    
+
     @FixedLengthRecord(length = 85)
     public static class Order {
 
@@ -116,7 +120,7 @@ public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest extends Abstr
 
         @DataField(pos = 66, length = 10, trim = true, align = "L", paddingChar = '#')
         private String comment;
-        
+
         @DataField(pos = 76, length = 10, trim = true, align = "B", paddingChar = 'X')
         private String commentBAligned;
 
@@ -215,7 +219,7 @@ public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest extends Abstr
         public void setComment(String comment) {
             this.comment = comment;
         }
-        
+
         public String getCommentBAligned() {
             return commentBAligned;
         }
@@ -226,8 +230,10 @@ public class BindySimpleFixedLengthUnmarshallTrimAlignedBFieldTest extends Abstr
 
         @Override
         public String toString() {
-            return "Model : " + Order.class.getName() + " : " + this.orderNr + ", " + this.orderType + ", " + String.valueOf(this.amount) + ", " + this.instrumentCode + ", "
-                   + this.instrumentNumber + ", " + this.instrumentType + ", " + this.currency + ", " + this.clientNr + ", " + this.firstName + ", " + this.lastName + ", "
+            return "Model : " + Order.class.getName() + " : " + this.orderNr + ", " + this.orderType + ", "
+                   + String.valueOf(this.amount) + ", " + this.instrumentCode + ", "
+                   + this.instrumentNumber + ", " + this.instrumentType + ", " + this.currency + ", " + this.clientNr + ", "
+                   + this.firstName + ", " + this.lastName + ", "
                    + String.valueOf(this.orderDate);
         }
     }

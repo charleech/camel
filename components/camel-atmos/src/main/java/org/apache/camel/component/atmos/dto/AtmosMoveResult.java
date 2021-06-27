@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,17 +19,16 @@ package org.apache.camel.component.atmos.dto;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.atmos.util.AtmosResultHeader;
 
-
 public class AtmosMoveResult extends AtmosResult {
-    
+
     /**
-     * Object payload contained in Exchange
-     * Exchange Header and Body contains the moved path
+     * Object payload contained in Exchange Exchange Header and Body contains the moved path
+     * 
      * @param exchange
      */
     @Override
     public void populateExchange(Exchange exchange) {
-        String movedPath = (String)resultEntries;
+        String movedPath = (String) resultEntries;
         exchange.getIn().setHeader(AtmosResultHeader.MOVED_PATH.name(), movedPath);
         exchange.getIn().setBody(movedPath);
     }

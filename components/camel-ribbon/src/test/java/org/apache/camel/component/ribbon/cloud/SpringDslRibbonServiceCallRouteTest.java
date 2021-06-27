@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,33 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ribbon.cloud;
 
 import org.apache.camel.impl.cloud.DefaultServiceCallProcessor;
 import org.apache.camel.impl.cloud.StaticServiceDiscovery;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DirtiesContext
 public class SpringDslRibbonServiceCallRouteTest extends SpringRibbonServiceCallRouteTest {
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/ribbon/cloud/SpringDslRibbonServiceCallRouteTest.xml");
+        return new ClassPathXmlApplicationContext(
+                "org/apache/camel/component/ribbon/cloud/SpringDslRibbonServiceCallRouteTest.xml");
     }
 
     @Test
     public void testServiceCallConfiguration() throws Exception {
         DefaultServiceCallProcessor processor = findServiceCallProcessor();
 
-        Assert.assertNotNull(processor.getLoadBalancer());
-        Assert.assertTrue(processor.getLoadBalancer() instanceof RibbonServiceLoadBalancer);
+        assertNotNull(processor.getLoadBalancer());
+        assertTrue(processor.getLoadBalancer() instanceof RibbonServiceLoadBalancer);
 
-        RibbonServiceLoadBalancer loadBalancer = (RibbonServiceLoadBalancer)processor.getLoadBalancer();
-        Assert.assertTrue(loadBalancer.getServiceDiscovery() instanceof StaticServiceDiscovery);
+        RibbonServiceLoadBalancer loadBalancer = (RibbonServiceLoadBalancer) processor.getLoadBalancer();
+        assertTrue(loadBalancer.getServiceDiscovery() instanceof StaticServiceDiscovery);
     }
 }
-

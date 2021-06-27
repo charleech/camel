@@ -1,1 +1,0 @@
-delete from test.test_sql_table where id = :id

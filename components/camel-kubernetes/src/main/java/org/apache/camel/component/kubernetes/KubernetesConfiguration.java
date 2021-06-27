@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.apache.camel.component.kubernetes;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
-
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
@@ -81,13 +80,13 @@ public class KubernetesConfiguration implements Cloneable {
 
     @UriParam(label = "consumer")
     private String namespace;
-    
+
     @UriParam(label = "consumer")
     private String labelKey;
-    
+
     @UriParam(label = "consumer")
     private String labelValue;
-    
+
     @UriParam(label = "consumer")
     private String resourceName;
 
@@ -99,12 +98,27 @@ public class KubernetesConfiguration implements Cloneable {
 
     @UriParam
     private String dnsDomain;
-    
+
     @UriParam(label = "consumer", defaultValue = "1")
     private int poolSize = 1;
 
     @UriParam(label = "advanced")
     private Integer connectionTimeout;
+
+    @UriParam(label = "consumer")
+    private String crdName;
+
+    @UriParam(label = "consumer")
+    private String crdGroup;
+
+    @UriParam(label = "consumer")
+    private String crdScope;
+
+    @UriParam(label = "consumer")
+    private String crdVersion;
+
+    @UriParam(label = "consumer")
+    private String crdPlural;
 
     /**
      * Kubernetes Master url
@@ -363,7 +377,7 @@ public class KubernetesConfiguration implements Cloneable {
     public void setPoolSize(int poolSize) {
         this.poolSize = poolSize;
     }
-   
+
     /**
      * The Consumer Label key when watching at some resources
      */
@@ -385,7 +399,6 @@ public class KubernetesConfiguration implements Cloneable {
     public void setLabelValue(String labelValue) {
         this.labelValue = labelValue;
     }
-    
 
     /**
      * The Consumer Resource Name we would like to watch
@@ -409,6 +422,61 @@ public class KubernetesConfiguration implements Cloneable {
         this.connectionTimeout = connectionTimeout;
     }
 
+    /**
+     * The Consumer CRD Resource name we would like to watch
+     */
+    public String getCrdName() {
+        return crdName;
+    }
+
+    public void setCrdName(String crdName) {
+        this.crdName = crdName;
+    }
+
+    /**
+     * The Consumer CRD Resource Group we would like to watch
+     */
+    public String getCrdGroup() {
+        return crdGroup;
+    }
+
+    public void setCrdGroup(String crdGroup) {
+        this.crdGroup = crdGroup;
+    }
+
+    /**
+     * The Consumer CRD Resource Scope we would like to watch
+     */
+    public String getCrdScope() {
+        return crdScope;
+    }
+
+    public void setCrdScope(String crdScope) {
+        this.crdScope = crdScope;
+    }
+
+    /**
+     * The Consumer CRD Resource Version we would like to watch
+     */
+    public String getCrdVersion() {
+        return crdVersion;
+    }
+
+    public void setCrdVersion(String crdVersion) {
+        this.crdVersion = crdVersion;
+    }
+
+    /**
+     * The Consumer CRD Resource Plural we would like to watch
+     */
+    public String getCrdPlural() {
+        return crdPlural;
+    }
+
+    public void setCrdPlural(String crdPlural) {
+        this.crdPlural = crdPlural;
+    }
+
     // ****************************************
     // Copy
     // ****************************************
@@ -424,14 +492,16 @@ public class KubernetesConfiguration implements Cloneable {
     @Override
     public String toString() {
         return "KubernetesConfiguration [masterUrl=" + masterUrl + ", category=" + category + ", kubernetesClient="
-                + kubernetesClient + ", username=" + username + ", password=" + password + ", operation=" + operation
-                + ", apiVersion=" + apiVersion + ", caCertData=" + caCertData + ", caCertFile=" + caCertFile
-                + ", clientCertData=" + clientCertData + ", clientCertFile=" + clientCertFile + ", clientKeyAlgo="
-                + clientKeyAlgo + ", clientKeyData=" + clientKeyData + ", clientKeyFile=" + clientKeyFile
-                + ", clientKeyPassphrase=" + clientKeyPassphrase + ", oauthToken=" + oauthToken + ", trustCerts="
-                + trustCerts + ", namespace=" + namespace + ", labelKey=" + labelKey + ", labelValue=" + labelValue
-                + ", resourceName=" + resourceName + ", portName=" + portName + ", dnsDomain=" + dnsDomain
-                + ", poolSize=" + poolSize + ", connectionTimeout=" + connectionTimeout + "]";
+               + kubernetesClient + ", username=" + username + ", password="
+               + password + ", operation=" + operation + ", apiVersion=" + apiVersion + ", caCertData=" + caCertData
+               + ", caCertFile=" + caCertFile + ", clientCertData="
+               + clientCertData + ", clientCertFile=" + clientCertFile + ", clientKeyAlgo=" + clientKeyAlgo + ", clientKeyData="
+               + clientKeyData + ", clientKeyFile="
+               + clientKeyFile + ", clientKeyPassphrase=" + clientKeyPassphrase + ", oauthToken=" + oauthToken + ", trustCerts="
+               + trustCerts + ", namespace=" + namespace
+               + ", labelKey=" + labelKey + ", labelValue=" + labelValue + ", resourceName=" + resourceName + ", portName="
+               + portName + ", dnsDomain=" + dnsDomain + ", poolSize="
+               + poolSize + ", connectionTimeout=" + connectionTimeout + "]";
     }
 
 }

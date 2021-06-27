@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,10 +23,10 @@ import org.jsmpp.bean.TypeOfNumber;
 import org.jsmpp.session.BindParameter;
 import org.jsmpp.session.SMPPSession;
 import org.jsmpp.session.SessionStateListener;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -36,20 +36,21 @@ import static org.mockito.Mockito.when;
  * JUnit test class for <code>org.apache.camel.component.smpp.SmppProducer</code>
  */
 public class SmppProducerTest {
-    
+
     private SmppProducer producer;
     private SmppConfiguration configuration;
     private SmppEndpoint endpoint;
     private SMPPSession session;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         configuration = new SmppConfiguration();
         configuration.setServiceType("CMT");
         configuration.setSystemType("cp");
+        configuration.setPassword("password");
         endpoint = mock(SmppEndpoint.class);
         session = mock(SMPPSession.class);
-        
+
         producer = new SmppProducer(endpoint, configuration) {
             SMPPSession createSMPPSession() {
                 return session;
@@ -60,7 +61,7 @@ public class SmppProducerTest {
     @Test
     public void doStartShouldStartANewSmppSession() throws Exception {
         when(endpoint.getConnectionString())
-            .thenReturn("smpp://smppclient@localhost:2775");
+                .thenReturn("smpp://smppclient@localhost:2775");
         BindParameter expectedBindParameters = new BindParameter(
                 BindType.BIND_TX,
                 "smppclient",
@@ -69,40 +70,40 @@ public class SmppProducerTest {
                 TypeOfNumber.UNKNOWN,
                 NumberingPlanIndicator.UNKNOWN,
                 "");
-        when(session.connectAndBind("localhost", new Integer(2775), expectedBindParameters))
-            .thenReturn("1");
+        when(session.connectAndBind("localhost", Integer.valueOf(2775), expectedBindParameters))
+                .thenReturn("1");
         when(endpoint.isSingleton()).thenReturn(true);
-    
+
         producer.doStart();
-    
-        verify(session).setEnquireLinkTimer(5000);
+
+        verify(session).setEnquireLinkTimer(60000);
         verify(session).setTransactionTimer(10000);
         verify(session).addSessionStateListener(isA(SessionStateListener.class));
-        verify(session).connectAndBind("localhost", new Integer(2775), expectedBindParameters);
+        verify(session).connectAndBind("localhost", Integer.valueOf(2775), expectedBindParameters);
     }
 
     @Test
     public void doStopShouldNotCloseTheSMPPSessionIfItIsNull() throws Exception {
         when(endpoint.getConnectionString())
-            .thenReturn("smpp://smppclient@localhost:2775");
+                .thenReturn("smpp://smppclient@localhost:2775");
         when(endpoint.isSingleton()).thenReturn(true);
 
         producer.doStop();
     }
-    
+
     @Test
     public void doStopShouldCloseTheSMPPSession() throws Exception {
         when(endpoint.getConnectionString())
-            .thenReturn("smpp://smppclient@localhost:2775");
+                .thenReturn("smpp://smppclient@localhost:2775");
         when(endpoint.isSingleton()).thenReturn(true);
 
         producer.doStart();
         producer.doStop();
-        
+
         verify(session).removeSessionStateListener(isA(SessionStateListener.class));
         verify(session).unbindAndClose();
     }
-    
+
     @Test
     public void processInOnlyShouldExecuteTheCommand() throws Exception {
         SmppBinding binding = mock(SmppBinding.class);
@@ -110,13 +111,13 @@ public class SmppProducerTest {
         SmppCommand command = mock(SmppCommand.class);
         when(endpoint.getBinding()).thenReturn(binding);
         when(binding.createSmppCommand(session, exchange)).thenReturn(command);
-        
+
         producer.doStart();
         producer.process(exchange);
-        
+
         verify(command).execute(exchange);
     }
-    
+
     @Test
     public void getterShouldReturnTheSetValues() {
         assertSame(endpoint, producer.getEndpoint());

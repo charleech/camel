@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.TagImageCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -37,20 +36,18 @@ public class TagImageCmdHeaderTest extends BaseDockerHeaderTest<TagImageCmd> {
     private TagImageCmd mockObject;
 
     @Test
-    public void tagImageHeaderTest() {
+    void tagImageHeaderTest() {
 
         String imageId = "be29975e0098";
         String repository = "docker/empty";
         String tag = "1.0";
         boolean force = true;
 
-
         Map<String, Object> headers = getDefaultParameters();
         headers.put(DockerConstants.DOCKER_IMAGE_ID, imageId);
         headers.put(DockerConstants.DOCKER_REPOSITORY, repository);
         headers.put(DockerConstants.DOCKER_TAG, tag);
         headers.put(DockerConstants.DOCKER_FORCE, force);
-
 
         template.sendBodyAndHeaders("direct:in", "", headers);
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,8 @@ public class BigDecimalFormatFactory extends AbstractFormatFactory {
 
     @Override
     public Format<?> build(FormattingOptions formattingOptions) {
-        return new BigDecimalFormat(formattingOptions.isImpliedDecimalSeparator(),
+        return new BigDecimalFormat(
+                formattingOptions.isImpliedDecimalSeparator(),
                 formattingOptions.getPrecision(),
                 formattingOptions.getLocale());
     }
@@ -49,12 +50,14 @@ public class BigDecimalFormatFactory extends AbstractFormatFactory {
             super(impliedDecimalPosition, precision, locale);
         }
 
+        @Override
         public String format(BigDecimal object) throws Exception {
             return !super.hasImpliedDecimalPosition()
                     ? super.getFormat().format(object)
                     : super.getFormat().format(object.multiply(new BigDecimal(super.getMultiplier())));
         }
 
+        @Override
         public BigDecimal parse(String string) throws Exception {
             BigDecimal result = new BigDecimal(string.trim());
             if (super.hasImpliedDecimalPosition()) {

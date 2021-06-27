@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,30 +20,28 @@ import java.util.UUID;
 
 import org.apache.camel.component.openstack.cinder.producer.VolumeProducer;
 import org.apache.camel.component.openstack.common.OpenstackConstants;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.storage.BlockVolumeService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.storage.block.Volume;
 import org.openstack4j.model.storage.block.builder.VolumeBuilder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class VolumeProducerTest extends CinderProducerTestSupport {
 
     @Mock
@@ -66,7 +64,7 @@ public class VolumeProducerTest extends CinderProducerTestSupport {
 
     private Volume dummyVolume;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(blockStorageService.volumes()).thenReturn(volumeService);
 
@@ -110,24 +108,7 @@ public class VolumeProducerTest extends CinderProducerTestSupport {
         assertEquals(id, idCaptor.getValue());
         assertEquals(name, nameCaptor.getValue());
         assertEquals(desc, descCaptor.getValue());
-        assertFalse(msg.isFault());
         assertNull(msg.getBody());
-    }
-
-    @Test
-    public void updateVolumeFailTest() throws Exception {
-        final String faultMessage = "fault";
-        when(volumeService.update(anyString(), anyString(), anyString())).thenReturn(ActionResponse.actionFailed(faultMessage, 401));
-
-        msg.setHeader(OpenstackConstants.OPERATION, OpenstackConstants.UPDATE);
-        final String id = "id";
-        msg.setHeader(OpenstackConstants.ID, id);
-        msg.setBody(createTestVolume());
-
-        producer.process(exchange);
-
-        assertTrue(msg.isFault());
-        assertTrue(msg.getBody(String.class).contains(faultMessage));
     }
 
     @Test
@@ -150,8 +131,6 @@ public class VolumeProducerTest extends CinderProducerTestSupport {
 
         verify(volumeService).delete(captor.capture());
         assertEquals(id, captor.getValue());
-
-        assertFalse(msg.isFault());
     }
 
     private void assertEqualVolumes(Volume old, Volume newVolume) {

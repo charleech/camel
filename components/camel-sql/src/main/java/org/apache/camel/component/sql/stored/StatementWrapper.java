@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import org.apache.camel.Exchange;
 
 /**
- * Wrapper that simplifies operations on  {@link java.sql.CallableStatement} in {@link SqlStoredProducer}.
- * Wrappers are stateful objects and must not be reused.
+ * Wrapper that simplifies operations on {@link java.sql.CallableStatement} in {@link SqlStoredProducer}. Wrappers are
+ * stateful objects and must not be reused.
  */
 public interface StatementWrapper {
 

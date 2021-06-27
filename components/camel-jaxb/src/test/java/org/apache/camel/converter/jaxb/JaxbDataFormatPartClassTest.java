@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,18 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.example.Address;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JaxbDataFormatPartClassTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:marshall")
+    private static final Logger LOG = LoggerFactory.getLogger(JaxbDataFormatPartClassTest.class);
+
+    @EndpointInject("mock:marshall")
     private MockEndpoint mockMarshall;
 
     @Test
@@ -44,7 +50,7 @@ public class JaxbDataFormatPartClassTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
 
         String payload = mockMarshall.getExchanges().get(0).getIn().getBody(String.class);
-        log.info(payload);
+        LOG.info(payload);
 
         assertTrue(payload.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"));
         assertTrue(payload.contains("<address:address"));
@@ -66,7 +72,7 @@ public class JaxbDataFormatPartClassTest extends CamelTestSupport {
             public void configure() throws Exception {
                 JaxbDataFormat jaxbDataFormat = new JaxbDataFormat();
                 jaxbDataFormat.setContextPath(Address.class.getPackage().getName());
-                jaxbDataFormat.setPartClass("org.apache.camel.example.Address");
+                jaxbDataFormat.setPartClass(Address.class);
                 jaxbDataFormat.setPartNamespace(new QName("http://www.camel.apache.org/jaxb/example/address/1", "address"));
                 jaxbDataFormat.setPrettyPrint(true);
 

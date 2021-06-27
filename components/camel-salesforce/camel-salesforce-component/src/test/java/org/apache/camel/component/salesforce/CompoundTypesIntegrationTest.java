@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,15 +19,21 @@ package org.apache.camel.component.salesforce;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.salesforce.api.dto.CreateSObjectResult;
 import org.apache.camel.component.salesforce.dto.generated.Account;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
- * Test support for Salesforce compound data types.
- * This test requires a custom field in the <code>Account</code> object
+ * Test support for Salesforce compound data types. This test requires a custom field in the <code>Account</code> object
  * called <code>"Shipping Location"</code> of type <code>Geolocation</code> in decimal units.
- * @see <a href="https://www.salesforce.com/developer/docs/api/index_Left.htm#CSHID=compound_fields.htm|StartTopic=Content%2Fcompound_fields.htm|SkinName=webhelp">Compound data types</a>
+ * 
+ * @see <a href=
+ *      "https://www.salesforce.com/developer/docs/api/index_Left.htm#CSHID=compound_fields.htm|StartTopic=Content%2Fcompound_fields.htm|SkinName=webhelp">Compound
+ *      data types</a>
  */
 public class CompoundTypesIntegrationTest extends AbstractSalesforceTestBase {
 
@@ -64,10 +70,10 @@ public class CompoundTypesIntegrationTest extends AbstractSalesforceTestBase {
         account.setShipping_Location__Latitude__s(37.793779);
         account.setShipping_Location__Longitude__s(-122.39448);
 
-        CreateSObjectResult result = template().requestBody("direct:createSObject" + suffix,
-            account, CreateSObjectResult.class);
+        CreateSObjectResult result
+                = template().requestBody("direct:createSObject" + suffix, account, CreateSObjectResult.class);
         assertNotNull(result);
-        assertTrue("Create success", result.getSuccess());
+        assertTrue(result.getSuccess(), "Create success");
         LOG.debug("Create: " + result);
 
         try {
@@ -75,12 +81,12 @@ public class CompoundTypesIntegrationTest extends AbstractSalesforceTestBase {
             // get account with compound fields
             account = template().requestBody("direct:getSObject" + suffix, result.getId(), Account.class);
             assertNotNull(account);
-            assertNotNull("Billing Address", account.getBillingAddress());
-            assertNotNull("Shipping Address", account.getShippingAddress());
-            assertNotNull("Shipping Location", account.getShippingAddress());
+            assertNotNull(account.getBillingAddress(), "Billing Address");
+            assertNotNull(account.getShippingAddress(), "Shipping Address");
+            assertNotNull(account.getShippingAddress(), "Shipping Location");
 
-            LOG.debug("Retrieved fields billing address: {}, shipping location: {}",
-                account.getBillingAddress(), account.getShipping_Location__c());
+            LOG.debug("Retrieved fields billing address: {}, shipping location: {}", account.getBillingAddress(),
+                    account.getShipping_Location__c());
 
         } finally {
             // delete the test SObject
@@ -95,25 +101,21 @@ public class CompoundTypesIntegrationTest extends AbstractSalesforceTestBase {
             @Override
             public void configure() throws Exception {
                 // testCreateSObject
-                from("direct:createSObject")
-                    .to("salesforce:createSObject?sObjectName=Account");
+                from("direct:createSObject").to("salesforce:createSObject?sObjectName=Account");
 
-                from("direct:createSObjectXml")
-                    .to("salesforce:createSObject?format=XML&sObjectName=Account");
+                from("direct:createSObjectXml").to("salesforce:createSObject?format=XML&sObjectName=Account");
 
                 // testGetSObject
-                from("direct:getSObject")
-                    .to("salesforce:getSObject?sObjectName=Account&sObjectFields=Id,BillingAddress,ShippingAddress,Shipping_Location__c");
+                from("direct:getSObject").to(
+                        "salesforce:getSObject?sObjectName=Account&sObjectFields=Id,BillingAddress,ShippingAddress,Shipping_Location__c");
 
-                from("direct:getSObjectXml")
-                    .to("salesforce:getSObject?format=XML&sObjectName=Account&sObjectFields=Id,BillingAddress,ShippingAddress,Shipping_Location__c");
+                from("direct:getSObjectXml").to(
+                        "salesforce:getSObject?format=XML&sObjectName=Account&sObjectFields=Id,BillingAddress,ShippingAddress,Shipping_Location__c");
 
                 // testDeleteSObject
-                from("direct:deleteSObject")
-                    .to("salesforce:deleteSObject?sObjectName=Account");
+                from("direct:deleteSObject").to("salesforce:deleteSObject?sObjectName=Account");
 
-                from("direct:deleteSObjectXml")
-                    .to("salesforce:deleteSObject?format=XML&sObjectName=Account");
+                from("direct:deleteSObjectXml").to("salesforce:deleteSObject?format=XML&sObjectName=Account");
             }
         };
     }

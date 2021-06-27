@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,37 +23,37 @@ import com.googlecode.jsendnsca.Level;
 import com.googlecode.jsendnsca.MessagePayload;
 import com.googlecode.jsendnsca.NagiosPassiveCheckSender;
 import com.googlecode.jsendnsca.PassiveCheckSender;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-
 public class NagiosTest extends CamelTestSupport {
     @Mock
+    @BindToRegistry("mySender")
     protected static PassiveCheckSender nagiosPassiveCheckSender;
 
     protected boolean canRun;
 
-    @BeforeClass
+    @BeforeAll
     public static void setSender() {
-        nagiosPassiveCheckSender =  Mockito.mock(NagiosPassiveCheckSender.class);
+        nagiosPassiveCheckSender = Mockito.mock(NagiosPassiveCheckSender.class);
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         canRun = true;
         super.setUp();
     }
-
 
     @Test
     public void testSendToNagios() throws Exception {
@@ -61,7 +61,7 @@ public class NagiosTest extends CamelTestSupport {
             return;
         }
 
-        MessagePayload expectedPayload = new MessagePayload("localhost", Level.OK, context.getName(),  "Hello Nagios");
+        MessagePayload expectedPayload = new MessagePayload("localhost", Level.OK, context.getName(), "Hello Nagios");
 
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(1);
@@ -81,8 +81,8 @@ public class NagiosTest extends CamelTestSupport {
             return;
         }
 
-        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.OK, context.getName(),  "Hello Nagios");
-        MessagePayload expectedPayload2 = new MessagePayload("localhost", Level.OK, context.getName(),  "Bye Nagios");
+        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.OK, context.getName(), "Hello Nagios");
+        MessagePayload expectedPayload2 = new MessagePayload("localhost", Level.OK, context.getName(), "Bye Nagios");
 
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(2);
@@ -104,7 +104,7 @@ public class NagiosTest extends CamelTestSupport {
             return;
         }
 
-        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.WARNING, context.getName(),  "Hello Nagios");
+        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.WARNING, context.getName(), "Hello Nagios");
 
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(1);
@@ -122,7 +122,7 @@ public class NagiosTest extends CamelTestSupport {
             return;
         }
 
-        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.WARNING, context.getName(),  "Hello Nagios");
+        MessagePayload expectedPayload1 = new MessagePayload("localhost", Level.WARNING, context.getName(), "Hello Nagios");
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived("Hello Nagios");
@@ -140,7 +140,7 @@ public class NagiosTest extends CamelTestSupport {
             return;
         }
 
-        MessagePayload expectedPayload1 = new MessagePayload("myHost", Level.CRITICAL, "myService",  "Hello Nagios");
+        MessagePayload expectedPayload1 = new MessagePayload("myHost", Level.CRITICAL, "myService", "Hello Nagios");
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived("Hello Nagios");
@@ -160,16 +160,8 @@ public class NagiosTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                String uri = "nagios:127.0.0.1:25664?password=secret";
-
-                NagiosComponent nagiosComponent = new NagiosComponent();
-                nagiosComponent.setCamelContext(context);
-                NagiosEndpoint nagiosEndpoint = (NagiosEndpoint) nagiosComponent.createEndpoint(uri);
-                nagiosEndpoint.setSender(nagiosPassiveCheckSender);
-                nagiosEndpoint.createProducer();
-
                 from("direct:start")
-                        .to(nagiosEndpoint)
+                        .to("nagios:127.0.0.1:25664?password=secret&sender=#mySender")
                         .to("mock:result");
             }
         };

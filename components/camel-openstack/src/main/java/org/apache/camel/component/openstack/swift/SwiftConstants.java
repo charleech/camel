@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ public final class SwiftConstants extends OpenstackConstants {
     public static final String CREATE_UPDATE_METADATA = "createUpdateMetadata";
     public static final String DELETE_METADATA = "deleteMetadata";
 
-    private SwiftConstants() { }
+    private SwiftConstants() {
+    }
 
 }

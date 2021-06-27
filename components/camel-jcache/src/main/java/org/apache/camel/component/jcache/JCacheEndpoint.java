@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.jcache;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -26,16 +27,17 @@ import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The jcache component enables you to perform caching operations using JSR107/JCache as cache implementation.
+ * Perform caching operations against JSR107/JCache.
  */
-@UriEndpoint(firstVersion = "2.17.0", scheme = "jcache", title = "JCache", syntax = "jcache:cacheName", label = "cache,datagrid,clustering")
+@UriEndpoint(firstVersion = "2.17.0", scheme = "jcache", title = "JCache", syntax = "jcache:cacheName",
+             category = { Category.CACHE, Category.DATAGRID, Category.CLUSTERING })
 public class JCacheEndpoint extends DefaultEndpoint {
 
     @UriPath(description = "The name of the cache")
     @Metadata(required = true)
     private final String cacheName;
     @UriParam
-    private final JCacheConfiguration cacheConfiguration;
+    private final JCacheConfiguration configuration;
 
     private volatile JCacheManager<Object, Object> cacheManager;
 
@@ -43,27 +45,28 @@ public class JCacheEndpoint extends DefaultEndpoint {
         super(uri, component);
 
         this.cacheName = configuration.getCacheName();
-        this.cacheConfiguration = configuration;
+        this.configuration = configuration;
+    }
+
+    public JCacheConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override
     public Producer createProducer() throws Exception {
-        return new JCacheProducer(this, cacheConfiguration);
+        return new JCacheProducer(this, configuration);
     }
 
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new JCacheConsumer(this, processor);
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
+        JCacheConsumer consumer = new JCacheConsumer(this, processor);
+        configureConsumer(consumer);
+        return consumer;
     }
 
     @Override
     protected void doStart() throws Exception {
-        cacheManager = JCacheHelper.createManager(cacheConfiguration);
+        cacheManager = JCacheHelper.createManager(configuration);
     }
 
     @Override

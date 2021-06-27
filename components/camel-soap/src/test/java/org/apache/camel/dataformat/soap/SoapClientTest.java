@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,16 +26,18 @@ import org.apache.camel.Produce;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.soap.name.ElementNameStrategy;
 import org.apache.camel.dataformat.soap.name.ServiceInterfaceStrategy;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Test that uses a dynamic proxy for CustomerService to send a request as SOAP
- * and work with a static return SOAP message.
+ * Test that uses a dynamic proxy for CustomerService to send a request as SOAP and work with a static return SOAP
+ * message.
  */
 public class SoapClientTest extends CamelTestSupport {
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     CustomerService customerService;
 
     @Test

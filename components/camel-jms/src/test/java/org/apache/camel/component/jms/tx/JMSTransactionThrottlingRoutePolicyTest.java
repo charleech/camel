@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 package org.apache.camel.component.jms.tx;
+
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 
 public class JMSTransactionThrottlingRoutePolicyTest extends CamelSpringTestSupport {
 
     private int size = 200;
 
+    @Override
     protected ClassPathXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext(
-            "/org/apache/camel/component/jms/tx/JMSTransactionThrottlingRoutePolicyTest.xml");
+                "/org/apache/camel/component/jms/tx/JMSTransactionThrottlingRoutePolicyTest.xml");
     }
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("activemq-data");
         super.setUp();

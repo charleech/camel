@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ public abstract class BindyAbstractDataFormat extends ServiceSupport implements 
     private Class<?> classType;
     private CamelContext camelContext;
     private boolean unwrapSingleInstance = true;
+    private boolean allowEmptyStream;
 
     public BindyAbstractDataFormat() {
     }
@@ -80,6 +81,14 @@ public abstract class BindyAbstractDataFormat extends ServiceSupport implements 
         this.unwrapSingleInstance = unwrapSingleInstance;
     }
 
+    public boolean isAllowEmptyStream() {
+        return allowEmptyStream;
+    }
+
+    public void setAllowEmptyStream(boolean allowEmptyStream) {
+        this.allowEmptyStream = allowEmptyStream;
+    }
+
     public BindyAbstractFactory getFactory() throws Exception {
         if (modelFactory == null) {
             FormatFactory formatFactory = createFormatFactory();
@@ -90,9 +99,11 @@ public abstract class BindyAbstractDataFormat extends ServiceSupport implements 
         return modelFactory;
     }
 
-    private void registerAdditionalConverter(FormatFactory formatFactory) throws IllegalAccessException, InstantiationException {
+    private void registerAdditionalConverter(FormatFactory formatFactory)
+            throws IllegalAccessException, InstantiationException {
         Function<Class<?>, FormatFactories> g = aClass -> aClass.getAnnotation(FormatFactories.class);
-        Function<FormatFactories, List<Class<? extends FormatFactoryInterface>>> h = formatFactories -> Arrays.asList(formatFactories.value());
+        Function<FormatFactories, List<Class<? extends FormatFactoryInterface>>> h
+                = formatFactories -> Arrays.asList(formatFactories.value());
         List<Class<? extends FormatFactoryInterface>> array = Optional
                 .ofNullable(classType)
                 .map(g)

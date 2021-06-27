@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,9 +17,9 @@
 package org.apache.camel.component.xquery;
 
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class XQueryExampleTest extends CamelSpringTestSupport {
 
@@ -30,12 +30,13 @@ public class XQueryExampleTest extends CamelSpringTestSupport {
                                     + "<lastName>Strachan</lastName></name><location><city>London</city></location></employee>");
 
         template.sendBody("direct:start", "<person user='James'><firstName>James</firstName>"
-                          + "<lastName>Strachan</lastName><city>London</city></person>");
+                                          + "<lastName>Strachan</lastName><city>London</city></person>");
 
         assertMockEndpointsSatisfied();
     }
 
-    protected ClassPathXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/xquery/xqueryExampleTest.xml");
+    @Override
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return newAppContext("xqueryExampleTest.xml");
     }
 }

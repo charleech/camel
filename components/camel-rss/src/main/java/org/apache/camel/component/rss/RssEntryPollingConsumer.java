@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.rss;
 import java.util.Collections;
 import java.util.Date;
 
-import com.sun.syndication.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeed;
 import org.apache.camel.Processor;
 import org.apache.camel.component.feed.EntryFilter;
 import org.apache.camel.component.feed.FeedEntryPollingConsumer;
@@ -30,7 +30,8 @@ import org.apache.camel.util.ObjectHelper;
  */
 public class RssEntryPollingConsumer extends FeedEntryPollingConsumer {
 
-    public RssEntryPollingConsumer(RssEndpoint endpoint, Processor processor, boolean filter, Date lastUpdate, boolean throttleEntries) {
+    public RssEntryPollingConsumer(RssEndpoint endpoint, Processor processor, boolean filter, Date lastUpdate,
+                                   boolean throttleEntries) {
         super(endpoint, processor, filter, lastUpdate, throttleEntries);
     }
 
@@ -55,7 +56,8 @@ public class RssEntryPollingConsumer extends FeedEntryPollingConsumer {
         if (ObjectHelper.isEmpty(endpoint.getUsername()) || ObjectHelper.isEmpty(endpoint.getPassword())) {
             return RssUtils.createFeed(endpoint.getFeedUri(), RssEntryPollingConsumer.class.getClassLoader());
         } else {
-            return RssUtils.createFeed(endpoint.getFeedUri(), endpoint.getUsername(), endpoint.getPassword(), RssEntryPollingConsumer.class.getClassLoader());
+            return RssUtils.createFeed(endpoint.getFeedUri(), endpoint.getUsername(), endpoint.getPassword(),
+                    RssEntryPollingConsumer.class.getClassLoader());
         }
     }
 
@@ -64,6 +66,7 @@ public class RssEntryPollingConsumer extends FeedEntryPollingConsumer {
         list = null;
     }
 
+    @Override
     protected EntryFilter createEntryFilter(Date lastUpdate) {
         return new UpdatedDateFilter(lastUpdate);
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,7 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 
 /**
- * An optional interface that a {@link JmsEndpoint} may implement to return the
- * underlying {@link Destination} object
+ * An optional interface that a {@link JmsEndpoint} may implement to return the underlying {@link Destination} object
  */
 public interface DestinationEndpoint {
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,5 +22,9 @@ import org.apache.camel.Exchange;
 public interface GroovyShellFactory {
 
     GroovyShell createGroovyShell(Exchange exchange);
+
+    default String getFileName(Exchange exchange) {
+        return null;
+    }
 
 }

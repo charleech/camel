@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,9 @@ import io.atomix.AtomixClient;
 import io.atomix.AtomixReplica;
 import io.atomix.catalyst.transport.Address;
 import org.apache.camel.Component;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.support.SimpleRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public abstract class AtomixClientTestSupport extends CamelTestSupport {
     protected Address replicaAddress;
@@ -31,11 +32,11 @@ public abstract class AtomixClientTestSupport extends CamelTestSupport {
     protected AtomixClient client;
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
+    protected Registry createCamelRegistry() {
+        SimpleRegistry registry = new SimpleRegistry();
 
         createComponents().entrySet().stream()
-            .forEach(e -> registry.bind(e.getKey(), e.getValue()));
+                .forEach(e -> registry.bind(e.getKey(), e.getValue()));
 
         return registry;
     }

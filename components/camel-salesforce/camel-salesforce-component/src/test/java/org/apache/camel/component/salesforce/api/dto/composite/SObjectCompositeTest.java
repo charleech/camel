@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
 import org.apache.camel.component.salesforce.api.dto.AbstractDescribedSObjectBase;
 import org.apache.camel.component.salesforce.api.dto.SObjectDescription;
 import org.apache.camel.component.salesforce.api.utils.JsonUtils;
@@ -30,7 +29,7 @@ import org.apache.camel.component.salesforce.dto.generated.Account;
 import org.apache.camel.component.salesforce.dto.generated.Account_IndustryEnum;
 import org.apache.camel.component.salesforce.dto.generated.Contact;
 import org.apache.commons.io.IOUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +38,10 @@ public class SObjectCompositeTest {
     // CHECKSTYLE:OFF
     @JsonPropertyOrder({"account__c", "contactId__c"})
     public static class AccountContactJunction__c extends AbstractDescribedSObjectBase {
+
+        public AccountContactJunction__c() {
+            getAttributes().setType("AccountContactJunction__c");
+        }
 
         private String account__c;
 
@@ -67,12 +70,12 @@ public class SObjectCompositeTest {
     }
     // CHECKSTYLE:ON
 
-    @JsonPropertyOrder({"Name", "BillingStreet", "BillingCity", "BillingState", "Industry"})
+    @JsonPropertyOrder({ "Name", "BillingStreet", "BillingCity", "BillingState", "Industry" })
     public static class TestAccount extends Account {
         // just for property order
     }
 
-    @JsonPropertyOrder({"LastName", "Phone"})
+    @JsonPropertyOrder({ "LastName", "Phone" })
     public static class TestContact extends Contact {
         // just for property order
     }
@@ -105,17 +108,17 @@ public class SObjectCompositeTest {
     @Test
     public void shouldSerializeToJson() throws IOException {
 
-        final String expectedJson = IOUtils.toString(
-            SObjectCompositeTest.class
-                .getResourceAsStream("/org/apache/camel/component/salesforce/api/dto/composite_request_example.json"),
-            StandardCharsets.UTF_8);
+        final String expectedJson = IOUtils
+                .toString(
+                        SObjectCompositeTest.class.getResourceAsStream(
+                                "/org/apache/camel/component/salesforce/api/dto/composite_request_example.json"),
+                        StandardCharsets.UTF_8);
 
-        final ObjectMapper mapper = JsonUtils.createObjectMapper().copy()
-            .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
-            .configure(SerializationFeature.INDENT_OUTPUT, true);
+        final ObjectMapper mapper
+                = JsonUtils.createObjectMapper().copy().configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+                        .configure(SerializationFeature.INDENT_OUTPUT, true);
 
         final String serialized = mapper.writerFor(SObjectComposite.class).writeValueAsString(composite);
-
         assertThat(serialized).as("Should serialize as expected by Salesforce").isEqualTo(expectedJson);
     }
 }

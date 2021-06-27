@@ -1,66 +1,52 @@
 [[cxf-component]]
-== CXF Component
+= CXF Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-cxf/src/main/docs/cxf-component.adoc
+:docTitle: CXF
+:artifactId: camel-cxf
+:description: Expose SOAP WebServices using Apache CXF or connect to external WebServices using CXF WS client.
+:since: 1.0
+:supportLevel: Stable
+:component-header: Both producer and consumer are supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/cxf.adoc[opts=optional]
 
-*Available as of Camel version 1.0*
+*Since Camel {since}*
 
-NOTE: When using Apache CXF as a consumer, the link:cxf-bean-component.html[CXF Bean
-Component] allows you to factor out how message payloads are received
-from their processing as a RESTful or SOAP web service. This has the
-potential of using a multitude of transports to consume web services.
-The bean component's configuration is also simpler and provides the
-fastest method to implement web services using Camel and CXF.
+*{component-header}*
 
-TIP: When using CXF in streaming modes (see DataFormat option), then also
+[TIP]
+====
+When using CXF in streaming modes (see DataFormat option), then also
 read about Stream caching.
+====
 
-The *cxf:* component provides integration with
+The CXF component provides integration with
 http://cxf.apache.org[Apache CXF] for connecting to http://cxf.apache.org/docs/jax-ws.html[JAX-WS] services
 hosted in CXF.
 
-* link:#cxf-component[CXF Component]
-** link:#uri-format[URI format]
-** link:#options[Options]
-*** link:#descriptions-of-the-dataformats[Descriptions of the
-dataformats]
-**** link:#how-to-enable-cxfs-loggingoutinterceptor-in-message-mode[How to
-enable CXF's LoggingOutInterceptor in MESSAGE mode]
-*** link:#description-of-relayheaders-option[Description of
-relayHeaders option]
-**** link:#available-only-in-pojo-mode[Available only in POJO mode]
-**** link:#changes-since-release20[Changes since Release 2.0]
-** link:#configure-the-cxf-endpoints-with-spring[Configure the CXF
-endpoints with Spring]
-** link:#configuring-the-cxf-endpoints-with-apache-aries-blueprint[Configuring
-the CXF Endpoints with Apache Aries Blueprint.]
-** link:#how-to-make-the-camel-cxf-component-use-log4j-instead-of-javautillogging[How
-to make the camel-cxf component use log4j instead of java.util.logging]
-** link:#how-to-let-camel-cxf-response-message-with-xml-start-document[How to
-let camel-cxf response message with xml start document]
-** link:#how-to-override-the-cxf-producer-address-from-message-header[How to
-override the CXF producer address from message header]
-** link:#how-to-consume-a-message-from-a-camel-cxf-endpoint-in-pojo-data-format[How
-to consume a message from a camel-cxf endpoint in POJO data format]
-** link:#how-to-prepare-the-message-for-the-camel-cxf-endpoint-in-pojo-data-format[How
-to prepare the message for the camel-cxf endpoint in POJO data format]
-** link:#how-to-deal-with-the-message-for-a-camel-cxf-endpoint-in-payload-dataformat[How
-to deal with the message for a camel-cxf endpoint in PAYLOAD data
-format]
-** link:#how-to-get-and-set-soap-headers-in-pojo-mode[How to get and set SOAP
-headers in POJO mode]
-** link:#how-to-get-and-set-soap-headers-in-payload-mode[How to get and set
-SOAP headers in PAYLOAD mode]
-** link:#soap-headers-are-not-available-in-message-mode[SOAP headers are
-not available in MESSAGE mode]
-** link:#how-to-throw-a-soap-fault-from-camel[How to throw a SOAP Fault
-from Camel]
-** link:#how-to-propagate-a-camel-cxf-endpoints-request-and-response-context[How
-to propagate a camel-cxf endpoint's request and response context]
-** link:#attachment-support[Attachment Support]
-** link:#streaming-support-in-payload-mode[Streaming Support in PAYLOAD
-mode]
-** link:#using-the-generic-cxf-dispatch-mode[Using the generic CXF
-Dispatch mode]
-** link:#see-also[See Also]
+* <<URI format>>
+* <<Options>>
+** <<Descriptions of the dataformats>>
+*** <<cxf-loggingout-interceptor-in-message-mode,How to enable CXF's LoggingOutInterceptor in MESSAGE mode>>
+** <<Description of relayHeaders option>>
+*** <<Available only in POJO mode>>
+*** Changes since Release 2.0
+* <<Configure the CXF endpoints with Spring>>
+* <<Configuring the CXF Endpoints with Apache Aries Blueprint>>
+* <<How to make the camel-cxf component use log4j instead of java.util.logging>>
+* <<How to let camel-cxf response message with xml start document>>
+* <<How to override the CXF producer address from message header>>
+* <<How to consume a message from a camel-cxf endpoint in POJO data format>>
+* <<How to prepare the message for the camel-cxf endpoint in POJO data format>>
+* <<How to deal with the message for a camel-cxf endpoint in PAYLOAD data format>>
+* <<How to get and set SOAP headers in POJO mode>>
+* <<How to get and set SOAP headers in PAYLOAD mode>>
+* <<SOAP headers are not available in MESSAGE mode>>
+* <<How to throw a SOAP Fault from Camel>>
+* <<propagate-request-response-context,How to propagate a camel-cxf endpoint's request and response context>>
+* <<Attachment Support>>
+* <<Streaming Support in PAYLOAD mode>>
+* <<Using the generic CXF Dispatch mode>>
 
 Maven users must add the following dependency to their `pom.xml`
 for this component:
@@ -76,7 +62,7 @@ for this component:
 ------------------------------------------------------------
 
 
-### URI format
+== URI format
 There are two URI formats for this endpoint: *cxfEndpoint* and *someAddress*.
 
 [source,java]
@@ -104,22 +90,24 @@ For either style above, you can append options to the URI as follows:
 cxf:bean:cxfEndpoint?wsdlURL=wsdl/hello_world.wsdl&dataFormat=PAYLOAD
 ---------------------------------------------------------------------
 
-### Options
+== Options
 
 
 
 // component options: START
-The CXF component supports 4 options, which are listed below.
+The CXF component supports 6 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *allowStreaming* (advanced) | This option controls whether the CXF component, when running in PAYLOAD mode, will DOM parse the incoming messages into DOM Elements or keep the payload as a javax.xml.transform.Source object that would allow streaming in some cases. |  | Boolean
-| *useGlobalSslContext Parameters* (security) | Enable usage of global SSL context parameters. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
 | *headerFilterStrategy* (filter) | To use a custom org.apache.camel.spi.HeaderFilterStrategy to filter header to and from Camel message. |  | HeaderFilterStrategy
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
+| *useGlobalSslContextParameters* (security) | Enable usage of global SSL context parameters. | false | boolean
 |===
 // component options: END
 
@@ -136,7 +124,7 @@ cxf:beanId:address
 
 with the following path and query parameters:
 
-==== Path Parameters (2 parameters):
+=== Path Parameters (2 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -147,35 +135,36 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (34 parameters):
+=== Query Parameters (35 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *dataFormat* (common) | The data type messages supported by the CXF endpoint. | POJO | DataFormat
+| *dataFormat* (common) | The data type messages supported by the CXF endpoint. There are 5 enums and the value can be one of: PAYLOAD, RAW, MESSAGE, CXF_MESSAGE, POJO | POJO | DataFormat
 | *wrappedStyle* (common) | The WSDL style that describes how parameters are represented in the SOAP body. If the value is false, CXF will chose the document-literal unwrapped style, If the value is true, CXF will chose the document-literal wrapped style |  | Boolean
 | *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
 | *exceptionHandler* (consumer) | To let the consumer use a custom ExceptionHandler. Notice if the option bridgeErrorHandler is enabled then this option is not in use. By default the consumer will deal with exceptions, that will be logged at WARN or ERROR level and ignored. |  | ExceptionHandler
-| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. |  | ExchangePattern
+| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. There are 3 enums and the value can be one of: InOnly, InOut, InOptionalOut |  | ExchangePattern
 | *cookieHandler* (producer) | Configure a cookie handler to maintain a HTTP session |  | CookieHandler
 | *defaultOperationName* (producer) | This option will set the default operationName that will be used by the CxfProducer which invokes the remote service. |  | String
 | *defaultOperationNamespace* (producer) | This option will set the default operationNamespace that will be used by the CxfProducer which invokes the remote service. |  | String
 | *hostnameVerifier* (producer) | The hostname verifier to be used. Use the # notation to reference a HostnameVerifier from the registry. |  | HostnameVerifier
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *sslContextParameters* (producer) | The Camel SSL setting reference. Use the # notation to reference the SSL Context. |  | SSLContextParameters
 | *wrapped* (producer) | Which kind of operation that CXF endpoint producer will invoke | false | boolean
+| *synchronous* (producer) | Sets whether synchronous processing should be strictly used | false | boolean
 | *allowStreaming* (advanced) | This option controls whether the CXF component, when running in PAYLOAD mode, will DOM parse the incoming messages into DOM Elements or keep the payload as a javax.xml.transform.Source object that would allow streaming in some cases. |  | Boolean
 | *bus* (advanced) | To use a custom configured CXF Bus. |  | Bus
 | *continuationTimeout* (advanced) | This option is used to set the CXF continuation timeout which could be used in CxfConsumer by default when the CXF server is using Jetty or Servlet transport. | 30000 | long
 | *cxfBinding* (advanced) | To use a custom CxfBinding to control the binding between Camel Message and CXF Message. |  | CxfBinding
-| *cxfEndpointConfigurer* (advanced) | This option could apply the implementation of org.apache.camel.component.cxf.CxfEndpointConfigurer which supports to configure the CXF endpoint in programmatic way. User can configure the CXF server and client by implementing configure{ServerClient} method of CxfEndpointConfigurer. |  | CxfEndpointConfigurer
+| *cxfConfigurer* (advanced) | This option could apply the implementation of org.apache.camel.component.cxf.CxfEndpointConfigurer which supports to configure the CXF endpoint in programmatic way. User can configure the CXF server and client by implementing configure\{ServerClient} method of CxfEndpointConfigurer. |  | CxfConfigurer
 | *defaultBus* (advanced) | Will set the default bus when CXF endpoint create a bus by itself | false | boolean
 | *headerFilterStrategy* (advanced) | To use a custom HeaderFilterStrategy to filter header to and from Camel message. |  | HeaderFilterStrategy
 | *mergeProtocolHeaders* (advanced) | Whether to merge protocol headers. If enabled then propagating headers between Camel and CXF becomes more consistent and similar. For more details see CAMEL-6393. | false | boolean
 | *mtomEnabled* (advanced) | To enable MTOM (attachments). This requires to use POJO or PAYLOAD data format mode. | false | boolean
 | *properties* (advanced) | To set additional CXF options using the key/value pairs from the Map. For example to turn on stacktraces in SOAP faults, properties.faultStackTraceEnabled=true |  | Map
-| *skipPayloadMessagePart Check* (advanced) | Sets whether SOAP message validation should be disabled. | false | boolean
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *skipPayloadMessagePartCheck* (advanced) | Sets whether SOAP message validation should be disabled. | false | boolean
 | *loggingFeatureEnabled* (logging) | This option enables CXF Logging Feature which writes inbound and outbound SOAP messages to log. | false | boolean
 | *loggingSizeLimit* (logging) | To limit the total size of number of bytes the logger will output when logging feature has been enabled and -1 for no limit. | 49152 | int
 | *skipFaultLogging* (logging) | This option controls whether the PhaseInterceptorChain skips logging the Fault that it catches. | false | boolean
@@ -189,24 +178,6 @@ with the following path and query parameters:
 | *wsdlURL* (service) | The location of the WSDL. Can be on the classpath, file system, or be hosted remotely. |  | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 5 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.cxf.allow-streaming* | This option controls whether the CXF component, when running in PAYLOAD mode, will DOM parse the incoming messages into DOM Elements or keep the payload as a javax.xml.transform.Source object that would allow streaming in some cases. |  | Boolean
-| *camel.component.cxf.enabled* | Enable cxf component | true | Boolean
-| *camel.component.cxf.header-filter-strategy* | To use a custom org.apache.camel.spi.HeaderFilterStrategy to filter header to and from Camel message. The option is a org.apache.camel.spi.HeaderFilterStrategy type. |  | String
-| *camel.component.cxf.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-| *camel.component.cxf.use-global-ssl-context-parameters* | Enable usage of global SSL context parameters. | false | Boolean
-|===
-// spring-boot-auto-configure options: END
 
 
 
@@ -215,7 +186,7 @@ http://en.wikipedia.org/wiki/QName[QNames], so if you provide them be
 sure to prefix them with their \{namespace} as shown in the examples
 above.
 
-#### Descriptions of the dataformats
+=== Descriptions of the dataformats
 In Apache Camel, the Camel CXF component is the key to integrating routes with Web services. You can use the Camel CXF component to create a CXF endpoint, which can be used in either of the following ways:
 
 * *Consumer* — (at the start of a route) represents a Web service instance, which integrates with the route. The type of payload injected into the route depends on the value of the endpoint's dataFormat option.
@@ -239,7 +210,7 @@ interceptors will be removed if you are using this kind of DataFormat so
 you can't see any soap headers after the camel-cxf consumer and JAX-WS
 handler is not supported.
 
-|`CXF_MESSAGE` |New in *Camel 2.8.2*, `CXF_MESSAGE` allows for invoking the full
+|`CXF_MESSAGE` |`CXF_MESSAGE` allows for invoking the full
 capabilities of CXF interceptors by converting the message from the
 transport layer into a raw SOAP message
 |=======================================================================
@@ -249,7 +220,8 @@ exchange property, `CamelCXFDataFormat`. The exchange key constant is
 defined in
 `org.apache.camel.component.cxf.common.message.CxfConstants.DATA_FORMAT_PROPERTY`.
 
-#### How to enable CXF's LoggingOutInterceptor in MESSAGE mode
+[#cxf-loggingout-interceptor-in-message-mode]
+=== How to enable CXF's LoggingOutInterceptor in MESSAGE mode
 
 CXF's `LoggingOutInterceptor` outputs outbound message that goes on the
 wire to logging system (Java Util Logging). Since the
@@ -276,7 +248,7 @@ following is an example.
 </cxf:cxfEndpoint>
 -------------------------------------------------------------------------------------------------------
 
-#### Description of relayHeaders option
+=== Description of relayHeaders option
 
 There are _in-band_ and _out-of-band_ on-the-wire headers from the
 perspective of a JAXWS WSDL-first developer.
@@ -295,7 +267,7 @@ be consumed say by another JAXWS endpoint, then `relayHeaders` should be
 set to `true`, which is the default value.
 
 
-#### Available only in POJO mode
+=== Available only in POJO mode
 
 The `relayHeaders=true` express an intent to relay the headers. The
 actual decision on whether a given header is relayed is delegated to a
@@ -339,9 +311,6 @@ Take a look at the tests that show how you'd be able to relay/drop
 headers here:
 
 https://github.com/apache/camel/blob/master/components/camel-cxf/src/test/java/org/apache/camel/component/cxf/soap/headers/CxfMessageHeadersRelayTest.java[https://github.com/apache/camel/blob/master/components/camel-cxf/src/test/java/org/apache/camel/component/cxf/soap/headers/CxfMessageHeadersRelayTest.java]
-
-
-#### Changes since Camel Release  2.0
 
 * `POJO` and `PAYLOAD` modes are supported. In `POJO` mode, only
 out-of-band message headers are available for filtering as the in-band
@@ -419,7 +388,7 @@ value is `false`, it will throw an exception
  _Default_: `false`
 |=======================================================================
 
-### Configure the CXF endpoints with Spring
+== Configure the CXF endpoints with Spring
 
 You can configure the CXF endpoint with the Spring configuration file
 shown below, and you can also embed the endpoint into the `camelContext`
@@ -456,7 +425,7 @@ which operation you are calling.
 Be sure to include the JAX-WS `schemaLocation` attribute specified on
 the root beans element. This allows CXF to validate the file and is
 required. Also note the namespace declarations at the end of the
-`<cxf:cxfEndpoint/>` tag. These declarations are required because the combined `{namespace}localName` syntax is presently not supported for this tag's
+`<cxf:cxfEndpoint/>` tag. These declarations are required because the combined `\{namespace}localName` syntax is presently not supported for this tag's
 attribute values.
 
 The `cxf:cxfEndpoint` element supports many additional attributes:
@@ -531,8 +500,9 @@ interceptors, properties and handlers on the CXF
 http://cxf.apache.org/docs/jax-ws-configuration.html[JAX-WS
 Configuration page].
 
-*NOTE*
- You can use cxf:properties to set the camel-cxf endpoint's dataFormat
+[NOTE]
+====
+You can use cxf:properties to set the camel-cxf endpoint's dataFormat
 and setDefaultBus properties from spring configuration file.
 
 [source,xml]
@@ -548,10 +518,11 @@ and setDefaultBus properties from spring configuration file.
      </cxf:properties>
    </cxf:cxfEndpoint>
 -------------------------------------------------------------------------
+====
 
-### Configuring the CXF Endpoints with Apache Aries Blueprint
+== Configuring the CXF Endpoints with Apache Aries Blueprint
 
-Since Camel 2.8 there is support for utilizing aries blueprint
+The component is capable of utilizing aries blueprint
 dependency injection for your CXF endpoints.
  The schema utilized is very similar to the spring schema so the
 transition is fairly transparent.
@@ -625,7 +596,7 @@ You can also use the bean references just as in spring
 </blueprint>
 ----------------------------------------------------------------------------------------------------------------
 
-### How to make the camel-cxf component use log4j instead of java.util.logging
+== How to make the camel-cxf component use log4j instead of java.util.logging
 
 CXF's default logger is `java.util.logging`. If you want to change it to
 log4j, proceed as follows. Create a file, in the classpath, named
@@ -634,7 +605,7 @@ fully-qualified name of the class,
 `org.apache.cxf.common.logging.Log4jLogger`, with no comments, on a
 single line.
 
-### How to let camel-cxf response message with xml start document
+== How to let camel-cxf response message with xml start document
 
 If you are using some SOAP client such as PHP, you will get this kind of
 error, because CXF doesn't add the XML start document "<?xml
@@ -649,10 +620,7 @@ To resolved this issue, you just need to tell StaxOutInterceptor to
 write the XML start document for you.
 
 You can add a customer interceptor like this and configure it into you
-camel-cxf endpont
-
-Or adding a message header for it like this if you are using *Camel
-2.4*.
+camel-cxf endpont or add a message header for it like
 
 [source,java]
 -------------------------------------------------------------------
@@ -662,9 +630,9 @@ Or adding a message header for it like this if you are using *Camel
  exchange.getOut().setHeader(Client.RESPONSE_CONTEXT, map);
 -------------------------------------------------------------------
 
-### How to override the CXF producer address from message header
+== How to override the CXF producer address from message header
 
-The `camel-cxf` producer supports to override the services address by
+The `camel-cxf` producer supports to override the services address by
 setting the message with the key of "CamelDestinationOverrideUrl".
 
 [source,java]
@@ -673,7 +641,7 @@ setting the message with the key of "CamelDestinationOverrideUrl".
  exchange.getIn().setHeader(Exchange.DESTINATION_OVERRIDE_URL, constant(getServiceAddress()));
 ----------------------------------------------------------------------------------------------
 
-### How to consume a message from a camel-cxf endpoint in POJO data format
+== How to consume a message from a camel-cxf endpoint in POJO data format
 
 The `camel-cxf` endpoint consumer POJO data format is based on the
 http://cxf.apache.org/docs/invokers.html[CXF invoker], so the
@@ -681,7 +649,7 @@ message header has a property with the name of
 `CxfConstants.OPERATION_NAME` and the message body is a list of the SEI
 method parameters.
 
-### How to prepare the message for the camel-cxf endpoint in POJO data format
+== How to prepare the message for the camel-cxf endpoint in POJO data format
 
 The `camel-cxf` endpoint producer is based on the
 https://github.com/apache/cxf/blob/master/core/src/main/java/org/apache/cxf/endpoint/Client.java[CXF
@@ -691,7 +659,7 @@ message with this parameter list. The response message's body is a
 messageContentsList, you can get the result from that list.
 
 If you don't specify the operation name in the message header,
-`CxfProducer` will try to use the `defaultOperationName `from
+`CxfProducer` will try to use the `defaultOperationName` from
 `CxfEndpoint`, if there is no `defaultOperationName` set on
 `CxfEndpoint`, it will pickup the first operationName from the Operation
 list.
@@ -699,7 +667,7 @@ list.
 If you want to get the object array from the message body, you can get
 the body using `message.getbody(Object[].class)`, as follows:
 
-### How to deal with the message for a camel-cxf endpoint in PAYLOAD data format
+== How to deal with the message for a camel-cxf endpoint in PAYLOAD data format
 
 `PAYLOAD` means that you process the payload message from the SOAP
 envelope. You can use the `Header.HEADER_LIST` as the key to set or get
@@ -710,7 +678,7 @@ elements.
 for SOAP message headers and Body elements. This change enables
 decoupling the native CXF message from the Camel message.
 
-### How to get and set SOAP headers in POJO mode
+== How to get and set SOAP headers in POJO mode
 
 `POJO` means that the data format is a "list of Java objects" when the
 Camel-cxf endpoint produces or consumes Camel exchanges. Even though
@@ -739,7 +707,7 @@ InsertResponseOutHeaderProcessor and InsertRequestOutHeaderProcessor are
 actually the same. The only difference between the two processors is
 setting the direction of the inserted SOAP header.
 
-### How to get and set SOAP headers in PAYLOAD mode
+== How to get and set SOAP headers in PAYLOAD mode
 
 We've already shown how to access SOAP message (CxfPayload object) in
 PAYLOAD mode (See "How to deal with the message for a camel-cxf endpoint
@@ -749,23 +717,23 @@ Once you obtain a CxfPayload object, you can invoke the
 CxfPayload.getHeaders() method that returns a List of DOM Elements (SOAP
 headers).
 
-Since Camel 2.16.0, you can also use the same way as described in
+You can also use the same way as described in
 sub-chapter "How to get and set SOAP headers in POJO mode" to set or get
 the SOAP headers. So, you can use now the
-header "org.apache.cxf.headers.Header.list" to get and set a list of
-SOAP headers.This does also mean that if you have a route that forwards
+header "org.apache.cxf.headers.Header.list" to get and set a list of
+SOAP headers.This does also mean that if you have a route that forwards
 from one Camel-cxf endpoint to another (SOAP Client -> Camel -> CXF
 service), now also the SOAP headers sent by the SOAP client are
 forwarded to the CXF service. If you do not want that these headers are
 forwarded you have to remove them in the Camel header
 "org.apache.cxf.headers.Header.list".
 
-### SOAP headers are not available in MESSAGE mode
+== SOAP headers are not available in MESSAGE mode
 
 SOAP headers are not available in MESSAGE mode as SOAP processing is
 skipped.
 
-### How to throw a SOAP Fault from Camel
+== How to throw a SOAP Fault from Camel
 
 If you are using a `camel-cxf` endpoint to consume the SOAP request, you
 may need to throw the SOAP Fault from the camel context. +
@@ -780,9 +748,10 @@ set the SOAP Fault message in the message body and set the response
 code in the message header.
 
 Same for using POJO data format. You can set the SOAPFault on the out
-body and also indicate it's a fault by calling Message.setFault(true):
+body.
 
-### How to propagate a camel-cxf endpoint's request and response context
+[#propagate-request-response-context]
+== How to propagate a camel-cxf endpoint's request and response context
 
 https://github.com/apache/cxf/blob/master/core/src/main/java/org/apache/cxf/endpoint/Client.java[CXF
 client API] provides a way to invoke the operation with request and
@@ -815,14 +784,14 @@ response context with the following code:
                       responseContext.get("javax.xml.ws.wsdl.operation").toString());
 -------------------------------------------------------------------------------------------------------------
 
-### Attachment Support
+== Attachment Support
 
 *POJO Mode:* Both SOAP with Attachment and MTOM are supported (see
-example in Payload Mode for enabling MTOM).  However, SOAP with
-Attachment is not tested.  Since attachments are marshalled and
+example in Payload Mode for enabling MTOM).  However, SOAP with
+Attachment is not tested.  Since attachments are marshalled and
 unmarshalled into POJOs, users typically do not need to deal with the
-attachment themself.  Attachments are propagated to Camel message's
-attachments if the MTOM is not enabled, since Camel 2.12.3.  So, it is
+attachment themself.  Attachments are propagated to Camel message's
+attachments if the MTOM is not enabled.  So, it is
 possible to retrieve attachments by Camel Message API
 
 [source,java]
@@ -830,11 +799,11 @@ possible to retrieve attachments by Camel Message API
 DataHandler Message.getAttachment(String id)
 --------------------------------------------
 
-*Payload Mode:* MTOM is supported since Camel 2.1. Attachments can be
+*Payload Mode:* MTOM is supported by the component. Attachments can be
 retrieved by Camel Message APIs mentioned above. SOAP with Attachment
-(SwA) is supported and attachments can be retrieved since Camel  2.5. SwA is
+(SwA) is supported and attachments can be retrieved. SwA is
 the default (same as setting the CXF endpoint property "mtom-enabled" to
-false). 
+false). 
 
 To enable MTOM, set the CXF endpoint property "mtom-enabled" to _true_.
 (I believe you can only do it with Spring.)
@@ -856,13 +825,12 @@ you require just the SOAP XML as a String, you can set the message body
 with message.getSOAPPart(), and Camel convert can do the rest of work
 for you.
 
-### Streaming Support in PAYLOAD mode
+== Streaming Support in PAYLOAD mode
 
-In Camel 2.8.2, the camel-cxf component now supports streaming of incoming
+The camel-cxf component now supports streaming of incoming
 messages when using PAYLOAD mode. Previously, the incoming messages
 would have been completely DOM parsed. For large messages, this is time
-consuming and uses a significant amount of memory. Starting in Camel 2.8.2,
-the incoming messages can remain as a javax.xml.transform.Source while
+consuming and uses a significant amount of memory. The incoming messages can remain as a javax.xml.transform.Source while
 being routed and, if nothing modifies the payload, can then be directly
 streamed out to the target destination. For common "simple proxy" use
 cases (example: from("cxf:...").to("cxf:...")), this can provide very
@@ -888,11 +856,11 @@ Global system property: you can add a system property of
 That sets the global default, but setting the endpoint property above
 will override this value for that endpoint.
 
-### Using the generic CXF Dispatch mode
+== Using the generic CXF Dispatch mode
 
-From Camel 2.8.0, the camel-cxf component supports the generic
+The camel-cxf component supports the generic
 https://cxf.apache.org/docs/jax-ws-dispatch-api.html[CXF dispatch
-mode] that can transport messages of arbitrary structures (i.e., not
+mode] that can transport messages of arbitrary structures (i.e., not
 bound to a specific XML schema). To use this mode, you simply omit
 specifying the wsdlURL and serviceClass attributes of the CXF endpoint.
 
@@ -910,11 +878,7 @@ specific SOAPAction header. Therefore, when the target service requires
 a specific SOAPAction value, it is supplied in the Camel header using
 the key SOAPAction (case-insensitive).
 
- 
+ 
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$cxf-starter.adoc[]

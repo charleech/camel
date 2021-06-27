@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,51 +16,48 @@
  */
 package org.apache.camel.component.redis;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The spring-redis component allows sending and receiving messages from Redis.
+ * Send and receive messages from Redis.
  */
-@UriEndpoint(firstVersion = "2.11.0", scheme = "spring-redis", title = "Spring Redis", syntax = "spring-redist:host:port", label = "spring,nosql")
+@UriEndpoint(firstVersion = "2.11.0", scheme = "spring-redis", title = "Spring Redis", syntax = "spring-redist:host:port",
+             category = { Category.SPRING, Category.NOSQL })
 public class RedisEndpoint extends DefaultEndpoint {
 
     @UriParam
     private RedisConfiguration configuration;
-    private RedisProcessorsCreator redisProcessorsCreator;
 
     public RedisEndpoint(String uri, RedisComponent component, RedisConfiguration configuration) {
         super(uri, component);
         this.configuration = configuration;
-        redisProcessorsCreator = new AllRedisProcessorsCreator(new RedisClient(configuration.getRedisTemplate()),
-                ((RedisComponent)getComponent()).getExchangeConverter());
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         Command defaultCommand = configuration.getCommand();
         if (defaultCommand == null) {
             defaultCommand = Command.SET;
         }
-        return new RedisProducer(this,
-                RedisConstants.COMMAND,
-                defaultCommand.name(),
-                redisProcessorsCreator);
+
+        return new RedisProducer(
+                this, RedisConstants.COMMAND, defaultCommand.name(), new RedisClient(configuration.getRedisTemplate()));
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         RedisConsumer answer = new RedisConsumer(this, processor, configuration);
         configureConsumer(answer);
         return answer;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
+    @Override
     protected void doShutdown() throws Exception {
         super.doShutdown();
         configuration.stop();

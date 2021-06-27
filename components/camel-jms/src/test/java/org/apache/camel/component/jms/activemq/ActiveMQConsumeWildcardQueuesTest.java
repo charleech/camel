@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import javax.jms.ConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.CamelJmsTestHelper;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
 
@@ -45,6 +45,7 @@ public class ActiveMQConsumeWildcardQueuesTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -54,22 +55,23 @@ public class ActiveMQConsumeWildcardQueuesTest extends CamelTestSupport {
         return camelContext;
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 // use wildcard to consume from all sports
                 from("activemq:queue:sport.>")
-                    .to("log:received?showHeaders=true")
-                    .choice()
+                        .to("log:received?showHeaders=true")
+                        .choice()
                         // the JMSDestination contains from which queue the message was consumed from
                         .when(header("JMSDestination").isEqualTo("queue://sport.pl.chelsea"))
-                            .to("mock:chelsea")
+                        .to("mock:chelsea")
                         // we can use a reg exp to match any message from 1st division
                         .when(header("JMSDestination").regex("queue://sport.1st.*"))
-                            .to("mock:1st")
+                        .to("mock:1st")
                         .otherwise()
-                            .to("mock:other")
-                    .end();
+                        .to("mock:other")
+                        .end();
             }
         };
     }

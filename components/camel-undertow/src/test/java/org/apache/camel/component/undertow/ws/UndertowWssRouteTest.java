@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.undertow.ws;
+
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -44,19 +45,26 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.ws.WebSocket;
 import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UndertowWssRouteTest extends BaseUndertowTest {
 
-    @BeforeClass
+    private static final Logger LOG = LoggerFactory.getLogger(UndertowWssRouteTest.class);
+
+    @BeforeAll
     public static void setUpJaas() throws Exception {
         URL trustStoreUrl = UndertowHttpsSpringTest.class.getClassLoader().getResource("ssl/keystore.jks");
         System.setProperty("javax.net.ssl.trustStore", trustStoreUrl.toURI().getPath());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownJaas() throws Exception {
         System.clearProperty("java.security.auth.login.config");
     }
@@ -94,8 +102,7 @@ public class UndertowWssRouteTest extends BaseUndertowTest {
         AsyncHttpClient c;
         AsyncHttpClientConfig config;
 
-        DefaultAsyncHttpClientConfig.Builder builder =
-                new DefaultAsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
 
         SslContext sslContext = SslContextBuilder
                 .forClient()
@@ -122,7 +129,7 @@ public class UndertowWssRouteTest extends BaseUndertowTest {
                             @Override
                             public void onTextFrame(String message, boolean finalFragment, int rsv) {
                                 received.add(message);
-                                log.info("received --> " + message);
+                                LOG.info("received --> " + message);
                                 latch.countDown();
                             }
 
@@ -136,9 +143,10 @@ public class UndertowWssRouteTest extends BaseUndertowTest {
 
                             @Override
                             public void onError(Throwable t) {
-                                t.printStackTrace();
+                                LOG.warn("Unhandled exception: {}", t.getMessage(), t);
                             }
-                        }).build()).get();
+                        }).build())
+                .get();
 
         getMockEndpoint("mock:client").expectedBodiesReceived("Hello from WS client");
 
@@ -161,11 +169,11 @@ public class UndertowWssRouteTest extends BaseUndertowTest {
         return new RouteBuilder() {
             public void configure() {
                 from("undertow:ws://localhost:" + getPort() + "/test")
-                     .log(">>> Message received from WebSocket Client : ${body}")
-                     .to("mock:client")
-                     .loop(10)
-                         .setBody().constant(">> Welcome on board!")
-                         .to("undertow:ws://localhost:" + getPort() + "/test");
+                        .log(">>> Message received from WebSocket Client : ${body}")
+                        .to("mock:client")
+                        .loop(10)
+                        .setBody().constant(">> Welcome on board!")
+                        .to("undertow:ws://localhost:" + getPort() + "/test");
             }
         };
     }

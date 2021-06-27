@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,8 @@ import java.util.Map;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
 
 public class MailNameAndEmailInRecipientTest extends CamelTestSupport {
@@ -52,12 +52,13 @@ public class MailNameAndEmailInRecipientTest extends CamelTestSupport {
         mock.message(0).header("cc").isEqualTo("James Strachan <jstrachan@localhost>");
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("pop3://davsclaus@localhost?consumer.initialDelay=100&consumer.delay=100").to("mock:davsclaus");
+                from("pop3://davsclaus@localhost?initialDelay=100&delay=100").to("mock:davsclaus");
 
-                from("pop3://jstrachan@localhost?consumer.initialDelay=100&consumer.delay=100").to("mock:jstrachan");
+                from("pop3://jstrachan@localhost?initialDelay=100&delay=100").to("mock:jstrachan");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp.internal;
 
 import java.io.IOException;
@@ -25,7 +24,7 @@ import java.net.SocketTimeoutException;
 
 import org.apache.camel.Route;
 import org.apache.camel.component.mllp.MllpTcpServerConsumer;
-import org.apache.camel.impl.MDCUnitOfWork;
+import org.apache.camel.spi.UnitOfWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -73,21 +72,23 @@ public class TcpServerAcceptThread extends Thread {
     /**
      * The main ServerSocket.accept() loop
      * <p/>
-     * NOTE:  When a connection is received, the Socket is checked after a brief delay in an attempt to determine if this is a load-balancer probe.  The test is done before the
-     * ConsumerClientSocketThread is created to avoid creating a large number of short lived threads, which is what can occur if the load balancer polling interval is very short.
+     * NOTE: When a connection is received, the Socket is checked after a brief delay in an attempt to determine if this
+     * is a load-balancer probe. The test is done before the ConsumerClientSocketThread is created to avoid creating a
+     * large number of short lived threads, which is what can occur if the load balancer polling interval is very short.
      */
+    @Override
     public void run() {
         running = true;
         String originalThreadName = Thread.currentThread().getName();
         Thread.currentThread().setName(createThreadName(serverSocket));
 
-        MDC.put(MDCUnitOfWork.MDC_CAMEL_CONTEXT_ID, consumer.getEndpoint().getCamelContext().getName());
+        MDC.put(UnitOfWork.MDC_CAMEL_CONTEXT_ID, consumer.getEndpoint().getCamelContext().getName());
 
         Route route = consumer.getRoute();
         if (route != null) {
             String routeId = route.getId();
             if (routeId != null) {
-                MDC.put(MDCUnitOfWork.MDC_ROUTE_ID, route.getId());
+                MDC.put(UnitOfWork.MDC_ROUTE_ID, route.getId());
             }
         }
 
@@ -107,7 +108,8 @@ public class TcpServerAcceptThread extends Thread {
                         try {
                             serverSocket.close();
                         } catch (Exception ex) {
-                            log.debug("Exception encountered closing ServerSocket after SocketException on accept() - ignoring", ex);
+                            log.debug("Exception encountered closing ServerSocket after SocketException on accept() - ignoring",
+                                    ex);
                         }
                     }
                     continue;
@@ -138,8 +140,8 @@ public class TcpServerAcceptThread extends Thread {
                 }
             }
             Thread.currentThread().setName(originalThreadName);
-            MDC.remove(MDCUnitOfWork.MDC_ROUTE_ID);
-            MDC.remove(MDCUnitOfWork.MDC_CAMEL_CONTEXT_ID);
+            MDC.remove(UnitOfWork.MDC_ROUTE_ID);
+            MDC.remove(UnitOfWork.MDC_CAMEL_CONTEXT_ID);
         }
     }
 

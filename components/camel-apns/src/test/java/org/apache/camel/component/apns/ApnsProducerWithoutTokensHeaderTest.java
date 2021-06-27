@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,18 @@ import com.notnoop.apns.APNS;
 import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.EnhancedApnsNotification;
 import com.notnoop.apns.utils.ApnsServerStub;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.apns.factory.ApnsServiceFactory;
 import org.apache.camel.component.apns.util.ApnsUtils;
 import org.apache.camel.component.apns.util.TestConstants;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 /**
  * Unit test that we can produce JMS message from files
@@ -40,22 +42,24 @@ public class ApnsProducerWithoutTokensHeaderTest extends CamelTestSupport {
 
     private ApnsServerStub server;
 
-    @Before
+    @BeforeEach
     public void startup() {
         server = ApnsUtils.prepareAndStartServer(TestConstants.TEST_GATEWAY_PORT, TestConstants.TEST_FEEDBACK_PORT);
     }
 
-    @After
+    @AfterEach
     public void stop() {
         server.stop();
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testProducerWithoutTokenHeader() throws Exception {
         String message = "Hello World";
         String messagePayload = APNS.newPayload().alertBody(message).build();
 
-        EnhancedApnsNotification apnsNotification = new EnhancedApnsNotification(1, EnhancedApnsNotification.MAXIMUM_EXPIRY, FAKE_TOKEN, messagePayload);
+        EnhancedApnsNotification apnsNotification
+                = new EnhancedApnsNotification(1, EnhancedApnsNotification.MAXIMUM_EXPIRY, FAKE_TOKEN, messagePayload);
         server.stopAt(apnsNotification.length());
 
         template.sendBody("direct:test", message);
@@ -64,6 +68,7 @@ public class ApnsProducerWithoutTokensHeaderTest extends CamelTestSupport {
         assertArrayEquals(apnsNotification.marshall(), server.getReceived().toByteArray());
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -76,6 +81,7 @@ public class ApnsProducerWithoutTokensHeaderTest extends CamelTestSupport {
         return camelContext;
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {

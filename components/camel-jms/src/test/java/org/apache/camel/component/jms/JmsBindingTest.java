@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,18 +22,22 @@ import java.time.Instant;
 import java.util.Date;
 
 import org.apache.activemq.command.ActiveMQBlobMessage;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.activemq.command.ActiveMQTextMessage;
+import org.apache.camel.Exchange;
+import org.apache.camel.impl.DefaultCamelContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class JmsBindingTest {
 
     private final Instant instant = Instant.ofEpochMilli(1519672338000L);
@@ -45,12 +49,24 @@ public class JmsBindingTest {
 
     private JmsBinding jmsBindingUnderTest;
 
-    @Before
+    @BeforeEach
     public void setup() {
-        when(mockJmsConfiguration.isFormatDateHeadersToIso8601()).thenReturn(false);
-        when(mockJmsConfiguration.isMapJmsMessage()).thenReturn(true);
-        when(mockJmsEndpoint.getConfiguration()).thenReturn(mockJmsConfiguration);
+        lenient().when(mockJmsConfiguration.isFormatDateHeadersToIso8601()).thenReturn(false);
+        lenient().when(mockJmsConfiguration.isMapJmsMessage()).thenReturn(true);
+        lenient().when(mockJmsEndpoint.getConfiguration()).thenReturn(mockJmsConfiguration);
         jmsBindingUnderTest = new JmsBinding(mockJmsEndpoint);
+    }
+
+    @Test
+    public void noEndpointTest() throws Exception {
+        JmsBinding testBindingWithoutEndpoint = new JmsBinding();
+        ActiveMQTextMessage message = new ActiveMQTextMessage();
+        message.setText("test");
+        DefaultCamelContext camelContext = new DefaultCamelContext();
+        Exchange exchange = camelContext.getEndpoint("jms:queue:foo").createExchange();
+        exchange.getIn().setBody("test");
+        exchange.getIn().setHeader("JMSCorrelationID", null);
+        testBindingWithoutEndpoint.appendJmsProperties(message, exchange);
     }
 
     @Test

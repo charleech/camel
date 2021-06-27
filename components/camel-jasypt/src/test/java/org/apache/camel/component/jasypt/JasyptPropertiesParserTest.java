@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,16 @@
  */
 package org.apache.camel.component.jasypt;
 
-import static java.lang.String.format;
-
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static java.lang.String.format;
 import static org.apache.camel.component.jasypt.JasyptPropertiesParser.JASYPT_PREFIX_TOKEN;
 import static org.apache.camel.component.jasypt.JasyptPropertiesParser.JASYPT_SUFFIX_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JasyptPropertiesParserTest {
 
@@ -39,7 +38,7 @@ public class JasyptPropertiesParserTest {
     private JasyptPropertiesParser jasyptPropertiesParser = new JasyptPropertiesParser();
     private StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
 
-    @Before
+    @BeforeEach
     public void before() {
         encryptor.setPassword(KNOWN_PASSWORD);
         jasyptPropertiesParser.setEncryptor(encryptor);

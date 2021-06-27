@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
 
@@ -38,6 +38,7 @@ public class JmsInOnlyWithReplyToTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
@@ -51,17 +52,17 @@ public class JmsInOnlyWithReplyToTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("activemq:queue:foo?replyTo=queue:bar&preserveMessageQos=true")
-                    .to("mock:done");
+                        .to("activemq:queue:foo?replyTo=queue:bar&preserveMessageQos=true")
+                        .to("mock:done");
 
                 from("activemq:queue:foo")
-                    .to("log:foo?showAll=true", "mock:foo")
-                    .transform(body().prepend("Bye "));
+                        .to("log:foo?showAll=true", "mock:foo")
+                        .transform(body().prepend("Bye "));
 
                 // we should disable reply to to avoid sending the message back to our self
                 // after we have consumed it
                 from("activemq:queue:bar?disableReplyTo=true")
-                    .to("log:bar?showAll=true", "mock:bar");
+                        .to("log:bar?showAll=true", "mock:bar");
             }
         };
     }

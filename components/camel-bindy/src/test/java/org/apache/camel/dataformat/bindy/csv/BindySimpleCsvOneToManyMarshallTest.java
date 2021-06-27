@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,21 +28,23 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.model.simple.onetomany.Author;
 import org.apache.camel.dataformat.bindy.model.simple.onetomany.Book;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 @ContextConfiguration
-public class BindySimpleCsvOneToManyMarshallTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+public class BindySimpleCsvOneToManyMarshallTest {
 
     private List<Map<String, Object>> models = new ArrayList<>();
-    private String result = "Charles,Moulliard,Camel in Action 1,2010,43\r\n" + "Charles,Moulliard,Camel in Action 2,2012,43\r\n"
-                            + "Charles,Moulliard,Camel in Action 3,2013,43\r\n" + "Charles,Moulliard,Camel in Action 4,,43\r\n";
+    private String result
+            = "Charles,Moulliard,Camel in Action 1,2010,43\r\n" + "Charles,Moulliard,Camel in Action 2,2012,43\r\n"
+              + "Charles,Moulliard,Camel in Action 3,2013,43\r\n" + "Charles,Moulliard,Camel in Action 4,,43\r\n";
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     private ProducerTemplate template;
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint resultEndpoint;
 
     @Test
@@ -105,8 +107,10 @@ public class BindySimpleCsvOneToManyMarshallTest extends AbstractJUnit4SpringCon
     }
 
     public static class ContextConfig extends RouteBuilder {
-        BindyCsvDataFormat camelDataFormat = new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.model.simple.onetomany.Author.class);
+        BindyCsvDataFormat camelDataFormat
+                = new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.model.simple.onetomany.Author.class);
 
+        @Override
         public void configure() {
             from("direct:start").marshal(camelDataFormat).to("mock:result");
         }

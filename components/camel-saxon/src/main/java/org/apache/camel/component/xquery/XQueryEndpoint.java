@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.apache.camel.component.xquery;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -24,24 +24,31 @@ import java.util.Properties;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.lib.ModuleURIResolver;
 import net.sf.saxon.query.StaticQueryContext;
+import org.apache.camel.Category;
 import org.apache.camel.Component;
-import org.apache.camel.support.ProcessorEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.ProcessorEndpoint;
 import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.support.service.ServiceHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Transforms the message using a XQuery template using Saxon.
+ * Query and/or transform XML payloads using XQuery and Saxon.
  */
-@UriEndpoint(firstVersion = "1.0.0", scheme = "xquery", title = "XQuery", syntax = "xquery:resourceUri", label = "transformation")
+@UriEndpoint(firstVersion = "1.0.0", scheme = "xquery", title = "XQuery", syntax = "xquery:resourceUri",
+             category = { Category.TRANSFORMATION })
 public class XQueryEndpoint extends ProcessorEndpoint {
+
+    private static final Logger LOG = LoggerFactory.getLogger(XQueryEndpoint.class);
 
     private volatile XQueryBuilder xquery;
 
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String resourceUri;
     @UriParam(label = "advanced")
     private Configuration configuration;
@@ -216,13 +223,27 @@ public class XQueryEndpoint extends ProcessorEndpoint {
     }
 
     @Override
+    protected void doInit() throws Exception {
+        super.doInit();
+        if (ResourceHelper.isClasspathUri(resourceUri)) {
+            doInitXQuery();
+        }
+    }
+
+    @Override
     protected void doStart() throws Exception {
         super.doStart();
+        if (!ResourceHelper.isClasspathUri(resourceUri)) {
+            doInitXQuery();
+        }
+        ServiceHelper.startService(xquery);
+    }
 
-        log.debug("{} using schema resource: {}", this, resourceUri);
-        URL url = ResourceHelper.resolveMandatoryResourceAsUrl(getCamelContext().getClassResolver(), resourceUri);
+    protected void doInitXQuery() throws Exception {
+        LOG.debug("{} using schema resource: {}", this, resourceUri);
+        InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(getCamelContext(), resourceUri);
 
-        this.xquery = XQueryBuilder.xquery(url);
+        this.xquery = XQueryBuilder.xquery(is);
         this.xquery.setConfiguration(getConfiguration());
         this.xquery.setConfigurationProperties(getConfigurationProperties());
         this.xquery.setStaticQueryContext(getStaticQueryContext());
@@ -235,10 +256,9 @@ public class XQueryEndpoint extends ProcessorEndpoint {
         this.xquery.setAllowStAX(isAllowStAX());
         this.xquery.setHeaderName(getHeaderName());
         this.xquery.setModuleURIResolver(getModuleURIResolver());
+        this.xquery.init(getCamelContext());
 
         setProcessor(xquery);
-
-        ServiceHelper.startService(xquery);
     }
 
     @Override

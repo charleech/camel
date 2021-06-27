@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,16 @@ package org.apache.camel.component.micrometer.messagehistory;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import org.apache.camel.Message;
 import org.apache.camel.MessageHistory;
 import org.apache.camel.NamedNode;
 import org.apache.camel.Route;
-import org.apache.camel.impl.DefaultMessageHistory;
+import org.apache.camel.support.DefaultMessageHistory;
 
 /**
- * A micrometer metrics based {@link MessageHistory}. This could also use {@link #elapsed}
- * provided by the super class, but Micrometer can potentially use other {@link io.micrometer.core.instrument.Clock clocks}
- * and measures in nano-second precision.
+ * A micrometer metrics based {@link MessageHistory}. This could also use {@link #getElapsed()} provided by the super
+ * class, but Micrometer can potentially use other {@link io.micrometer.core.instrument.Clock clocks} and measures in
+ * nano-second precision.
  */
 public class MicrometerMessageHistory extends DefaultMessageHistory {
 
@@ -35,8 +36,9 @@ public class MicrometerMessageHistory extends DefaultMessageHistory {
     private final MeterRegistry meterRegistry;
     private final MicrometerMessageHistoryNamingStrategy namingStrategy;
 
-    public MicrometerMessageHistory(MeterRegistry meterRegistry, Route route, NamedNode namedNode, MicrometerMessageHistoryNamingStrategy namingStrategy, long timestamp) {
-        super(route.getId(), namedNode, timestamp);
+    public MicrometerMessageHistory(MeterRegistry meterRegistry, Route route, NamedNode namedNode,
+                                    MicrometerMessageHistoryNamingStrategy namingStrategy, long timestamp, Message message) {
+        super(route.getId(), namedNode, timestamp, message);
         this.meterRegistry = meterRegistry;
         this.route = route;
         this.namingStrategy = namingStrategy;
@@ -53,6 +55,7 @@ public class MicrometerMessageHistory extends DefaultMessageHistory {
         sample.stop(timer);
     }
 
+    @Override
     public String toString() {
         return "MicrometerMessageHistory[routeId=" + getRouteId() + ", node=" + getNode().getId() + ']';
     }

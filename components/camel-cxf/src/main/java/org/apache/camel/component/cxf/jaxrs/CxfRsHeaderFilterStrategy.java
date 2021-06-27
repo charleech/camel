@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,24 +17,24 @@
 package org.apache.camel.component.cxf.jaxrs;
 
 import org.apache.camel.component.cxf.common.message.CxfConstants;
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
+import org.apache.camel.support.DefaultHeaderFilterStrategy;
 
 public class CxfRsHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
 
     public CxfRsHeaderFilterStrategy() {
-        initialize();  
+        initialize();
     }
 
     protected void initialize() {
-        
+
         getOutFilter().add(CxfConstants.OPERATION_NAME.toLowerCase());
-        
+
         getOutFilter().add("Content-Type".toLowerCase());
         // Support to filter the Content-Type case insensitive
         setLowerCase(true);
-        
+
         // filter headers begin with "Camel" or "org.apache.camel"
-        setOutFilterPattern("(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
+        setOutFilterStartsWith(CAMEL_FILTER_STARTS_WITH);
 
     }
 

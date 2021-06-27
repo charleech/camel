@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.destination.JmsDestinationAccessor;
 
 /**
- *  A JMS {@link org.apache.camel.PollingConsumer}.
+ * A JMS {@link org.apache.camel.PollingConsumer}.
  */
 public class JmsPollingConsumer extends PollingConsumerSupport {
     private JmsOperations template;
@@ -40,17 +40,20 @@ public class JmsPollingConsumer extends PollingConsumerSupport {
 
     @Override
     public JmsEndpoint getEndpoint() {
-        return (JmsEndpoint)super.getEndpoint();
+        return (JmsEndpoint) super.getEndpoint();
     }
 
+    @Override
     public Exchange receiveNoWait() {
         return receive(JmsDestinationAccessor.RECEIVE_TIMEOUT_NO_WAIT);
     }
 
+    @Override
     public Exchange receive() {
         return receive(JmsDestinationAccessor.RECEIVE_TIMEOUT_INDEFINITE_WAIT);
     }
 
+    @Override
     public Exchange receive(long timeout) {
         setReceiveTimeout(timeout);
         Message message;
@@ -66,20 +69,23 @@ public class JmsPollingConsumer extends PollingConsumerSupport {
         return null;
     }
 
+    @Override
     protected void doStart() throws Exception {
         // noop
     }
 
+    @Override
     protected void doStop() throws Exception {
         // noop
     }
 
     protected void setReceiveTimeout(long timeout) {
         if (template instanceof JmsTemplate) {
-            JmsTemplate jmsTemplate = (JmsTemplate)template;
+            JmsTemplate jmsTemplate = (JmsTemplate) template;
             jmsTemplate.setReceiveTimeout(timeout);
         } else {
-            throw new IllegalArgumentException("Cannot set the receiveTimeout property on unknown JmsOperations type: " + template.getClass().getName());
+            throw new IllegalArgumentException(
+                    "Cannot set the receiveTimeout property on unknown JmsOperations type: " + template.getClass().getName());
         }
     }
 }

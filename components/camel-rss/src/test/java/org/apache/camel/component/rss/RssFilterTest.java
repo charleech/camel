@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,14 @@
  */
 package org.apache.camel.component.rss;
 
-import javax.naming.Context;
-
-import com.sun.syndication.feed.synd.SyndEntry;
-import com.sun.syndication.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
 import org.apache.camel.Body;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.jndi.JndiContext;
-import org.junit.Test;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class RssFilterTest extends CamelTestSupport {
 
@@ -37,12 +35,11 @@ public class RssFilterTest extends CamelTestSupport {
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        JndiContext jndi = new JndiContext();
-        jndi.bind("myFilterBean", new FilterBean());
-        return jndi;
+    protected void bindToRegistry(Registry registry) throws Exception {
+        registry.bind("myFilterBean", new FilterBean());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
@@ -50,8 +47,8 @@ public class RssFilterTest extends CamelTestSupport {
 
                 // START SNIPPET: ex1
                 // only entries with Camel in the title will get through the filter
-                from("rss:file:src/test/data/rss20.xml?splitEntries=true&consumer.delay=100").
-                        filter().method("myFilterBean", "titleContainsCamel").to("mock:result");
+                from("rss:file:src/test/data/rss20.xml?splitEntries=true&delay=100").filter()
+                        .method("myFilterBean", "titleContainsCamel").to("mock:result");
                 // END SNIPPET: ex1
             }
         };
@@ -60,9 +57,9 @@ public class RssFilterTest extends CamelTestSupport {
     // START SNIPPET: ex2
     public static class FilterBean {
         public boolean titleContainsCamel(@Body SyndFeed feed) {
-            SyndEntry firstEntry = (SyndEntry) feed.getEntries().get(0);
+            SyndEntry firstEntry = feed.getEntries().get(0);
             return firstEntry.getTitle().contains("Camel");
         }
     }
-    // END SNIPPET: ex2     
+    // END SNIPPET: ex2
 }

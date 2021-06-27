@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,11 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.twitter.AbstractTwitterEndpoint;
-import org.apache.camel.component.twitter.streaming.AbstractStreamingConsumerHandler;
+import org.apache.camel.component.twitter.data.EndpointType;
 import org.apache.camel.support.ScheduledPollConsumer;
 
 /**
- * Provides a scheduled polling consumer as well as event based consumer for streaming.
+ * Provides a scheduled polling consumer.
  */
 public class DefaultTwitterConsumer extends ScheduledPollConsumer implements TwitterEventListener {
 
@@ -33,7 +33,8 @@ public class DefaultTwitterConsumer extends ScheduledPollConsumer implements Twi
     private final AbstractTwitterEndpoint endpoint;
     private final AbstractTwitterConsumerHandler handler;
 
-    public DefaultTwitterConsumer(AbstractTwitterEndpoint endpoint, Processor processor, AbstractTwitterConsumerHandler handler) {
+    public DefaultTwitterConsumer(AbstractTwitterEndpoint endpoint, Processor processor,
+                                  AbstractTwitterConsumerHandler handler) {
         super(endpoint, processor);
         setDelay(DEFAULT_CONSUMER_DELAY);
         this.endpoint = endpoint;
@@ -48,44 +49,16 @@ public class DefaultTwitterConsumer extends ScheduledPollConsumer implements Twi
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        switch (endpoint.getEndpointType()) {
-        case POLLING:
-            if (handler instanceof AbstractStreamingConsumerHandler) {
-                ((AbstractStreamingConsumerHandler) handler).start();
-            }
-            break;
-        case EVENT:
-            if (handler instanceof AbstractStreamingConsumerHandler) {
-                ((AbstractStreamingConsumerHandler) handler).setEventListener(this);
-                ((AbstractStreamingConsumerHandler) handler).start();
-            }
-            break;
-        default:
+        if (endpoint.getEndpointType().equals(EndpointType.DIRECT)) {
             List<Exchange> exchanges = handler.directConsume();
-            for (int i = 0; i < exchanges.size(); i++) {
-                getProcessor().process(exchanges.get(i));
+            for (Exchange exchange : exchanges) {
+                getProcessor().process(exchange);
             }
         }
     }
 
     @Override
     protected void doStop() throws Exception {
-        switch (endpoint.getEndpointType()) {
-        case POLLING:
-            if (handler instanceof AbstractStreamingConsumerHandler) {
-                ((AbstractStreamingConsumerHandler) handler).stop();
-            }
-            break;
-        case EVENT:
-            if (handler instanceof AbstractStreamingConsumerHandler) {
-                ((AbstractStreamingConsumerHandler) handler).removeEventListener(this);
-                ((AbstractStreamingConsumerHandler) handler).stop();
-            }
-            break;
-        default:
-            break;
-        }
-
         super.doStop();
     }
 
@@ -114,7 +87,8 @@ public class DefaultTwitterConsumer extends ScheduledPollConsumer implements Twi
         }
 
         if (exchange.getException() != null) {
-            getExceptionHandler().handleException("Error processing exchange on status update", exchange, exchange.getException());
+            getExceptionHandler().handleException("Error processing exchange on status update", exchange,
+                    exchange.getException());
         }
     }
 

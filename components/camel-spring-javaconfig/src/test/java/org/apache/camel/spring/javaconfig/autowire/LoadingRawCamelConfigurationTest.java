@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,20 +20,19 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spring.javaconfig.CamelConfiguration;
-import org.apache.camel.test.spring.CamelSpringDelegatingTestContextLoader;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import static org.junit.Assert.assertNotNull;
 
-@ContextConfiguration(
-        classes = {CamelConfiguration.class, AdditionalRouteConfiguration.class}, 
-        loader = CamelSpringDelegatingTestContextLoader.class)
-public class LoadingRawCamelConfigurationTest extends AbstractJUnit4SpringContextTests {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-    @EndpointInject(uri = "mock:rawConfigTest")
+@CamelSpringTest
+@ContextConfiguration(classes = { CamelConfiguration.class, AdditionalRouteConfiguration.class })
+public class LoadingRawCamelConfigurationTest {
+
+    @EndpointInject("mock:rawConfigTest")
     MockEndpoint moduleMockEndpoint;
 
     @Test

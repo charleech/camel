@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,11 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.SagaCompletionMode;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+@EnabledIfEnvironmentVariable(named = "LRA_COORDINATOR_URL", matches = ".*",
+                              disabledReason = "Coordinator URL not provided")
 public class LRAManualIT extends AbstractLRATestSupport {
 
     @Test
@@ -50,7 +52,6 @@ public class LRAManualIT extends AbstractLRATestSupport {
     }
 
     @Test
-    @Ignore("https://issues.jboss.org/browse/JBTM-2979")
     public void testTimeout() throws InterruptedException {
         MockEndpoint compensateEndpoint = getMockEndpoint("mock:compensate");
         compensateEndpoint.expectedMessageCount(1);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,22 +19,20 @@ package org.apache.camel.component.fhir.dataformat.spring;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.fhir.FhirDataFormat;
-import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.model.dataformat.FhirDataformat;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class FhirDataformatDefaultConfigSpringTest extends CamelSpringTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }
@@ -56,7 +54,6 @@ public class FhirDataformatDefaultConfigSpringTest extends CamelSpringTestSuppor
         assertNull(fhirJson.getDontEncodeElements());
         assertNull(fhirJson.getDontStripVersionsFromReferencesAtPaths());
         assertNull(fhirJson.getEncodeElements());
-        assertNull(fhirJson.getEncodeElementsAppliesToResourceTypes());
         assertNull(fhirJson.getForceResourceId());
         assertNull(fhirJson.getParserErrorHandler());
         assertNull(fhirJson.getParserOptions());
@@ -73,7 +70,7 @@ public class FhirDataformatDefaultConfigSpringTest extends CamelSpringTestSuppor
 
     private FhirDataFormat getDataformat(String name) {
         CamelContext camelContext = context();
-        return (FhirDataFormat) ((FhirDataformat) camelContext.adapt(ModelCamelContext.class).getDataFormats().get(name)).getDataFormat();
+        return camelContext.getRegistry().lookupByNameAndType(name, FhirDataFormat.class);
     }
 
     @Override

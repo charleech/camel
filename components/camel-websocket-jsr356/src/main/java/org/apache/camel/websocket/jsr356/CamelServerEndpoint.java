@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,7 +63,7 @@ public class CamelServerEndpoint extends Endpoint {
         synchronized (session) {
             if (session.isOpen()) {
                 try {
-                    session.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, "an exception occured"));
+                    session.close(new CloseReason(CloseReason.CloseCodes.CLOSED_ABNORMALLY, "an exception occurred"));
                 } catch (final IOException e) {
                     log.debug("Error closing session #{}", session.getId(), e);
                 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,14 @@
  */
 package org.apache.camel.component.xslt;
 
+import net.sf.saxon.expr.instruct.TerminationException;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SaxonXsltMessageTerminateTest extends CamelTestSupport {
 
@@ -27,6 +31,8 @@ public class SaxonXsltMessageTerminateTest extends CamelTestSupport {
     public void testXsltTerminate() throws Exception {
         getMockEndpoint("mock:result").expectedMessageCount(0);
         getMockEndpoint("mock:dead").expectedMessageCount(1);
+
+        context.getRouteController().startRoute("foo");
 
         assertMockEndpointsSatisfied();
 
@@ -37,9 +43,9 @@ public class SaxonXsltMessageTerminateTest extends CamelTestSupport {
         assertNotNull(cause);
 
         // we have the xsl termination message as a error property on the exchange as we set terminate=true
-        Exception error = out.getProperty(Exchange.XSLT_ERROR, Exception.class);
+        Exception error = out.getProperty(Exchange.XSLT_FATAL_ERROR, Exception.class);
         assertNotNull(error);
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>Error: DOB is an empty string!", error.getMessage());
+        assertIsInstanceOf(TerminationException.class, error);
     }
 
     @Override
@@ -49,10 +55,10 @@ public class SaxonXsltMessageTerminateTest extends CamelTestSupport {
             public void configure() throws Exception {
                 errorHandler(deadLetterChannel("mock:dead"));
 
-                from("file:src/test/data/?fileName=terminate.xml&noop=true")
-                    .to("xslt:org/apache/camel/component/xslt/terminate.xsl?saxon=true")
-                    .to("log:foo")
-                    .to("mock:result");
+                from("file:src/test/data/?fileName=terminate.xml&noop=true").routeId("foo").noAutoStartup()
+                        .to("xslt-saxon:org/apache/camel/component/xslt/terminate.xsl")
+                        .to("log:foo")
+                        .to("mock:result");
             }
         };
     }

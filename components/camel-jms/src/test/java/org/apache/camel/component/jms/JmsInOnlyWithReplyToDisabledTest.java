@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
 
@@ -38,6 +38,7 @@ public class JmsInOnlyWithReplyToDisabledTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
@@ -51,15 +52,15 @@ public class JmsInOnlyWithReplyToDisabledTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("activemq:queue:foo?replyTo=queue:bar&disableReplyTo=true")
-                    .to("mock:done");
+                        .to("activemq:queue:foo?replyTo=queue:bar&disableReplyTo=true")
+                        .to("mock:done");
 
                 from("activemq:queue:foo")
-                    .to("mock:foo")
-                    .transform(body().prepend("Bye "));
+                        .to("mock:foo")
+                        .transform(body().prepend("Bye "));
 
                 from("activemq:queue:bar")
-                    .to("mock:bar");
+                        .to("mock:bar");
             }
         };
     }

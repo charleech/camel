@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.apache.camel.language.xpath;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class XPathHeaderEnableSaxonJavaDslTest extends CamelTestSupport {
 
@@ -61,13 +61,13 @@ public class XPathHeaderEnableSaxonJavaDslTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:in")
-                    .choice()
-                        .when(xpath("$type = 'Camel'").saxon())
-                            .to("mock:camel")
-                        .when(xpath("//name = 'Kong'").saxon())
-                            .to("mock:donkey")
+                        .choice()
+                        .when(XPathBuilder.xpath("$type = 'Camel'").saxon())
+                        .to("mock:camel")
+                        .when(XPathBuilder.xpath("//name = 'Kong'").saxon())
+                        .to("mock:donkey")
                         .otherwise()
-                            .to("mock:other");
+                        .to("mock:other");
             }
         };
     }

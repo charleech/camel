@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,19 @@
  */
 package org.apache.camel.component.kubernetes.job;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.spi.UriEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The Kubernetes Jobs component provides a producer to execute kubernetes job operations
+ * Perform operations on Kubernetes Jobs.
  */
-@UriEndpoint(firstVersion = "2.23.0", scheme = "kubernetes-job", title = "Kubernetes Job",
-    syntax = "kubernetes-job:masterUrl", label = "container,cloud,paas")
+@UriEndpoint(firstVersion = "2.23.0", scheme = "kubernetes-job", title = "Kubernetes Job", syntax = "kubernetes-job:masterUrl",
+             category = { Category.CONTAINER, Category.CLOUD, Category.PAAS })
 public class KubernetesJobEndpoint extends AbstractKubernetesEndpoint {
 
     public KubernetesJobEndpoint(String uri, KubernetesJobComponent component, KubernetesConfiguration config) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.cdi.test;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
@@ -41,9 +42,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class PropertyInjectTest {
@@ -62,12 +63,12 @@ public class PropertyInjectTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClass(PropertyInjectBean.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClass(PropertyInjectBean.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -83,11 +84,12 @@ public class PropertyInjectTest {
 
     @Test
     @InSequence(2)
-    public void sendMessageToInbound(@Uri("direct:in") ProducerTemplate in, @Uri("mock:out") MockEndpoint out) throws InterruptedException {
+    public void sendMessageToInbound(@Uri("direct:in") ProducerTemplate in, @Uri("mock:out") MockEndpoint out)
+            throws InterruptedException {
         out.expectedMessageCount(1);
         out.expectedBodiesReceived("test");
         out.expectedHeaderReceived("header", "value");
-        
+
         in.sendBody("test");
 
         assertIsSatisfied(2L, TimeUnit.SECONDS, out);

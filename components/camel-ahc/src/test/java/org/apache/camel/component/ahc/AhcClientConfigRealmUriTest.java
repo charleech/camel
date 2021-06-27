@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,15 +17,18 @@
 package org.apache.camel.component.ahc;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AhcClientConfigRealmUriTest extends BaseAhcTest {
 
     @Test
     public void testAhcProduce() throws Exception {
         Object out = template.requestBody(getAhcEndpointUri()
-                + "?clientConfig.realm.scheme=DIGEST&clientConfig.realm.principal=someUser"
-                + "&clientConfig.realm.password=somePass&clientConfig.realm.usePreemptiveAuth=true", null, String.class);
+                                          + "?clientConfig.realm.scheme=DIGEST&clientConfig.realm.principal=someUser"
+                                          + "&clientConfig.realm.password=somePass&clientConfig.realm.usePreemptiveAuth=true",
+                null, String.class);
         assertEquals("Bye World", out);
     }
 

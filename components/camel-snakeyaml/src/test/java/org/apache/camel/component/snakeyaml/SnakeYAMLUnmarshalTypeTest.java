@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.snakeyaml;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.snakeyaml.model.TestPojo;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SnakeYAMLUnmarshalTypeTest extends CamelTestSupport {
     @Test
@@ -39,7 +41,7 @@ public class SnakeYAMLUnmarshalTypeTest extends CamelTestSupport {
                 format.setUnmarshalType(TestPojo.class);
 
                 from("direct:unmarshal")
-                    .unmarshal(format);
+                        .unmarshal(format);
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.atomix.client.set;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -28,14 +29,18 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.apache.camel.component.atomix.client.AtomixClientTestSupport;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AtomixSetProducerTest extends AtomixClientTestSupport {
     private static final String SET_NAME = UUID.randomUUID().toString();
     private DistributedSet<Object> set;
 
-    @EndpointInject(uri = "direct:start")
+    @EndpointInject("direct:start")
     private FluentProducerTemplate fluent;
 
     // ************************************
@@ -58,9 +63,11 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
-        set.close();
+        if (set != null) {
+            set.close();
+        }
 
         super.tearDown();
     }
@@ -70,39 +77,39 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Test
-    public void testAdd() throws Exception {
+    void testAdd() {
         final String val1 = context().getUuidGenerator().generateUuid();
         final String val2 = context().getUuidGenerator().generateUuid();
 
         Message result;
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.ADD)
-            .withBody(val1)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.ADD)
+                .withBody(val1)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertTrue(set.contains(val1).join());
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.ADD)
-            .withBody(val2)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.ADD)
+                .withBody(val2)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertTrue(set.contains(val2).join());
     }
 
     @Test
-    public void testSizeClearIsEmpty() throws Exception {
+    void testSizeClearIsEmpty() {
         final String val1 = context().getUuidGenerator().generateUuid();
         final String val2 = context().getUuidGenerator().generateUuid();
 
         Message result;
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.SIZE)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.SIZE)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertEquals(0, result.getBody(Integer.class).intValue());
@@ -111,31 +118,31 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
         set.add(val1).join();
         set.add(val2).join();
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.SIZE)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.SIZE)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertEquals(set.size().join(), result.getBody(Integer.class));
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.IS_EMPTY)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.IS_EMPTY)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertFalse(result.getBody(Boolean.class));
         assertFalse(set.isEmpty().join());
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CLEAR)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CLEAR)
+                .request(Message.class);
 
         assertFalse(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertEquals(0, set.size().join().intValue());
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.IS_EMPTY)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.IS_EMPTY)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertTrue(result.getBody(Boolean.class));
@@ -143,15 +150,15 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
     }
 
     @Test
-    public void testContains() throws Exception {
+    void testContains() {
         final String val = context().getUuidGenerator().generateUuid();
 
         Message result;
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CONTAINS)
-            .withBody(val)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CONTAINS)
+                .withBody(val)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertFalse(result.getBody(Boolean.class));
@@ -159,10 +166,10 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
 
         set.add(val);
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CONTAINS)
-            .withBody(val)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.CONTAINS)
+                .withBody(val)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertTrue(result.getBody(Boolean.class));
@@ -170,7 +177,7 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
     }
 
     @Test
-    public void testRemove() throws Exception {
+    void testRemove() {
         final String val1 = context().getUuidGenerator().generateUuid();
         final String val2 = context().getUuidGenerator().generateUuid();
 
@@ -179,10 +186,10 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
 
         Message result;
 
-        result = fluent.clearAll()
-            .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.REMOVE)
-            .withHeader(AtomixClientConstants.RESOURCE_VALUE, val1)
-            .request(Message.class);
+        result = fluent
+                .withHeader(AtomixClientConstants.RESOURCE_ACTION, AtomixSet.Action.REMOVE)
+                .withHeader(AtomixClientConstants.RESOURCE_VALUE, val1)
+                .request(Message.class);
 
         assertTrue(result.getHeader(AtomixClientConstants.RESOURCE_ACTION_HAS_RESULT, Boolean.class));
         assertFalse(set.contains(val1).join());
@@ -194,11 +201,11 @@ public class AtomixSetProducerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Override
-    protected RoutesBuilder createRouteBuilder() throws Exception {
+    protected RoutesBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:start")
-                    .toF("atomix-set:%s", SET_NAME);
+                        .toF("atomix-set:%s", SET_NAME);
             }
         };
     }

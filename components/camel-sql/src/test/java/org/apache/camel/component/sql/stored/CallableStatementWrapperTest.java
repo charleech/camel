@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,16 +21,18 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.component.sql.stored.template.TemplateParser;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class CallableStatementWrapperTest extends CamelTestSupport {
 
@@ -39,10 +41,13 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
     private JdbcTemplate jdbcTemplate;
     private CallableStatementWrapperFactory factory;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         db = new EmbeddedDatabaseBuilder()
-                .setType(EmbeddedDatabaseType.DERBY).addScript("sql/storedProcedureTest.sql").build();
+                .setName(getClass().getSimpleName())
+                .setType(EmbeddedDatabaseType.DERBY)
+                .addScript("sql/storedProcedureTest.sql").build();
         jdbcTemplate = new JdbcTemplate(db);
         super.setUp();
     }
@@ -56,8 +61,10 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
 
     @Test
     public void shouldExecuteStoredProcedure() throws Exception {
-        CallableStatementWrapper wrapper = new CallableStatementWrapper("SUBNUMBERS"
-                + "(INTEGER ${header.v1},INTEGER ${header.v2},OUT INTEGER resultofsub)", factory);
+        CallableStatementWrapper wrapper = new CallableStatementWrapper(
+                "SUBNUMBERS"
+                                                                        + "(INTEGER ${header.v1},INTEGER ${header.v2},OUT INTEGER resultofsub)",
+                factory);
 
         final Exchange exchange = createExchangeWithBody(null);
         exchange.getIn().setHeader("v1", 1);
@@ -69,7 +76,7 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
                 statementWrapper.populateStatement(null, exchange);
 
                 Map resultOfQuery = (Map) statementWrapper.executeStatement();
-                Assert.assertEquals(-1, resultOfQuery.get("resultofsub"));
+                assertEquals(-1, resultOfQuery.get("resultofsub"));
             }
         });
     }
@@ -78,8 +85,10 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
     public void shouldExecuteStoredFunction() throws Exception {
         CallableStatementWrapperFactory factory = new CallableStatementWrapperFactory(jdbcTemplate, templateParser, true);
 
-        CallableStatementWrapper wrapper = new CallableStatementWrapper("SUBNUMBERS_FUNCTION"
-                + "(OUT INTEGER resultofsub, INTEGER ${header.v1},INTEGER ${header.v2})", factory);
+        CallableStatementWrapper wrapper = new CallableStatementWrapper(
+                "SUBNUMBERS_FUNCTION"
+                                                                        + "(OUT INTEGER resultofsub, INTEGER ${header.v1},INTEGER ${header.v2})",
+                factory);
 
         final Exchange exchange = createExchangeWithBody(null);
         exchange.getIn().setHeader("v1", 1);
@@ -91,7 +100,7 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
                 statementWrapper.populateStatement(null, exchange);
 
                 Map resultOfQuery = (Map) statementWrapper.executeStatement();
-                Assert.assertEquals(-1, resultOfQuery.get("resultofsub"));
+                assertEquals(-1, resultOfQuery.get("resultofsub"));
             }
         });
     }
@@ -114,7 +123,8 @@ public class CallableStatementWrapperTest extends CamelTestSupport {
         });
     }
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         db.shutdown();

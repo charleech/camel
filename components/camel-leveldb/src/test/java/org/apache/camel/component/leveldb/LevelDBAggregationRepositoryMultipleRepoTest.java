@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,21 +15,27 @@
  * limitations under the License.
  */
 package org.apache.camel.component.leveldb;
+
 import java.io.File;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.params.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
-public class LevelDBAggregationRepositoryMultipleRepoTest extends CamelTestSupport {
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@DisabledOnOs({ OS.AIX, OS.OTHER })
+public class LevelDBAggregationRepositoryMultipleRepoTest extends LevelDBTestSupport {
 
     private LevelDBFile levelDBFile;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         deleteDirectory("target/data");
@@ -40,7 +46,7 @@ public class LevelDBAggregationRepositoryMultipleRepoTest extends CamelTestSuppo
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         levelDBFile.stop();
         super.tearDown();
@@ -48,12 +54,12 @@ public class LevelDBAggregationRepositoryMultipleRepoTest extends CamelTestSuppo
 
     @Test
     public void testMultipeRepo() {
-        LevelDBAggregationRepository repo1 = new LevelDBAggregationRepository();
+        LevelDBAggregationRepository repo1 = createRepo();
         repo1.setLevelDBFile(levelDBFile);
         repo1.setRepositoryName("repo1");
         repo1.setReturnOldExchange(true);
 
-        LevelDBAggregationRepository repo2 = new LevelDBAggregationRepository();
+        LevelDBAggregationRepository repo2 = createRepo();
         repo2.setLevelDBFile(levelDBFile);
         repo2.setRepositoryName("repo2");
         repo2.setReturnOldExchange(true);
@@ -102,11 +108,11 @@ public class LevelDBAggregationRepositoryMultipleRepoTest extends CamelTestSuppo
 
     @Test
     public void testMultipeRepoSameKeyDifferentContent() {
-        LevelDBAggregationRepository repo1 = new LevelDBAggregationRepository();
+        LevelDBAggregationRepository repo1 = createRepo();
         repo1.setLevelDBFile(levelDBFile);
         repo1.setRepositoryName("repo1");
 
-        LevelDBAggregationRepository repo2 = new LevelDBAggregationRepository();
+        LevelDBAggregationRepository repo2 = createRepo();
         repo2.setLevelDBFile(levelDBFile);
         repo2.setRepositoryName("repo2");
 

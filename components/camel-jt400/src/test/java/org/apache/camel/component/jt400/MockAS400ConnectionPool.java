@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,12 +57,14 @@ public class MockAS400ConnectionPool extends AS400ConnectionPool {
     }
 
     @Override
-    public AS400 getConnection(String systemName, String userID, String password, int service, Locale locale) throws ConnectionPoolException {
+    public AS400 getConnection(String systemName, String userID, String password, int service, Locale locale)
+            throws ConnectionPoolException {
         return getConnection(systemName, userID, password, locale);
     }
 
     @Override
-    public AS400 getConnection(String systemName, String userID, String password, Locale locale) throws ConnectionPoolException {
+    public AS400 getConnection(String systemName, String userID, String password, Locale locale)
+            throws ConnectionPoolException {
         AS400 connection = getConnection(systemName, userID, password);
         connection.setLocale(locale);
         return connection;

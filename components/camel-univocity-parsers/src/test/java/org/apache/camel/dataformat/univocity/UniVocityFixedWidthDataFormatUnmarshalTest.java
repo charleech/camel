@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,17 +27,22 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spi.DataFormat;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.dataformat.univocity.UniVocityTestHelper.asMap;
 import static org.apache.camel.dataformat.univocity.UniVocityTestHelper.join;
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * This class tests the unmarshalling of {@link org.apache.camel.dataformat.univocity.UniVocityFixedWidthDataFormat}.
  */
 public final class UniVocityFixedWidthDataFormatUnmarshalTest extends CamelTestSupport {
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     MockEndpoint result;
 
     /**
@@ -151,37 +156,32 @@ public final class UniVocityFixedWidthDataFormatUnmarshalTest extends CamelTestS
 
         // Default reading of fixed-width
         tests.put("default", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3, 5})
-        );
+                .setFieldLengths(new int[] { 3, 3, 5 }));
 
         // Reading fixed-width as Map
         tests.put("map", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3, 5})
-                        .setAsMap(true)
-                        .setHeaderExtractionEnabled(true)
-        );
+                .setFieldLengths(new int[] { 3, 3, 5 })
+                .setAsMap(true)
+                .setHeaderExtractionEnabled(true));
 
         // Reading fixed-width as Map with specific headers
         tests.put("mapWithHeaders", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3, 5})
-                        .setAsMap(true)
-                        .setHeaders(new String[]{"A", "B", "C"})
-        );
+                .setFieldLengths(new int[] { 3, 3, 5 })
+                .setAsMap(true)
+                .setHeaders(new String[] { "A", "B", "C" }));
 
         // Reading fixed-width using an iterator
         tests.put("lazy", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3, 5})
-                        .setLazyLoad(true)
-        );
+                .setFieldLengths(new int[] { 3, 3, 5 })
+                .setLazyLoad(true));
 
         // Reading fixed-width using advanced configuration
         tests.put("advanced", new UniVocityFixedWidthDataFormat()
-                        .setFieldLengths(new int[]{3, 3})
-                        .setNullValue("N/A")
-                        .setPadding('_')
-                        .setComment('!')
-                        .setSkipEmptyLines(true)
-        );
+                .setFieldLengths(new int[] { 3, 3 })
+                .setNullValue("N/A")
+                .setPadding('_')
+                .setComment('!')
+                .setSkipEmptyLines(true));
 
         return new RouteBuilder() {
             @Override

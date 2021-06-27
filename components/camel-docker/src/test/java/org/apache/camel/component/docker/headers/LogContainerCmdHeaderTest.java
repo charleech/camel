@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,16 @@ package org.apache.camel.component.docker.headers;
 
 import java.util.Map;
 
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.api.model.Frame;
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,15 +37,16 @@ import static org.mockito.ArgumentMatchers.eq;
  * Validates Log Container Request headers are applied properly
  */
 public class LogContainerCmdHeaderTest extends BaseDockerHeaderTest<LogContainerCmd> {
+    private static final Logger LOG = LoggerFactory.getLogger(LogContainerCmdHeaderTest.class);
 
     @Mock
     private LogContainerCmd mockObject;
 
     @Mock
-    private LogContainerResultCallback callback;
-    
+    private ResultCallback.Adapter<Frame> callback;
+
     @Test
-    public void logContainerHeaderTest() {
+    void logContainerHeaderTest() {
 
         String containerId = "9c09acd48a25";
         boolean stdOut = true;
@@ -80,7 +84,7 @@ public class LogContainerCmdHeaderTest extends BaseDockerHeaderTest<LogContainer
         try {
             Mockito.when(callback.awaitCompletion()).thenReturn(callback);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.warn("Interrupted while setting up mocks", e);
         }
     }
 

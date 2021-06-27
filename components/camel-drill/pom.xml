@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.camel</groupId>
         <artifactId>components</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>camel-drill</artifactId>
@@ -31,59 +31,32 @@
     <name>Camel :: Drill</name>
     <description>Camel Apache Drill support</description>
 
-    <properties>
-		<camel.osgi.export.pkg>
-			org.apache.camel.component.drill.*;${camel.osgi.version}
-		</camel.osgi.export.pkg>
-		<camel.osgi.import.pkg>
-			!org.apache.camel.component.drill.*,
-			${camel.osgi.import.defaults},
-			*
-		</camel.osgi.import.pkg>
-		<camel.osgi.export.service>org.apache.camel.spi.ComponentResolver;component=drill</camel.osgi.export.service>
-	</properties>
-
     <dependencies>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-support</artifactId>
         </dependency>
         <dependency>
-			<groupId>org.apache.drill.exec</groupId>
-			<artifactId>drill-jdbc-all</artifactId>
-			<version>${apache-drill-version}</version>
-			<exclusions>
-		    	<exclusion>
-		    		<groupId>org.slf4j</groupId>
-		    		<artifactId>log4j-over-slf4j</artifactId>
-		    	</exclusion>
-		    </exclusions>
-		</dependency>
-		<dependency>
-	      <groupId>org.springframework</groupId>
-	      <artifactId>spring-jdbc</artifactId>
-	    </dependency>
+            <groupId>org.apache.drill.exec</groupId>
+            <artifactId>drill-jdbc-all</artifactId>
+            <version>${apache-drill-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
         <!-- testing -->
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test</artifactId>
+            <artifactId>camel-test-junit5</artifactId>
             <optional>true</optional>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>          
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

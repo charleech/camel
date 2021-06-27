@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,7 +69,6 @@ public class DefaultWebsocket implements Serializable {
         }
     }
 
-
     @OnWebSocketMessage
     public void onMessage(byte[] data, int offset, int length) {
         LOG.debug("onMessage: byte[]");
@@ -90,7 +89,7 @@ public class DefaultWebsocket implements Serializable {
     public Session getSession() {
         return session;
     }
-    
+
     public String getPathSpec() {
         return pathSpec;
     }

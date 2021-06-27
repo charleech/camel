@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.DefaultShutdownStrategy;
+import org.apache.camel.impl.engine.DefaultShutdownStrategy;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.tck.SubscriberBlackboxVerification;
 import org.reactivestreams.tck.TestEnvironment;
@@ -40,7 +40,7 @@ public class CamelSubscriberConversionVerificationTest extends SubscriberBlackbo
 
         RouteBuilder builder = new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("reactive-streams:sub?maxInflightExchanges=20")
                         .to("log:INFO");
             }

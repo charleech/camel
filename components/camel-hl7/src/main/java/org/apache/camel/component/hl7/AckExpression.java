@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import ca.uhn.hl7v2.ErrorCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.support.ExpressionAdapter;
 
@@ -31,7 +32,7 @@ public class AckExpression extends ExpressionAdapter {
     private ErrorCode errorCode;
 
     public AckExpression() {
-        this((AcknowledgmentCode)null, null, ErrorCode.APPLICATION_INTERNAL_ERROR);
+        this((AcknowledgmentCode) null, null, ErrorCode.APPLICATION_INTERNAL_ERROR);
     }
 
     public AckExpression(AcknowledgmentCode acknowledgementCode) {
@@ -46,7 +47,7 @@ public class AckExpression extends ExpressionAdapter {
 
     @Override
     public Object evaluate(Exchange exchange) {
-        Throwable t = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);
+        Throwable t = exchange.getProperty(ExchangePropertyKey.EXCEPTION_CAUGHT, Throwable.class);
         Message msg = exchange.getIn().getBody(Message.class);
         try {
             HL7Exception hl7e = generateHL7Exception(t);
@@ -68,10 +69,11 @@ public class AckExpression extends ExpressionAdapter {
             }
         } else {
             if (t instanceof HL7Exception) {
-                hl7Exception = (HL7Exception)t;
+                hl7Exception = (HL7Exception) t;
             } else {
-                hl7Exception = new HL7Exception(errorMessage != null ? errorMessage : t.getMessage(),
-                                                errorCode, t);
+                hl7Exception = new HL7Exception(
+                        errorMessage != null ? errorMessage : t.getMessage(),
+                        errorCode, t);
             }
         }
         return hl7Exception;

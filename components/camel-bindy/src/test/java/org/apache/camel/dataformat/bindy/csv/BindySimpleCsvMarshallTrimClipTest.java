@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,23 +22,24 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.model.simple.oneclassandtrimandclip.Customer;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 @ContextConfiguration
-public class BindySimpleCsvMarshallTrimClipTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+public class BindySimpleCsvMarshallTrimClipTest {
 
     private static final String URI_MOCK_RESULT = "mock:result";
     private static final String URI_DIRECT_START = "direct:start";
 
     private String expected;
 
-    @Produce(uri = URI_DIRECT_START)
+    @Produce(URI_DIRECT_START)
     private ProducerTemplate template;
 
-    @EndpointInject(uri = URI_MOCK_RESULT)
+    @EndpointInject(URI_MOCK_RESULT)
     private MockEndpoint result;
 
     @Test
@@ -62,9 +63,10 @@ public class BindySimpleCsvMarshallTrimClipTest extends AbstractJUnit4SpringCont
     }
 
     public static class ContextConfig extends RouteBuilder {
+        @Override
         public void configure() {
             BindyCsvDataFormat camelDataFormat = new BindyCsvDataFormat(
-                org.apache.camel.dataformat.bindy.model.simple.oneclassandtrimandclip.Customer.class);
+                    org.apache.camel.dataformat.bindy.model.simple.oneclassandtrimandclip.Customer.class);
 
             from(URI_DIRECT_START).marshal(camelDataFormat).to(URI_MOCK_RESULT);
         }

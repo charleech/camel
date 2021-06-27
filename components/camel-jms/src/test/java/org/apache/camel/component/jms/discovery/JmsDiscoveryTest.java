@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,20 +20,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.ConnectionFactory;
-import javax.naming.Context;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ShutdownRoute;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.CamelJmsTestHelper;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JmsDiscoveryTest extends CamelTestSupport {
-    protected MyRegistry registry = new MyRegistry();
+    protected MyRegistry myRegistry = new MyRegistry();
 
     @Test
     public void testDiscovery() throws Exception {
@@ -48,10 +49,11 @@ public class JmsDiscoveryTest extends CamelTestSupport {
         // sleep a little
         Thread.sleep(1000);
 
-        Map<String, Map<?, ?>> map = new HashMap<>(registry.getServices());
-        assertTrue("There should be 1 or more, was: " + map.size(), map.size() >= 1);
+        Map<String, Map<?, ?>> map = new HashMap<>(myRegistry.getServices());
+        assertTrue(map.size() >= 1, "There should be 1 or more, was: " + map.size());
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -62,26 +64,25 @@ public class JmsDiscoveryTest extends CamelTestSupport {
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        Context context = super.createJndiContext();
-        context.bind("service1", new MyService("service1"));
-        context.bind("registry", registry);
-        return context;
+    protected void bindToRegistry(Registry registry) throws Exception {
+        registry.bind("service1", new MyService("service1"));
+        registry.bind("registry", myRegistry);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 // lets setup the heartbeats
                 from("timer:heartbeats?delay=100")
-                    .to("bean:service1?method=status")
-                    .to("activemq:topic:registry.heartbeats");
+                        .to("bean:service1?method=status")
+                        .to("activemq:topic:registry.heartbeats");
 
                 // defer shutting this route down as the first route depends upon it to
                 // be running so it can complete its current exchanges
                 from("activemq:topic:registry.heartbeats")
-                    .shutdownRoute(ShutdownRoute.Defer)
-                    .to("bean:registry?method=onEvent", "mock:result");
+                        .shutdownRoute(ShutdownRoute.Defer)
+                        .to("bean:registry?method=onEvent", "mock:result");
             }
         };
     }

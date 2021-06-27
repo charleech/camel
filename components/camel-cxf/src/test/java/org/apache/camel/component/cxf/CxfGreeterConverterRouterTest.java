@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,33 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf;
+
 import javax.xml.ws.Endpoint;
 
 import org.apache.hello_world_soap_http.GreeterImpl;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 
 public class CxfGreeterConverterRouterTest extends AbstractCXFGreeterRouterTest {
     protected static Endpoint endpoint;
-    @AfterClass
+
+    @AfterAll
     public static void stopService() {
         if (endpoint != null) {
             endpoint.stop();
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startService() {
         Object implementor = new GreeterImpl();
         String address = "http://localhost:" + getPort1()
-            + "/CxfGreeterConverterRouterTest/SoapContext/SoapPort";
-        endpoint = Endpoint.publish(address, implementor); 
+                         + "/CxfGreeterConverterRouterTest/SoapContext/SoapPort";
+        endpoint = Endpoint.publish(address, implementor);
     }
 
+    @Override
     protected ClassPathXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/cxf/GreeterConverterEndpointsRouterContext.xml");
     }

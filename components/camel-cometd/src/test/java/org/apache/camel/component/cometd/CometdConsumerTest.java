@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,29 +19,36 @@ package org.apache.camel.component.cometd;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.component.cometd.CometdConsumer.ConsumerService;
+import org.apache.camel.spi.ExchangeFactory;
 import org.cometd.bayeux.MarkedReference;
 import org.cometd.bayeux.server.LocalSession;
 import org.cometd.bayeux.server.ServerChannel;
 import org.cometd.bayeux.server.ServerSession;
 import org.cometd.server.BayeuxServerImpl;
 import org.eclipse.jetty.util.log.Logger;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class CometdConsumerTest {
 
     private static final String USER_NAME = "userName";
     private CometdConsumer testObj;
+    @Mock
+    private ExtendedCamelContext context;
+    @Mock
+    private ExchangeFactory exchangeFactory;
     @Mock
     private CometdEndpoint endpoint;
     @Mock
@@ -59,22 +66,27 @@ public class CometdConsumerTest {
     @Mock
     private MarkedReference<ServerChannel> markedReferenceServerChannel;
 
-    @Before
+    @BeforeEach
     public void before() {
         when(bayeuxServerImpl.newLocalSession(ArgumentMatchers.isNull())).thenReturn(localSession);
         when(bayeuxServerImpl.createChannelIfAbsent(ArgumentMatchers.isNull())).thenReturn(markedReferenceServerChannel);
         when(markedReferenceServerChannel.getReference()).thenReturn(serverChannel);
 
+        when(endpoint.getCamelContext()).thenReturn(context);
+        when(context.adapt(ExtendedCamelContext.class)).thenReturn(context);
+        when(context.getExchangeFactory()).thenReturn(exchangeFactory);
+        when(exchangeFactory.newExchangeFactory(any())).thenReturn(exchangeFactory);
+
         testObj = new CometdConsumer(endpoint, processor);
         testObj.setBayeux(bayeuxServerImpl);
-        
+
         Set<String> attributeNames = new HashSet<>();
         String attributeKey = USER_NAME;
         attributeNames.add(attributeKey);
     }
 
     @Test
-    public void testStartDoesntCreateMultipleServices() throws Exception {
+    void testStartDoesntCreateMultipleServices() {
         // setup
         testObj.start();
         ConsumerService expectedService = testObj.getConsumerService();
@@ -86,6 +98,5 @@ public class CometdConsumerTest {
         // assert
         assertEquals(expectedService, result);
     }
-    
-}
 
+}

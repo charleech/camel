@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,8 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Iterator which can go through the TarArchiveInputStream according to TarArchiveEntry
- * Based on ZipIterator from camel-zipfile component
+ * The Iterator which can go through the TarArchiveInputStream according to TarArchiveEntry Based on ZipIterator from
+ * camel-zipfile component
  */
 public class TarIterator implements Iterator<Message>, Closeable {
 
@@ -52,6 +52,7 @@ public class TarIterator implements Iterator<Message>, Closeable {
     private final Exchange exchange;
     private volatile TarArchiveInputStream tarInputStream;
     private volatile Message parent;
+    private volatile boolean first;
     private boolean allowEmptyDirectory;
 
     public TarIterator(Exchange exchange, InputStream inputStream) {
@@ -61,13 +62,15 @@ public class TarIterator implements Iterator<Message>, Closeable {
             tarInputStream = (TarArchiveInputStream) inputStream;
         } else {
             try {
-                ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(ArchiveStreamFactory.TAR, new BufferedInputStream(inputStream));
+                ArchiveInputStream input = new ArchiveStreamFactory().createArchiveInputStream(ArchiveStreamFactory.TAR,
+                        new BufferedInputStream(inputStream));
                 tarInputStream = (TarArchiveInputStream) input;
             } catch (ArchiveException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
         parent = null;
+        first = true;
     }
 
     @Override
@@ -76,7 +79,7 @@ public class TarIterator implements Iterator<Message>, Closeable {
             if (tarInputStream == null) {
                 return false;
             }
-            boolean availableDataInCurrentEntry = tarInputStream.available() > 0;
+            boolean availableDataInCurrentEntry = tarInputStream.getCurrentEntry() != null && tarInputStream.available() > 0;
             if (!availableDataInCurrentEntry) {
                 // advance to the next entry.
                 parent = getNextElement();
@@ -86,10 +89,12 @@ public class TarIterator implements Iterator<Message>, Closeable {
                 } else {
                     availableDataInCurrentEntry = true;
                 }
+                if (first && parent == null) {
+                    throw new IllegalStateException("Unable to untar the file, it may be corrupted.");
+                }
             }
             return availableDataInCurrentEntry;
         } catch (IOException exception) {
-            //Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }
@@ -101,6 +106,12 @@ public class TarIterator implements Iterator<Message>, Closeable {
         }
         Message answer = parent;
         parent = null;
+
+        if (first && answer == null) {
+            throw new IllegalStateException("Unable to untar the file, it may be corrupted.");
+        }
+
+        first = false;
         checkNullAnswer(answer);
 
         return answer;
@@ -132,7 +143,6 @@ public class TarIterator implements Iterator<Message>, Closeable {
                 return null;
             }
         } catch (IOException exception) {
-            //Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }

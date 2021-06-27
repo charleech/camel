@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,34 +16,28 @@
  */
 package org.apache.camel.component.redis;
 
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.BindToRegistry;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisConnectionTest extends RedisTestSupport {
 
     @Mock
+    @BindToRegistry("redisTemplate")
     private RedisTemplate<String, String> redisTemplate;
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("redisTemplate", redisTemplate);
-        return registry;
-    }
 
     @Test
     public void shouldExecuteECHO() throws Exception {
-        when(redisTemplate.execute(ArgumentMatchers.<RedisCallback<String>>any())).thenReturn("value");
+        when(redisTemplate.execute(ArgumentMatchers.<RedisCallback<String>> any())).thenReturn("value");
 
         Object result = sendHeaders(
                 RedisConstants.COMMAND, "ECHO",
@@ -54,7 +48,7 @@ public class RedisConnectionTest extends RedisTestSupport {
 
     @Test
     public void shouldExecutePING() throws Exception {
-        when(redisTemplate.execute(ArgumentMatchers.<RedisCallback<String>>any())).thenReturn("PONG");
+        when(redisTemplate.execute(ArgumentMatchers.<RedisCallback<String>> any())).thenReturn("PONG");
 
         Object result = sendHeaders(RedisConstants.COMMAND, "PING");
 
@@ -65,7 +59,7 @@ public class RedisConnectionTest extends RedisTestSupport {
     public void shouldExecuteQUIT() throws Exception {
         sendHeaders(RedisConstants.COMMAND, "QUIT");
 
-        verify(redisTemplate).execute(ArgumentMatchers.<RedisCallback<String>>any());
+        verify(redisTemplate).execute(ArgumentMatchers.<RedisCallback<String>> any());
     }
 
     @Test

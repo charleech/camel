@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.component.zookeeper.ZooKeeperCuratorConfiguration;
 import org.apache.camel.component.zookeeper.ZooKeeperCuratorHelper;
-import org.apache.camel.impl.cluster.AbstractCamelClusterService;
+import org.apache.camel.support.cluster.AbstractCamelClusterService;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.AuthInfo;
@@ -233,9 +233,8 @@ public class ZooKeeperClusterService extends AbstractCamelClusterService<ZooKeep
                 managedInstance = true;
 
                 LOGGER.debug("Starting ZooKeeper Curator with namespace '{}',  nodes: '{}'",
-                    configuration.getNamespace(),
-                    String.join(",", configuration.getNodes())
-                );
+                        configuration.getNamespace(),
+                        String.join(",", configuration.getNodes()));
 
                 curator = ZooKeeperCuratorHelper.createCurator(configuration);
                 curator.start();

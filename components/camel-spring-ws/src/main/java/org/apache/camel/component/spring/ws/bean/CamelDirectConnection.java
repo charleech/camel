@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ public class CamelDirectConnection implements WebServiceConnection {
             camelContext.createProducerTemplate().sendBody(destination.toString(), message);
         } catch (CamelExecutionException e) {
             // simply discard replyTo message
-            LOG.warn("Could not found any camel endpoint [" + destination + "] for wsa:ReplyTo camel mapping.", e);
+            LOG.warn("Could not found any camel endpoint [{}] for wsa:ReplyTo camel mapping.", destination, e);
         }
     }
 

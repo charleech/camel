@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,7 +51,8 @@ public class CamelJobExecutionListener implements JobExecutionListener {
 
     public enum EventType {
 
-        BEFORE, AFTER;
+        BEFORE,
+        AFTER;
 
         public static final String HEADER_KEY = "SPRING_BATCH_JOB_EVENT_TYPE";
 

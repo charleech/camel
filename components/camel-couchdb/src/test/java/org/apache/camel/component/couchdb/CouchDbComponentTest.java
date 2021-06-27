@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,42 +19,40 @@ package org.apache.camel.component.couchdb;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CouchDbComponentTest {
+public class CouchDbComponentTest extends CamelTestSupport {
 
-    @Mock
-    private CamelContext context;
+    @Override
+    public boolean isUseRouteBuilder() {
+        return false;
+    }
 
     @Test
-    public void testEndpointCreated() throws Exception {
+    void testEndpointCreated() throws Exception {
         Map<String, Object> params = new HashMap<>();
 
         String uri = "couchdb:http://localhost:5984/db";
         String remaining = "http://localhost:5984/db";
 
-        Endpoint endpoint = new CouchDbComponent(context).createEndpoint(uri, remaining, params);
+        CouchDbEndpoint endpoint
+                = context.getComponent("couchdb", CouchDbComponent.class).createEndpoint(uri, remaining, params);
         assertNotNull(endpoint);
     }
 
     @Test
-    public void testPropertiesSet() throws Exception {
+    void testPropertiesSet() throws Exception {
         Map<String, Object> params = new HashMap<>();
         params.put("createDatabase", true);
         params.put("username", "coldplay");
         params.put("password", "chrism");
-        params.put("heartbeat", 1000);
+        params.put("heartbeat", "1000");
         params.put("style", "gothic");
         params.put("deletes", false);
         params.put("updates", false);
@@ -62,7 +60,8 @@ public class CouchDbComponentTest {
         String uri = "couchdb:http://localhost:14/db";
         String remaining = "http://localhost:14/db";
 
-        CouchDbEndpoint endpoint = new CouchDbComponent(context).createEndpoint(uri, remaining, params);
+        CouchDbEndpoint endpoint
+                = context.getComponent("couchdb", CouchDbComponent.class).createEndpoint(uri, remaining, params);
         assertEquals("http", endpoint.getProtocol());
         assertEquals("localhost", endpoint.getHostname());
         assertEquals("db", endpoint.getDatabase());

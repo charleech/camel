@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,9 +27,6 @@ import static org.apache.camel.service.lra.LRAConstants.PARTICIPANT_PATH_COMPLET
 import static org.apache.camel.service.lra.LRAConstants.URL_COMPENSATION_KEY;
 import static org.apache.camel.service.lra.LRAConstants.URL_COMPLETION_KEY;
 
-/**
- *
- */
 public class LRASagaRoutes extends RouteBuilder {
 
     private LRASagaService sagaService;
@@ -47,7 +44,7 @@ public class LRASagaRoutes extends RouteBuilder {
                 .process(this::verifyRequest)
                 .choice()
                 .when(header(URL_COMPENSATION_KEY).isNotNull())
-                .toD("header." + URL_COMPENSATION_KEY)
+                .toD("${header." + URL_COMPENSATION_KEY + "}")
                 .end();
 
         rest(sagaService.getLocalParticipantContextPath())
@@ -56,7 +53,7 @@ public class LRASagaRoutes extends RouteBuilder {
                 .process(this::verifyRequest)
                 .choice()
                 .when(header(URL_COMPLETION_KEY).isNotNull())
-                .toD("header." + URL_COMPLETION_KEY)
+                .toD("${header." + URL_COMPLETION_KEY + "}")
                 .end();
 
     }

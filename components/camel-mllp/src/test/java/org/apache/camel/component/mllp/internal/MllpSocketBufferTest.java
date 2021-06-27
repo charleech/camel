@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp.internal;
 
 import org.apache.camel.component.mllp.MllpProtocolConstants;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for the MllpSocketBuffer class.
@@ -78,7 +76,6 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         instance.reset();
         instance.write(buildTestBytes(false, false, false));
         assertNull(instance.toHl7String());
-
 
         instance.reset();
         instance.write(buildTestBytes(null, true, true, true));
@@ -137,7 +134,6 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         instance.reset();
         instance.write(buildTestBytes(false, false, false));
         assertNull(instance.toHl7String());
-
 
         instance.reset();
         instance.write(buildTestBytes(null, true, true, true));
@@ -207,7 +203,6 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         instance.write(buildTestBytes(false, false, false));
         assertNull(instance.toMllpPayload());
 
-
         instance.reset();
         instance.write(buildTestBytes(null, true, true, true));
         assertArrayEquals(new byte[0], instance.toMllpPayload());
@@ -266,7 +261,6 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         instance.write(buildTestBytes(false, false, false));
         assertNull(instance.toMllpPayload());
 
-
         instance.reset();
         instance.write(buildTestBytes(null, true, true, true));
         assertArrayEquals(new byte[0], instance.toMllpPayload());
@@ -292,7 +286,6 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         assertNull(instance.toMllpPayload());
     }
 
-
     /**
      * Description of test.
      *
@@ -301,7 +294,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     @Test
     public void testGetStartOfBlockIndex() throws Exception {
         int expected = -1;
-        assertEquals("Unexpected initial value", expected, instance.getStartOfBlockIndex());
+        assertEquals(expected, instance.getStartOfBlockIndex(), "Unexpected initial value");
 
         expected = 0;
         instance.startOfBlockIndex = expected;
@@ -320,7 +313,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     @Test
     public void tesGgetEndOfBlockIndex() throws Exception {
         int expected = -1;
-        assertEquals("Unexpected initial value", expected, instance.getEndOfBlockIndex());
+        assertEquals(expected, instance.getEndOfBlockIndex(), "Unexpected initial value");
 
         expected = 0;
         instance.endOfBlockIndex = expected;
@@ -339,7 +332,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     @Test
     public void testHasCompleteEnvelopeWithRequiredEndOfData() throws Exception {
         endpoint.setRequireEndOfData(true);
-        assertFalse("Unexpected initial value", instance.hasCompleteEnvelope());
+        assertFalse(instance.hasCompleteEnvelope(), "Unexpected initial value");
 
         instance.write(MllpProtocolConstants.START_OF_BLOCK);
         assertFalse(instance.hasCompleteEnvelope());
@@ -365,7 +358,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     @Test
     public void testHasCompleteEnvelopeWithOptionalEndOfData() throws Exception {
         endpoint.setRequireEndOfData(false);
-        assertFalse("Unexpected initial value", instance.hasCompleteEnvelope());
+        assertFalse(instance.hasCompleteEnvelope(), "Unexpected initial value");
 
         instance.write(MllpProtocolConstants.START_OF_BLOCK);
         assertFalse(instance.hasCompleteEnvelope());
@@ -390,7 +383,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testHasStartOfBlock() throws Exception {
-        assertFalse("Unexpected initial value", instance.hasStartOfBlock());
+        assertFalse(instance.hasStartOfBlock(), "Unexpected initial value");
 
         instance.write(MllpProtocolConstants.START_OF_BLOCK);
         assertTrue(instance.hasStartOfBlock());
@@ -415,10 +408,10 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testHasEndOfBlock() throws Exception {
-        assertFalse("Unexpected initial value", instance.hasEndOfBlock());
+        assertFalse(instance.hasEndOfBlock(), "Unexpected initial value");
 
         instance.write(MllpProtocolConstants.END_OF_BLOCK);
-        assertFalse("START_OF_BLOCK before an END_OF_BLOCK", instance.hasEndOfBlock());
+        assertFalse(instance.hasEndOfBlock(), "START_OF_BLOCK before an END_OF_BLOCK");
 
         instance.reset();
         assertFalse(instance.hasEndOfBlock());
@@ -458,7 +451,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testHasEndOfData() throws Exception {
-        assertFalse("Unexpected initial value", instance.hasEndOfData());
+        assertFalse(instance.hasEndOfData(), "Unexpected initial value");
 
         // Test just the END_OF_DATA
         instance.write(MllpProtocolConstants.END_OF_DATA);
@@ -472,7 +465,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
         assertFalse(instance.hasEndOfData());
 
         instance.write(MllpProtocolConstants.END_OF_DATA);
-        assertFalse("Need a START_OF_BLOCK before the END_OF_DATA",  instance.hasEndOfData());
+        assertFalse(instance.hasEndOfData(), "Need a START_OF_BLOCK before the END_OF_DATA");
 
         instance.reset();
         assertFalse(instance.hasEndOfData());
@@ -515,7 +508,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testhasOutOfBandData() throws Exception {
-        assertFalse("Unexpected initial value", instance.hasOutOfBandData());
+        assertFalse(instance.hasOutOfBandData(), "Unexpected initial value");
 
         instance.write(buildTestBytes(true, true, true));
         assertFalse(instance.hasOutOfBandData());
@@ -538,7 +531,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testHasLeadingOutOfBandData() throws Exception {
-        assertFalse("Unexpected initial value", instance.hasLeadingOutOfBandData());
+        assertFalse(instance.hasLeadingOutOfBandData(), "Unexpected initial value");
 
         instance.write(buildTestBytes(true, true, true));
         assertFalse(instance.hasLeadingOutOfBandData());
@@ -563,7 +556,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     public void testHasTrailingOutOfBandDataWithRequiredEndOfData() throws Exception {
         endpoint.setRequireEndOfData(true);
 
-        assertFalse("Unexpected initial value", instance.hasTrailingOutOfBandData());
+        assertFalse(instance.hasTrailingOutOfBandData(), "Unexpected initial value");
 
         instance.write(buildTestBytes(true, true, true));
         assertFalse(instance.hasTrailingOutOfBandData());
@@ -596,7 +589,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     public void testHasTrailingOutOfBandDataWithOptionalEndOfData() throws Exception {
         endpoint.setRequireEndOfData(false);
 
-        assertFalse("Unexpected initial value", instance.hasTrailingOutOfBandData());
+        assertFalse(instance.hasTrailingOutOfBandData(), "Unexpected initial value");
 
         instance.write(buildTestBytes(true, true, true));
         assertFalse(instance.hasTrailingOutOfBandData());
@@ -627,7 +620,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
      */
     @Test
     public void testGetLeadingOutOfBandData() throws Exception {
-        assertNull("Unexpected initial value", instance.getLeadingOutOfBandData());
+        assertNull(instance.getLeadingOutOfBandData(), "Unexpected initial value");
 
         instance.write(buildTestBytes(true, true, true));
         assertNull(instance.getLeadingOutOfBandData());
@@ -653,7 +646,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     public void testGetTrailingOutOfBandDataWithRequiredEndOfData() throws Exception {
         endpoint.setRequireEndOfData(true);
 
-        assertNull("Unexpected initial value", instance.getTrailingOutOfBandData());
+        assertNull(instance.getTrailingOutOfBandData(), "Unexpected initial value");
 
         // Test with END_OF_DATA
         instance.write(buildTestBytes(true, true, true));
@@ -703,7 +696,7 @@ public class MllpSocketBufferTest extends SocketBufferTestSupport {
     public void testGetTrailingOutOfBandDataWithOptionalEndOfData() throws Exception {
         endpoint.setRequireEndOfData(false);
 
-        assertNull("Unexpected initial value", instance.getTrailingOutOfBandData());
+        assertNull(instance.getTrailingOutOfBandData(), "Unexpected initial value");
 
         // Test with END_OF_DATA
         instance.write(buildTestBytes(true, true, true));

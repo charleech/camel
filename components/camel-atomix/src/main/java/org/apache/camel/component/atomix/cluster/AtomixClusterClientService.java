@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,10 @@ import java.util.List;
 
 import io.atomix.AtomixClient;
 import io.atomix.catalyst.transport.Address;
-import io.atomix.catalyst.transport.Transport;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.atomix.client.AtomixClientConfiguration;
 import org.apache.camel.component.atomix.client.AtomixClientHelper;
-import org.apache.camel.impl.cluster.AbstractCamelClusterService;
+import org.apache.camel.support.cluster.AbstractCamelClusterService;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,16 +67,16 @@ public final class AtomixClusterClientService extends AbstractCamelClusterServic
         configuration.setNodes(nodes);
     }
 
-    public Class<? extends Transport> getTransport() {
-        return configuration.getTransport();
+    public String getTransport() {
+        return configuration.getTransportClassName();
     }
 
-    public void setTransport(Class<? extends Transport> transport) {
-        configuration.setTransport(transport);
+    public void setTransportClassName(String transport) {
+        configuration.setTransportClassName(transport);
     }
 
     public AtomixClient getAtomix() {
-        return configuration.getAtomix();
+        return (AtomixClient) configuration.getAtomix();
     }
 
     public void setAtomix(AtomixClient atomix) {

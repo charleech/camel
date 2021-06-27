@@ -1,9 +1,20 @@
 [[ldap-component]]
-== LDAP Component
+= LDAP Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-ldap/src/main/docs/ldap-component.adoc
+:docTitle: LDAP
+:artifactId: camel-ldap
+:description: Perform searches on LDAP servers.
+:since: 1.5
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/ldap.adoc[opts=optional]
 
-*Available as of Camel version 1.5*
+*Since Camel {since}*
 
-The *ldap* component allows you to perform searches in LDAP servers
+*{component-header}*
+
+The LDAP component allows you to perform searches in LDAP servers
 using filters as the message payload. +
  This component uses standard JNDI (`javax.naming` package) to access
 the server.
@@ -21,7 +32,7 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 -----------------------------
@@ -37,11 +48,20 @@ the start of a route.
 You can append query options to the URI in the following format,
 `?option=value&option=value&...`
 
-### Options
+== Options
 
 
 // component options: START
-The LDAP component has no options.
+The LDAP component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -56,7 +76,7 @@ ldap:dirContextName
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -66,44 +86,29 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (5 parameters):
+=== Query Parameters (5 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
 | *base* (producer) | The base DN for searches. | ou=system | String
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *pageSize* (producer) | When specified the ldap module uses paging to retrieve all results (most LDAP Servers throw an exception when trying to retrieve more than 1000 entries in one query). To be able to use this a LdapContext (subclass of DirContext) has to be passed in as ldapServerBean (otherwise an exception is thrown) |  | Integer
 | *returnedAttributes* (producer) | Comma-separated list of attributes that should be set in each entry of the result |  | String
-| *scope* (producer) | Specifies how deeply to search the tree of entries, starting at the base DN. | subtree | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *scope* (producer) | Specifies how deeply to search the tree of entries, starting at the base DN. There are 3 enums and the value can be one of: object, onelevel, subtree | subtree | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 2 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.ldap.enabled* | Enable ldap component | true | Boolean
-| *camel.component.ldap.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
 
 
 
 
-### Result
+== Result
 
 The result is returned in the Out body as a
 `ArrayList<javax.naming.directory.SearchResult>` object.
 
-### DirContext
+== DirContext
 
 The URI, `ldap:ldapserver`, references a Spring bean with the ID,
 `ldapserver`. The `ldapserver` bean may be defined as follows:
@@ -124,14 +129,17 @@ The URI, `ldap:ldapserver`, references a Spring bean with the ID,
 The preceding example declares a regular Sun based LDAP `DirContext`
 that connects anonymously to a locally hosted LDAP server.
 
-NOTE: `DirContext` objects are *not* required to support concurrency by
+[NOTE]
+====
+`DirContext` objects are *not* required to support concurrency by
 contract. It is therefore important that the directory context is
 declared with the setting, `scope="prototype"`, in the `bean` definition
 or that the context supports concurrency. In the Spring framework,
 `prototype` scoped objects are instantiated each time they are looked
 up.
+====
 
-### Samples
+== Samples
 
 Following on from the Spring configuration above, the code sample below
 sends an LDAP request to filter search a group for a member. The Common
@@ -170,7 +178,7 @@ if the LDAP entry has a Common Name, use a filter expression like:
 (cn=*)
 ------
 
-#### Binding using credentials
+=== Binding using credentials
 
 A Camel end user donated this sample code he used to bind to the ldap
 server using credentials.
@@ -215,7 +223,7 @@ System.out.println(out.getOut().getBody());
 context.stop();
 ---------------------------------------------------------------------------------------
 
-### Configuring SSL
+== Configuring SSL
 
 All required is to create a custom socket factory and reference it in
 the InitialDirContext bean - see below sample.
@@ -354,11 +362,7 @@ public class CustomSocketFactory extends SSLSocketFactory {
 }
 -----------------------------------------------------------------------------------------------------
 
- 
+ 
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$ldap-starter.adoc[]

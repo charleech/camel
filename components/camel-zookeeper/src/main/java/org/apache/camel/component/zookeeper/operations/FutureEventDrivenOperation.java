@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,19 +22,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static java.lang.String.format;
-
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.ZooKeeper;
 
+import static java.lang.String.format;
+
 /**
- * <code>FutureEventDrivenOperation</code> uses ZooKeepers {@link Watcher}
- * mechanism to await specific ZooKeeper events. Typically this is used to await
- * changes to a particular node before retrieving the change.
+ * <code>FutureEventDrivenOperation</code> uses ZooKeepers {@link Watcher} mechanism to await specific ZooKeeper events.
+ * Typically this is used to await changes to a particular node before retrieving the change.
  */
-public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOperation<ResultType> implements Watcher, WatchedEventProvider {
+public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOperation<ResultType>
+        implements Watcher, WatchedEventProvider {
 
     private EventType[] awaitedTypes;
 
@@ -47,11 +47,12 @@ public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOp
         this.awaitedTypes = awaitedTypes;
     }
 
+    @Override
     public void process(WatchedEvent event) {
         this.event = event;
         EventType received = event.getType();
         if (LOG.isDebugEnabled()) {
-            LOG.debug(format("Recieved event of type %s for node '%s'", received, event.getPath()));
+            LOG.debug(format("Received event of type %s for node '%s'", received, event.getPath()));
         }
 
         for (EventType watched : awaitedTypes) {
@@ -70,10 +71,12 @@ public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOp
             if (b.length() > 0) {
                 b.setLength(b.length() - 2);
             }
-            LOG.trace(String.format("Recieved event of type %s did not match any watched types %s", received, Arrays.toString(awaitedTypes)));
+            LOG.trace(String.format("Received event of type %s did not match any watched types %s", received,
+                    Arrays.toString(awaitedTypes)));
         }
     }
 
+    @Override
     public OperationResult<ResultType> get() throws InterruptedException, ExecutionException {
         installWatch();
         waitingThreads.add(Thread.currentThread());
@@ -81,7 +84,9 @@ public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOp
         return result;
     }
 
-    public OperationResult<ResultType> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    @Override
+    public OperationResult<ResultType> get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException {
         installWatch();
         waitingThreads.add(Thread.currentThread());
         waitForAnyWatchedType.await(timeout, unit);
@@ -89,11 +94,9 @@ public abstract class FutureEventDrivenOperation<ResultType> extends ZooKeeperOp
     }
 
     /**
-     * Install the watcher to receive {@link WatchedEvent}s. It should use the
-     * appropriate asynchronous ZooKeeper call to do this so as not to block the
-     * route from starting. Once one of the watched for types of event is
-     * received a call is made to getResult, which can use the appropriate
-     * synchronous call to retrieve the actual data.
+     * Install the watcher to receive {@link WatchedEvent}s. It should use the appropriate asynchronous ZooKeeper call
+     * to do this so as not to block the route from starting. Once one of the watched for types of event is received a
+     * call is made to getResult, which can use the appropriate synchronous call to retrieve the actual data.
      */
     protected abstract void installWatch();
 

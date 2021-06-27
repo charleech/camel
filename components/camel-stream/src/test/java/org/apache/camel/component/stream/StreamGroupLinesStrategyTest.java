@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,18 @@ package org.apache.camel.component.stream;
 
 import java.util.List;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StreamGroupLinesStrategyTest extends StreamGroupLinesTest {
-    
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("myGroupStrategy", new MyGroupStrategy());
-        return jndi;
-    }
-    
+
+    @BindToRegistry("myGroupStrategy")
+    private MyGroupStrategy strat = new MyGroupStrategy();
+
     class MyGroupStrategy implements GroupStrategy {
 
         @Override
@@ -43,7 +42,8 @@ public class StreamGroupLinesStrategyTest extends StreamGroupLinesTest {
             return buffer.toString();
         }
     }
-    
+
+    @Override
     @Test
     public void testGroupLines() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
@@ -57,10 +57,10 @@ public class StreamGroupLinesStrategyTest extends StreamGroupLinesTest {
         assertMockEndpointsSatisfied();
 
         Object result = mock.getExchanges().get(0).getIn().getBody();
-        assertEquals("Get a wrong result.", "A" + LS + "B" + LS + "C" + LS, result);
+        assertEquals("A" + LS + "B" + LS + "C" + LS, result, "Get a wrong result.");
 
         Object result2 = mock.getExchanges().get(1).getIn().getBody();
-        assertEquals("Get a wrong result.", "D" + LS + "E" + LS + "F" + LS, result2);
+        assertEquals("D" + LS + "E" + LS + "F" + LS, result2, "Get a wrong result.");
     }
 
     @Override
@@ -68,7 +68,8 @@ public class StreamGroupLinesStrategyTest extends StreamGroupLinesTest {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("stream:file?fileName=target/stream/streamfile.txt&groupLines=3&groupStrategy=#myGroupStrategy").to("mock:result");
+                from("stream:file?fileName=target/stream/streamfile.txt&groupLines=3&groupStrategy=#myGroupStrategy")
+                        .to("mock:result");
             }
         };
     }

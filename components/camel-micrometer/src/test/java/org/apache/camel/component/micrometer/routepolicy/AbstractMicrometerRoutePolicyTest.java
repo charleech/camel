@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,17 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.core.instrument.util.HierarchicalNameMapper;
 import io.micrometer.jmx.JmxMeterRegistry;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.micrometer.CamelJmxConfig;
 import org.apache.camel.component.micrometer.MicrometerConstants;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AbstractMicrometerRoutePolicyTest extends CamelTestSupport {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
     protected CompositeMeterRegistry meterRegistry;
 
     @Override
@@ -36,14 +39,12 @@ public class AbstractMicrometerRoutePolicyTest extends CamelTestSupport {
         return true;
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
+    @BindToRegistry(MicrometerConstants.METRICS_REGISTRY_NAME)
+    public CompositeMeterRegistry addRegistry() throws Exception {
         meterRegistry = new CompositeMeterRegistry();
         meterRegistry.add(new SimpleMeterRegistry());
         meterRegistry.add(new JmxMeterRegistry(CamelJmxConfig.DEFAULT, Clock.SYSTEM, HierarchicalNameMapper.DEFAULT));
-        registry.bind(MicrometerConstants.METRICS_REGISTRY_NAME, meterRegistry);
-        return registry;
+        return meterRegistry;
     }
 
     @Override

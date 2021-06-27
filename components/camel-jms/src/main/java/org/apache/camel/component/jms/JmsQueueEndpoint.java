@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,6 @@ package org.apache.camel.component.jms;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jms.JMSException;
 import javax.jms.Queue;
 
 import org.apache.camel.Exchange;
@@ -36,20 +35,14 @@ public class JmsQueueEndpoint extends JmsEndpoint implements BrowsableEndpoint {
     private int maximumBrowseSize = -1;
     private final QueueBrowseStrategy queueBrowseStrategy;
 
-    public JmsQueueEndpoint(Queue destination) throws JMSException {
-        this("jms:queue:" + destination.getQueueName(), null);
-        setDestinationType("queue");
-        setDestination(destination);
-    }
-    
     public JmsQueueEndpoint(String uri, JmsComponent component, String destination,
-            JmsConfiguration configuration) {
+                            JmsConfiguration configuration) {
         this(uri, component, destination, configuration, null);
         setDestinationType("queue");
     }
 
     public JmsQueueEndpoint(String uri, JmsComponent component, String destination,
-            JmsConfiguration configuration, QueueBrowseStrategy queueBrowseStrategy) {
+                            JmsConfiguration configuration, QueueBrowseStrategy queueBrowseStrategy) {
         super(uri, component, destination, false, configuration);
         setDestinationType("queue");
         if (queueBrowseStrategy == null) {
@@ -81,14 +74,14 @@ public class JmsQueueEndpoint extends JmsEndpoint implements BrowsableEndpoint {
     }
 
     /**
-     * If a number is set > 0 then this limits the number of messages that are
-     * returned when browsing the queue
+     * If a number is set > 0 then this limits the number of messages that are returned when browsing the queue
      */
     @ManagedAttribute
     public void setMaximumBrowseSize(int maximumBrowseSize) {
         this.maximumBrowseSize = maximumBrowseSize;
     }
 
+    @Override
     public List<Exchange> getExchanges() {
         if (queueBrowseStrategy == null) {
             return Collections.emptyList();

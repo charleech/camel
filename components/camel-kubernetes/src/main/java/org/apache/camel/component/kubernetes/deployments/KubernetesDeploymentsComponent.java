@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,9 @@ import org.apache.camel.spi.annotations.Component;
 @Component("kubernetes-deployments")
 public class KubernetesDeploymentsComponent extends AbstractKubernetesComponent {
 
-    protected KubernetesDeploymentsEndpoint doCreateEndpoint(String uri, String remaining, KubernetesConfiguration config) throws Exception {
+    @Override
+    protected KubernetesDeploymentsEndpoint doCreateEndpoint(String uri, String remaining, KubernetesConfiguration config)
+            throws Exception {
         KubernetesDeploymentsEndpoint endpoint = new KubernetesDeploymentsEndpoint(uri, this, config);
         return endpoint;
     }

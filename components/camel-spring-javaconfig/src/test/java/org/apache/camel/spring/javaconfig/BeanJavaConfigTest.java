@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,27 +22,24 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringDelegatingTestContextLoader;
-import org.apache.camel.test.spring.CamelSpringJUnit4ClassRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-@RunWith(CamelSpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {BeanJavaConfigTest.ContextConfig.class}, loader = CamelSpringDelegatingTestContextLoader.class)
-public class BeanJavaConfigTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+@ContextConfiguration(classes = BeanJavaConfigTest.ContextConfig.class)
+public class BeanJavaConfigTest {
 
-    @EndpointInject(uri = "mock:end")
+    @EndpointInject("mock:end")
     protected MockEndpoint endpoint;
 
-    @EndpointInject(uri = "mock:error")
+    @EndpointInject("mock:error")
     protected MockEndpoint errorEndpoint;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate producer;
 
     @Test

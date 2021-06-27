@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -56,12 +56,14 @@ public class MockAS400SecureConnectionPool extends AS400ConnectionPool {
     }
 
     @Override
-    public AS400 getSecureConnection(String systemName, String userID, ProfileTokenCredential profileTokenCredential) throws ConnectionPoolException {
+    public AS400 getSecureConnection(String systemName, String userID, ProfileTokenCredential profileTokenCredential)
+            throws ConnectionPoolException {
         return new AS400(systemName, userID);
     }
 
     @Override
-    public AS400 getSecureConnection(String systemName, String userID, ProfileTokenCredential profileTokenCredential, int i) throws ConnectionPoolException {
+    public AS400 getSecureConnection(String systemName, String userID, ProfileTokenCredential profileTokenCredential, int i)
+            throws ConnectionPoolException {
         return new AS400(systemName, userID);
     }
 
@@ -88,12 +90,14 @@ public class MockAS400SecureConnectionPool extends AS400ConnectionPool {
     }
 
     @Override
-    public AS400 getConnection(String systemName, String userID, String password, int service, Locale locale) throws ConnectionPoolException {
+    public AS400 getConnection(String systemName, String userID, String password, int service, Locale locale)
+            throws ConnectionPoolException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public AS400 getConnection(String systemName, String userID, String password, Locale locale) throws ConnectionPoolException {
+    public AS400 getConnection(String systemName, String userID, String password, Locale locale)
+            throws ConnectionPoolException {
         throw new UnsupportedOperationException();
     }
 

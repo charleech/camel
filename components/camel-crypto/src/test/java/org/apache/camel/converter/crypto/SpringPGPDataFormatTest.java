@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,18 +18,19 @@ package org.apache.camel.converter.crypto;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.spring.SpringCamelContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class SpringPGPDataFormatTest extends AbstractPGPDataFormatTest {
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         return SpringCamelContext.springCamelContext(
                 new ClassPathXmlApplicationContext("/org/apache/camel/component/crypto/SpringPGPDataFormatTest.xml"), true);
     }
 
     @Test
-    public void testEncryption() throws Exception {
+    void testEncryption() throws Exception {
         doRoundTripEncryptionTests("direct:inline");
     }
 

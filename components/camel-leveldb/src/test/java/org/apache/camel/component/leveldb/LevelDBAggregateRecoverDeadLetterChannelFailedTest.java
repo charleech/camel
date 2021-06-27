@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,32 +15,34 @@
  * limitations under the License.
  */
 package org.apache.camel.component.leveldb;
+
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.AggregationStrategy;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.params.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
-public class LevelDBAggregateRecoverDeadLetterChannelFailedTest extends CamelTestSupport {
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-    private LevelDBAggregationRepository repo;
+@DisabledOnOs({ OS.AIX, OS.OTHER })
+public class LevelDBAggregateRecoverDeadLetterChannelFailedTest extends LevelDBTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("target/data");
-        repo = new LevelDBAggregationRepository("repo1", "target/data/leveldb.dat");
         // enable recovery
-        repo.setUseRecovery(true);
+        getRepo().setUseRecovery(true);
         // exhaust after at most 2 attempts
-        repo.setMaximumRedeliveries(2);
+        getRepo().setMaximumRedeliveries(2);
         // and move to this dead letter channel
-        repo.setDeadLetterUri("direct:dead");
+        getRepo().setDeadLetterUri("direct:dead");
         // check faster
-        repo.setRecoveryInterval(1000, TimeUnit.MILLISECONDS);
+        getRepo().setRecoveryInterval(1000, TimeUnit.MILLISECONDS);
 
         super.setUp();
     }
@@ -82,32 +84,19 @@ public class LevelDBAggregateRecoverDeadLetterChannelFailedTest extends CamelTes
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .aggregate(header("id"), new MyAggregationStrategy())
-                        .completionSize(5).aggregationRepository(repo)
+                        .aggregate(header("id"), new StringAggregationStrategy())
+                        .completionSize(5).aggregationRepository(getRepo())
                         .log("aggregated exchange id ${exchangeId} with ${body}")
                         .to("mock:aggregated")
                         .throwException(new IllegalArgumentException("Damn"))
                         .to("mock:result")
-                    .end();
+                        .end();
 
                 from("direct:dead")
-                    .to("mock:dead")
-                    .throwException(new IllegalArgumentException("We are dead"));
+                        .to("mock:dead")
+                        .throwException(new IllegalArgumentException("We are dead"));
             }
         };
     }
 
-    public static class MyAggregationStrategy implements AggregationStrategy {
-
-        public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
-            if (oldExchange == null) {
-                return newExchange;
-            }
-            String body1 = oldExchange.getIn().getBody(String.class);
-            String body2 = newExchange.getIn().getBody(String.class);
-
-            oldExchange.getIn().setBody(body1 + body2);
-            return oldExchange;
-        }
-    }
 }

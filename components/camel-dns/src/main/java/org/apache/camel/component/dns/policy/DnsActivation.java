@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,11 @@ package org.apache.camel.component.dns.policy;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
 import javax.naming.NamingEnumeration;
-
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.InitialDirContext;
@@ -36,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * Check if a hostname resolves to a specified cname or an ip
  */
 public class DnsActivation {
-    private static final transient String[] DNS_TYPES = {"CNAME", "A"}; 
+    private static final transient String[] DNS_TYPES = { "CNAME", "A" };
     private static final transient Logger LOG = LoggerFactory.getLogger(DnsActivation.class);
 
     private String hostname;
@@ -96,14 +94,14 @@ public class DnsActivation {
                 Attributes attributes = initialDirContext.getAttributes("dns:/" + inetAddress.getHostName(), DNS_TYPES);
                 attributeEnumeration = attributes.getAll();
                 while (attributeEnumeration.hasMore()) {
-                    Attribute attribute = (Attribute)attributeEnumeration.next();
+                    Attribute attribute = (Attribute) attributeEnumeration.next();
                     String id = attribute.getID();
-                    String value = (String)attribute.get();
+                    String value = (String) attribute.get();
                     if (resolvesTo.contains(value)) {
-                        LOG.debug(id + " = " + value + " matched. Identifying as active.");
+                        LOG.debug("{} = {} matched. Identifying as active.", id, value);
                         return true;
                     }
-                    LOG.debug(id + " = " + value);
+                    LOG.debug("{} = {}", id, value);
                     if (id.equals("CNAME") && !resolved.contains(value)) {
                         hostnames.add(value);
                     }
@@ -145,4 +143,3 @@ public class DnsActivation {
         return localIps;
     }
 }
-

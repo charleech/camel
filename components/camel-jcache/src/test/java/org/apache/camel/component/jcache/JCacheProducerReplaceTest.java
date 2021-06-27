@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,18 @@ package org.apache.camel.component.jcache;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.cache.Cache;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
     @Test
@@ -32,8 +37,8 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         final Cache<Object, Object> cache = getCacheFromEndpoint("jcache://test-cache");
 
-        final String key  = randomString();
-        final String val  = randomString();
+        final String key = randomString();
+        final String val = randomString();
         final String val1 = randomString();
 
         cache.put(key, val);
@@ -50,7 +55,7 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val1);
             }
         });
@@ -65,8 +70,8 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         final Cache<Object, Object> cache = getCacheFromEndpoint("jcache://test-cache");
 
-        final String key  = randomString();
-        final String val  = randomString();
+        final String key = randomString();
+        final String val = randomString();
         final String val1 = randomString();
 
         cache.put(key, val);
@@ -84,7 +89,7 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val1);
             }
         });
@@ -99,8 +104,8 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         final Cache<Object, Object> cache = getCacheFromEndpoint("jcache://test-cache");
 
-        final String key  = randomString();
-        final String val  = randomString();
+        final String key = randomString();
+        final String val = randomString();
         final String val1 = randomString();
 
         cache.put(key, val);
@@ -118,7 +123,7 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val1);
             }
         });
@@ -150,7 +155,7 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val);
             }
         });
@@ -165,10 +170,10 @@ public class JCacheProducerReplaceTest extends JCacheComponentTestSupport {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:replace")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:replace");
                 from("direct:replace-fail")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:replace-fail");
             }
         };

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import io.swagger.models.Operation;
 import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.Property;
-
 import org.apache.camel.model.rest.CollectionFormat;
 import org.apache.camel.model.rest.RestParamType;
 import org.apache.camel.util.ObjectHelper;
@@ -40,7 +39,8 @@ class OperationVisitor<T> {
 
     private final String path;
 
-    OperationVisitor(final CodeEmitter<T> emitter, final OperationFilter filter, final String path, final DestinationGenerator destinationGenerator) {
+    OperationVisitor(final CodeEmitter<T> emitter, final OperationFilter filter, final String path,
+                     final DestinationGenerator destinationGenerator) {
         this.emitter = emitter;
         this.filter = filter;
         this.path = path;
@@ -97,7 +97,7 @@ class OperationVisitor<T> {
             return emitter;
         }
 
-        return emitter.emit(method, new Object[] {values.toArray(new String[values.size()])});
+        return emitter.emit(method, new Object[] { values.toArray(new String[values.size()]) });
     }
 
     CodeEmitter<T> emit(final String method, final Object value) {

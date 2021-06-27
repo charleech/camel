@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,12 +22,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class JdbcAggregateRecoverTest extends AbstractJdbcAggregationTestSupport {
 
-    private static AtomicInteger counter = new AtomicInteger(0);
-    
+    private static AtomicInteger counter = new AtomicInteger();
+
+    @Override
     void configureJdbcAggregationRepository() {
         // enable recovery
         repo.setUseRecovery(true);
@@ -65,7 +66,7 @@ public class JdbcAggregateRecoverTest extends AbstractJdbcAggregationTestSupport
                         .log("aggregated exchange id ${exchangeId} with ${body}")
                         .to("mock:aggregated")
                         .delay(1000)
-                                // simulate errors the first two times
+                        // simulate errors the first two times
                         .process(new Processor() {
                             public void process(Exchange exchange) throws Exception {
                                 int count = counter.incrementAndGet();

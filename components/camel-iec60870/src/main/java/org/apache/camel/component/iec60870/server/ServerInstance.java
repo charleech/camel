@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static java.util.Arrays.asList;
-
 import org.apache.camel.component.iec60870.DiscardAckModule;
 import org.apache.camel.component.iec60870.ObjectAddress;
 import org.eclipse.neoscada.protocol.iec60870.asdu.types.ASDUAddress;
@@ -43,6 +41,8 @@ import org.eclipse.neoscada.protocol.iec60870.server.data.model.WriteModel.Reque
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.Arrays.asList;
+
 public class ServerInstance {
     private static final Logger LOG = LoggerFactory.getLogger(ServerInstance.class);
 
@@ -55,7 +55,8 @@ public class ServerInstance {
 
         @Override
         protected ChangeModel createChangeModel() {
-            if (ServerInstance.this.options.getBufferingPeriod() != null && ServerInstance.this.options.getBufferingPeriod() > 0) {
+            if (ServerInstance.this.options.getBufferingPeriod() != null
+                    && ServerInstance.this.options.getBufferingPeriod() > 0) {
                 LOG.info("Creating buffering change model: {} ms", ServerInstance.this.options.getBufferingPeriod());
                 return makeBufferingChangeModel(ServerInstance.this.options.getBufferingPeriod());
             } else {
@@ -96,7 +97,9 @@ public class ServerInstance {
         }
 
         @Override
-        public void notifyDataChange(final ASDUAddress asduAddress, final InformationObjectAddress informationObjectAddress, final Value<?> value, final boolean notify) {
+        public void notifyDataChange(
+                final ASDUAddress asduAddress, final InformationObjectAddress informationObjectAddress, final Value<?> value,
+                final boolean notify) {
             super.notifyDataChange(asduAddress, informationObjectAddress, value, notify);
         }
     }
@@ -121,7 +124,8 @@ public class ServerInstance {
     public void start() {
         this.dataModel.start();
         this.dataModule = new DataModule(this.options.getDataModuleOptions(), this.dataModel);
-        this.server = new Server(this.address, this.options.getProtocolOptions(), asList(this.dataModule, new DiscardAckModule()));
+        this.server
+                = new Server(this.address, this.options.getProtocolOptions(), asList(this.dataModule, new DiscardAckModule()));
     }
 
     public void stop() {
@@ -150,7 +154,7 @@ public class ServerInstance {
         if (e != null) {
             RuntimeException re;
             if (e instanceof RuntimeException) {
-                re = (RuntimeException)e;
+                re = (RuntimeException) e;
             } else {
                 re = new RuntimeException(e);
             }

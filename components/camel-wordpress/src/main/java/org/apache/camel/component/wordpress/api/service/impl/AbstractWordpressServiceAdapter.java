@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import javax.ws.rs.core.MediaType;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.apache.camel.component.wordpress.api.auth.WordpressAuthentication;
 import org.apache.camel.component.wordpress.api.service.WordpressService;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.ext.logging.LoggingInInterceptor;
+import org.apache.cxf.ext.logging.LoggingOutInterceptor;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.slf4j.Logger;
@@ -46,7 +46,8 @@ abstract class AbstractWordpressServiceAdapter<A> implements WordpressService {
         this.apiVersion = apiVersion;
 
         // @formatter:off
-        this.spi = JAXRSClientFactory.create(wordpressUrl, this.getSpiType(), Collections.singletonList(new JacksonJsonProvider()));
+        this.spi = JAXRSClientFactory.create(wordpressUrl, this.getSpiType(),
+                Collections.singletonList(new JacksonJsonProvider()));
         // @formatter:on
         WebClient.client(spi).type(MediaType.APPLICATION_JSON_TYPE);
         WebClient.client(spi).accept(MediaType.APPLICATION_JSON_TYPE);

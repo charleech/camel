@@ -22,5 +22,7 @@ log-camel-lsp.out
 .vscode
 *.code-workspace
 components/camel-cxf/activemq-data
-node_modules
 *.swp
+.flattened-pom.xml
+.java-version
+node_modules/

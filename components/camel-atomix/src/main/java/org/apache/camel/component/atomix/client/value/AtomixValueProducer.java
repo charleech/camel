@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +21,22 @@ import java.time.Duration;
 import io.atomix.resource.ReadConsistency;
 import io.atomix.variables.DistributedValue;
 import org.apache.camel.AsyncCallback;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.atomix.client.AbstractAtomixClientProducer;
+import org.apache.camel.spi.InvokeOnHeader;
 import org.apache.camel.util.ObjectHelper;
 
-import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_ACTION;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_NAME;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_OLD_VALUE;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_READ_CONSISTENCY;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_TTL;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_VALUE;
 
-final class AtomixValueProducer extends AbstractAtomixClientProducer<AtomixValueEndpoint, DistributedValue> {
+public final class AtomixValueProducer extends AbstractAtomixClientProducer<AtomixValueEndpoint, DistributedValue> {
     private final AtomixValueConfiguration configuration;
 
     protected AtomixValueProducer(AtomixValueEndpoint endpoint) {
-        super(endpoint);
+        super(endpoint, endpoint.getConfiguration().getDefaultAction().name());
         this.configuration = endpoint.getConfiguration();
     }
 
@@ -45,70 +44,64 @@ final class AtomixValueProducer extends AbstractAtomixClientProducer<AtomixValue
     // Handlers
     // *********************************
 
+    private long getResourceTtl(Message message) {
+        Duration ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, Duration.class);
+        return ttl != null ? ttl.toMillis() : 0;
+    }
+
     @InvokeOnHeader("SET")
-    boolean onSet(Message message, AsyncCallback callback) throws Exception {
+    void onSet(Message message, AsyncCallback callback) throws Exception {
         final DistributedValue<Object> value = getResource(message);
-        final long ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, long.class);
+        final long ttl = getResourceTtl(message);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         if (ttl > 0) {
             value.set(val, Duration.ofMillis(ttl)).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             value.set(val).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("GET")
-    boolean onGet(Message message, AsyncCallback callback) throws Exception {
+    void onGet(Message message, AsyncCallback callback) throws Exception {
         final DistributedValue<Object> value = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             value.get(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             value.get().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("GET_AND_SET")
-    boolean onGetAndSet(Message message, AsyncCallback callback) throws Exception {
+    void onGetAndSet(Message message, AsyncCallback callback) throws Exception {
         final DistributedValue<Object> value = getResource(message);
-        final long ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, long.class);
+        final long ttl = getResourceTtl(message);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         if (ttl > 0) {
             value.getAndSet(val, Duration.ofMillis(ttl)).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             value.getAndSet(val).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("COMPARE_AND_SET")
-    boolean onCompareAndSet(Message message, AsyncCallback callback) throws Exception {
+    void onCompareAndSet(Message message, AsyncCallback callback) throws Exception {
         final DistributedValue<Object> value = getResource(message);
-        final long ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, long.class);
+        final long ttl = getResourceTtl(message);
         final Object newVal = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
         final Object oldVal = message.getHeader(RESOURCE_OLD_VALUE, Object.class);
 
@@ -117,25 +110,16 @@ final class AtomixValueProducer extends AbstractAtomixClientProducer<AtomixValue
 
         if (ttl > 0) {
             value.compareAndSet(oldVal, newVal, Duration.ofMillis(ttl)).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             value.compareAndSet(oldVal, newVal).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     // *********************************
     // Implementation
     // *********************************
-
-    @Override
-    protected String getProcessorKey(Message message) {
-        return message.getHeader(RESOURCE_ACTION, configuration::getDefaultAction, String.class);
-    }
 
     @Override
     protected String getResourceName(Message message) {
@@ -145,11 +129,11 @@ final class AtomixValueProducer extends AbstractAtomixClientProducer<AtomixValue
     @Override
     protected DistributedValue<Object> createResource(String resourceName) {
         return getAtomixEndpoint()
-            .getAtomix()
-            .getValue(
-                resourceName,
-                new DistributedValue.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedValue.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
+                .getAtomix()
+                .getValue(
+                        resourceName,
+                        new DistributedValue.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedValue.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
     }
 }

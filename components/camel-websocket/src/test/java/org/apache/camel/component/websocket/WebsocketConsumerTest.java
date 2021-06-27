@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,17 @@ package org.apache.camel.component.websocket;
 
 import java.net.InetSocketAddress;
 
-import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedCamelContext;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.spi.ExceptionHandler;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.spi.ExchangeFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class WebsocketConsumerTest {
 
     private static final String CONNECTION_KEY = "random-connection-key";
@@ -50,28 +51,37 @@ public class WebsocketConsumerTest {
     @Mock
     private Processor processor;
     @Mock
-    private Exchange exchange;
+    private ExtendedExchange exchange;
     @Mock
     private Message outMessage;
+    @Mock
+    private ExtendedCamelContext context;
+    @Mock
+    private ExchangeFactory exchangeFactory;
 
     private Exception exception = new Exception("BAD NEWS EVERYONE!");
     private WebsocketConsumer websocketConsumer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
+        when(endpoint.getCamelContext()).thenReturn(context);
+        when(context.adapt(ExtendedCamelContext.class)).thenReturn(context);
+        when(context.getExchangeFactory()).thenReturn(exchangeFactory);
+        when(exchangeFactory.newExchangeFactory(any())).thenReturn(exchangeFactory);
+        when(exchangeFactory.create(endpoint, true)).thenReturn(exchange);
+        when(exchange.adapt(ExtendedExchange.class)).thenReturn(exchange);
+
         websocketConsumer = new WebsocketConsumer(endpoint, processor);
         websocketConsumer.setExceptionHandler(exceptionHandler);
     }
 
     @Test
     public void testSendExchange() throws Exception {
-        when(endpoint.createExchange()).thenReturn(exchange);
         when(exchange.getIn()).thenReturn(outMessage);
 
         websocketConsumer.sendMessage(CONNECTION_KEY, MESSAGE, ADDRESS);
 
         InOrder inOrder = inOrder(endpoint, exceptionHandler, processor, exchange, outMessage);
-        inOrder.verify(endpoint, times(1)).createExchange();
         inOrder.verify(exchange, times(1)).getIn();
         inOrder.verify(outMessage, times(1)).setHeader(WebsocketConstants.CONNECTION_KEY, CONNECTION_KEY);
         inOrder.verify(exchange, times(1)).getIn();
@@ -83,7 +93,6 @@ public class WebsocketConsumerTest {
 
     @Test
     public void testSendExchangeWithException() throws Exception {
-        when(endpoint.createExchange()).thenReturn(exchange);
         when(exchange.getIn()).thenReturn(outMessage);
         doThrow(exception).when(processor).process(exchange);
         when(exchange.getException()).thenReturn(exception);
@@ -91,7 +100,6 @@ public class WebsocketConsumerTest {
         websocketConsumer.sendMessage(CONNECTION_KEY, MESSAGE, ADDRESS);
 
         InOrder inOrder = inOrder(endpoint, exceptionHandler, processor, exchange, outMessage);
-        inOrder.verify(endpoint, times(1)).createExchange();
         inOrder.verify(exchange, times(1)).getIn();
         inOrder.verify(outMessage, times(1)).setHeader(WebsocketConstants.CONNECTION_KEY, CONNECTION_KEY);
         inOrder.verify(exchange, times(1)).getIn();
@@ -104,7 +112,6 @@ public class WebsocketConsumerTest {
 
     @Test
     public void testSendExchangeWithExchangeExceptionIsNull() throws Exception {
-        when(endpoint.createExchange()).thenReturn(exchange);
         when(exchange.getIn()).thenReturn(outMessage);
         doThrow(exception).when(processor).process(exchange);
         when(exchange.getException()).thenReturn(null);
@@ -112,7 +119,6 @@ public class WebsocketConsumerTest {
         websocketConsumer.sendMessage(CONNECTION_KEY, MESSAGE, ADDRESS);
 
         InOrder inOrder = inOrder(endpoint, exceptionHandler, processor, exchange, outMessage);
-        inOrder.verify(endpoint, times(1)).createExchange();
         inOrder.verify(exchange, times(1)).getIn();
         inOrder.verify(outMessage, times(1)).setHeader(WebsocketConstants.CONNECTION_KEY, CONNECTION_KEY);
         inOrder.verify(exchange, times(1)).getIn();

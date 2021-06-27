@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,10 @@ package org.apache.camel.component.jms;
 import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
 
@@ -38,16 +36,15 @@ public class JmsInOnlyWithReplyToHeaderTopicTest extends CamelTestSupport {
         mock.expectedBodiesReceived("Hello World");
         mock.expectedHeaderReceived("JMSReplyTo", "topic://bar");
 
-        template.send("activemq:queue:foo?preserveMessageQos=true", new Processor() {
-            public void process(Exchange exchange) throws Exception {
-                exchange.getIn().setBody("World");
-                exchange.getIn().setHeader("JMSReplyTo", "topic:bar");
-            }
+        template.send("activemq:queue:foo?preserveMessageQos=true", exchange -> {
+            exchange.getIn().setBody("World");
+            exchange.getIn().setHeader("JMSReplyTo", "topic:bar");
         });
 
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
@@ -61,15 +58,15 @@ public class JmsInOnlyWithReplyToHeaderTopicTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("activemq:queue:foo")
-                    .transform(body().prepend("Hello "))
-                    .to("log:result")
-                    .to("mock:result");
+                        .transform(body().prepend("Hello "))
+                        .to("log:result")
+                        .to("mock:result");
 
                 // we should disable reply to to avoid sending the message back to our self
                 // after we have consumed it
                 from("activemq:topic:bar?disableReplyTo=true")
-                    .to("log:bar")
-                    .to("mock:bar");
+                        .to("log:bar")
+                        .to("mock:bar");
             }
         };
     }

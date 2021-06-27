@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,14 @@ package org.apache.camel.component.rss;
 import org.apache.camel.builder.RouteBuilder;
 
 public class RssEntrySortDefaultsTest extends RssEntrySortTest {
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("rss:file:src/test/data/rss20.xml?splitEntries=true&sortEntries=true&consumer.delay=50").to("mock:sorted");
+                from("rss:file:src/test/data/rss20.xml?splitEntries=true&sortEntries=true&delay=50").to("mock:sorted");
 
                 // should NOT sort by default
-                from("rss:file:src/test/data/rss20.xml?splitEntries=true&consumer.delay=50").to("mock:unsorted");
+                from("rss:file:src/test/data/rss20.xml?splitEntries=true&delay=50").to("mock:unsorted");
             }
         };
     }

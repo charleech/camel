@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-
 /**
  * XYZOrder
  * <p>
@@ -34,10 +33,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "custId",
-    "priority",
-    "orderId",
-    "lineItems"
+        "custId",
+        "priority",
+        "orderId",
+        "lineItems"
 })
 public class XYZOrder {
 
@@ -52,8 +51,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @return
-     *     The custId
+     * @return The custId
      */
     @JsonProperty("custId")
     public String getCustId() {
@@ -62,8 +60,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @param custId
-     *     The custId
+     * @param custId The custId
      */
     @JsonProperty("custId")
     public void setCustId(String custId) {
@@ -72,8 +69,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @return
-     *     The priority
+     * @return The priority
      */
     @JsonProperty("priority")
     public String getPriority() {
@@ -82,8 +78,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @param priority
-     *     The priority
+     * @param priority The priority
      */
     @JsonProperty("priority")
     public void setPriority(String priority) {
@@ -92,8 +87,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @return
-     *     The orderId
+     * @return The orderId
      */
     @JsonProperty("orderId")
     public String getOrderId() {
@@ -102,8 +96,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @param orderId
-     *     The orderId
+     * @param orderId The orderId
      */
     @JsonProperty("orderId")
     public void setOrderId(String orderId) {
@@ -112,8 +105,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @return
-     *     The lineItems
+     * @return The lineItems
      */
     @JsonProperty("lineItems")
     public List<LineItem> getLineItems() {
@@ -122,8 +114,7 @@ public class XYZOrder {
 
     /**
      * 
-     * @param lineItems
-     *     The lineItems
+     * @param lineItems The lineItems
      */
     @JsonProperty("lineItems")
     public void setLineItems(List<LineItem> lineItems) {

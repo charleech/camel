@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,30 +24,32 @@ import com.github.tomakehurst.wiremock.http.HttpServer;
 import com.github.tomakehurst.wiremock.http.StubRequestHandler;
 import com.github.tomakehurst.wiremock.jetty9.JettyHttpServer;
 import com.github.tomakehurst.wiremock.jetty9.JettyHttpServerFactory;
-
 import org.eclipse.jetty.io.NetworkTrafficListener;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 /**
  * Wiremock 2.18.0 ships with Jetty 9.2, Camel (currently) uses 9.4 and the
- * {@link org.eclipse.jetty.util.ssl.SslContextFactory} removed
- * {@code selectCipherSuites} method.
+ * {@link org.eclipse.jetty.util.ssl.SslContextFactory} removed {@code selectCipherSuites} method.
  */
 public final class Jetty94ServerFactory extends JettyHttpServerFactory {
     @Override
-    public HttpServer buildHttpServer(final Options options, final AdminRequestHandler adminRequestHandler,
-        final StubRequestHandler stubRequestHandler) {
+    public HttpServer buildHttpServer(
+            final Options options, final AdminRequestHandler adminRequestHandler,
+            final StubRequestHandler stubRequestHandler) {
 
         return new JettyHttpServer(options, adminRequestHandler, stubRequestHandler) {
             @Override
-            protected ServerConnector createHttpsConnector(final String bindAddress, final HttpsSettings httpsSettings,
-                final JettySettings jettySettings, final NetworkTrafficListener listener) {
-                final SslContextFactory sslContextFactory = new SslContextFactory();
+            protected ServerConnector createHttpsConnector(
+                    Server server,
+                    final String bindAddress, final HttpsSettings httpsSettings,
+                    final JettySettings jettySettings, final NetworkTrafficListener listener) {
+                final SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
                 sslContextFactory.setKeyStorePath(httpsSettings.keyStorePath());
                 sslContextFactory.setKeyManagerPassword(httpsSettings.keyStorePassword());
@@ -68,7 +70,7 @@ public final class Jetty94ServerFactory extends JettyHttpServerFactory {
                 final int port = httpsSettings.port();
 
                 return createServerConnector(bindAddress, jettySettings, port, listener,
-                    new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(httpConfig));
+                        new SslConnectionFactory(sslContextFactory, "http/1.1"), new HttpConnectionFactory(httpConfig));
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,8 @@ package org.apache.camel.jsonpath;
 import java.io.File;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class JsonPathWithSimpleCBRTest extends CamelTestSupport {
 
@@ -30,17 +30,17 @@ public class JsonPathWithSimpleCBRTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .choice()
+                        .choice()
                         .when().jsonpath("$.store.book[?(@.price < ${header.cheap})]")
-                            .to("mock:cheap")
+                        .to("mock:cheap")
                         .when().jsonpath("$.store.book[?(@.price < ${header.average})]")
-                            .to("mock:average")
+                        .to("mock:average")
                         .otherwise()
-                            .to("mock:expensive");
+                        .to("mock:expensive");
             }
         };
     }
-    
+
     @Test
     public void testCheap() throws Exception {
         getMockEndpoint("mock:cheap").expectedMessageCount(1);

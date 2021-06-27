@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,11 @@ import org.apache.camel.Processor;
 
 public class JmsPrepareRequest implements Processor {
 
-    public void process(Exchange exchange) throws Exception {
+    @Override
+    public void process(Exchange exchange) {
         String request = exchange.getIn().getBody(String.class);
-        exchange.getOut().setHeaders(exchange.getIn().getHeaders());
-        exchange.getOut().setBody(request);
+        exchange.getMessage().setHeaders(exchange.getIn().getHeaders());
+        exchange.getMessage().setBody(request);
     }
 
 }

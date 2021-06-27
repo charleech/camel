@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.apns.factory;
 import java.io.IOException;
 
 import com.notnoop.apns.ApnsServiceBuilder;
-
 import org.apache.camel.support.jsse.SSLContextParameters;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,7 +40,7 @@ public class ConfiguredApnsServiceFactoryTest {
         }
     };
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         apnsServiceFactory.setSslContextParameters(mock(SSLContextParameters.class));
     }

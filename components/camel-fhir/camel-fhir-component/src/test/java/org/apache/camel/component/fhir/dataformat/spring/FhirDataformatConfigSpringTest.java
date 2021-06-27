@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,27 +19,28 @@ package org.apache.camel.component.fhir.dataformat.spring;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.ParserOptions;
 import ca.uhn.fhir.parser.LenientErrorHandler;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.fhir.FhirDataFormat;
-import org.apache.camel.model.dataformat.FhirDataformat;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.reifier.dataformat.DataFormatReifier;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.hl7.fhir.dstu3.model.IdType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FhirDataformatConfigSpringTest extends CamelSpringTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }
@@ -64,8 +65,6 @@ public class FhirDataformatConfigSpringTest extends CamelSpringTestSupport {
         assertCollection(dontStripVersionsFromReferencesAtPaths);
         Set<String> encodeElements = fhirJson.getEncodeElements();
         assertCollection(encodeElements);
-        Set<String> encodeElementsAppliesToResourceTypes = fhirJson.getEncodeElementsAppliesToResourceTypes();
-        assertCollection(encodeElementsAppliesToResourceTypes);
         assertTrue(fhirJson.getForceResourceId().getClass().isAssignableFrom(IdType.class));
         assertTrue(fhirJson.getParserErrorHandler().getClass().isAssignableFrom(LenientErrorHandler.class));
         assertTrue(fhirJson.getParserOptions().getClass().isAssignableFrom(ParserOptions.class));
@@ -88,7 +87,8 @@ public class FhirDataformatConfigSpringTest extends CamelSpringTestSupport {
 
     private FhirDataFormat getDataformat(String name) {
         CamelContext camelContext = context();
-        return (FhirDataFormat) ((FhirDataformat) camelContext.getRegistry().lookupByName(name)).getDataFormat();
+        // TODO: Do not use reifier directly
+        return (FhirDataFormat) DataFormatReifier.getDataFormat(camelContext, name);
     }
 
     @Override

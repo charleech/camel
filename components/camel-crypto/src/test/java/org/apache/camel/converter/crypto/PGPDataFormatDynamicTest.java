@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,7 @@ public class PGPDataFormatDynamicTest extends PGPDataFormatTest {
         userids.add(getKeyUserId());
         return userids;
     }
-    
+
     // setup a wrong signature userids
     @Override
     protected List<String> getSignatureKeyUserIds() {
@@ -76,6 +76,7 @@ public class PGPDataFormatDynamicTest extends PGPDataFormatTest {
     }
 
     // override wrong userid and password with correct userid and password in the headers
+    @Override
     protected Map<String, Object> getHeaders() {
         Map<String, Object> headers = new HashMap<>();
         headers.put(PGPKeyAccessDataFormat.KEY_USERID, "sdude@nowhere.net");

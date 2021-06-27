@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,14 @@
  */
 package org.apache.camel.component.zookeeper.operations;
 
-import static java.lang.String.format;
-
 import org.apache.zookeeper.ZooKeeper;
 
+import static java.lang.String.format;
+
 /**
- * <code>setdataOperation</code> sets the content of a ZooKeeper node. An optional version
- * may be specified that the node must currently have for the operation to succeed.
+ * <code>setdataOperation</code> sets the content of a ZooKeeper node. An optional version may be specified that the
+ * node must currently have for the operation to succeed.
+ * 
  * @see {@link ZooKeeper#setData(String, byte[], int)}
  */
 
@@ -34,6 +35,7 @@ public class DeleteOperation extends ZooKeeperOperation<Boolean> {
         super(connection, node);
     }
 
+    @Override
     public OperationResult<Boolean> getResult() {
         try {
             connection.delete(node, version);

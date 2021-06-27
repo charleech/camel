@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import org.apache.cxf.jaxrs.utils.ResourceUtils;
+
 // This class only return the sub class instance
 public class SubResourceClassInvocationHandler implements InvocationHandler {
 
@@ -33,8 +34,8 @@ public class SubResourceClassInvocationHandler implements InvocationHandler {
             // create a instance to return
             if (returnType.isInterface()) {
                 // create a new proxy for it
-                result = Proxy.newProxyInstance(returnType.getClassLoader(), new Class[] {returnType},
-                                                new SubResourceClassInvocationHandler());
+                result = Proxy.newProxyInstance(returnType.getClassLoader(), new Class[] { returnType },
+                        new SubResourceClassInvocationHandler());
             } else {
                 // get the constructor and create a new instance
                 Constructor<?> c = ResourceUtils.findResourceConstructor(returnType, true);

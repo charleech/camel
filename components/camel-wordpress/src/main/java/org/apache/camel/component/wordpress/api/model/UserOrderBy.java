@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,5 +17,11 @@
 package org.apache.camel.component.wordpress.api.model;
 
 public enum UserOrderBy {
-    id, include, name, registered_date, slug, email, url;
+    id,
+    include,
+    name,
+    registered_date,
+    slug,
+    email,
+    url;
 }

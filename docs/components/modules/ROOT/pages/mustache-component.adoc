@@ -1,9 +1,20 @@
 [[mustache-component]]
-== Mustache Component
+= Mustache Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-mustache/src/main/docs/mustache-component.adoc
+:docTitle: Mustache
+:artifactId: camel-mustache
+:description: Transform messages using a Mustache template.
+:since: 2.12
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/mustache.adoc[opts=optional]
 
-*Available as of Camel version 2.12*
+*Since Camel {since}*
 
-The *mustache:* component allows for processing a message using a
+*{component-header}*
+
+The Mustache component allows for processing a message using a
 http://mustache.github.io/[Mustache] template. This can be ideal when
 using Templating to generate responses for
 requests.
@@ -20,7 +31,7 @@ for this component:
 </dependency>
 ---------------------------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 -------------------------------
@@ -29,24 +40,27 @@ mustache:templateName[?options]
 
 Where *templateName* is the classpath-local URI of the template to
 invoke; or the complete URL of the remote template (eg:
-file://folder/myfile.mustache[file://folder/myfile.mustache]).
+\file://folder/myfile.mustache).
 
 You can append query options to the URI in the following format,
 `?option=value&option=value&...`
 
-### Options
+== Options
 
 
 // component options: START
-The Mustache component supports 2 options, which are listed below.
+The Mustache component supports 5 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *allowContextMapAll* (producer) | Sets whether the context map should allow access to all details. By default only the message body and headers can be accessed. This option can be enabled for full access to the current Exchange and CamelContext. Doing so impose a potential security risk as this opens access to the full power of CamelContext API. | false | boolean
+| *allowTemplateFromHeader* (producer) | Whether to allow to use resource template from header or not (default false). Enabling this allows to specify dynamic templates via message header. However this can be seen as a potential security vulnerability if the header is coming from a malicious user, so use this with care. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
 | *mustacheFactory* (advanced) | To use a custom MustacheFactory |  | MustacheFactory
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
 |===
 // component options: END
 
@@ -66,7 +80,7 @@ mustache:resourceUri
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -76,39 +90,25 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (5 parameters):
+=== Query Parameters (7 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *allowContextMapAll* (producer) | Sets whether the context map should allow access to all details. By default only the message body and headers can be accessed. This option can be enabled for full access to the current Exchange and CamelContext. Doing so impose a potential security risk as this opens access to the full power of CamelContext API. | false | boolean
+| *allowTemplateFromHeader* (producer) | Whether to allow to use resource template from header or not (default false). Enabling this allows to specify dynamic templates via message header. However this can be seen as a potential security vulnerability if the header is coming from a malicious user, so use this with care. | false | boolean
 | *contentCache* (producer) | Sets whether to use resource content cache or not | false | boolean
 | *encoding* (producer) | Character encoding of the resource content. |  | String
 | *endDelimiter* (producer) | Characters used to mark template code end. | }} | String
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *startDelimiter* (producer) | Characters used to mark template code beginning. | {{ | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 3 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.mustache.enabled* | Enable mustache component | true | Boolean
-| *camel.component.mustache.mustache-factory* | To use a custom MustacheFactory. The option is a com.github.mustachejava.MustacheFactory type. |  | String
-| *camel.component.mustache.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-### Mustache Context
+== Mustache Context
 
 Camel will provide exchange information in the Mustache context (just a
 `Map`). The `Exchange` is transferred as:
@@ -132,7 +132,7 @@ Camel will provide exchange information in the Mustache context (just a
 |`response` |The Out message (only for InOut message exchange pattern).
 |=======================================================================
 
-### Dynamic templates
+== Dynamic templates
 
 Camel provides two headers by which you can define a different resource
 location for a template or the template content itself. If any of these
@@ -149,7 +149,7 @@ configured. |
 |MustacheConstants.MUSTACHE_TEMPLATE |String |The template to use instead of the endpoint configured. |
 |=======================================================================
 
-### Samples
+== Samples
 
 For example you could use something like:
 
@@ -179,17 +179,17 @@ dynamically via a header, so for example:
 --------------------------------------------------------------------------------------------
 from("direct:in").
 setHeader(MustacheConstants.MUSTACHE_RESOURCE_URI).constant("path/to/my/template.mustache").
-to("mustache:dummy");
+to("mustache:dummy?allowTemplateFromHeader=true");
 --------------------------------------------------------------------------------------------
 
-### The Email Sample
+== The Email Sample
 
 In this sample we want to use Mustache templating for an order
 confirmation email. The email template is laid out in Mustache as:
 
 [source,java]
 -------------------------------------------------
-Dear {{headers.lastName}}}, {{headers.firstName}}
+Dear {{headers.lastName}}, {{headers.firstName}}
 
 Thanks for the order of {{headers.item}}.
 
@@ -197,9 +197,5 @@ Regards Camel Riders Bookstore
 {{body}}
 -------------------------------------------------
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$mustache-starter.adoc[]

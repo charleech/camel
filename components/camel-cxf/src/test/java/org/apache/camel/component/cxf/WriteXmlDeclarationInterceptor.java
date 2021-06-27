@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,9 @@ public class WriteXmlDeclarationInterceptor extends AbstractPhaseInterceptor<Soa
         addBefore(StaxOutInterceptor.class.getName());
     }
 
+    @Override
     public void handleMessage(SoapMessage message) throws Fault {
-        message.put("org.apache.cxf.stax.force-start-document", Boolean.TRUE);        
+        message.put("org.apache.cxf.stax.force-start-document", Boolean.TRUE);
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ public class InjectedEndpointRoute extends RouteBuilder {
     @Inject
     @Uri("direct:inbound")
     private Endpoint inbound;
-    
+
     @Override
     public void configure() {
         from(inbound).to("mock:outbound");

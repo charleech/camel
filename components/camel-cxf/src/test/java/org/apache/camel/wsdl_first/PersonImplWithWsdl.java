@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,18 +20,20 @@ import javax.jws.WebService;
 import javax.xml.ws.Holder;
 
 @WebService(serviceName = "PersonService",
-        targetNamespace = "http://camel.apache.org/wsdl-first",
-        wsdlLocation = "http://localhost:9090/customerservice/customers?wsdl",
-        endpointInterface = "org.apache.camel.wsdl_first.Person")
+            targetNamespace = "http://camel.apache.org/wsdl-first",
+            wsdlLocation = "http://localhost:9090/customerservice/customers?wsdl",
+            endpointInterface = "org.apache.camel.wsdl_first.Person")
 public class PersonImplWithWsdl implements Person {
 
     private String reply = "Bonjour";
 
-    public void getPerson(Holder<String> personId, Holder<String> ssn,
-            Holder<String> name) throws UnknownPersonFault {
+    public void getPerson(
+            Holder<String> personId, Holder<String> ssn,
+            Holder<String> name)
+            throws UnknownPersonFault {
         if (personId.value == null || personId.value.length() == 0) {
-            org.apache.camel.wsdl_first.types.UnknownPersonFault
-                fault = new org.apache.camel.wsdl_first.types.UnknownPersonFault();
+            org.apache.camel.wsdl_first.types.UnknownPersonFault fault
+                    = new org.apache.camel.wsdl_first.types.UnknownPersonFault();
             fault.setPersonId(personId.value);
             throw new UnknownPersonFault("Get the null value of person name", fault);
         }

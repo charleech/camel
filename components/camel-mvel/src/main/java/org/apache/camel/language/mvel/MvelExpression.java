@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,6 +44,7 @@ public class MvelExpression extends ExpressionSupport {
         return new MvelExpression(new MvelLanguage(), expression, Object.class);
     }
 
+    @Override
     public <T> T evaluate(Exchange exchange, Class<T> tClass) {
         try {
             Object value = org.mvel2.MVEL.executeExpression(compiled, new RootObject(exchange));
@@ -53,6 +54,7 @@ public class MvelExpression extends ExpressionSupport {
         }
     }
 
+    @Override
     public Object evaluate(Exchange exchange) {
         try {
             return org.mvel2.MVEL.executeExpression(compiled, new RootObject(exchange));
@@ -60,11 +62,12 @@ public class MvelExpression extends ExpressionSupport {
             throw new ExpressionEvaluationException(this, exchange, e);
         }
     }
-    
+
     public Class<?> getType() {
         return type;
     }
 
+    @Override
     protected String assertionFailureMessage(Exchange exchange) {
         return expressionString;
     }

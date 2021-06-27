@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ public class TidyMarkupDataFormatWithUnmarshalTypeTest extends TidyMarkupDataFor
     @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
-            public void configure() {                
+            public void configure() {
                 TidyMarkupDataFormat dataFormat = new TidyMarkupDataFormat(String.class);
                 from("direct:start").unmarshal(dataFormat).to("mock:result");
             }

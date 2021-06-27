@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,10 @@
 package org.apache.camel.component.xquery;
 
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.AbstractXmlApplicationContext;
 
 public class XQueryWithExplicitTypeTest extends CamelSpringTestSupport {
     protected MockEndpoint raleighEndpoint;
@@ -37,7 +37,7 @@ public class XQueryWithExplicitTypeTest extends CamelSpringTestSupport {
     }
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -45,8 +45,8 @@ public class XQueryWithExplicitTypeTest extends CamelSpringTestSupport {
         tampaEndpoint = getMockEndpoint("mock:foo.Tampa");
     }
 
-
-    protected ClassPathXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/xquery/xqueryWithExplicitTypeContext.xml");
+    @Override
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return newAppContext("xqueryWithExplicitTypeContext.xml");
     }
 }

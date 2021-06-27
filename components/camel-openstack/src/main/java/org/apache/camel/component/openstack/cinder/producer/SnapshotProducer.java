@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,23 +43,23 @@ public class SnapshotProducer extends AbstractOpenstackProducer {
         String operation = getOperation(exchange);
 
         switch (operation) {
-        case OpenstackConstants.CREATE:
-            doCreate(exchange);
-            break;
-        case OpenstackConstants.GET:
-            doGet(exchange);
-            break;
-        case OpenstackConstants.GET_ALL:
-            doGetAll(exchange);
-            break;
-        case OpenstackConstants.UPDATE:
-            doUpdate(exchange);
-            break;
-        case OpenstackConstants.DELETE:
-            doDelete(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation " + operation);
+            case OpenstackConstants.CREATE:
+                doCreate(exchange);
+                break;
+            case OpenstackConstants.GET:
+                doGet(exchange);
+                break;
+            case OpenstackConstants.GET_ALL:
+                doGetAll(exchange);
+                break;
+            case OpenstackConstants.UPDATE:
+                doUpdate(exchange);
+                break;
+            case OpenstackConstants.DELETE:
+                doDelete(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation " + operation);
         }
     }
 
@@ -72,7 +72,8 @@ public class SnapshotProducer extends AbstractOpenstackProducer {
 
     private void doGet(Exchange exchange) {
         final Message msg = exchange.getIn();
-        final String id = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
+        final String id
+                = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
         StringHelper.notEmpty(id, "Snapshot ID");
         final VolumeSnapshot out = os.blockStorage().snapshots().get(id);
         msg.setBody(out);
@@ -85,21 +86,23 @@ public class SnapshotProducer extends AbstractOpenstackProducer {
 
     private void doUpdate(Exchange exchange) {
         final Message msg = exchange.getIn();
-        final String id = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
+        final String id
+                = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
         final VolumeSnapshot vs = messageToSnapshot(msg);
         StringHelper.notEmpty(id, "Cinder Snapshot ID");
 
         final ActionResponse out = os.blockStorage().snapshots().update(id, vs.getName(), vs.getDescription());
-        checkFailure(out, msg, "Update volume snapshot " + id);
+        checkFailure(out, exchange, "Update volume snapshot " + id);
     }
 
     private void doDelete(Exchange exchange) {
         final Message msg = exchange.getIn();
-        final String id = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
+        final String id
+                = msg.getHeader(OpenstackConstants.ID, msg.getHeader(CinderConstants.SNAPSHOT_ID, String.class), String.class);
         StringHelper.notEmpty(id, "Cinder Snapshot ID");
 
         final ActionResponse out = os.blockStorage().snapshots().delete(id);
-        checkFailure(out, msg, "Delete snapshot " + id);
+        checkFailure(out, exchange, "Delete snapshot " + id);
     }
 
     private VolumeSnapshot messageToSnapshot(Message message) {

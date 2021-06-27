@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,6 @@ import org.apache.camel.support.component.AbstractApiProducer;
 public class BraintreeProducer extends AbstractApiProducer<BraintreeApiName, BraintreeConfiguration> {
 
     public BraintreeProducer(BraintreeEndpoint endpoint) {
-        super(endpoint, BraintreePropertiesHelper.getHelper());
+        super(endpoint, BraintreePropertiesHelper.getHelper(endpoint.getCamelContext()));
     }
 }

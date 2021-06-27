@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,29 +16,20 @@
  */
 package org.apache.camel.component.ipfs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import io.nessus.ipfs.IPFSClient;
-
+import io.nessus.ipfs.client.IPFSClient;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.component.ipfs.IPFSConfiguration.IPFSCommand;
-
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The camel-ipfs component provides access to the Interplanetary File System
- * (IPFS).
+ * Access the Interplanetary File System (IPFS).
  */
-@UriEndpoint(firstVersion = "2.23.0", scheme = "ipfs", title = "IPFS", syntax = "ipfs:host:port/cmd", producerOnly = true, label = "file,ipfs")
+@UriEndpoint(firstVersion = "2.23.0", scheme = "ipfs", title = "IPFS",
+             syntax = "ipfs:ipfsCmd", producerOnly = true, category = { Category.FILE, Category.IPFS })
 public class IPFSEndpoint extends DefaultEndpoint {
 
     @UriParam
@@ -51,7 +42,7 @@ public class IPFSEndpoint extends DefaultEndpoint {
 
     @Override
     public IPFSComponent getComponent() {
-        return (IPFSComponent)super.getComponent();
+        return (IPFSComponent) super.getComponent();
     }
 
     @Override
@@ -64,46 +55,11 @@ public class IPFSEndpoint extends DefaultEndpoint {
         return new IPFSProducer(this);
     }
 
-    @Override
-    public boolean isSingleton() {
-        return false;
-    }
-
-    IPFSConfiguration getConfiguration() {
+    public IPFSConfiguration getConfiguration() {
         return configuration;
     }
 
-    IPFSCommand getCommand() {
-        String cmd = configuration.getIpfsCmd();
-        try {
-            return IPFSCommand.valueOf(cmd);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalArgumentException("Unsupported command: " + cmd);
-        }
-    }
-
-    String ipfsVersion() throws IOException {
-        return ipfs().version();
-    }
-
-    List<String> ipfsAdd(Path path) throws IOException {
-        return ipfs().add(path);
-    }
-
-    InputStream ipfsCat(String cid) throws IOException {
-        return ipfs().cat(cid);
-    }
-
-    Path ipfsGet(String cid, Path outdir) throws IOException {
-        Future<Path> future = ipfs().get(cid, outdir);
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            throw new IOException("Cannot obtain: " + cid, ex);
-        }
-    }
-
-    private IPFSClient ipfs() {
+    public IPFSClient getIPFSClient() {
         return getComponent().getIPFSClient();
     }
 }

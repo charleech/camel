@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,22 +17,22 @@
 package org.apache.camel.component.hystrix.processor;
 
 import org.apache.camel.Processor;
-import org.apache.camel.impl.TypedProcessorFactory;
-import org.apache.camel.model.HystrixDefinition;
-import org.apache.camel.spi.RouteContext;
+import org.apache.camel.Route;
+import org.apache.camel.model.CircuitBreakerDefinition;
+import org.apache.camel.support.TypedProcessorFactory;
 
 /**
  * To integrate camel-hystrix with the Camel routes using the Hystrix EIP.
  */
-public class HystrixProcessorFactory extends TypedProcessorFactory<HystrixDefinition> {
+public class HystrixProcessorFactory extends TypedProcessorFactory<CircuitBreakerDefinition> {
 
     public HystrixProcessorFactory() {
-        super(HystrixDefinition.class);
+        super(CircuitBreakerDefinition.class);
     }
 
     @Override
-    public Processor doCreateProcessor(RouteContext routeContext, HystrixDefinition definition) throws Exception {
-        return new HystrixReifier(definition).createProcessor(routeContext);
+    public Processor doCreateProcessor(Route route, CircuitBreakerDefinition definition) throws Exception {
+        return new HystrixReifier(route, definition).createProcessor();
     }
 
 }

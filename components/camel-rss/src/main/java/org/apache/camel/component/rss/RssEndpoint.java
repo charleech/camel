@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,9 @@ package org.apache.camel.component.rss;
 import java.util.Arrays;
 import java.util.Date;
 
-import com.sun.syndication.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+import org.apache.camel.Category;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -31,10 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The rss component is used for consuming RSS feeds.
+ * Poll RSS feeds.
  */
 @UriEndpoint(firstVersion = "2.0.0", scheme = "rss", extendsScheme = "atom", title = "RSS",
-        syntax = "rss:feedUri", consumerOnly = true, label = "rss", lenientProperties = true)
+             syntax = "rss:feedUri", consumerOnly = true, category = { Category.RSS }, lenientProperties = true)
 public class RssEndpoint extends FeedEndpoint {
     protected static final Logger LOG = LoggerFactory.getLogger(RssEndpoint.class);
 
@@ -44,7 +46,7 @@ public class RssEndpoint extends FeedEndpoint {
     public RssEndpoint(String endpointUri, FeedComponent component, String feedUri) {
         super(endpointUri, component, feedUri);
     }
-    
+
     @Override
     public Producer createProducer() throws Exception {
         throw new UnsupportedOperationException("RssProducer is not implemented");
@@ -62,24 +64,26 @@ public class RssEndpoint extends FeedEndpoint {
         Exchange exchange = createExchangeWithFeedHeader(feed, RssConstants.RSS_FEED);
         SyndFeed newFeed;
         try {
-            newFeed = (SyndFeed)((SyndFeed) feed).clone();
-            newFeed.setEntries(Arrays.asList(entry));
+            newFeed = (SyndFeed) ((SyndFeed) feed).clone();
+            newFeed.setEntries(Arrays.asList((SyndEntry) entry));
         } catch (CloneNotSupportedException e) {
             LOG.debug("Could not create a new feed. This exception will be ignored.", e);
             newFeed = null;
-        }        
+        }
         exchange.getIn().setBody(newFeed);
         return exchange;
     }
 
     @Override
-    protected FeedPollingConsumer createEntryPollingConsumer(FeedEndpoint feedEndpoint, Processor processor,
-                                                             boolean filter, Date lastUpdate, boolean throttleEntries) throws Exception {
+    protected FeedPollingConsumer createEntryPollingConsumer(
+            FeedEndpoint feedEndpoint, Processor processor,
+            boolean filter, Date lastUpdate, boolean throttleEntries)
+            throws Exception {
         RssEntryPollingConsumer answer = new RssEntryPollingConsumer(this, processor, filter, lastUpdate, throttleEntries);
         configureConsumer(answer);
         return answer;
-    }  
-    
+    }
+
     @Override
     protected FeedPollingConsumer createPollingConsumer(FeedEndpoint feedEndpoint, Processor processor) throws Exception {
         RssPollingConsumer answer = new RssPollingConsumer(this, processor);

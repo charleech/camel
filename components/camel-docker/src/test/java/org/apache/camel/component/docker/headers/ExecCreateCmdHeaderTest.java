@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.ExecCreateCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -38,14 +37,13 @@ public class ExecCreateCmdHeaderTest extends BaseDockerHeaderTest<ExecCreateCmd>
     private ExecCreateCmd mockObject;
 
     @Test
-    public void execCreateHeaderTest() {
+    void execCreateHeaderTest() {
 
         String containerId = "9c09acd48a25";
         boolean tty = true;
         boolean stdErr = false;
         boolean stdOut = true;
         boolean stdIn = true;
-
 
         Map<String, Object> headers = getDefaultParameters();
         headers.put(DockerConstants.DOCKER_CONTAINER_ID, containerId);
@@ -55,7 +53,6 @@ public class ExecCreateCmdHeaderTest extends BaseDockerHeaderTest<ExecCreateCmd>
         headers.put(DockerConstants.DOCKER_ATTACH_STD_IN, stdIn);
         headers.put(DockerConstants.DOCKER_CMD, "date;whoami");
 
-
         template.sendBodyAndHeaders("direct:in", "", headers);
 
         Mockito.verify(dockerClient, Mockito.times(1)).execCreateCmd(eq(containerId));
@@ -63,8 +60,7 @@ public class ExecCreateCmdHeaderTest extends BaseDockerHeaderTest<ExecCreateCmd>
         Mockito.verify(mockObject, Mockito.times(1)).withAttachStderr(eq(stdErr));
         Mockito.verify(mockObject, Mockito.times(1)).withAttachStdout(eq(stdOut));
         Mockito.verify(mockObject, Mockito.times(1)).withAttachStdin(eq(stdIn));
-        Mockito.verify(mockObject, Mockito.times(1)).withCmd(new String[]{"date", "whoami"});
-
+        Mockito.verify(mockObject, Mockito.times(1)).withCmd(new String[] { "date", "whoami" });
 
     }
 

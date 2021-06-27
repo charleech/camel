@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,8 +61,9 @@ public class MultiSelectPicklistSerializer extends StdSerializer<Object> {
 
         } catch (Exception e) {
             throw new JsonGenerationException(
-                    String.format("Exception writing pick list value %s of type %s: %s",
-                            value, value.getClass().getName(), e.getMessage()), jgen);
+                    String.format("Exception writing pick list value %s of type %s: %s", value, value.getClass().getName(),
+                            e.getMessage()),
+                    jgen);
         }
     }
 }

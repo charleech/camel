@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.cmis;
 
 import java.util.Map;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -28,9 +29,10 @@ import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The cmis component uses the Apache Chemistry client API and allows you to add/read nodes to/from a CMIS compliant content repositories.
+ * Read and write data from to/from a CMIS compliant content repositories.
  */
-@UriEndpoint(firstVersion = "2.11.0", scheme = "cmis", title = "CMIS", syntax = "cmis:cmsUrl", label = "cms,database")
+@UriEndpoint(firstVersion = "2.11.0", scheme = "cmis", title = "CMIS", syntax = "cmis:cmsUrl",
+             category = { Category.CMS, Category.DATABASE })
 public class CMISEndpoint extends DefaultEndpoint {
 
     @UriPath(description = "URL to the cmis repository")
@@ -61,8 +63,8 @@ public class CMISEndpoint extends DefaultEndpoint {
     @Override
     public Producer createProducer() throws Exception {
         return this.queryMode
-            ? new CMISQueryProducer(this, sessionFacadeFactory)
-            : new CMISProducer(this, sessionFacadeFactory);
+                ? new CMISQueryProducer(this, sessionFacadeFactory)
+                : new CMISProducer(this, sessionFacadeFactory);
     }
 
     @Override
@@ -73,16 +75,13 @@ public class CMISEndpoint extends DefaultEndpoint {
         return consumer;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
     public boolean isQueryMode() {
         return queryMode;
     }
 
     /**
-     * If true, will execute the cmis query from the message body and return result, otherwise will create a node in the cmis repository
+     * If true, will execute the cmis query from the message body and return result, otherwise will create a node in the
+     * cmis repository
      */
     public void setQueryMode(boolean queryMode) {
         this.queryMode = queryMode;

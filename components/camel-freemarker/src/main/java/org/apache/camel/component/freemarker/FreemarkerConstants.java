@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ public final class FreemarkerConstants {
     public static final String FREEMARKER_RESOURCE_URI = "CamelFreemarkerResourceUri";
 
     public static final String FREEMARKER_TEMPLATE = "CamelFreemarkerTemplate";
-    
+
     public static final String FREEMARKER_DATA_MODEL = "CamelFreemarkerDataModel";
 
     private FreemarkerConstants() {

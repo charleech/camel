@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,11 @@ import com.orbitz.consul.Consul;
 import com.orbitz.consul.EventClient;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.consul.ConsulConfiguration;
 import org.apache.camel.component.consul.ConsulConstants;
 import org.apache.camel.component.consul.ConsulEndpoint;
+import org.apache.camel.spi.InvokeOnHeader;
 
 public final class ConsulEventProducer extends AbstractConsulProducer<EventClient> {
 
@@ -34,24 +34,17 @@ public final class ConsulEventProducer extends AbstractConsulProducer<EventClien
 
     @InvokeOnHeader(ConsulEventActions.FIRE)
     protected void fire(Message message) throws Exception {
-        setBodyAndResult(
-            message,
-            getClient().fireEvent(
-                getMandatoryHeader(message, ConsulConstants.CONSUL_KEY, getConfiguration().getKey(), String.class),
-                message.getHeader(ConsulConstants.CONSUL_OPTIONS, EventOptions.BLANK, EventOptions.class),
-                message.getBody(String.class)
-            )
-        );
+        setBodyAndResult(message,
+                getClient().fireEvent(
+                        getMandatoryHeader(message, ConsulConstants.CONSUL_KEY, getConfiguration().getKey(), String.class),
+                        message.getHeader(ConsulConstants.CONSUL_OPTIONS, EventOptions.BLANK, EventOptions.class),
+                        message.getBody(String.class)));
     }
 
     @InvokeOnHeader(ConsulEventActions.LIST)
     protected void list(Message message) throws Exception {
-        setBodyAndResult(
-            message,
-            getClient().listEvents(
-                message.getHeader(ConsulConstants.CONSUL_KEY, getConfiguration().getKey(), String.class),
-                message.getHeader(ConsulConstants.CONSUL_OPTIONS, QueryOptions.BLANK, QueryOptions.class)
-            )
-        );
+        setBodyAndResult(message,
+                getClient().listEvents(message.getHeader(ConsulConstants.CONSUL_KEY, getConfiguration().getKey(), String.class),
+                        message.getHeader(ConsulConstants.CONSUL_OPTIONS, QueryOptions.BLANK, QueryOptions.class)));
     }
 }

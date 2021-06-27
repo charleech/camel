@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,10 +26,11 @@ public interface CamelContextBuilder {
 
     /**
      * Default implementation that allows to simply return <code>DefaultCamelContext</code> instance
+     * 
      * @return returns <code>DefaultCamelContext</code> instance
      */
     default CamelContext buildCamelContext() {
-        
+
         return new DefaultCamelContext();
     }
 }

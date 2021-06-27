@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,8 @@ package org.apache.camel.component.jgroups;
 
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
-import org.jgroups.JChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Consumes messages from the JGroups channels ({@code org.jgroups.Channel}). Received messages
@@ -26,34 +27,34 @@ import org.jgroups.JChannel;
  */
 public class JGroupsConsumer extends DefaultConsumer {
 
-    private final JChannel channel;
+    private static final Logger LOG = LoggerFactory.getLogger(JGroupsConsumer.class);
+
     private final String clusterName;
 
     private final CamelJGroupsReceiver receiver;
     private final JGroupsEndpoint endpoint;
 
-    public JGroupsConsumer(JGroupsEndpoint endpoint, Processor processor, JChannel channel, String clusterName) {
+    public JGroupsConsumer(JGroupsEndpoint endpoint, Processor processor, String clusterName) {
         super(endpoint, processor);
 
         this.endpoint = endpoint;
-        this.channel = channel;
         this.clusterName = clusterName;
 
-        this.receiver = new CamelJGroupsReceiver(endpoint, processor);
+        this.receiver = new CamelJGroupsReceiver(this, endpoint, processor);
     }
 
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        log.debug("Connecting receiver: {} to the cluster: {}.", receiver, clusterName);
-        channel.setReceiver(receiver);
+        LOG.debug("Connecting receiver: {} to the cluster: {}.", receiver, clusterName);
+        endpoint.getResolvedChannel().setReceiver(receiver);
         endpoint.connect();
     }
 
     @Override
     protected void doStop() throws Exception {
-        log.debug("Closing connection to cluster: {} from receiver: {}.", clusterName, receiver);
-        channel.setReceiver(null);
+        LOG.debug("Closing connection to cluster: {} from receiver: {}.", clusterName, receiver);
+        endpoint.getResolvedChannel().setReceiver(null);
         endpoint.disconnect();
         super.doStop();
     }

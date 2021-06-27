@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.jaxrs;
 
 import org.apache.camel.Component;
@@ -43,17 +42,17 @@ public class CxfRsSpringEndpoint extends CxfRsEndpoint implements BeanIdAware {
     private void init(AbstractJAXRSFactoryBean bean) {
         this.bean = bean;
         if (bean instanceof BeanIdAware) {
-            setBeanId(((BeanIdAware)bean).getBeanId());
+            setBeanId(((BeanIdAware) bean).getBeanId());
         }
 
-        ApplicationContext applicationContext = ((SpringCamelContext)getCamelContext()).getApplicationContext();
+        ApplicationContext applicationContext = ((SpringCamelContext) getCamelContext()).getApplicationContext();
         configurer = new ConfigurerImpl(applicationContext);
     }
 
     @Override
     protected JAXRSServerFactoryBean newJAXRSServerFactoryBean() {
         checkBeanType(bean, JAXRSServerFactoryBean.class);
-        return (JAXRSServerFactoryBean)bean;
+        return (JAXRSServerFactoryBean) bean;
     }
 
     @Override
@@ -71,21 +70,23 @@ public class CxfRsSpringEndpoint extends CxfRsEndpoint implements BeanIdAware {
         cfb.setThreadSafe(true);
     }
 
+    @Override
     public String getBeanId() {
         return beanId;
     }
 
+    @Override
     public void setBeanId(String id) {
         this.beanId = id;
     }
-    
+
     private JAXRSClientFactoryBean newInstanceWithCommonProperties() {
         SpringJAXRSClientFactoryBean cfb = new SpringJAXRSClientFactoryBean();
-        
+
         if (bean instanceof SpringJAXRSClientFactoryBean) {
             ReflectionUtils.shallowCopyFieldState(bean, cfb);
         }
 
         return cfb;
-    }    
+    }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,30 +19,36 @@ package org.apache.camel.itest.jms;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jms.ConnectionFactory;
-import javax.naming.Context;
-
 import org.apache.camel.Header;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
-import org.apache.camel.itest.CamelJmsTestHelper;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.jndi.JndiContext;
-import org.junit.Test;
+import org.apache.camel.itest.utils.extensions.JmsServiceExtension;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JmsPerformanceTest extends CamelTestSupport {
+    @RegisterExtension
+    public static JmsServiceExtension jmsServiceExtension = JmsServiceExtension.createExtension();
+
+    private static final Logger LOG = LoggerFactory.getLogger(JmsPerformanceTest.class);
+
     private List<Integer> receivedHeaders = new ArrayList<>(getMessageCount());
     private List<Object> receivedMessages = new ArrayList<>(getMessageCount());
 
     @Test
-    public void testSendingAndReceivingMessages() throws Exception {
-        log.info("Sending {} messages", getMessageCount());
+    void testSendingAndReceivingMessages() throws Exception {
+        LOG.info("Sending {} messages", getMessageCount());
 
         sendLoop(getMessageCount());
 
-        log.info("Sending {} messages completed, now will assert on their content as well as the order of their receipt", getMessageCount());
+        LOG.info("Sending {} messages completed, now will assert on their content as well as the order of their receipt",
+                getMessageCount());
 
         // should wait a bit to make sure all messages have been received by the MyBean#onMessage() method
         // as this happens asynchronously, that's not inside the 'main' thread
@@ -71,7 +77,7 @@ public class JmsPerformanceTest extends CamelTestSupport {
 
     protected void assertExpectedMessagesReceived() throws InterruptedException {
         // assert on the expected message count
-        assertEquals("The expected message count does not match!", getMessageCount(), receivedMessages.size());
+        assertEquals(getMessageCount(), receivedMessages.size(), "The expected message count does not match!");
 
         // assert on the expected message order
         List<Integer> expectedHeaders = new ArrayList<>(getMessageCount());
@@ -84,28 +90,25 @@ public class JmsPerformanceTest extends CamelTestSupport {
             expectedMessages.add("Hello:" + i);
         }
 
-        assertEquals("The expected header order does not match!", expectedHeaders, receivedHeaders);
-        assertEquals("The expected message order does not match!", expectedMessages, receivedMessages);
+        assertEquals(expectedHeaders, receivedHeaders, "The expected header order does not match!");
+        assertEquals(expectedMessages, receivedMessages, "The expected message order does not match!");
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        JndiContext answer = new JndiContext();
-        answer.bind("myBean", new MyBean());
-
+    protected void bindToRegistry(Registry registry) {
         // add AMQ client and make use of connection pooling we depend on because of the (large) number
         // of the JMS messages we do produce
         // add ActiveMQ with embedded broker
-        ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
-        JmsComponent amq = jmsComponentAutoAcknowledge(connectionFactory);
+        JmsComponent amq = jmsServiceExtension.getComponent();
+
         amq.setCamelContext(context);
 
-        answer.bind("activemq", amq);
-        return answer;
+        registry.bind("myBean", new MyBean());
+        registry.bind("activemq", amq);
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("activemq:" + getQueueName()).to("bean:myBean");

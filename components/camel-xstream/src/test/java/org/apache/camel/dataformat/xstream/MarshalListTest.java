@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,22 +25,22 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 /**
  * Marshal tests with List objects.
  */
 public class MarshalListTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     MockEndpoint mock;
 
     @Test
     public void testMarshalList() throws Exception {
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived("<?xml version='1.0' encoding='ISO-8859-1'?>"
-            + "<list><string>Hello World</string></list>");
+                                    + "<list><string>Hello World</string></list>");
 
         List<String> body = new ArrayList<>();
         body.add("Hello World");
@@ -54,8 +54,8 @@ public class MarshalListTest extends CamelTestSupport {
     public void testMarshalListWithMap() throws Exception {
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived(
-            "<?xml version='1.0' encoding='UTF-8'?><list><map><entry><string>city</string>"
-                + "<string>London\u0E08</string></entry></map></list>");
+                "<?xml version='1.0' encoding='UTF-8'?><list><map><entry><string>city</string>"
+                                    + "<string>London\u0E08</string></entry></map></list>");
 
         List<Map<Object, String>> body = new ArrayList<>();
         Map<Object, String> row = new HashMap<>();
@@ -71,8 +71,8 @@ public class MarshalListTest extends CamelTestSupport {
     public void testSetEncodingOnXstream() throws Exception {
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived(
-            "<?xml version='1.0' encoding='UTF-8'?><list><map><entry><string>city</string>"
-                + "<string>London\u0E08</string></entry></map></list>");
+                "<?xml version='1.0' encoding='UTF-8'?><list><map><entry><string>city</string>"
+                                    + "<string>London\u0E08</string></entry></map></list>");
 
         List<Map<Object, String>> body = new ArrayList<>();
         Map<Object, String> row = new HashMap<>();
@@ -84,6 +84,7 @@ public class MarshalListTest extends CamelTestSupport {
         mock.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {

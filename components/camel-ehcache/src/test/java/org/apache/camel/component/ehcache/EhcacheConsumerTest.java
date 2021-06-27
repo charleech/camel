@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ehcache;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.ehcache.Cache;
 import org.ehcache.event.EventType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class EhcacheConsumerTest extends EhcacheTestSupport {
 
     @Test
-    public void testEvents() throws Exception {
+    void testEvents() throws Exception {
         String key = generateRandomString();
         String[] values = generateRandomArrayOfStrings(2);
 
@@ -56,15 +55,15 @@ public class EhcacheConsumerTest extends EhcacheTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 fromF("ehcache://%s?cacheManager=#cacheManager&eventTypes=CREATED", TEST_CACHE_NAME)
-                    .to("mock:created");
+                        .to("mock:created");
                 fromF("ehcache://%s?cacheManager=#cacheManager&eventTypes=UPDATED", TEST_CACHE_NAME)
-                    .to("mock:updated");
+                        .to("mock:updated");
                 fromF("ehcache://%s?cacheManager=#cacheManager", TEST_CACHE_NAME)
-                    .to("mock:all");
+                        .to("mock:all");
             }
         };
     }

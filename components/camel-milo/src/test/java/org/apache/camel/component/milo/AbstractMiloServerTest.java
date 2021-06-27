@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,16 @@ import java.util.function.Consumer;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.milo.server.MiloServerComponent;
 import org.apache.camel.component.mock.AssertionClause;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public abstract class AbstractMiloServerTest extends CamelTestSupport {
 
@@ -33,8 +40,9 @@ public abstract class AbstractMiloServerTest extends CamelTestSupport {
 
     @Override
     protected void doPreSetup() throws Exception {
+        assumeTrue(isJavaVersionSatisfied(9), "Requires java 9+");
         super.doPreSetup();
-        this.serverPort = Ports.pickServerPort();
+        this.serverPort = AvailablePortFinder.getNextAvailable();
     }
 
     public int getServerPort() {
@@ -48,8 +56,8 @@ public abstract class AbstractMiloServerTest extends CamelTestSupport {
     /**
      * Replace the port placeholder with the dynamic server port
      * 
-     * @param uri the URI to process
-     * @return the result, may be {@code null} if the input is {@code null}
+     * @param  uri the URI to process
+     * @return     the result, may be {@code null} if the input is {@code null}
      */
     protected String resolve(String uri) {
         if (uri == null) {
@@ -63,7 +71,9 @@ public abstract class AbstractMiloServerTest extends CamelTestSupport {
         testBody(clause, DataValue.class, valueConsumer);
     }
 
-    public static <T> void testBody(final AssertionClause clause, final Class<T> bodyClass, final Consumer<T> valueConsumer) {
+    public static <T> void testBody(
+            final AssertionClause clause, final Class<T> bodyClass,
+            final Consumer<T> valueConsumer) {
         clause.predicate(exchange -> {
             final T body = exchange.getIn().getBody(bodyClass);
             valueConsumer.accept(body);
@@ -96,7 +106,7 @@ public abstract class AbstractMiloServerTest extends CamelTestSupport {
 
     protected void configureMiloServer(final MiloServerComponent server) throws Exception {
         server.setBindAddresses("localhost");
-        server.setBindPort(this.serverPort);
+        server.setPort(this.serverPort);
         server.setUserAuthenticationCredentials("foo:bar,foo2:bar2");
         server.setUsernameSecurityPolicyUri(SecurityPolicy.None);
         server.setSecurityPoliciesById("None");
@@ -111,14 +121,35 @@ public abstract class AbstractMiloServerTest extends CamelTestSupport {
         try {
 
             final KeyStoreLoader loader = new KeyStoreLoader();
-            loader.setUrl("file:src/test/resources/cert/cert.p12");
-            loader.setKeyStorePassword("pwd1");
-            loader.setKeyPassword("pwd1");
+            loader.setUrl("file:src/test/resources/keystore");
+            loader.setKeyStorePassword("testtest");
+
+            loader.setKeyPassword("test");
             return loader.load();
         } catch (final GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    /**
+     * Return true, if java version (defined by method getRequiredJavaVersion()) is satisfied. Works for java versions
+     * 9+
+     */
+    boolean isJavaVersionSatisfied(int requiredVersion) {
+        String version = System.getProperty("java.version");
+        if (!version.startsWith("1.")) {
+            int dot = version.indexOf('.');
+            if (dot != -1) {
+                version = version.substring(0, dot);
+            }
+            if (version.equalsIgnoreCase("16-ea")) {
+                return true;
+            } else if (Integer.parseInt(version) >= requiredVersion) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

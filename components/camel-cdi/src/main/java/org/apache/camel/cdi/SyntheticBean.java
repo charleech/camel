@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
+
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.CreationException;
 import javax.enterprise.inject.InjectionException;
+import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
@@ -31,6 +33,7 @@ import javax.enterprise.inject.spi.PassivationCapable;
 
 import static org.apache.camel.cdi.CdiSpiHelper.createBeanId;
 
+@Vetoed
 class SyntheticBean<T> extends SyntheticBeanAttributes<T> implements Bean<T>, PassivationCapable {
 
     private final Class<?> type;
@@ -39,7 +42,8 @@ class SyntheticBean<T> extends SyntheticBeanAttributes<T> implements Bean<T>, Pa
 
     private final Function<Bean<T>, String> toString;
 
-    SyntheticBean(BeanManager manager, SyntheticAnnotated annotated, Class<?> type, InjectionTarget<T> target, Function<Bean<T>, String> toString) {
+    SyntheticBean(BeanManager manager, SyntheticAnnotated annotated, Class<?> type, InjectionTarget<T> target,
+                  Function<Bean<T>, String> toString) {
         super(manager, annotated);
         this.type = type;
         this.target = target;
@@ -93,10 +97,10 @@ class SyntheticBean<T> extends SyntheticBeanAttributes<T> implements Bean<T>, Pa
     @Override
     public String getId() {
         return new StringJoiner("%")
-            .add("CAMEL-CDI")
-            .add(getClass().getSimpleName())
-            .add(type.getName())
-            .add(createBeanId(this))
-            .toString();
+                .add("CAMEL-CDI")
+                .add(getClass().getSimpleName())
+                .add(type.getName())
+                .add(createBeanId(this))
+                .toString();
     }
 }

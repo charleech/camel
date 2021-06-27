@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,11 @@
 package org.apache.camel.component.as2.api;
 
 interface Constants {
-    static final String SHA_1_AS2_ALGORITHM_NAME = "sha1";
-    static final String SHA_1_JDK_ALGORITHM_NAME = "SHA-1";
+    String SHA_1_AS2_ALGORITHM_NAME = "sha1";
+    String SHA_1_JDK_ALGORITHM_NAME = "SHA-1";
 
-    static final String MD5_AS2_ALGORITHM_NAME = "md5";
-    static final String MD5_JDK_ALGORITHM_NAME = "MD5";
+    String MD5_AS2_ALGORITHM_NAME = "md5";
+    String MD5_JDK_ALGORITHM_NAME = "MD5";
 }
 
 public enum AS2MicAlgorithm {
@@ -45,24 +45,24 @@ public enum AS2MicAlgorithm {
     }
 
     public static String getJdkAlgorithmName(String as2AlgorithmName) {
-        switch(as2AlgorithmName) {
-        case Constants.SHA_1_AS2_ALGORITHM_NAME:
-            return Constants.SHA_1_JDK_ALGORITHM_NAME;
-        case Constants.MD5_AS2_ALGORITHM_NAME:
-            return Constants.MD5_JDK_ALGORITHM_NAME;
-        default:
-            return null;
+        switch (as2AlgorithmName) {
+            case Constants.SHA_1_AS2_ALGORITHM_NAME:
+                return Constants.SHA_1_JDK_ALGORITHM_NAME;
+            case Constants.MD5_AS2_ALGORITHM_NAME:
+                return Constants.MD5_JDK_ALGORITHM_NAME;
+            default:
+                return null;
         }
     }
 
     public static String getAS2AlgorithmName(String jdkAlgorithmName) {
-        switch(jdkAlgorithmName) {
-        case Constants.MD5_JDK_ALGORITHM_NAME:
-            return Constants.MD5_AS2_ALGORITHM_NAME;
-        case Constants.SHA_1_JDK_ALGORITHM_NAME:
-            return Constants.SHA_1_AS2_ALGORITHM_NAME;
-        default:
-            return null;
+        switch (jdkAlgorithmName) {
+            case Constants.MD5_JDK_ALGORITHM_NAME:
+                return Constants.MD5_AS2_ALGORITHM_NAME;
+            case Constants.SHA_1_JDK_ALGORITHM_NAME:
+                return Constants.SHA_1_AS2_ALGORITHM_NAME;
+            default:
+                return null;
         }
     }
 

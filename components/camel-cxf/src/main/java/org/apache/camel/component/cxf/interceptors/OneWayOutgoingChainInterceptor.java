@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.interceptors;
 
 import java.io.IOException;
@@ -25,19 +24,19 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 
-
 public class OneWayOutgoingChainInterceptor extends AbstractPhaseInterceptor<Message> {
-    
+
     public OneWayOutgoingChainInterceptor() {
         super(Phase.POST_INVOKE);
         this.addBefore(OutgoingChainInterceptor.class.getName());
     }
 
+    @Override
     public void handleMessage(Message message) {
         closeInput(message);
         return;
     }
-    
+
     private void closeInput(Message message) {
         InputStream is = message.getContent(InputStream.class);
         if (is != null) {

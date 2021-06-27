@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,15 @@
  */
 package org.apache.camel.component.xquery;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import static org.apache.camel.test.junit5.TestSupport.body;
 
 /**
  * Concurrency test of XQuery using transform.xquery DSL.
@@ -50,7 +52,7 @@ public class XQueryConcurrencyTest extends CamelTestSupport {
                     for (int i = 0; i < 200; i++) {
                         try {
                             // do some random sleep to simulate spread in user activity
-                            Thread.sleep(new Random().nextInt(10));
+                            Thread.sleep(new SecureRandom().nextInt(10));
                         } catch (InterruptedException e) {
                             // ignore
                         }
@@ -66,6 +68,7 @@ public class XQueryConcurrencyTest extends CamelTestSupport {
         executor.shutdown();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
@@ -73,8 +76,8 @@ public class XQueryConcurrencyTest extends CamelTestSupport {
                 errorHandler(noErrorHandler());
 
                 from(uri)
-                    .transform().xquery("/person/id", String.class)
-                    .to("mock:result");
+                        .transform().xquery("/person/id", String.class)
+                        .to("mock:result");
             }
         };
     }

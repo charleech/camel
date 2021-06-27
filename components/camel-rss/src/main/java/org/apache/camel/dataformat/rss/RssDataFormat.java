@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,21 +19,21 @@ package org.apache.camel.dataformat.rss;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.sun.syndication.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeed;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.spi.annotations.Dataformat;
-import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.support.ExchangeHelper;
+import org.apache.camel.support.service.ServiceSupport;
 
 /**
  * RSS DataFormat
  * <p/>
  * This data format supports two operations:
  * <ul>
- *   <li>marshal = from ROME SyndFeed to XML String </li>
- *   <li>unmarshal = from XML String to ROME SyndFeed </li>
+ * <li>marshal = from ROME SyndFeed to XML String</li>
+ * <li>unmarshal = from XML String to ROME SyndFeed</li>
  * </ul>
  * <p/>
  * Uses <a href="https://rome.dev.java.net/">ROME</a> for RSS parsing.
@@ -47,12 +47,14 @@ public class RssDataFormat extends ServiceSupport implements DataFormat, DataFor
         return "rss";
     }
 
+    @Override
     public void marshal(Exchange exchange, Object body, OutputStream out) throws Exception {
         SyndFeed feed = ExchangeHelper.convertToMandatoryType(exchange, SyndFeed.class, body);
         String xml = RssConverter.feedToXml(feed);
         out.write(xml.getBytes());
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream in) throws Exception {
         String xml = ExchangeHelper.convertToMandatoryType(exchange, String.class, in);
         return RssConverter.xmlToFeed(xml);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,7 @@
 package org.apache.camel.component.as2.api;
 
 public interface AS2TransferEncoding {
-    public static final String NONE = null;
-    public static final String BASE64 = "base64";
-    public static final String SEVENBIT = "7bit";
+    String NONE = null;
+    String BASE64 = "base64";
+    String SEVENBIT = "7bit";
 }

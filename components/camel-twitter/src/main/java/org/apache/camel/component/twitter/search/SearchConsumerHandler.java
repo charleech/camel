@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ public class SearchConsumerHandler extends AbstractTwitterConsumerHandler {
         this.keywords = keywords;
     }
 
+    @Override
     public List<Exchange> pollConsume() throws TwitterException {
         String keywords = this.keywords;
 
@@ -68,6 +69,7 @@ public class SearchConsumerHandler extends AbstractTwitterConsumerHandler {
         return search(query);
     }
 
+    @Override
     public List<Exchange> directConsume() throws TwitterException {
         String keywords = this.keywords;
         if (keywords == null || keywords.trim().length() == 0) {
@@ -97,8 +99,10 @@ public class SearchConsumerHandler extends AbstractTwitterConsumerHandler {
         if (ObjectHelper.isNotEmpty(endpoint.getProperties().getLatitude())
                 && ObjectHelper.isNotEmpty(endpoint.getProperties().getLongitude())
                 && ObjectHelper.isNotEmpty(endpoint.getProperties().getRadius())) {
-            GeoLocation location = new GeoLocation(endpoint.getProperties().getLatitude(), endpoint.getProperties().getLongitude());
-            query.setGeoCode(location, endpoint.getProperties().getRadius(), Unit.valueOf(endpoint.getProperties().getDistanceMetric()));
+            GeoLocation location
+                    = new GeoLocation(endpoint.getProperties().getLatitude(), endpoint.getProperties().getLongitude());
+            query.setGeoCode(location, endpoint.getProperties().getRadius(),
+                    Unit.valueOf(endpoint.getProperties().getDistanceMetric()));
 
             LOG.debug("Searching with additional geolocation parameters.");
         }
@@ -119,8 +123,8 @@ public class SearchConsumerHandler extends AbstractTwitterConsumerHandler {
         }
 
         if (endpoint.getProperties().isFilterOld()) {
-            for (int i = 0; i < tweets.size(); i++) {
-                setLastIdIfGreater(tweets.get(i).getId());
+            for (Status status : tweets) {
+                setLastIdIfGreater(status.getId());
             }
         }
 

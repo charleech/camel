@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,12 @@
 package org.apache.camel.component.micrometer.messagehistory;
 
 import java.util.function.Predicate;
+
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tags;
 import org.apache.camel.NamedNode;
 import org.apache.camel.Route;
+
 import static org.apache.camel.component.micrometer.MicrometerConstants.CAMEL_CONTEXT_TAG;
 import static org.apache.camel.component.micrometer.MicrometerConstants.DEFAULT_CAMEL_MESSAGE_HISTORY_METER_NAME;
 import static org.apache.camel.component.micrometer.MicrometerConstants.NODE_ID_TAG;
@@ -32,18 +34,18 @@ import static org.apache.camel.component.micrometer.MicrometerConstants.SERVICE_
  */
 public interface MicrometerMessageHistoryNamingStrategy {
 
-    Predicate<Meter.Id> MESSAGE_HISTORIES = id -> MicrometerMessageHistoryService.class.getSimpleName().equals(id.getTag(SERVICE_NAME));
+    Predicate<Meter.Id> MESSAGE_HISTORIES
+            = id -> MicrometerMessageHistoryService.class.getSimpleName().equals(id.getTag(SERVICE_NAME));
     MicrometerMessageHistoryNamingStrategy DEFAULT = (route, node) -> DEFAULT_CAMEL_MESSAGE_HISTORY_METER_NAME;
 
     String getName(Route route, NamedNode node);
 
     default Tags getTags(Route route, NamedNode node) {
         return Tags.of(
-                CAMEL_CONTEXT_TAG, route.getRouteContext().getCamelContext().getName(),
+                CAMEL_CONTEXT_TAG, route.getCamelContext().getName(),
                 SERVICE_NAME, MicrometerMessageHistoryService.class.getSimpleName(),
                 ROUTE_ID_TAG, route.getId(),
-                NODE_ID_TAG, node.getId()
-        );
+                NODE_ID_TAG, node.getId());
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,23 +17,25 @@
 package org.apache.camel.converter.crypto;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public class PGPKeyAccessDataFormatTest extends CamelTestSupport {
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
 
         return new RouteBuilder() {
             public void configure() throws Exception {
 
                 PGPPublicKeyAccessor publicKeyAccessor = new DefaultPGPPublicKeyAccessor(PGPDataFormatTest.getPublicKeyRing());
-                PGPSecretKeyAccessor secretKeyAccessor = new DefaultPGPSecretKeyAccessor(PGPDataFormatTest.getSecKeyRing(), "sdude", "BC");
-                PGPKeyAccessDataFormat dt = new PGPKeyAccessDataFormat();
-                dt.setPublicKeyAccessor(publicKeyAccessor);
-                dt.setSecretKeyAccessor(secretKeyAccessor);               
-                dt.setKeyUserid("sdude");
-                dt.setSignatureKeyUserid("sdude");
-
+                PGPSecretKeyAccessor secretKeyAccessor
+                        = new DefaultPGPSecretKeyAccessor(PGPDataFormatTest.getSecKeyRing(), "sdude", "BC");
+                try (PGPKeyAccessDataFormat dt = new PGPKeyAccessDataFormat()) {
+                    dt.setPublicKeyAccessor(publicKeyAccessor);
+                    dt.setSecretKeyAccessor(secretKeyAccessor);
+                    dt.setKeyUserid("sdude");
+                    dt.setSignatureKeyUserid("sdude");
+                }
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.apache.camel.component.irc.it;
 
-import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.apache.camel.support.jsse.TrustManagersParameters;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class IrcsWithSslContextParamsRouteTest extends IrcRouteTest {
 
     // TODO This test is disabled until we can find a public SSL enabled IRC 
@@ -35,24 +35,20 @@ public class IrcsWithSslContextParamsRouteTest extends IrcRouteTest {
     //    pass reliably, you may need to set a break point in IrcEndpoint#joinChanel in order
     //    to slow the route creation down enough for the event listener to be in place
     //    when camel-con joins the room.
-    
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
+
+    @BindToRegistry("sslContextParameters")
+    protected SSLContextParameters loadSslContextParams() throws Exception {
         KeyStoreParameters ksp = new KeyStoreParameters();
-        ksp.setResource("localhost.ks");
+        ksp.setResource("localhost.p12");
         ksp.setPassword("changeit");
-        
+
         TrustManagersParameters tmp = new TrustManagersParameters();
         tmp.setKeyStore(ksp);
-        
+
         SSLContextParameters sslContextParameters = new SSLContextParameters();
         sslContextParameters.setTrustManagers(tmp);
-        
-        
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("sslContextParameters", sslContextParameters);
 
-        return registry;
+        return sslContextParameters;
     }
 
     @Override
@@ -60,9 +56,9 @@ public class IrcsWithSslContextParamsRouteTest extends IrcRouteTest {
         return "ircs://camel-prd-user@localhost:6669/#camel-test?nickname=camel-prd&password=password&sslContextParameters=#sslContextParameters";
     }
 
-    @Override    
+    @Override
     protected String fromUri() {
         return "ircs://camel-con-user@localhost:6669/#camel-test?nickname=camel-con&password=password&sslContextParameters=#sslContextParameters";
-    }    
+    }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,25 +22,25 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class JmsMessageAsOriginalMessageInDefaultUnitOfWorkTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint mockResult;
-    
+
     @Test
     public void testUseOriginalMessage() throws Exception {
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
                 onException(Exception.class)
-                    .useOriginalMessage()
-                    .to(mockResult);
-                
+                        .useOriginalMessage()
+                        .to(mockResult);
+
                 from("jms:queue:foo")
-                    .throwException(new Exception("forced exception for test"));
+                        .throwException(new Exception("forced exception for test"));
             }
         });
         context.start();
@@ -53,11 +53,12 @@ public class JmsMessageAsOriginalMessageInDefaultUnitOfWorkTest extends CamelTes
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
-        camelContext.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory)); 
+        camelContext.addComponent("jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
         return camelContext;
     }
 
@@ -66,4 +67,3 @@ public class JmsMessageAsOriginalMessageInDefaultUnitOfWorkTest extends CamelTes
         return false;
     }
 }
-

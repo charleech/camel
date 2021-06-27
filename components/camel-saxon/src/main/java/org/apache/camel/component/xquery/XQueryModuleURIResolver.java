@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ public class XQueryModuleURIResolver implements ModuleURIResolver {
         this.xqueryComponent = xqueryComponent;
     }
 
+    @Override
     public StreamSource[] resolve(String moduleURI, String baseURI, String[] locations) throws XPathException {
         StreamSource[] ss = new StreamSource[locations.length];
         try {

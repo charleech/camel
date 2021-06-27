@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.hazelcast.replicatedmap;
 
 import com.hazelcast.core.HazelcastInstance;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -26,22 +27,27 @@ import org.apache.camel.component.hazelcast.HazelcastDefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 
 /**
- * The hazelcast-replicatedmap component is used to access <a href="http://www.hazelcast.com/">Hazelcast</a> replicated map.
+ * Perform operations on <a href="http://www.hazelcast.com/">Hazelcast</a> replicated map.
  */
-@UriEndpoint(firstVersion = "2.16.0", scheme = "hazelcast-replicatedmap", title = "Hazelcast Replicated Map", syntax = "hazelcast-replicatedmap:cacheName", label = "cache,datagrid")
+@UriEndpoint(firstVersion = "2.16.0", scheme = "hazelcast-replicatedmap", title = "Hazelcast Replicated Map",
+             syntax = "hazelcast-replicatedmap:cacheName", category = { Category.CACHE, Category.DATAGRID })
 public class HazelcastReplicatedmapEndpoint extends HazelcastDefaultEndpoint {
 
-    public HazelcastReplicatedmapEndpoint(HazelcastInstance hazelcastInstance, String uri, String cacheName, HazelcastDefaultComponent component) {
+    public HazelcastReplicatedmapEndpoint(HazelcastInstance hazelcastInstance, String uri, String cacheName,
+                                          HazelcastDefaultComponent component) {
         super(hazelcastInstance, uri, component, cacheName);
         setCommand(HazelcastCommand.replicatedmap);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        HazelcastReplicatedmapConsumer answer = new HazelcastReplicatedmapConsumer(hazelcastInstance, this, processor, cacheName);
+        HazelcastReplicatedmapConsumer answer
+                = new HazelcastReplicatedmapConsumer(hazelcastInstance, this, processor, cacheName);
         configureConsumer(answer);
         return answer;
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new HazelcastReplicatedmapProducer(hazelcastInstance, this, cacheName);
     }

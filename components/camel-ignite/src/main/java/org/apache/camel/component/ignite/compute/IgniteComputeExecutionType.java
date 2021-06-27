@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,12 @@ package org.apache.camel.component.ignite.compute;
  */
 public enum IgniteComputeExecutionType {
 
-    CALL, BROADCAST, APPLY, EXECUTE, RUN, AFFINITY_CALL, AFFINITY_RUN
+    CALL,
+    BROADCAST,
+    APPLY,
+    EXECUTE,
+    RUN,
+    AFFINITY_CALL,
+    AFFINITY_RUN
 
 }

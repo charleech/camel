@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.cdi.bean;
 
 import java.util.Arrays;
 import java.util.List;
+
 import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.Consume;
@@ -27,7 +28,7 @@ import org.apache.camel.RecipientList;
 public class RecipientListMethodBean {
 
     @RecipientList
-    @Consume(uri = "direct:inbound")
+    @Consume("direct:inbound")
     public List<String> route() {
         return Arrays.asList("mock:outbound1", "mock:outbound2");
     }

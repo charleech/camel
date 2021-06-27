@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,12 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 /**
- * The JAXB POJOs for the
- * <a href="http://camel.apache.org/xml-configuration.html">XML Configuration</a>
- * of the routing rules.
+ * The JAXB POJOs for the <a href="http://camel.apache.org/xml-configuration.html">XML Configuration</a> of the routing
+ * rules.
  */
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://camel.apache.org/schema/spring", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://camel.apache.org/schema/spring",
+                                     elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.apache.camel.cdi.xml;
-

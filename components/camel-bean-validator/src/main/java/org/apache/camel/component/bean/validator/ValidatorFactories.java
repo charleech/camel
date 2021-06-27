@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,14 +33,15 @@ public final class ValidatorFactories {
     private ValidatorFactories() {
     }
 
-    public static ValidatorFactory buildValidatorFactory(boolean osgi,
-                                                         ValidationProviderResolver validationProviderResolver,
-                                                         MessageInterpolator messageInterpolator,
-                                                         TraversableResolver traversableResolver,
-                                                         ConstraintValidatorFactory constraintValidatorFactory) {
+    public static ValidatorFactory buildValidatorFactory(
+            boolean osgi, boolean ignoreXml,
+            ValidationProviderResolver validationProviderResolver,
+            MessageInterpolator messageInterpolator,
+            TraversableResolver traversableResolver,
+            ConstraintValidatorFactory constraintValidatorFactory) {
 
-        ValidationProviderResolver resolvedValidationProviderResolver =
-                resolveValidationProviderResolver(osgi, validationProviderResolver);
+        ValidationProviderResolver resolvedValidationProviderResolver
+                = resolveValidationProviderResolver(osgi, validationProviderResolver);
 
         GenericBootstrap bootstrap = Validation.byDefaultProvider();
         if (resolvedValidationProviderResolver != null) {
@@ -60,6 +61,10 @@ public final class ValidatorFactories {
             configuration.constraintValidatorFactory(constraintValidatorFactory);
         }
 
+        if (ignoreXml) {
+            configuration.ignoreXmlConfiguration();
+        }
+
         return configuration.buildValidatorFactory();
     }
 
@@ -67,14 +72,14 @@ public final class ValidatorFactories {
      * Resolves optional custom {@code javax.validation.ValidationProviderResolver} to be used by the component. By
      * default component tries to use resolver instance bound to the Camel registry under name
      * {@code validationProviderResolver} . If there is no such resolver instance in the registry and component is
-     * running in the OSGi environment, {@link HibernateValidationProviderResolver} will be used. In all the other
-     * cases this method will return null.
+     * running in the OSGi environment, {@link HibernateValidationProviderResolver} will be used. In all the other cases
+     * this method will return null.
      *
-     * @param osgi specifies if validator factory should be OSGi-aware
-     * @param validationProviderResolver predefined provider resolver. This parameter overrides the results of the
-     *                                   resolution.
-     * @return {@code javax.validation.ValidationProviderResolver} instance or null if no custom resolver should
-     * be used by the component
+     * @param  osgi                       specifies if validator factory should be OSGi-aware
+     * @param  validationProviderResolver predefined provider resolver. This parameter overrides the results of the
+     *                                    resolution.
+     * @return                            {@code javax.validation.ValidationProviderResolver} instance or null if no
+     *                                    custom resolver should be used by the component
      */
     private static ValidationProviderResolver resolveValidationProviderResolver(
             boolean osgi,

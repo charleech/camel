@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,22 @@
  */
 package org.apache.camel.itest.issues;
 
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
 import org.apache.xbean.spring.context.ClassPathXmlApplicationContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BeanCallDerivedClassTest extends CamelSpringTestSupport {
 
+    @Override
     protected AbstractXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/itest/issues/BeanCallDerivedClassTest-context.xml");
     }
 
     @Test
-    public void testCallBean() throws Exception {
+    void testCallBean() {
         DerivedClass derived = context.getRegistry().lookupByNameAndType("derived", DerivedClass.class);
 
         template.sendBody("direct:start", "Hello World");

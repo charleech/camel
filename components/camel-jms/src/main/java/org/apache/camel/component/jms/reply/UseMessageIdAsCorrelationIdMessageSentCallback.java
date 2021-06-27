@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,8 @@ import static org.apache.camel.component.jms.JmsMessageHelper.getJMSMessageID;
 /**
  * Callback to be used when using the option <tt>useMessageIDAsCorrelationID</tt>.
  * <p/>
- * This callback will keep the correlation registration in {@link ReplyManager} up-to-date with
- * the <tt>JMSMessageID</tt> which was assigned and used when the message was sent.
+ * This callback will keep the correlation registration in {@link ReplyManager} up-to-date with the
+ * <tt>JMSMessageID</tt> which was assigned and used when the message was sent.
  */
 public class UseMessageIdAsCorrelationIdMessageSentCallback implements MessageSentCallback {
 
@@ -36,12 +36,14 @@ public class UseMessageIdAsCorrelationIdMessageSentCallback implements MessageSe
     private String correlationId;
     private long requestTimeout;
 
-    public UseMessageIdAsCorrelationIdMessageSentCallback(ReplyManager replyManager, String correlationId, long requestTimeout) {
+    public UseMessageIdAsCorrelationIdMessageSentCallback(ReplyManager replyManager, String correlationId,
+                                                          long requestTimeout) {
         this.replyManager = replyManager;
         this.correlationId = correlationId;
         this.requestTimeout = requestTimeout;
     }
 
+    @Override
     public void sent(Session session, Message message, Destination destination) {
         String newCorrelationID = getJMSMessageID(message);
         if (newCorrelationID != null) {

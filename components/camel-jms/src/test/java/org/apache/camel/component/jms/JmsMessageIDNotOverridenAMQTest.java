@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,10 +25,13 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *
@@ -54,14 +57,15 @@ public class JmsMessageIDNotOverridenAMQTest extends CamelTestSupport {
         assertNotEquals("id1", id);
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
         camelContext.addComponent("activemq", jmsComponentAutoAcknowledge(connectionFactory));
-        
+
         JmsComponent jms = camelContext.getComponent("activemq", JmsComponent.class);
         jms.setMessageCreatedStrategy(new MyMessageCreatedStrategy());
-        
+
         return camelContext;
     }
 
@@ -71,14 +75,14 @@ public class JmsMessageIDNotOverridenAMQTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("activemq:queue:foo?includeSentJMSMessageID=true")
-                    .to("mock:done");
+                        .to("activemq:queue:foo?includeSentJMSMessageID=true")
+                        .to("mock:done");
             }
         };
     }
-    
+
     private class MyMessageCreatedStrategy implements MessageCreatedStrategy {
-     
+
         @Override
         public void onMessageCreated(Message message, Session session, Exchange exchange, Throwable cause) {
             try {

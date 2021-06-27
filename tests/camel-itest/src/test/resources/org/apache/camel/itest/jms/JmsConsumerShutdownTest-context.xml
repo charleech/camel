@@ -25,7 +25,7 @@
                 http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="vm://localhost?broker.persistent=false"/>
+        <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;create=false"/>
     </bean>
 
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
@@ -34,14 +34,14 @@
         <property name="concurrentConsumers" value="1"/>
     </bean>
 
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig"/>
     </bean>
 
     <bean id="myRouteBuilder" class="org.apache.camel.itest.jms.JmsConsumerShutdownTest$MyRouteBuilder"/>
 
     <!-- Set short timeout  -->
-    <bean id="shutdownStrategy" class="org.apache.camel.impl.DefaultShutdownStrategy">
+    <bean id="shutdownStrategy" class="org.apache.camel.impl.engine.DefaultShutdownStrategy">
         <!-- Wait up to 1 sec for each message in queue to finish -->
         <property name="timeout" value="1"/>
         <property name="timeUnit">

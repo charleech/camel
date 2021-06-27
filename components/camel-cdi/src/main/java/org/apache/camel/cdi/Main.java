@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,31 +19,28 @@ package org.apache.camel.cdi;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-
-import javax.enterprise.inject.UnsatisfiedResolutionException;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
-import org.apache.camel.main.MainSupport;
+import org.apache.camel.main.MainCommandLineSupport;
 import org.apache.deltaspike.cdise.api.CdiContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.camel.cdi.AnyLiteral.ANY;
 import static org.apache.camel.cdi.BeanManagerHelper.getReference;
-import static org.apache.camel.cdi.BeanManagerHelper.getReferenceByType;
 import static org.apache.deltaspike.cdise.api.CdiContainerLoader.getCdiContainer;
 
 /**
- * Camel CDI boot integration. Allows Camel and CDI to be booted up on the command line as a JVM process.
- * See http://camel.apache.org/camel-boot.html.
+ * Camel CDI boot integration. Allows Camel and CDI to be booted up on the command line as a JVM process. See
+ * http://camel.apache.org/camel-boot.html.
  */
 @Vetoed
-public class Main extends MainSupport {
+public class Main extends MainCommandLineSupport {
 
     static {
         // Since version 2.3.0.Final and WELD-1915, Weld SE registers a shutdown hook that conflicts
@@ -75,19 +72,25 @@ public class Main extends MainSupport {
 
     @Override
     protected ProducerTemplate findOrCreateCamelTemplate() {
-        return getReferenceByType(cdiContainer.getBeanManager(), CamelContext.class)
-            .orElseThrow(
-                () -> new UnsatisfiedResolutionException("No default Camel context is deployed, "
-                    + "cannot create default ProducerTemplate!"))
-            .createProducerTemplate();
+        if (getCamelContext() == null) {
+            throw new IllegalArgumentException("No CamelContext are available so cannot create a ProducerTemplate!");
+        }
+        return getCamelContext().createProducerTemplate();
     }
 
     @Override
-    protected Map<String, CamelContext> getCamelContextMap() {
+    protected CamelContext createCamelContext() {
         BeanManager manager = cdiContainer.getBeanManager();
-        return manager.getBeans(CamelContext.class, ANY).stream()
-            .map(bean -> getReference(manager, CamelContext.class, bean))
-            .collect(toMap(CamelContext::getName, identity()));
+        Map<String, CamelContext> camels = manager.getBeans(CamelContext.class, ANY).stream()
+                .map(bean -> getReference(manager, CamelContext.class, bean))
+                .collect(toMap(CamelContext::getName, identity()));
+        if (camels.size() > 1) {
+            throw new IllegalArgumentException(
+                    "Multiple CamelContext detected. This Main class only supports single CamelContext");
+        } else if (camels.size() == 1) {
+            return camels.values().iterator().next();
+        }
+        return null;
     }
 
     @Override
@@ -98,8 +101,13 @@ public class Main extends MainSupport {
         container.getContextControl().startContexts();
         cdiContainer = container;
         super.doStart();
-        postProcessContext();
+        initCamelContext();
         warnIfNoCamelFound();
+    }
+
+    @Override
+    protected void initCamelContext() throws Exception {
+        // camel-cdi has already initialized and start CamelContext so we should not do this again
     }
 
     private void warnIfNoCamelFound() {

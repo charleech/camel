@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,56 +16,35 @@
  */
 package org.apache.camel.component.sjms;
 
-import java.util.Random;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
-import org.apache.camel.component.sjms.jms.ConnectionFactoryResource;
-import org.apache.camel.component.sjms.jms.ConnectionResource;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.support.SimpleRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SjmsEndpointConnectionSettingsTest extends CamelTestSupport {
-    private final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://broker?broker.persistent=false&broker.useJmx=false");
-    private final ConnectionResource connectionResource = new ConnectionFactoryResource(2, connectionFactory);
+    private final ActiveMQConnectionFactory connectionFactory
+            = new ActiveMQConnectionFactory("vm://broker?broker.persistent=false&broker.useJmx=false");
 
     @Test
     public void testConnectionFactory() {
-        Endpoint endpoint = context.getEndpoint("sjms:queue:test?connectionFactory=activemq");
+        Endpoint endpoint = context.getEndpoint("sjms:queue:test?connectionFactory=#activemq");
         assertNotNull(endpoint);
         assertTrue(endpoint instanceof SjmsEndpoint);
         SjmsEndpoint qe = (SjmsEndpoint) endpoint;
         assertEquals(connectionFactory, qe.getConnectionFactory());
     }
 
-    @Test
-    public void testConnectionResource() {
-        Endpoint endpoint = context.getEndpoint("sjms:queue:test?connectionResource=connresource");
-        assertNotNull(endpoint);
-        assertTrue(endpoint instanceof SjmsEndpoint);
-        SjmsEndpoint qe = (SjmsEndpoint) endpoint;
-        assertEquals(connectionResource, qe.getConnectionResource());
-    }
-
-    @Test
-    public void testConnectionCount() {
-        Random random = new Random();
-        int poolSize = random.nextInt(100);
-        Endpoint endpoint = context.getEndpoint("sjms:queue:test?connectionCount=" + poolSize);
-        assertNotNull(endpoint);
-        assertTrue(endpoint instanceof SjmsEndpoint);
-        SjmsEndpoint qe = (SjmsEndpoint) endpoint;
-        assertEquals(poolSize, qe.getConnectionCount());
-    }
-
     @Override
     protected CamelContext createCamelContext() throws Exception {
         SimpleRegistry registry = new SimpleRegistry();
-        registry.put("activemq", connectionFactory);
-        registry.put("connresource", connectionResource);
+        registry.bind("activemq", connectionFactory);
         return new DefaultCamelContext(registry);
     }
 }

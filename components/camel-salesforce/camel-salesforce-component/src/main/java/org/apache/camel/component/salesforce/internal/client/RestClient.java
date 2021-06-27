@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ public interface RestClient {
     }
 
     /**
-     * Lists summary information about each API version currently available,
-     * including the version, label, and a link to each version's root.
+     * Lists summary information about each API version currently available, including the version, label, and a link to
+     * each version's root.
      *
      * @param headers  additional HTTP headers to send
      * @param callback {@link ResponseCallback} to handle response or exception
@@ -79,7 +79,8 @@ public interface RestClient {
      * @param headers     additional HTTP headers to send
      * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void getSObject(String sObjectName, String id, String[] fields, Map<String, List<String>> headers, ResponseCallback callback);
+    void getSObject(
+            String sObjectName, String id, String[] fields, Map<String, List<String>> headers, ResponseCallback callback);
 
     /**
      * Creates a record for the specified object.
@@ -100,7 +101,8 @@ public interface RestClient {
      * @param sObject     request entity
      * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void updateSObject(String sObjectName, String id, InputStream sObject, Map<String, List<String>> headers, ResponseCallback callback);
+    void updateSObject(
+            String sObjectName, String id, InputStream sObject, Map<String, List<String>> headers, ResponseCallback callback);
 
     /**
      * Deletes a record for the specified object ID.
@@ -121,8 +123,9 @@ public interface RestClient {
      * @param headers     additional HTTP headers to send
      * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void getSObjectWithId(String sObjectName, String fieldName, String fieldValue, Map<String, List<String>> headers,
-        ResponseCallback callback);
+    void getSObjectWithId(
+            String sObjectName, String fieldName, String fieldValue, Map<String, List<String>> headers,
+            ResponseCallback callback);
 
     /**
      * Creates or updates a record based on the value of a specified external ID field.
@@ -134,8 +137,9 @@ public interface RestClient {
      * @param sObject     input object to insert or update
      * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void upsertSObject(String sObjectName, String fieldName, String fieldValue,
-            Map<String, List<String>> headers, InputStream sObject, ResponseCallback callback);
+    void upsertSObject(
+            String sObjectName, String fieldName, String fieldValue, Map<String, List<String>> headers, InputStream sObject,
+            ResponseCallback callback);
 
     /**
      * Deletes a record based on the value of a specified external ID field.
@@ -146,9 +150,9 @@ public interface RestClient {
      * @param headers     additional HTTP headers to send
      * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void deleteSObjectWithId(String sObjectName, String fieldName, String fieldValue, Map<String, List<String>> headers,
-        ResponseCallback callback);
-
+    void deleteSObjectWithId(
+            String sObjectName, String fieldName, String fieldValue, Map<String, List<String>> headers,
+            ResponseCallback callback);
 
     /**
      * Retrieves the specified blob field from an individual record.
@@ -157,10 +161,10 @@ public interface RestClient {
      * @param id            identifier of the object
      * @param blobFieldName name of the field holding the blob
      * @param headers       additional HTTP headers to send
-     * @param callback    {@link ResponseCallback} to handle response or exception
+     * @param callback      {@link ResponseCallback} to handle response or exception
      */
-    void getBlobField(String sObjectName, String id, String blobFieldName, Map<String, List<String>> headers,
-        ResponseCallback callback);
+    void getBlobField(
+            String sObjectName, String id, String blobFieldName, Map<String, List<String>> headers, ResponseCallback callback);
 
     /**
      * Executes the specified SOQL query.
@@ -201,26 +205,25 @@ public interface RestClient {
     /**
      * Executes a user defined APEX REST API call.
      *
-     * @param httpMethod    HTTP method to execute.
-     * @param apexUrl       APEX api url.
-     * @param queryParams   optional query parameters for GET methods, may be empty.
-     * @param requestDto    optional input DTO for POST, etc. may be null.
-     * @param headers       additional HTTP headers to send
-     * @param callback      {@link ResponseCallback} to handle response or exception
+     * @param httpMethod  HTTP method to execute.
+     * @param apexUrl     APEX api url.
+     * @param queryParams optional query parameters for GET methods, may be empty.
+     * @param requestDto  optional input DTO for POST, etc. may be null.
+     * @param headers     additional HTTP headers to send
+     * @param callback    {@link ResponseCallback} to handle response or exception
      */
-    void apexCall(String httpMethod, String apexUrl, Map<String, Object> queryParams, InputStream requestDto,
-        Map<String, List<String>> headers, ResponseCallback callback);
+    void apexCall(
+            String httpMethod, String apexUrl, Map<String, Object> queryParams, InputStream requestDto,
+            Map<String, List<String>> headers, ResponseCallback callback);
 
     /**
      * Fetches recently viewed records.
      *
-     * @param limit
-     *            optional limit that specifies the maximum number of records to be returned. If this parameter is not
-     *            specified, the default maximum number of records returned is the maximum number of entries in
-     *            RecentlyViewed, which is 200 records per object.
-     * @param headers additional HTTP headers to send
-     * @param responseCallback
-     *            {@link ResponseCallback} to handle response or exception
+     * @param limit            optional limit that specifies the maximum number of records to be returned. If this
+     *                         parameter is not specified, the default maximum number of records returned is the maximum
+     *                         number of entries in RecentlyViewed, which is 200 records per object.
+     * @param headers          additional HTTP headers to send
+     * @param responseCallback {@link ResponseCallback} to handle response or exception
      */
     void recent(Integer limit, Map<String, List<String>> headers, ResponseCallback responseCallback);
 
@@ -235,18 +238,16 @@ public interface RestClient {
     /**
      * Submits, approves or rejects particular record.
      *
-     * @param headers   additional HTTP headers to send
-     * @param callback
-     *            {@link ResponseCallback} to handle response or exception
+     * @param headers  additional HTTP headers to send
+     * @param callback {@link ResponseCallback} to handle response or exception
      */
     void approval(InputStream request, Map<String, List<String>> headers, ResponseCallback callback);
 
     /**
      * Returns a list of all approval processes.
      *
-     * @param headers   additional HTTP headers to send
-     * @param callback
-     *            {@link ResponseCallback} to handle response or exception
+     * @param headers  additional HTTP headers to send
+     * @param callback {@link ResponseCallback} to handle response or exception
      */
     void approvals(Map<String, List<String>> headers, ResponseCallback callback);
 }

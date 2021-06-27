@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,20 @@
  */
 package org.apache.camel.component.xquery;
 
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
+import org.springframework.context.support.AbstractXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class XQueryComponentConfigurationTest extends CamelSpringTestSupport {
 
     @Test
     public void testConfiguration() throws Exception {
         XQueryComponent component = context.getComponent("xquery", XQueryComponent.class);
-        XQueryEndpoint endpoint = context.getEndpoint("xquery:org/apache/camel/component/xquery/transform.xquery", XQueryEndpoint.class);
+        XQueryEndpoint endpoint
+                = context.getEndpoint("xquery:org/apache/camel/component/xquery/transform.xquery", XQueryEndpoint.class);
 
         assertNotNull(component.getConfiguration());
         assertNotNull(component.getConfigurationProperties());
@@ -34,7 +38,7 @@ public class XQueryComponentConfigurationTest extends CamelSpringTestSupport {
     }
 
     @Override
-    protected ClassPathXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/xquery/XQueryComponentConfigurationTest.xml");
+    protected AbstractXmlApplicationContext createApplicationContext() {
+        return newAppContext("XQueryComponentConfigurationTest.xml");
     }
 }

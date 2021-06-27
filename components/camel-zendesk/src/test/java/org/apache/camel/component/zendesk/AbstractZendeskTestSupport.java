@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,19 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.IntrospectionSupport;
+import org.apache.camel.support.PropertyBindingSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.TestInstance;
 
 /**
  * A base class for Zendesk integration tests.
  * <p>
- * The camel-api-component-maven-plugin automatically generates a skeleton code of
- * API integration tests in target/generated-test-sources/camel-component.
- * To cover more API methods in integration tests, you can copy the test methods and
- * routes from the skeleton code into one of the subclass of this class.
+ * The camel-api-component-maven-plugin automatically generates a skeleton code of API integration tests in
+ * target/generated-test-sources/camel-component. To cover more API methods in integration tests, you can copy the test
+ * methods and routes from the skeleton code into one of the subclass of this class.
  * </p>
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AbstractZendeskTestSupport extends CamelTestSupport {
     public static final String TEST_OPTIONS_PROPERTIES = "/test-options.properties";
     public static final String SYSPROP_ZENDESK_SERVER_URL = "zendesk.serverUrl";
@@ -46,34 +47,55 @@ public class AbstractZendeskTestSupport extends CamelTestSupport {
     public static final String ENV_ZENDESK_TOKEN = "zendesk.token";
     public static final String ENV_ZENDESK_OAUTH_TOKEN = "zendesk.oauthToken";
 
+    private static Properties loadProperties() {
+        final Properties properties = new Properties();
+        try {
+            properties.load(AbstractZendeskTestSupport.class.getResourceAsStream(TEST_OPTIONS_PROPERTIES));
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load test properties", e);
+        }
+        return properties;
+    }
+
+    @SuppressWarnings("unused")
+    public static boolean hasCredentials() {
+        Properties properties = loadProperties();
+
+        return !properties.getProperty("username", "").isEmpty() &&
+                !properties.getProperty("password", "").isEmpty();
+    }
+
     @Override
     protected CamelContext createCamelContext() throws Exception {
         final CamelContext context = super.createCamelContext();
         final ZendeskConfiguration configuration = new ZendeskConfiguration();
-        final Properties properties = new Properties();
-        try {
-            properties.load(getClass().getResourceAsStream(TEST_OPTIONS_PROPERTIES));
-            Map<String, Object> options = new HashMap<>();
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                options.put(entry.getKey().toString(), entry.getValue());
-            }
+        final Properties properties = loadProperties();
 
-            IntrospectionSupport.setProperties(configuration, options);
-        } catch (Exception e) {
-            // ignore - system property or ENV may be supplied
+        Map<String, Object> options = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            options.put(entry.getKey().toString(), entry.getValue());
         }
-        configuration.setServerUrl(System.getenv(ENV_ZENDESK_SERVER_URL) != null ? System.getenv(ENV_ZENDESK_SERVER_URL) : configuration.getServerUrl());
-        configuration.setUsername(System.getenv(ENV_ZENDESK_USERNAME) != null ? System.getenv(ENV_ZENDESK_USERNAME) : configuration.getUsername());
-        configuration.setPassword(System.getenv(ENV_ZENDESK_PASSWORD) != null ? System.getenv(ENV_ZENDESK_PASSWORD) : configuration.getPassword());
-        configuration.setToken(System.getenv(ENV_ZENDESK_TOKEN) != null ? System.getenv(ENV_ZENDESK_TOKEN) : configuration.getToken());
-        configuration.setOauthToken(System.getenv(ENV_ZENDESK_OAUTH_TOKEN) != null ? System.getenv(ENV_ZENDESK_OAUTH_TOKEN) : configuration.getOauthToken());
+
+        PropertyBindingSupport.bindProperties(context, configuration, options);
+
+        configuration.setServerUrl(System.getenv(ENV_ZENDESK_SERVER_URL) != null
+                ? System.getenv(ENV_ZENDESK_SERVER_URL) : configuration.getServerUrl());
+        configuration.setUsername(System.getenv(ENV_ZENDESK_USERNAME) != null
+                ? System.getenv(ENV_ZENDESK_USERNAME) : configuration.getUsername());
+        configuration.setPassword(System.getenv(ENV_ZENDESK_PASSWORD) != null
+                ? System.getenv(ENV_ZENDESK_PASSWORD) : configuration.getPassword());
+        configuration.setToken(
+                System.getenv(ENV_ZENDESK_TOKEN) != null ? System.getenv(ENV_ZENDESK_TOKEN) : configuration.getToken());
+        configuration.setOauthToken(System.getenv(ENV_ZENDESK_OAUTH_TOKEN) != null
+                ? System.getenv(ENV_ZENDESK_OAUTH_TOKEN) : configuration.getOauthToken());
         configuration.setServerUrl(System.getProperty(SYSPROP_ZENDESK_SERVER_URL, configuration.getServerUrl()));
         configuration.setUsername(System.getProperty(SYSPROP_ZENDESK_USERNAME, configuration.getUsername()));
         configuration.setPassword(System.getProperty(SYSPROP_ZENDESK_PASSWORD, configuration.getPassword()));
         configuration.setToken(System.getProperty(SYSPROP_ZENDESK_TOKEN, configuration.getToken()));
         configuration.setOauthToken(System.getProperty(SYSPROP_ZENDESK_OAUTH_TOKEN, configuration.getOauthToken()));
         if (configuration.getServerUrl() == null || configuration.getUsername() == null
-            || (configuration.getPassword() == null && configuration.getToken() == null && configuration.getOauthToken() == null)) {
+                || (configuration.getPassword() == null && configuration.getToken() == null
+                        && configuration.getOauthToken() == null)) {
             throw new IllegalArgumentException("Zendesk configuration is missing");
         }
 
@@ -83,12 +105,6 @@ public class AbstractZendeskTestSupport extends CamelTestSupport {
         context.addComponent("zendesk", component);
 
         return context;
-    }
-
-    @Override
-    public boolean isCreateCamelContextPerClass() {
-        // only create the context once for this class
-        return true;
     }
 
     @SuppressWarnings("unchecked")

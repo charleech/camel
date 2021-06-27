@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,20 +21,21 @@ public interface ElasticsearchConstants {
     String PARAM_OPERATION = "operation";
     String PARAM_INDEX_ID = "indexId";
     String PARAM_INDEX_NAME = "indexName";
-    String PARAM_INDEX_TYPE = "indexType";
     String PARAM_WAIT_FOR_ACTIVE_SHARDS = "waitForActiveShards";
     String PARAM_SCROLL_KEEP_ALIVE_MS = "scrollKeepAliveMs";
     String PARAM_SCROLL = "useScroll";
+    String PARAM_SIZE = "size";
+    String PARAM_FROM = "from";
 
     String PROPERTY_SCROLL_ES_QUERY_COUNT = "CamelElasticsearchScrollQueryCount";
 
-    int    DEFAULT_PORT = 9200;
-    int    DEFAULT_FOR_WAIT_ACTIVE_SHARDS = 1; // Meaning only wait for the primary shard
-    int    DEFAULT_SOCKET_TIMEOUT = 30000; // Meaning how long time to wait before the socket timeout
-    int    MAX_RETRY_TIMEOUT = 30000; // Meaning how long to wait before retry again
-    int    DEFAULT_CONNECTION_TIMEOUT = 30000; // Meaning how many seconds before it timeout when establish connection
-    int    DEFAULT_SNIFFER_INTERVAL = 60000 * 5; // Meaning how often it should search for elasticsearch nodes
-    int    DEFAULT_AFTER_FAILURE_DELAY = 60000; // Meaning when should the sniff execution scheduled after a failure
-    int    DEFAULT_SCROLL_KEEP_ALIVE_MS = 60000; // Meaning how many milliseconds elasticsearch will keep the search context
+    int DEFAULT_PORT = 9200;
+    int DEFAULT_FOR_WAIT_ACTIVE_SHARDS = 1; // Meaning only wait for the primary shard
+    int DEFAULT_SOCKET_TIMEOUT = 30000; // Meaning how long time to wait before the socket timeout
+    int MAX_RETRY_TIMEOUT = 30000; // Meaning how long to wait before retry again
+    int DEFAULT_CONNECTION_TIMEOUT = 30000; // Meaning how many seconds before it timeout when establish connection
+    int DEFAULT_SNIFFER_INTERVAL = 60000 * 5; // Meaning how often it should search for elasticsearch nodes
+    int DEFAULT_AFTER_FAILURE_DELAY = 60000; // Meaning when should the sniff execution scheduled after a failure
+    int DEFAULT_SCROLL_KEEP_ALIVE_MS = 60000; // Meaning how many milliseconds elasticsearch will keep the search context
 
 }

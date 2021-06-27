@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,13 @@ import java.util.UUID;
 
 import org.apache.camel.component.openstack.common.OpenstackConstants;
 import org.apache.camel.component.openstack.nova.producer.ServerProducer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.compute.ServerService;
 import org.openstack4j.model.common.ActionResponse;
@@ -34,20 +34,19 @@ import org.openstack4j.model.compute.Action;
 import org.openstack4j.model.compute.Server;
 import org.openstack4j.model.compute.ServerCreate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ServerProducerTest extends NovaProducerTestSupport {
 
-    @Mock
+    @Mock(lenient = true)
     private org.openstack4j.model.compute.Server testOSServer;
 
     @Mock
@@ -67,7 +66,7 @@ public class ServerProducerTest extends NovaProducerTestSupport {
 
     private ServerCreate dummyServer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(computeService.servers()).thenReturn(serverService);
 
@@ -119,16 +118,8 @@ public class ServerProducerTest extends NovaProducerTestSupport {
         verify(serverService).action(idArgumentCaptor.capture(), actionArgumentCaptor.capture());
 
         assertEquals(id, idArgumentCaptor.getValue());
-        assertTrue(actionArgumentCaptor.getValue() == Action.PAUSE);
-        assertFalse(msg.isFault());
+        assertSame(Action.PAUSE, actionArgumentCaptor.getValue());
         assertNull(msg.getBody());
-
-        //test fail
-        final String failReason = "fr";
-        when(serverService.action(anyString(), any())).thenReturn(ActionResponse.actionFailed(failReason, 401));
-        producer.process(exchange);
-        assertTrue(msg.isFault());
-        assertTrue(msg.getBody(String.class).contains(failReason));
     }
 
     @Test

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
 /**
  * The schematoron Engine. Validates an XML for given scheamtron rules using an XSLT implementation of the Schematron
  * Engine.
@@ -59,7 +57,7 @@ public class SchematronProcessor {
     /**
      * Validates the given XML for given Rules.
      *
-     * @param xml
+     * @param  xml
      * @return
      */
     public String validate(final String xml) {
@@ -70,7 +68,7 @@ public class SchematronProcessor {
     /**
      * Validates the given XML for given Rules.
      *
-     * @param source
+     * @param  source
      * @return
      */
     public String validate(Source source) {

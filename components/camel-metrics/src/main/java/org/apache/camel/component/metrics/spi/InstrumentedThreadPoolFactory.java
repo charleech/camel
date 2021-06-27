@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,14 @@ import java.util.concurrent.ThreadFactory;
 import com.codahale.metrics.InstrumentedExecutorService;
 import com.codahale.metrics.InstrumentedScheduledExecutorService;
 import com.codahale.metrics.MetricRegistry;
-import org.apache.camel.impl.DefaultThreadPoolFactory;
 import org.apache.camel.spi.ThreadPoolFactory;
 import org.apache.camel.spi.ThreadPoolProfile;
+import org.apache.camel.support.DefaultThreadPoolFactory;
 import org.apache.camel.util.ObjectHelper;
 
 /**
- * This implements a {@link ThreadPoolFactory} and generates an Instrumented versions of ExecutorService used to
- * monitor performance of each thread using Metrics.
+ * This implements a {@link ThreadPoolFactory} and generates an Instrumented versions of ExecutorService used to monitor
+ * performance of each thread using Metrics.
  */
 public class InstrumentedThreadPoolFactory implements ThreadPoolFactory {
 
@@ -56,12 +56,14 @@ public class InstrumentedThreadPoolFactory implements ThreadPoolFactory {
 
     @Override
     public ExecutorService newThreadPool(ThreadPoolProfile profile, ThreadFactory threadFactory) {
-        return new InstrumentedExecutorService(threadPoolFactory.newThreadPool(profile, threadFactory), metricRegistry, profile.getId());
+        return new InstrumentedExecutorService(
+                threadPoolFactory.newThreadPool(profile, threadFactory), metricRegistry, profile.getId());
     }
 
     @Override
     public ScheduledExecutorService newScheduledThreadPool(ThreadPoolProfile profile, ThreadFactory threadFactory) {
-        return new InstrumentedScheduledExecutorService(threadPoolFactory.newScheduledThreadPool(profile, threadFactory), metricRegistry, profile.getId());
+        return new InstrumentedScheduledExecutorService(
+                threadPoolFactory.newScheduledThreadPool(profile, threadFactory), metricRegistry, profile.getId());
     }
 
 }

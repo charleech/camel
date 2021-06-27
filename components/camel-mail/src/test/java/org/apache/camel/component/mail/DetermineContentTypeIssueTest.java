@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,10 @@
 package org.apache.camel.component.mail;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.test.junit4.ExchangeTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.ExchangeTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,11 +28,15 @@ import javax.jcr.observation.EventListener;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
 import org.apache.camel.util.ObjectHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link org.apache.camel.Consumer} to consume JCR events.
  */
 public class JcrConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JcrConsumer.class);
 
     private Session session;
     private EventListener eventListener;
@@ -61,12 +65,13 @@ public class JcrConsumer extends DefaultConsumer {
     }
 
     private synchronized void createSessionAndRegisterListener() throws RepositoryException {
-        log.trace("createSessionAndRegisterListener START");
+        LOG.trace("createSessionAndRegisterListener START");
 
-        if (ObjectHelper.isEmpty(getJcrEndpoint().getWorkspaceName())) { 
+        if (ObjectHelper.isEmpty(getJcrEndpoint().getWorkspaceName())) {
             session = getJcrEndpoint().getRepository().login(getJcrEndpoint().getCredentials());
         } else {
-            session = getJcrEndpoint().getRepository().login(getJcrEndpoint().getCredentials(), getJcrEndpoint().getWorkspaceName());
+            session = getJcrEndpoint().getRepository().login(getJcrEndpoint().getCredentials(),
+                    getJcrEndpoint().getWorkspaceName());
         }
 
         int eventTypes = getJcrEndpoint().getEventTypes();
@@ -103,27 +108,27 @@ public class JcrConsumer extends DefaultConsumer {
 
         boolean noLocal = getJcrEndpoint().isNoLocal();
 
-        eventListener = new EndpointEventListener(getJcrEndpoint(), getProcessor());
+        eventListener = new EndpointEventListener(this, getJcrEndpoint(), getProcessor());
 
-        if (log.isDebugEnabled()) {
-            log.debug("Adding JCR Event Listener, {}, on {}. eventTypes=" + eventTypes + ", isDeep=" + isDeep
-                    + ", uuid=" + Arrays.toString(uuid) + ", nodeTypeName=" + Arrays.toString(nodeTypeName) + ", noLocal=" + noLocal, eventListener,
-                    absPath);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Adding JCR Event Listener, {}, on {}. eventTypes={}, isDeep={}, uuid={}, nodeTypeName={}, noLocal={}",
+                    eventListener, absPath, eventTypes, isDeep, Arrays.toString(uuid), Arrays.toString(nodeTypeName),
+                    noLocal);
         }
 
         session.getWorkspace().getObservationManager()
                 .addEventListener(eventListener, eventTypes, absPath, isDeep, uuid, nodeTypeName, noLocal);
 
-        log.trace("createSessionAndRegisterListener END");
+        LOG.trace("createSessionAndRegisterListener END");
     }
 
     private synchronized void unregisterListenerAndLogoutSession() throws RepositoryException {
-        log.trace("unregisterListenerAndLogoutSession START");
+        LOG.trace("unregisterListenerAndLogoutSession START");
 
         if (session != null) {
             try {
                 if (!session.isLive()) {
-                    log.info("Session was is no more live.");
+                    LOG.info("Session was is no more live.");
                 } else {
                     if (eventListener != null) {
                         session.getWorkspace().getObservationManager().removeEventListener(eventListener);
@@ -138,7 +143,7 @@ public class JcrConsumer extends DefaultConsumer {
             }
         }
 
-        log.trace("unregisterListenerAndLogoutSession END");
+        LOG.trace("unregisterListenerAndLogoutSession END");
     }
 
     private void cancelSessionListenerChecker() {
@@ -160,8 +165,9 @@ public class JcrConsumer extends DefaultConsumer {
 
     private class JcrConsumerSessionListenerChecker implements Runnable {
 
+        @Override
         public void run() {
-            log.debug("JcrConsumerSessionListenerChecker starts.");
+            LOG.debug("JcrConsumerSessionListenerChecker starts.");
 
             boolean isSessionLive = false;
 
@@ -170,7 +176,7 @@ public class JcrConsumer extends DefaultConsumer {
                     try {
                         isSessionLive = JcrConsumer.this.session.isLive();
                     } catch (Exception e) {
-                        log.debug("Exception while checking jcr session", e);
+                        LOG.debug("Exception while checking jcr session", e);
                     }
                 }
             }
@@ -179,11 +185,11 @@ public class JcrConsumer extends DefaultConsumer {
                 try {
                     createSessionAndRegisterListener();
                 } catch (RepositoryException e) {
-                    log.error("Failed to create session and register listener", e);
+                    LOG.error("Failed to create session and register listener", e);
                 }
             }
 
-            log.debug("JcrConsumerSessionListenerChecker stops.");
+            LOG.debug("JcrConsumerSessionListenerChecker stops.");
         }
     }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,6 +47,7 @@ public interface KubernetesConstants {
     String KUBERNETES_SERVICE_ACCOUNT = "CamelKubernetesServiceAccount";
     String KUBERNETES_NODES_LABELS = "CamelKubernetesNodesLabels";
     String KUBERNETES_NODE_NAME = "CamelKubernetesNodeName";
+    String KUBERNETES_NODE_SPEC = "CamelKubernetesNodeSpec";
     String KUBERNETES_DEPLOYMENTS_LABELS = "CamelKubernetesDeploymentsLabels";
     String KUBERNETES_DEPLOYMENT_NAME = "CamelKubernetesDeploymentName";
     String KUBERNETES_DEPLOYMENT_SPEC = "CamelKubernetesDeploymentSpec";
@@ -60,9 +61,22 @@ public interface KubernetesConstants {
     String KUBERNETES_DEPLOYMENT_REPLICAS = "CamelKubernetesDeploymentReplicas";
     String KUBERNETES_HPA_NAME = "CamelKubernetesHPAName";
     String KUBERNETES_HPA_SPEC = "CamelKubernetesHPASpec";
+    String KUBERNETES_HPA_LABELS = "CamelKubernetesHPALabels";
     String KUBERNETES_JOB_NAME = "CamelKubernetesJobName";
     String KUBERNETES_JOB_SPEC = "CamelKubernetesJobSpec";
     String KUBERNETES_JOB_LABELS = "CamelKubernetesJobLabels";
+    String KUBERNETES_CRD_INSTANCE_NAME = "CamelKubernetesCRDInstanceName";
+    String KUBERNETES_CRD_EVENT_TIMESTAMP = "CamelKubernetesCRDEventTimestamp";
+    String KUBERNETES_CRD_EVENT_ACTION = "CamelKubernetesCRDEventAction";
+    String KUBERNETES_CRD_NAME = "CamelKubernetesCRDName";
+    String KUBERNETES_CRD_GROUP = "CamelKubernetesCRDGroup";
+    String KUBERNETES_CRD_SCOPE = "CamelKubernetesCRDScope";
+    String KUBERNETES_CRD_VERSION = "CamelKubernetesCRDVersion";
+    String KUBERNETES_CRD_PLURAL = "CamelKubernetesCRDPlural";
+    String KUBERNETES_CRD_LABELS = "CamelKubernetesCRDLabels";
+    String KUBERNETES_CRD_INSTANCE = "CamelKubernetesCRDInstance";
+
+    String KUBERNETES_DELETE_RESULT = "CamelKubernetesDeleteResult";
 
     // Consumer
     String KUBERNETES_EVENT_ACTION = "CamelKubernetesEventAction";

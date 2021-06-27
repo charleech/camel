@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,73 +17,91 @@
 package org.apache.camel.maven.packaging;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-import org.apache.camel.maven.packaging.model.ComponentModel;
-import org.apache.camel.maven.packaging.model.ComponentOptionModel;
-import org.apache.camel.maven.packaging.model.DataFormatModel;
-import org.apache.camel.maven.packaging.model.DataFormatOptionModel;
-import org.apache.camel.maven.packaging.model.EipModel;
-import org.apache.camel.maven.packaging.model.EipOptionModel;
-import org.apache.camel.maven.packaging.model.EndpointOptionModel;
-import org.apache.camel.maven.packaging.model.LanguageModel;
-import org.apache.camel.maven.packaging.model.LanguageOptionModel;
-import org.apache.maven.plugin.AbstractMojo;
+import org.apache.camel.tooling.model.ArtifactModel;
+import org.apache.camel.tooling.model.BaseModel;
+import org.apache.camel.tooling.model.BaseOptionModel;
+import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.DataFormatModel;
+import org.apache.camel.tooling.model.EipModel;
+import org.apache.camel.tooling.model.EipModel.EipOptionModel;
+import org.apache.camel.tooling.model.JsonMapper;
+import org.apache.camel.tooling.model.LanguageModel;
+import org.apache.camel.tooling.model.OtherModel;
+import org.apache.camel.tooling.util.PackageHelper;
+import org.apache.camel.tooling.util.Strings;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.mvel2.templates.TemplateRuntime;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
-import static org.apache.camel.maven.packaging.JSonSchemaHelper.getSafeValue;
-import static org.apache.camel.maven.packaging.JSonSchemaHelper.parseJsonSchema;
-import static org.apache.camel.maven.packaging.PackageHelper.loadText;
-import static org.apache.camel.maven.packaging.PackageHelper.writeText;
-import static org.apache.camel.maven.packaging.StringHelper.isEmpty;
+import static org.apache.camel.tooling.util.PackageHelper.findCamelDirectory;
 
 /**
  * Generate or updates the component/dataformat/language/eip readme.md and .adoc files in the project root directory.
  */
 @Mojo(name = "update-readme", threadSafe = true)
-public class UpdateReadmeMojo extends AbstractMojo {
+public class UpdateReadmeMojo extends AbstractGeneratorMojo {
 
-    /**
-     * The maven project.
-     */
-    @Parameter(property = "project", required = true, readonly = true)
-    protected MavenProject project;
+    //Header attributes that are preserved through header generation
+    private static final Pattern[] MANUAL_ATTRIBUTES = {
+            Pattern.compile(":(group): *(.*)"),
+            Pattern.compile(":(summary-group): *(.*)") };
 
     /**
      * The project build directory
-     *
      */
     @Parameter(defaultValue = "${project.build.directory}")
     protected File buildDir;
 
     /**
-     * The documentation directory
-     *
+     * The component documentation directory
      */
-    @Parameter(defaultValue = "${basedir}/src/main/docs")
-    protected File docDir;
+    @Parameter(defaultValue = "${project.basedir}/src/main/docs")
+    protected File componentDocDir;
 
     /**
-     * The documentation directory
-     *
+     * The dataformat documentation directory
      */
-    @Parameter(defaultValue = "${basedir}/src/main/docs/eips")
+    @Parameter(defaultValue = "${project.basedir}/src/main/docs")
+    protected File dataformatDocDir;
+
+    /**
+     * The language documentation directory
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/docs")
+    protected File languageDocDir;
+
+    /**
+     * The other language documentation directory
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/docs/modules/languages/pages")
+    protected File languageDocDir2;
+
+    /**
+     * The EIP documentation directory
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/docs/modules/eips/pages")
     protected File eipDocDir;
 
     /**
@@ -92,74 +110,87 @@ public class UpdateReadmeMojo extends AbstractMojo {
     @Parameter
     protected Boolean failFast;
 
-    /**
-     * build context to check changed files and mark them for refresh (used for
-     * m2e compatibility)
-     */
-    @Component
-    private BuildContext buildContext;
+    @Override
+    public void execute(MavenProject project, MavenProjectHelper projectHelper, BuildContext buildContext)
+            throws MojoFailureException, MojoExecutionException {
+        buildDir = new File(project.getBuild().getDirectory());
+        componentDocDir = new File(project.getBasedir(), "src/main/docs");
+        dataformatDocDir = new File(project.getBasedir(), "src/main/docs");
+        languageDocDir = new File(project.getBasedir(), "/src/main/docs");
+        languageDocDir2 = new File(project.getBasedir(), "/src/main/docs/modules/languages/pages");
+        File engine = findCamelDirectory(project.getBasedir(), "camel-core-engine");
+        eipDocDir = new File(engine, "/src/main/docs/modules/eips/pages");
+        super.execute(project, projectHelper, buildContext);
+    }
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
+        getLog().debug("UpdateReadmeMojo execute");
         executeComponent();
+        executeOther();
         executeDataFormat();
         executeLanguage();
         executeEips();
     }
 
-    private void executeComponent() throws MojoExecutionException, MojoFailureException {
+    private void executeComponent() throws MojoExecutionException {
         // find the component names
-        List<String> componentNames = findComponentNames();
+        final String kind = "component";
+        List<String> componentNames = listDescriptorNamesOfType(kind);
 
         final Set<File> jsonFiles = new TreeSet<>();
-        PackageHelper.findJsonFiles(buildDir, jsonFiles, new PackageHelper.CamelComponentsModelFilter());
+        PackageHelper.findJsonFiles(buildDir, jsonFiles);
 
         // only if there is components we should update the documentation files
         if (!componentNames.isEmpty()) {
             getLog().debug("Found " + componentNames.size() + " components");
             for (String componentName : componentNames) {
-                String json = loadComponentJson(jsonFiles, componentName);
+                String json = loadJsonFrom(jsonFiles, kind, componentName);
                 if (json != null) {
                     // special for some components
                     componentName = asComponentName(componentName);
 
-                    File file = new File(docDir, componentName + "-component.adoc");
+                    File file = new File(componentDocDir, componentName + "-" + kind + ".adoc");
+                    boolean exists = file.exists();
 
-                    ComponentModel model = generateComponentModel(componentName, json);
+                    ComponentModel model = generateComponentModel(json);
                     String title = asComponentTitle(model.getScheme(), model.getTitle());
                     model.setTitle(title);
 
-                    // we only want the first scheme as the alternatives do not have their own readme file
-                    if (!isEmpty(model.getAlternativeSchemes())) {
+                    // we only want the first scheme as the alternatives do not
+                    // have their own readme file
+                    if (!Strings.isEmpty(model.getAlternativeSchemes())) {
                         String first = model.getAlternativeSchemes().split(",")[0];
                         if (!model.getScheme().equals(first)) {
                             continue;
                         }
                     }
 
-                    String docTitle = model.getTitle() + " Component";
-                    boolean deprecated = "true".equals(model.getDeprecated());
-                    if (deprecated) {
-                        docTitle += " (deprecated)";
-                    }
+                    boolean updated = updateHeader(componentName, file, model, " Component", kind);
 
-                    boolean exists = file.exists();
-                    boolean updated;
-                    updated = updateLink(file, componentName + "-component");
-                    updated |= updateTitles(file, docTitle);
-                    updated |= updateAvailableFrom(file, model.getFirstVersion());
+                    checkComponentHeader(file, model);
+                    checkSince(file, model);
 
-                    // resolvePropertyPlaceholders is an option which only make sense to use if the component has other options
-                    boolean hasOptions = model.getComponentOptions().stream().anyMatch(o -> !o.getName().equals("resolvePropertyPlaceholders"));
+                    // resolvePropertyPlaceholders is an option which only make
+                    // sense to use if the component has other options
+                    boolean hasOptions = model.getComponentOptions().stream()
+                            .anyMatch(o -> !o.getName().equals("resolvePropertyPlaceholders"));
                     if (!hasOptions) {
                         model.getComponentOptions().clear();
                     }
 
-                    String options = templateComponentOptions(model);
-                    updated |= updateComponentOptions(file, options);
+                    // Fix description in options
+                    Stream.concat(model.getComponentOptions().stream(), model.getEndpointOptions().stream()).forEach(option -> {
+                        String desc = option.getDescription();
+                        desc = desc.replaceAll("\\\\n", "\n");
+                        option.setDescription(desc);
+                    });
 
-                    options = templateEndpointOptions(model);
-                    updated |= updateEndpointOptions(file, options);
+                    String options = evaluateTemplate("component-options.mvel", model);
+                    updated |= updateOptionsIn(file, kind, options);
+
+                    options = evaluateTemplate("endpoint-options.mvel", model);
+                    updated |= updateOptionsIn(file, "endpoint", options);
 
                     if (updated) {
                         getLog().info("Updated doc file: " + file);
@@ -171,47 +202,133 @@ public class UpdateReadmeMojo extends AbstractMojo {
                             throw new MojoExecutionException("Failed build due failFast=true");
                         }
                     }
+
+                    if (updated || exists) {
+                        try {
+                            // if we run in camel-core project then add additional meta-data
+                            File rootFile = findCamelDirectory(project.getBasedir(), "core/camel-core");
+                            if (rootFile != null) {
+                                Path root = rootFile.toPath().getParent().getParent();
+                                String text = PackageHelper.loadText(file);
+                                updateResource(
+                                        root.resolve(
+                                                "catalog/camel-catalog/src/generated/resources/org/apache/camel/catalog/docs"),
+                                        file.getName(), text);
+                                String rep = "$1\n"
+                                             + "//THIS FILE IS COPIED: EDIT THE SOURCE FILE:\n"
+                                             + ":page-source: " + root.relativize(file.toPath());
+                                text = Pattern.compile("^(= .+)$", Pattern.MULTILINE).matcher(text).replaceAll(rep);
+                                updateResource(root.resolve("docs/components/modules/ROOT/pages"), file.getName(), text);
+                            }
+                        } catch (IOException e) {
+                            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void executeDataFormat() throws MojoExecutionException, MojoFailureException {
+    private void executeOther() throws MojoExecutionException {
+        final Set<File> jsonFiles = new TreeSet<>();
+        PackageHelper.findJsonFiles(buildDir, jsonFiles);
+        getLog().debug("UpdateReadmeMojo jsonFiles: " + jsonFiles);
+
+        // only if there is components we should update the documentation files
+        if (!jsonFiles.isEmpty()) {
+            getLog().debug("Found " + jsonFiles.size() + "miscellaneous components");
+            for (File jsonFile : jsonFiles) {
+                final String kind = "other";
+                String json = loadJsonFrom(jsonFile, kind);
+                if (json != null) {
+                    // special for some components
+                    OtherModel model = generateOtherModel(json);
+                    String title = model.getTitle();
+                    model.setTitle(title);
+
+                    String componentName = asComponentName(model.getName());
+
+                    File file = new File(componentDocDir, componentName + ".adoc");
+                    boolean exists = file.exists();
+
+                    // we only want the first scheme as the alternatives do not
+                    boolean updated = updateHeader(componentName, file, model, " Component", kind);
+                    checkSince(file, model);
+
+                    if (updated) {
+                        getLog().info("Updated doc file: " + file);
+                    } else if (exists) {
+                        getLog().debug("No changes to doc file: " + file);
+                    } else {
+                        getLog().warn("No component doc file: " + file);
+                        if (isFailFast()) {
+                            throw new MojoExecutionException("Failed build due failFast=true");
+                        }
+                    }
+
+                    if (updated || exists) {
+                        try {
+                            // if we run in camel-core project then add additional meta-data
+                            File rootFile = findCamelDirectory(project.getBasedir(), "core/camel-core");
+                            if (rootFile != null) {
+                                Path root = rootFile.toPath().getParent().getParent();
+                                String text = PackageHelper.loadText(file);
+                                updateResource(
+                                        root.resolve(
+                                                "catalog/camel-catalog/src/generated/resources/org/apache/camel/catalog/docs"),
+                                        file.getName(), text);
+                                String rep = "$1\n"
+                                             + "//THIS FILE IS COPIED: EDIT THE SOURCE FILE:\n"
+                                             + ":page-source: " + root.relativize(file.toPath());
+                                text = Pattern.compile("^(= .+)$", Pattern.MULTILINE).matcher(text).replaceAll(rep);
+                                updateResource(root.resolve("docs/components/modules/others/pages"), file.getName(), text);
+                            }
+                        } catch (IOException e) {
+                            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void executeDataFormat() throws MojoExecutionException {
         // find the dataformat names
-        List<String> dataFormatNames = findDataFormatNames();
+        final String kind = "dataformat";
+        List<String> dataFormatNames = listDescriptorNamesOfType(kind);
 
         final Set<File> jsonFiles = new TreeSet<>();
-        PackageHelper.findJsonFiles(buildDir, jsonFiles, new PackageHelper.CamelComponentsModelFilter());
+        PackageHelper.findJsonFiles(buildDir, jsonFiles);
 
         // only if there is dataformat we should update the documentation files
         if (!dataFormatNames.isEmpty()) {
             getLog().debug("Found " + dataFormatNames.size() + " dataformats");
             for (String dataFormatName : dataFormatNames) {
-                String json = loadDataFormatJson(jsonFiles, dataFormatName);
+                String json = loadJsonFrom(jsonFiles, kind, dataFormatName);
                 if (json != null) {
                     // special for some data formats
                     dataFormatName = asDataFormatName(dataFormatName);
 
-                    File file = new File(docDir, dataFormatName + "-dataformat.adoc");
+                    File file = new File(dataformatDocDir, dataFormatName + "-" + kind + ".adoc");
 
-                    DataFormatModel model = generateDataFormatModel(dataFormatName, json);
+                    DataFormatModel model = generateDataFormatModel(json);
+                    // Bindy has 3 derived dataformats, but only one doc, so
+                    // avoid any differences
+                    // to make sure the build is stable
+                    if ("bindy".equals(dataFormatName)) {
+                        model.getOptions().stream().filter(o -> "type".equals(o.getName()))
+                                .forEach(o -> o.setDefaultValue(null));
+                    }
+
                     String title = asDataFormatTitle(model.getName(), model.getTitle());
                     model.setTitle(title);
 
-                    String docTitle = model.getTitle() + " DataFormat";
-                    boolean deprecated = "true".equals(model.getDeprecated());
-                    if (deprecated) {
-                        docTitle += " (deprecated)";
-                    }
-
                     boolean exists = file.exists();
-                    boolean updated;
-                    updated = updateLink(file, dataFormatName + "-dataformat");
-                    updated |= updateTitles(file, docTitle);
-                    updated |= updateAvailableFrom(file, model.getFirstVersion());
+                    boolean updated = updateHeader(dataFormatName, file, model, " DataFormat", kind);
+                    checkSince(file, model);
 
-                    String options = templateDataFormatOptions(model);
-                    updated |= updateDataFormatOptions(file, options);
+                    String options = evaluateTemplate("dataformat-options.mvel", model);
+                    updated |= updateOptionsIn(file, kind, options);
 
                     if (updated) {
                         getLog().info("Updated doc file: " + file);
@@ -223,6 +340,28 @@ public class UpdateReadmeMojo extends AbstractMojo {
                             throw new MojoExecutionException("Failed build due failFast=true");
                         }
                     }
+
+                    if (updated || exists) {
+                        try {
+                            // if we run in camel-core project then add additional meta-data
+                            File rootFile = findCamelDirectory(project.getBasedir(), "core/camel-core");
+                            if (rootFile != null) {
+                                Path root = rootFile.toPath().getParent().getParent();
+                                String text = PackageHelper.loadText(file);
+                                updateResource(
+                                        root.resolve(
+                                                "catalog/camel-catalog/src/generated/resources/org/apache/camel/catalog/docs"),
+                                        file.getName(), text);
+                                String rep = "$1\n"
+                                             + "//THIS FILE IS COPIED: EDIT THE SOURCE FILE:\n"
+                                             + ":page-source: " + root.relativize(file.toPath());
+                                text = Pattern.compile("^(= .+)$", Pattern.MULTILINE).matcher(text).replaceAll(rep);
+                                updateResource(root.resolve("docs/components/modules/dataformats/pages"), file.getName(), text);
+                            }
+                        } catch (IOException e) {
+                            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+                        }
+                    }
                 }
             }
         }
@@ -230,44 +369,61 @@ public class UpdateReadmeMojo extends AbstractMojo {
 
     private static String asComponentName(String name) {
         // special for some components which share the same readme file
-        if (name.equals("imap") || name.equals("imaps") || name.equals("pop3") || name.equals("pop3s") || name.equals("smtp") || name.equals("smtps")) {
+        if (name.equals("imap") || name.equals("imaps") || name.equals("pop3") || name.equals("pop3s") || name.equals("smtp")
+                || name.equals("smtps")) {
             return "mail";
-        } else {
-            return name;
         }
+
+        return name;
     }
 
-    private void executeLanguage() throws MojoExecutionException, MojoFailureException {
+    private void executeLanguage() throws MojoExecutionException {
         // find the language names
-        List<String> languageNames = findLanguageNames();
+        final String kind = "language";
+        List<String> languageNames = listDescriptorNamesOfType(kind);
 
         final Set<File> jsonFiles = new TreeSet<>();
-        PackageHelper.findJsonFiles(buildDir, jsonFiles, new PackageHelper.CamelComponentsModelFilter());
+        PackageHelper.findJsonFiles(buildDir, jsonFiles);
 
         // only if there is language we should update the documentation files
         if (!languageNames.isEmpty()) {
             getLog().debug("Found " + languageNames.size() + " languages");
             for (String languageName : languageNames) {
-                String json = loadLanguageJson(jsonFiles, languageName);
+                String json = loadJsonFrom(jsonFiles, kind, languageName);
                 if (json != null) {
-                    File file = new File(docDir, languageName + "-language.adoc");
-
-                    LanguageModel model = generateLanguageModel(languageName, json);
-
-                    String docTitle = model.getTitle() + " Language";
-                    boolean deprecated = "true".equals(model.getDeprecated());
-                    if (deprecated) {
-                        docTitle += " (deprecated)";
+                    File file = new File(languageDocDir, languageName + "-" + kind + ".adoc");
+                    boolean exists = file.exists();
+                    if (!exists) {
+                        file = new File(languageDocDir2, languageName + "-" + kind + ".adoc");
+                        exists = file.exists();
                     }
 
-                    boolean exists = file.exists();
-                    boolean updated;
-                    updated = updateLink(file, languageName + "-language");
-                    updated |= updateTitles(file, docTitle);
-                    updated |= updateAvailableFrom(file, model.getFirstVersion());
+                    LanguageModel model = JsonMapper.generateLanguageModel(json);
+                    // skip option named id
+                    model.getOptions().removeIf(
+                            opt -> Objects.equals(opt.getName(), "id") || Objects.equals(opt.getName(), "expression"));
+                    // enhanced for autowired
+                    model.getOptions().stream().filter(BaseOptionModel::isAutowired).forEach(option -> {
+                        option.setDescription("*Autowired* " + option.getDescription());
+                    });
+                    // enhance description for deprecated options
+                    model.getOptions().stream().filter(BaseOptionModel::isDeprecated).forEach(option -> {
+                        String desc = "*Deprecated* " + option.getDescription();
+                        if (!Strings.isEmpty(option.getDeprecationNote())) {
+                            desc = option.getDescription();
+                            if (!desc.endsWith(".")) {
+                                desc = desc + ".";
+                            }
+                            desc += " Deprecation note: " + option.getDeprecationNote();
+                        }
+                        option.setDescription(desc);
+                    });
 
-                    String options = templateLanguageOptions(model);
-                    updated |= updateLanguageOptions(file, options);
+                    boolean updated = updateHeader(languageName, file, model, " Language", kind);
+                    checkSince(file, model);
+
+                    String options = evaluateTemplate("language-options.mvel", model);
+                    updated |= updateOptionsIn(file, kind, options);
 
                     if (updated) {
                         getLog().info("Updated doc file: " + file);
@@ -279,15 +435,37 @@ public class UpdateReadmeMojo extends AbstractMojo {
                             throw new MojoExecutionException("Failed build due failFast=true");
                         }
                     }
+
+                    if (updated || exists) {
+                        try {
+                            // if we run in camel-core project then add additional meta-data
+                            File rootFile = findCamelDirectory(project.getBasedir(), "core/camel-core");
+                            if (rootFile != null) {
+                                Path root = rootFile.toPath().getParent().getParent();
+                                String text = PackageHelper.loadText(file);
+                                updateResource(
+                                        root.resolve(
+                                                "catalog/camel-catalog/src/generated/resources/org/apache/camel/catalog/docs"),
+                                        file.getName(), text);
+                                String rep = "$1\n"
+                                             + "//THIS FILE IS COPIED: EDIT THE SOURCE FILE:\n"
+                                             + ":page-source: " + root.relativize(file.toPath());
+                                text = Pattern.compile("^(= .+)$", Pattern.MULTILINE).matcher(text).replaceAll(rep);
+                                updateResource(root.resolve("docs/components/modules/languages/pages"), file.getName(), text);
+                            }
+                        } catch (IOException e) {
+                            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void executeEips() throws MojoExecutionException, MojoFailureException {
-        // only run if in camel-core
+    private void executeEips() throws MojoExecutionException {
+        // only run if in camel-core-model
         String currentDir = Paths.get(".").normalize().toAbsolutePath().toString();
-        if (!currentDir.endsWith("camel-core")) {
+        if (!currentDir.endsWith("camel-core-model")) {
             return;
         }
 
@@ -297,41 +475,59 @@ public class UpdateReadmeMojo extends AbstractMojo {
         File coreDir = new File(".");
         if (coreDir.isDirectory()) {
             File target = new File(coreDir, "target/classes/org/apache/camel/model");
-            PackageHelper.findJsonFiles(target, jsonFiles, new PackageHelper.CamelComponentsModelFilter());
+            PackageHelper.findJsonFiles(target, jsonFiles);
         }
 
-        // only if there is dataformat we should update the documentation files
+        // only if there is EIP we should update the documentation files
         if (!jsonFiles.isEmpty()) {
             getLog().debug("Found " + jsonFiles.size() + " eips");
             for (File jsonFile : jsonFiles) {
                 String json = loadEipJson(jsonFile);
                 if (json != null) {
-                    EipModel model = generateEipModel(json);
-                    String title = asEipTitle(model.getName(), model.getTitle());
-                    model.setTitle(title);
+                    EipModel model = JsonMapper.generateEipModel(json);
+                    // skip option named id/description/expression/outputs
+                    model.getOptions()
+                            .removeIf(option -> "id".equals(option.getName()) || "description".equals(option.getName())
+                                    || "expression".equals(option.getName())
+                                    || "outputs".equals(option.getName()));
+                    // lets put autowired in the description
+                    model.getOptions().stream().filter(EipOptionModel::isAutowired).forEach(option -> {
+                        String desc = "*Autowired* " + option.getDescription();
+                        option.setDescription(desc);
+                    });
+                    // lets put required in the description
+                    model.getOptions().stream().filter(EipOptionModel::isRequired).forEach(option -> {
+                        String desc = "*Required* " + option.getDescription();
+                        option.setDescription(desc);
+                    });
+                    // is the option deprecated then include that as well in the
+                    // description
+                    model.getOptions().stream().filter(EipOptionModel::isDeprecated).forEach(option -> {
+                        String desc = "*Deprecated* " + option.getDescription();
+                        if (!Strings.isEmpty(option.getDeprecationNote())) {
+                            if (!desc.endsWith(".")) {
+                                desc += ".";
+                            }
+                            desc = desc + " Deprecation note: " + option.getDeprecationNote();
+                        }
+                        option.setDescription(desc);
+                    });
 
                     String eipName = model.getName();
 
                     // we only want actual EIPs from the models
-                    if (!model.getLabel().startsWith("eip")) {
+                    final String kind = "eip";
+                    if (!model.getLabel().startsWith(kind)) {
                         continue;
                     }
 
-                    File file = new File(eipDocDir, eipName + "-eip.adoc");
-
-                    String docTitle = model.getTitle() + " EIP";
-                    boolean deprecated = model.isDeprecated();
-                    if (deprecated) {
-                        docTitle += " (deprecated)";
-                    }
-
+                    File file = new File(eipDocDir, eipName + "-" + kind + ".adoc");
                     boolean exists = file.exists();
-                    boolean updated;
-                    updated = updateLink(file, eipName + "-eip");
-                    updated |= updateTitles(file, docTitle);
 
-                    String options = templateEipOptions(model);
-                    updated |= updateEipOptions(file, options);
+                    boolean updated = updateHeader(eipName, file, model, " EIP", kind);
+
+                    String options = evaluateTemplate("eip-options.mvel", model);
+                    updated |= updateOptionsIn(file, kind, options);
 
                     if (updated) {
                         getLog().info("Updated doc file: " + file);
@@ -343,6 +539,23 @@ public class UpdateReadmeMojo extends AbstractMojo {
                             throw new MojoExecutionException("Failed build due failFast=true");
                         }
                     }
+
+                    if (updated || exists) {
+                        try {
+                            // if we run in camel-core project then add additional meta-data
+                            File rootFile = findCamelDirectory(project.getBasedir(), "core/camel-core");
+                            if (rootFile != null) {
+                                Path root = rootFile.toPath().getParent().getParent();
+                                String text = PackageHelper.loadText(file);
+                                updateResource(
+                                        root.resolve(
+                                                "catalog/camel-catalog/src/generated/resources/org/apache/camel/catalog/docs"),
+                                        file.getName(), text);
+                            }
+                        } catch (IOException e) {
+                            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+                        }
+                    }
                 }
             }
         }
@@ -350,23 +563,20 @@ public class UpdateReadmeMojo extends AbstractMojo {
 
     private static String asComponentTitle(String name, String title) {
         // special for some components which share the same readme file
-        if (name.equals("imap") || name.equals("imaps") || name.equals("pop3") || name.equals("pop3s") || name.equals("smtp") || name.equals("smtps")) {
+        if (name.equals("imap") || name.equals("imaps") || name.equals("pop3") || name.equals("pop3s") || name.equals("smtp")
+                || name.equals("smtps")) {
             return "Mail";
-        } else {
-            return title;
         }
+
+        return title;
     }
 
     private static String asDataFormatName(String name) {
         // special for some dataformats which share the same readme file
         if (name.startsWith("bindy")) {
             return "bindy";
-        } else {
-            return name;
         }
-    }
 
-    private static String asEipName(String name) {
         return name;
     }
 
@@ -374,48 +584,125 @@ public class UpdateReadmeMojo extends AbstractMojo {
         // special for some dataformats which share the same readme file
         if (name.startsWith("bindy")) {
             return "Bindy";
-        } else {
-            return title;
         }
-    }
 
-    private static String asEipTitle(String name, String title) {
         return title;
     }
 
-    private boolean updateLink(File file, String link) throws MojoExecutionException {
-        if (!file.exists()) {
+    private boolean updateHeader(
+            String name, final File file, final BaseModel<? extends BaseOptionModel> model, String titleSuffix,
+            String kind)
+            throws MojoExecutionException {
+        getLog().debug("updateHeader " + file);
+        final String linkSuffix = "-" + kind;
+        if (model == null || !file.exists()) {
             return false;
         }
 
         boolean updated = false;
-
         try {
-            List<String> newLines = new ArrayList<>();
+            String text = PackageHelper.loadText(file);
 
-            String text = loadText(new FileInputStream(file));
             String[] lines = text.split("\n");
+
+            // check first if it is a standard documentation file, we expect at
+            // least five lines
+            if (lines.length < 5) {
+                return false;
+            }
+
+            // find manual attributes
+            Map<String, String> manualAttributes = new LinkedHashMap<>();
+            for (String line : lines) {
+                if (line.length() == 0) {
+                    break;
+                }
+                for (Pattern attrName : MANUAL_ATTRIBUTES) {
+                    Matcher m = attrName.matcher(line);
+                    if (m.matches()) {
+                        manualAttributes.put(m.group(1), m.group(2));
+                        break;
+                    }
+                }
+            }
+
+            List<String> newLines = new ArrayList<>(lines.length + 8);
+
+            //link
+            newLines.add("[[" + name + linkSuffix + "]]");
+
+            //title
+            String title = model.getTitle() + titleSuffix;
+            if (model.isDeprecated()) {
+                title += " (deprecated)";
+            }
+            newLines.add("= " + title);
+            newLines.add(":docTitle: " + model.getTitle());
+
+            if (model instanceof ArtifactModel<?>) {
+                newLines.add(":artifactId: " + ((ArtifactModel<?>) model).getArtifactId());
+            }
+            newLines.add(":description: " + model.getDescription());
+            newLines.add(":since: " + model.getFirstVersionShort());
+            //TODO put the deprecation into the actual support level.
+            newLines.add(":supportLevel: " + model.getSupportLevel().toString() + (model.isDeprecated() ? "-deprecated" : ""));
+            if (model.isDeprecated()) {
+                newLines.add(":deprecated: *deprecated*");
+            }
+            if (model instanceof ComponentModel) {
+                newLines.add(":component-header: " + generateComponentHeader((ComponentModel) model));
+                if (Arrays.asList(model.getLabel().split(",")).contains("core")) {
+                    newLines.add(":core:");
+                }
+            }
+
+            // quarkus include pages should not be for EIP models
+            if (!"model".equals(model.getKind())) {
+                newLines.add(
+                        "include::{cq-version}@camel-quarkus:ROOT:partial$reference/" + kind + "s/" + name
+                             + ".adoc[opts=optional]");
+            }
+
+            if (!manualAttributes.isEmpty()) {
+                newLines.add("//Manually maintained attributes");
+                for (Map.Entry<String, String> entry : manualAttributes.entrySet()) {
+                    newLines.add(":" + entry.getKey() + ": " + entry.getValue());
+                }
+            }
+
+            newLines.add("");
+
             for (int i = 0; i < lines.length; i++) {
-                String line = lines[i];
+                if (i > newLines.size() - 1) {
+                    break;
+                }
+                if (!newLines.get(i).equals(lines[i])) {
+                    updated = true;
+                    break;
+                }
+            }
 
-                if (i == 0) {
-                    // first line is the link
-                    String newLine = "[[" + link + "]]";
-                    newLines.add(newLine);
-                    updated = !line.equals(newLine);
-                    if (updated) {
-                        // its some old text so keep it
-                        newLines.add(line);
+            boolean copy = false;
+            if (updated) {
+                for (int i = 0; i < lines.length; i++) {
+                    if (!copy && lines[i].isEmpty()) {
+                        copy = true;
+                    } else if (copy) {
+                        newLines.add(lines[i]);
                     }
-                } else {
-                    newLines.add(line);
+                }
+                if (!copy) {
+                    throw new MojoFailureException("File " + file + " has unexpected structure with no empty line.");
                 }
             }
 
             if (updated) {
                 // build the new updated text
-                String newText = newLines.stream().collect(Collectors.joining("\n"));
-                writeText(file, newText);
+                if (!newLines.get(newLines.size() - 1).isEmpty()) {
+                    newLines.add("");
+                }
+                String newText = String.join("\n", newLines);
+                PackageHelper.writeText(file, newText);
             }
         } catch (Exception e) {
             throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
@@ -424,810 +711,253 @@ public class UpdateReadmeMojo extends AbstractMojo {
         return updated;
     }
 
-    private boolean updateTitles(File file, String title) throws MojoExecutionException {
+    private void checkComponentHeader(final File file, final ComponentModel model) throws MojoExecutionException {
+        if (!file.exists()) {
+            return;
+        }
+
+        final String headerText = "*{component-header}*";
+        String loadedText;
+
+        try {
+            loadedText = PackageHelper.loadText(file);
+
+        } catch (Exception e) {
+            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+        }
+        if (!loadedText.contains(headerText)) {
+            throw new MojoExecutionException("File " + file + " does not contain required string `" + headerText + "'");
+        }
+    }
+
+    private void checkSince(final File file, final ArtifactModel<?> model) throws MojoExecutionException {
+        if (!file.exists()) {
+            return;
+        }
+
+        final String sinceText = "*Since Camel {since}*";
+        String loadedText;
+
+        try {
+            loadedText = PackageHelper.loadText(file);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
+        }
+        if (!loadedText.contains(sinceText)) {
+            throw new MojoExecutionException("File " + file + " does not contain required string '" + sinceText + "'");
+        }
+    }
+
+    private static String generateComponentHeader(final ComponentModel model) {
+        final boolean consumerOnly = model.isConsumerOnly();
+        final boolean producerOnly = model.isProducerOnly();
+        // if we have only producer support
+        if (!consumerOnly && producerOnly) {
+            return "Only producer is supported";
+        }
+        // if we have only consumer support
+        if (consumerOnly && !producerOnly) {
+            return "Only consumer is supported";
+        }
+
+        return "Both producer and consumer are supported";
+    }
+
+    private boolean updateOptionsIn(final File file, final String kind, final String changed) throws MojoExecutionException {
         if (!file.exists()) {
             return false;
         }
 
-        boolean updated = false;
-
+        final String updated = changed.trim();
         try {
-            List<String> newLines = new ArrayList<>();
+            String text = PackageHelper.loadText(file);
 
-            String text = loadText(new FileInputStream(file));
-            String[] lines = text.split("\n");
-            // line 0 is the link
-            for (int i = 1; i < lines.length; i++) {
-                String line = lines[i];
-
-                if (i == 1) {
-                    // first line is the title to make the text less noisy we use level 2
-                    String newLine = "== " + title;
-                    newLines.add(newLine);
-                    updated = !line.equals(newLine);
-                    continue;
-                }
-
-                // use single line headers with # as level instead of the cumbersome adoc weird style
-                if (line.startsWith("^^^") || line.startsWith("~~~") || line.startsWith("+++")) {
-                    String level = line.startsWith("+++") ? "====" : "===";
-
-                    // transform legacy heading into new style
-                    int idx = newLines.size() - 1;
-                    String prev = newLines.get(idx);
-
-                    newLines.set(idx, level + " " + prev);
-
-                    // okay if 2nd-prev line is a [[title]] we need to remove that too
-                    // so we have nice clean sub titles
-                    idx = newLines.size() - 2;
-                    if (idx >= 0) {
-                        prev = newLines.get(idx);
-                        if (prev.startsWith("[[")) {
-                            // remove
-                            newLines.remove(idx);
-                        }
-                    }
-
-                    updated = true;
-                } else {
-                    // okay normal text so just add it
-                    newLines.add(line);
-                }
-            }
-
-
-            if (updated) {
-                // build the new updated text
-                String newText = newLines.stream().collect(Collectors.joining("\n"));
-                writeText(file, newText);
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-
-        return updated;
-    }
-
-    private boolean updateAvailableFrom(File file, String firstVersion) throws MojoExecutionException {
-        if (firstVersion == null || !file.exists()) {
-            return false;
-        }
-
-        // cut last digit so its not 2.18.0 but 2.18
-        String[] parts = firstVersion.split("\\.");
-        if (parts.length == 3 && parts[2].equals("0")) {
-            firstVersion = parts[0] + "." + parts[1];
-        }
-
-        boolean updated = false;
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String[] lines = text.split("\n");
-
-            List<String> newLines = new ArrayList<>();
-
-            // copy over to all new lines
-            newLines.addAll(Arrays.asList(lines));
-
-            // check the first four lines
-            boolean title = lines[1].startsWith("##") || lines[1].startsWith("==");
-            boolean empty = lines[2].trim().isEmpty();
-            boolean availableFrom = lines[3].trim().contains("Available as of") || lines[3].trim().contains("Available in");
-            boolean empty2 = lines[4].trim().isEmpty();
-
-            if (title && empty && availableFrom) {
-                String newLine = "*Available as of Camel version " + firstVersion + "*";
-                if (!newLine.equals(lines[3])) {
-                    newLines.set(3, newLine);
-                    updated = true;
-                }
-                if (!empty2) {
-                    newLines.add(4, "");
-                    updated = true;
-                }
-            } else if (!availableFrom) {
-                String newLine = "*Available as of Camel version " + firstVersion + "*";
-                newLines.add(3, newLine);
-                newLines.add(4, "");
-                updated = true;
-            }
-
-            if (updated) {
-                // build the new updated text
-                String newText = newLines.stream().collect(Collectors.joining("\n"));
-                writeText(file, newText);
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-
-        return updated;
-    }
-
-    private boolean updateComponentOptions(File file, String changed) throws MojoExecutionException {
-        if (!file.exists()) {
-            return false;
-        }
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String existing = StringHelper.between(text, "// component options: START", "// component options: END");
+            String existing = Strings.between(text, "// " + kind + " options: START", "// " + kind + " options: END");
             if (existing != null) {
                 // remove leading line breaks etc
                 existing = existing.trim();
-                changed = changed.trim();
-                if (existing.equals(changed)) {
+                if (existing.equals(updated)) {
                     return false;
-                } else {
-                    String before = StringHelper.before(text, "// component options: START");
-                    String after = StringHelper.after(text, "// component options: END");
-                    text = before + "// component options: START\n" + changed + "\n// component options: END" + after;
-                    writeText(file, text);
-                    return true;
                 }
-            } else {
-                getLog().warn("Cannot find markers in file " + file);
-                getLog().warn("Add the following markers");
-                getLog().warn("\t// component options: START");
-                getLog().warn("\t// component options: END");
-                if (isFailFast()) {
-                    throw new MojoExecutionException("Failed build due failFast=true");
-                }
-                return false;
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-    }
 
-    private boolean updateEndpointOptions(File file, String changed) throws MojoExecutionException {
-        if (!file.exists()) {
+                String before = Strings.before(text, "// " + kind + " options: START");
+                String after = Strings.after(text, "// " + kind + " options: END");
+                text = before + "// " + kind + " options: START\n" + updated + "\n// " + kind + " options: END" + after;
+                PackageHelper.writeText(file, text);
+                return true;
+            }
+
+            getLog().warn("Cannot find markers in file " + file);
+            getLog().warn("Add the following markers");
+            getLog().warn("\t// " + kind + " options: START");
+            getLog().warn("\t// " + kind + " options: END");
+            if (isFailFast()) {
+                throw new MojoExecutionException("Failed build due failFast=true");
+            }
             return false;
-        }
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String existing = StringHelper.between(text, "// endpoint options: START", "// endpoint options: END");
-            if (existing != null) {
-                // remove leading line breaks etc
-                existing = existing.trim();
-                changed = changed.trim();
-                if (existing.equals(changed)) {
-                    return false;
-                } else {
-                    String before = StringHelper.before(text, "// endpoint options: START");
-                    String after = StringHelper.after(text, "// endpoint options: END");
-                    text = before + "// endpoint options: START\n" + changed + "\n// endpoint options: END" + after;
-                    writeText(file, text);
-                    return true;
-                }
-            } else {
-                getLog().warn("Cannot find markers in file " + file);
-                getLog().warn("Add the following markers");
-                getLog().warn("\t// endpoint options: START");
-                getLog().warn("\t// endpoint options: END");
-                if (isFailFast()) {
-                    throw new MojoExecutionException("Failed build due failFast=true");
-                }
-                return false;
-            }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
         }
     }
 
-    private boolean updateDataFormatOptions(File file, String changed) throws MojoExecutionException {
-        if (!file.exists()) {
-            return false;
-        }
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String existing = StringHelper.between(text, "// dataformat options: START", "// dataformat options: END");
-            if (existing != null) {
-                // remove leading line breaks etc
-                existing = existing.trim();
-                changed = changed.trim();
-                if (existing.equals(changed)) {
-                    return false;
-                } else {
-                    String before = StringHelper.before(text, "// dataformat options: START");
-                    String after = StringHelper.after(text, "// dataformat options: END");
-                    text = before + "// dataformat options: START\n" + changed + "\n// dataformat options: END" + after;
-                    writeText(file, text);
-                    return true;
-                }
-            } else {
-                getLog().warn("Cannot find markers in file " + file);
-                getLog().warn("Add the following markers");
-                getLog().warn("\t// dataformat options: START");
-                getLog().warn("\t// dataformat options: END");
-                if (isFailFast()) {
-                    throw new MojoExecutionException("Failed build due failFast=true");
-                }
-                return false;
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-    }
-
-    private boolean updateLanguageOptions(File file, String changed) throws MojoExecutionException {
-        if (!file.exists()) {
-            return false;
-        }
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String existing = StringHelper.between(text, "// language options: START", "// language options: END");
-            if (existing != null) {
-                // remove leading line breaks etc
-                existing = existing.trim();
-                changed = changed.trim();
-                if (existing.equals(changed)) {
-                    return false;
-                } else {
-                    String before = StringHelper.before(text, "// language options: START");
-                    String after = StringHelper.after(text, "// language options: END");
-                    text = before + "// language options: START\n" + changed + "\n// language options: END" + after;
-                    writeText(file, text);
-                    return true;
-                }
-            } else {
-                getLog().warn("Cannot find markers in file " + file);
-                getLog().warn("Add the following markers");
-                getLog().warn("\t// language options: START");
-                getLog().warn("\t// language options: END");
-                if (isFailFast()) {
-                    throw new MojoExecutionException("Failed build due failFast=true");
-                }
-                return false;
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-    }
-
-    private boolean updateEipOptions(File file, String changed) throws MojoExecutionException {
-        if (!file.exists()) {
-            return false;
-        }
-
-        try {
-            String text = loadText(new FileInputStream(file));
-
-            String existing = StringHelper.between(text, "// eip options: START", "// eip options: END");
-            if (existing != null) {
-                // remove leading line breaks etc
-                existing = existing.trim();
-                changed = changed.trim();
-                if (existing.equals(changed)) {
-                    return false;
-                } else {
-                    String before = StringHelper.before(text, "// eip options: START");
-                    String after = StringHelper.after(text, "// eip options: END");
-                    text = before + "// eip options: START\n" + changed + "\n// eip options: END" + after;
-                    writeText(file, text);
-                    return true;
-                }
-            } else {
-                getLog().warn("Cannot find markers in file " + file);
-                getLog().warn("Add the following markers");
-                getLog().warn("\t// eip options: START");
-                getLog().warn("\t// eip options: END");
-                if (isFailFast()) {
-                    throw new MojoExecutionException("Failed build due failFast=true");
-                }
-                return false;
-            }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error reading file " + file + " Reason: " + e, e);
-        }
-    }
-
-    private String loadComponentJson(Set<File> jsonFiles, String componentName) {
-        try {
-            for (File file : jsonFiles) {
-                if (file.getName().equals(componentName + ".json")) {
-                    String json = loadText(new FileInputStream(file));
-                    boolean isComponent = json.contains("\"kind\": \"component\"");
-                    if (isComponent) {
+    private static String loadJsonFrom(Set<File> jsonFiles, String kind, String name) {
+        for (File file : jsonFiles) {
+            if (file.getName().equals(name + PackageHelper.JSON_SUFIX)) {
+                try {
+                    String json = PackageHelper.loadText(file);
+                    if (Objects.equals(kind, PackageHelper.getSchemaKind(json))) {
                         return json;
                     }
+                } catch (IOException ignored) {
+                    // ignored
                 }
             }
-        } catch (IOException e) {
-            // ignore
         }
+
         return null;
     }
 
-    private String loadDataFormatJson(Set<File> jsonFiles, String dataFormatName) {
-        try {
-            for (File file : jsonFiles) {
-                if (file.getName().equals(dataFormatName + ".json")) {
-                    String json = loadText(new FileInputStream(file));
-                    boolean isDataFormat = json.contains("\"kind\": \"dataformat\"");
-                    if (isDataFormat) {
-                        return json;
-                    }
+    private static String loadJsonFrom(File file, String kind) {
+        if (file.getName().endsWith(PackageHelper.JSON_SUFIX)) {
+            try {
+                String json = PackageHelper.loadText(file);
+                if (Objects.equals(kind, PackageHelper.getSchemaKind(json))) {
+                    return json;
                 }
+            } catch (IOException ignored) {
+                // ignored
             }
-        } catch (IOException e) {
-            // ignore
         }
+
         return null;
     }
 
-    private String loadLanguageJson(Set<File> jsonFiles, String languageName) {
+    private static String loadEipJson(File file) {
         try {
-            for (File file : jsonFiles) {
-                if (file.getName().equals(languageName + ".json")) {
-                    String json = loadText(new FileInputStream(file));
-                    boolean isLanguage = json.contains("\"kind\": \"language\"");
-                    if (isLanguage) {
-                        return json;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            // ignore
-        }
-        return null;
-    }
-
-    private String loadEipJson(File file) {
-        try {
-            String json = loadText(new FileInputStream(file));
-            boolean isEip = json.contains("\"kind\": \"model\"");
-            if (isEip) {
+            String json = PackageHelper.loadText(file);
+            if ("model".equals(PackageHelper.getSchemaKind(json))) {
                 return json;
             }
-        } catch (IOException e) {
+        } catch (IOException ignored) {
             // ignore
         }
         return null;
     }
 
-    private ComponentModel generateComponentModel(String componentName, String json) {
-        List<Map<String, String>> rows = parseJsonSchema("component", json, false);
-
-        ComponentModel component = new ComponentModel(true);
-        component.setScheme(getSafeValue("scheme", rows));
-        component.setSyntax(getSafeValue("syntax", rows));
-        component.setAlternativeSyntax(getSafeValue("alternativeSyntax", rows));
-        component.setAlternativeSchemes(getSafeValue("alternativeSchemes", rows));
-        component.setTitle(getSafeValue("title", rows));
-        component.setDescription(getSafeValue("description", rows));
-        component.setFirstVersion(getSafeValue("firstVersion", rows));
-        component.setLabel(getSafeValue("label", rows));
-        component.setDeprecated(getSafeValue("deprecated", rows));
-        component.setDeprecationNote(getSafeValue("deprecationNote", rows));
-        component.setConsumerOnly(getSafeValue("consumerOnly", rows));
-        component.setProducerOnly(getSafeValue("producerOnly", rows));
-        component.setJavaType(getSafeValue("javaType", rows));
-        component.setGroupId(getSafeValue("groupId", rows));
-        component.setArtifactId(getSafeValue("artifactId", rows));
-        component.setVersion(getSafeValue("version", rows));
-
-        String oldGroup = null;
-        rows = parseJsonSchema("componentProperties", json, true);
-        for (Map<String, String> row : rows) {
-            ComponentOptionModel option = new ComponentOptionModel();
-            option.setName(getSafeValue("name", row));
-            option.setDisplayName(getSafeValue("displayName", row));
-            option.setKind(getSafeValue("kind", row));
-            option.setGroup(getSafeValue("group", row));
-            option.setRequired(getSafeValue("required", row));
-            option.setType(getSafeValue("type", row));
-            option.setJavaType(getSafeValue("javaType", row));
-            option.setEnums(getSafeValue("enum", row));
-            option.setDeprecated(getSafeValue("deprecated", row));
-            option.setDeprecationNote(getSafeValue("deprecationNote", row));
-            option.setSecret(getSafeValue("secret", row));
-            option.setDefaultValue(getSafeValue("defaultValue", row));
-            option.setDescription(getSafeValue("description", row));
-            // lets put required in the description
-            if ("true".equals(option.getRequired())) {
-                String desc = "*Required* " + option.getDescription();
-                option.setDescription(desc);
-            }
-            // is the option deprecated then include that as well in the description
-            if ("true".equals(option.getDeprecated())) {
-                String desc = "*Deprecated* " + option.getDescription();
-                option.setDescription(desc);
-                if (!StringHelper.isEmpty(option.getDeprecationNote())) {
-                    desc = option.getDescription();
-                    if (!desc.endsWith(".")) {
-                        desc = desc + ". Deprecation note: " + option.getDeprecationNote();
-                    } else {
+    private ComponentModel generateComponentModel(String json) {
+        ComponentModel component = JsonMapper.generateComponentModel(json);
+        Stream.concat(component.getComponentOptions().stream(), component.getEndpointOptions().stream())
+                .filter(BaseOptionModel::isAutowired).forEach(option -> {
+                    String desc = "*Autowired* " + option.getDescription();
+                    option.setDescription(desc);
+                });
+        Stream.concat(component.getComponentOptions().stream(), component.getEndpointOptions().stream())
+                .filter(BaseOptionModel::isRequired).forEach(option -> {
+                    String desc = "*Required* " + option.getDescription();
+                    option.setDescription(desc);
+                });
+        Stream.concat(component.getComponentOptions().stream(), component.getEndpointOptions().stream())
+                .filter(BaseOptionModel::isDeprecated).forEach(option -> {
+                    String desc = "*Deprecated* " + option.getDescription();
+                    if (!Strings.isEmpty(option.getDeprecationNote())) {
+                        if (!desc.endsWith(".")) {
+                            desc += ".";
+                        }
                         desc = desc + " Deprecation note: " + option.getDeprecationNote();
                     }
                     option.setDescription(desc);
-                }
-            }
-            component.addComponentOption(option);
-
-            // group separate between different options
-            if (oldGroup == null || !oldGroup.equals(option.getGroup())) {
-                option.setNewGroup(true);
-            }
-            oldGroup = option.getGroup();
-        }
-
-        oldGroup = null;
-        rows = parseJsonSchema("properties", json, true);
-        for (Map<String, String> row : rows) {
-            EndpointOptionModel option = new EndpointOptionModel();
-            option.setName(getSafeValue("name", row));
-            option.setDisplayName(getSafeValue("displayName", row));
-            option.setKind(getSafeValue("kind", row));
-            option.setGroup(getSafeValue("group", row));
-            option.setRequired(getSafeValue("required", row));
-            option.setType(getSafeValue("type", row));
-            option.setJavaType(getSafeValue("javaType", row));
-            option.setEnums(getSafeValue("enum", row));
-            option.setPrefix(getSafeValue("prefix", row));
-            option.setMultiValue(getSafeValue("multiValue", row));
-            option.setDeprecated(getSafeValue("deprecated", row));
-            option.setDeprecationNote(getSafeValue("deprecationNote", row));
-            option.setSecret(getSafeValue("secret", row));
-            option.setDefaultValue(getSafeValue("defaultValue", row));
-            option.setDescription(getSafeValue("description", row));
-            // lets put required in the description
-            if ("true".equals(option.getRequired())) {
-                String desc = "*Required* " + option.getDescription();
-                option.setDescription(desc);
-            }
-            // is the option deprecated then include that as well in the description
-            if ("true".equals(option.getDeprecated())) {
-                String desc = "*Deprecated* " + option.getDescription();
-                option.setDescription(desc);
-                if (!StringHelper.isEmpty(option.getDeprecationNote())) {
-                    desc = option.getDescription();
+                });
+        Stream.concat(component.getComponentOptions().stream(), component.getEndpointOptions().stream())
+                .filter(o -> o.getEnums() != null).forEach(option -> {
+                    String desc = option.getDescription();
                     if (!desc.endsWith(".")) {
-                        desc = desc + ". Deprecation note: " + option.getDeprecationNote();
-                    } else {
-                        desc = desc + " Deprecation note: " + option.getDeprecationNote();
+                        desc = desc + ".";
                     }
+                    desc = desc + " There are " + option.getEnums().size() + " enums and the value can be one of: "
+                           + wrapEnumValues(option.getEnums());
                     option.setDescription(desc);
-                }
-            }
-            // separate the options in path vs parameter so we can generate two different tables
-            if ("path".equals(option.getKind())) {
-                component.addEndpointPathOption(option);
-            } else {
-                component.addEndpointOption(option);
-            }
-
-            // group separate between different options
-            if (oldGroup == null || !oldGroup.equals(option.getGroup())) {
-                option.setNewGroup(true);
-            }
-            oldGroup = option.getGroup();
-        }
-
+                });
         return component;
     }
 
-    private DataFormatModel generateDataFormatModel(String dataFormatName, String json) {
-        List<Map<String, String>> rows = parseJsonSchema("dataformat", json, false);
+    private OtherModel generateOtherModel(String json) {
+        OtherModel other = JsonMapper.generateOtherModel(json);
+        return other;
+    }
 
-        DataFormatModel dataFormat = new DataFormatModel();
-        dataFormat.setTitle(getSafeValue("title", rows));
-        dataFormat.setModelName(getSafeValue("modelName", rows));
-        dataFormat.setName(getSafeValue("name", rows));
-        dataFormat.setDescription(getSafeValue("description", rows));
-        dataFormat.setFirstVersion(getSafeValue("firstVersion", rows));
-        dataFormat.setLabel(getSafeValue("label", rows));
-        dataFormat.setDeprecated(getSafeValue("deprecated", rows));
-        dataFormat.setDeprecationNote(getSafeValue("deprecationNote", rows));
-        dataFormat.setJavaType(getSafeValue("javaType", rows));
-        dataFormat.setGroupId(getSafeValue("groupId", rows));
-        dataFormat.setArtifactId(getSafeValue("artifactId", rows));
-        dataFormat.setVersion(getSafeValue("version", rows));
-
-        rows = parseJsonSchema("properties", json, true);
-        for (Map<String, String> row : rows) {
-            DataFormatOptionModel option = new DataFormatOptionModel();
-            option.setName(getSafeValue("name", row));
-            option.setDisplayName(getSafeValue("displayName", row));
-            option.setKind(getSafeValue("kind", row));
-            option.setType(getSafeValue("type", row));
-            option.setJavaType(getSafeValue("javaType", row));
-            option.setDeprecated(getSafeValue("deprecated", row));
-            option.setDeprecationNote(getSafeValue("deprecationNote", row));
-            option.setEnumValues(getSafeValue("enum", row));
-            option.setDefaultValue(getSafeValue("defaultValue", row));
-            option.setDescription(getSafeValue("description", row));
-
-            // special for bindy as we reuse one readme file
-            if (dataFormatName.startsWith("bindy") && option.getName().equals("type")) {
-                option.setDefaultValue("");
-                String doc = option.getDescription() + " The default value is either Csv or KeyValue depending on chosen dataformat.";
-                option.setDescription(doc);
-            }
-            // lets put required in the description
-            // is the option deprecated then include that as well in the description
-            if ("true".equals(option.getDeprecated())) {
-                String desc = "*Deprecated* " + option.getDescription();
-                option.setDescription(desc);
-                if (!StringHelper.isEmpty(option.getDeprecationNote())) {
-                    desc = option.getDescription();
-                    if (!desc.endsWith(".")) {
-                        desc = desc + ". Deprecation note: " + option.getDeprecationNote();
-                    } else {
-                        desc = desc + " Deprecation note: " + option.getDeprecationNote();
-                    }
-                    option.setDescription(desc);
+    private DataFormatModel generateDataFormatModel(String json) {
+        DataFormatModel model = JsonMapper.generateDataFormatModel(json);
+        // skip option named id
+        model.getOptions().removeIf(opt -> Objects.equals(opt.getName(), "id"));
+        model.getOptions().stream().filter(BaseOptionModel::isAutowired).forEach(option -> {
+            String desc = "*Autowired* " + option.getDescription();
+            option.setDescription(desc);
+        });
+        // enhance description for deprecated options
+        model.getOptions().stream().filter(BaseOptionModel::isDeprecated).forEach(option -> {
+            String desc = "*Deprecated* " + option.getDescription();
+            if (!Strings.isEmpty(option.getDeprecationNote())) {
+                desc = option.getDescription();
+                if (!desc.endsWith(".")) {
+                    desc = desc + ".";
                 }
+                desc += " Deprecation note: " + option.getDeprecationNote();
             }
-
-            // skip option named id
-            if ("id".equals(option.getName())) {
-                getLog().debug("Skipping option: " + option.getName());
-            } else {
-                dataFormat.addDataFormatOption(option);
+            option.setDescription(desc);
+        });
+        model.getOptions().stream().filter(o -> o.getEnums() != null).forEach(option -> {
+            String desc = option.getDescription();
+            if (!desc.endsWith(".")) {
+                desc = desc + ".";
             }
-        }
-
-        return dataFormat;
+            desc = desc + " There are " + option.getEnums().size() + " enums and the value can be one of: "
+                   + wrapEnumValues(option.getEnums());
+            option.setDescription(desc);
+        });
+        return model;
     }
 
-    private LanguageModel generateLanguageModel(String languageName, String json) {
-        List<Map<String, String>> rows = parseJsonSchema("language", json, false);
-
-        LanguageModel language = new LanguageModel();
-        language.setTitle(getSafeValue("title", rows));
-        language.setModelName(getSafeValue("modelName", rows));
-        language.setName(getSafeValue("name", rows));
-        language.setDescription(getSafeValue("description", rows));
-        language.setFirstVersion(getSafeValue("firstVersion", rows));
-        language.setLabel(getSafeValue("label", rows));
-        language.setDeprecated(getSafeValue("deprecated", rows));
-        language.setDeprecationNote(getSafeValue("deprecationNote", rows));
-        language.setJavaType(getSafeValue("javaType", rows));
-        language.setGroupId(getSafeValue("groupId", rows));
-        language.setArtifactId(getSafeValue("artifactId", rows));
-        language.setVersion(getSafeValue("version", rows));
-
-        rows = parseJsonSchema("properties", json, true);
-        for (Map<String, String> row : rows) {
-            LanguageOptionModel option = new LanguageOptionModel();
-            option.setName(getSafeValue("name", row));
-            option.setDisplayName(getSafeValue("displayName", row));
-            option.setKind(getSafeValue("kind", row));
-            option.setType(getSafeValue("type", row));
-            option.setJavaType(getSafeValue("javaType", row));
-            option.setDeprecated(getSafeValue("deprecated", row));
-            option.setDeprecationNote(getSafeValue("deprecationNote", row));
-            option.setEnumValues(getSafeValue("enum", row));
-            option.setDefaultValue(getSafeValue("defaultValue", row));
-            option.setDescription(getSafeValue("description", row));
-
-            // is the option deprecated then include that as well in the description
-            if ("true".equals(option.getDeprecated())) {
-                String desc = "*Deprecated* " + option.getDescription();
-                option.setDescription(desc);
-                if (!StringHelper.isEmpty(option.getDeprecationNote())) {
-                    desc = option.getDescription();
-                    if (!desc.endsWith(".")) {
-                        desc = desc + ". Deprecation note: " + option.getDeprecationNote();
-                    } else {
-                        desc = desc + " Deprecation note: " + option.getDeprecationNote();
-                    }
-                    option.setDescription(desc);
-                }
-            }
-
-            // skip option named id/expression
-            if ("id".equals(option.getName()) || "expression".equals(option.getName())) {
-                getLog().debug("Skipping option: " + option.getName());
-            } else {
-                language.addLanguageOption(option);
-            }
-        }
-
-        return language;
-    }
-
-    private EipModel generateEipModel(String json) {
-        List<Map<String, String>> rows = parseJsonSchema("model", json, false);
-
-        EipModel eip = new EipModel();
-        eip.setName(getSafeValue("name", rows));
-        eip.setTitle(getSafeValue("title", rows));
-        eip.setDescription(getSafeValue("description", rows));
-        eip.setJavaType(getSafeValue("javaType", rows));
-        eip.setLabel(getSafeValue("label", rows));
-        eip.setDeprecated("true".equals(getSafeValue("deprecated", rows)));
-        eip.setDeprecationNote(getSafeValue("deprecationNote", rows));
-        eip.setInput("true".equals(getSafeValue("input", rows)));
-        eip.setOutput("true".equals(getSafeValue("output", rows)));
-
-        rows = parseJsonSchema("properties", json, true);
-        for (Map<String, String> row : rows) {
-            EipOptionModel option = new EipOptionModel();
-            option.setName(getSafeValue("name", row));
-            option.setDisplayName(getSafeValue("displayName", row));
-            option.setType(getSafeValue("type", row));
-            option.setJavaType(getSafeValue("javaType", row));
-            option.setRequired(getSafeValue("required", row));
-            option.setDeprecated("true".equals(getSafeValue("deprecated", row)));
-            option.setDeprecationNote(getSafeValue("deprecationNote", row));
-            option.setDefaultValue(getSafeValue("defaultValue", row));
-            option.setDescription(getSafeValue("description", row));
-            option.setInput("true".equals(getSafeValue("input", row)));
-            option.setOutput("true".equals(getSafeValue("output", row)));
-
-            // lets put required in the description
-            if ("true".equals(option.getRequired())) {
-                String desc = "*Required* " + option.getDescription();
-                option.setDescription(desc);
-            }
-            // is the option deprecated then include that as well in the description
-            if (option.isDeprecated()) {
-                String desc = "*Deprecated* " + option.getDescription();
-                option.setDescription(desc);
-                if (!StringHelper.isEmpty(option.getDeprecationNote())) {
-                    desc = option.getDescription();
-                    if (!desc.endsWith(".")) {
-                        desc = desc + ". Deprecation note: " + option.getDeprecationNote();
-                    } else {
-                        desc = desc + " Deprecation note: " + option.getDeprecationNote();
-                    }
-                    option.setDescription(desc);
-                }
-            }
-
-            // skip option named id/description/expression/outputs
-            if ("id".equals(option.getName()) || "description".equals(option.getName())
-                || "expression".equals(option.getName()) || "outputs".equals(option.getName())) {
-                getLog().debug("Skipping option: " + option.getName());
-            } else {
-                eip.addEipOptionModel(option);
-            }
-        }
-
-        return eip;
-    }
-
-    private String templateComponentHeader(ComponentModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("component-header.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
+    private static String evaluateTemplate(final String templateName, final Object model) throws MojoExecutionException {
+        try (InputStream templateStream = UpdateReadmeMojo.class.getClassLoader().getResourceAsStream(templateName)) {
+            String template = PackageHelper.loadText(templateStream);
+            return (String) TemplateRuntime.eval(template, model, Collections.singletonMap("util", MvelHelper.INSTANCE));
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error processing mvel template `" + templateName + "`", e);
         }
     }
 
-    private String templateComponentOptions(ComponentModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("component-options.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
-        }
-    }
-
-    private String templateEndpointOptions(ComponentModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("endpoint-options.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
-        }
-    }
-
-    private String templateDataFormatOptions(DataFormatModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("dataformat-options.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
-        }
-    }
-
-    private String templateLanguageOptions(LanguageModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("language-options.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
-        }
-    }
-
-    private String templateEipOptions(EipModel model) throws MojoExecutionException {
-        try {
-            String template = loadText(UpdateReadmeMojo.class.getClassLoader().getResourceAsStream("eip-options.mvel"));
-            String out = (String) TemplateRuntime.eval(template, model);
-            return out;
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error processing mvel template. Reason: " + e, e);
-        }
-    }
-
-    private List<String> findComponentNames() {
-        List<String> componentNames = new ArrayList<>();
+    private List<String> listDescriptorNamesOfType(final String type) {
+        List<String> names = new ArrayList<>();
 
         File f = new File(project.getBasedir(), "target/classes");
-        f = new File(f, "META-INF/services/org/apache/camel/component");
+        f = new File(f, "META-INF/services/org/apache/camel/" + type);
         if (f.exists() && f.isDirectory()) {
             File[] files = f.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    // skip directories as there may be a sub .resolver directory
+                    // skip directories as there may be a sub .resolver
+                    // directory
                     if (file.isDirectory()) {
                         continue;
                     }
                     String name = file.getName();
                     if (name.charAt(0) != '.') {
-                        componentNames.add(name);
+                        names.add(name);
                     }
                 }
             }
         }
-        return componentNames;
-    }
-
-    private List<String> findDataFormatNames() {
-        List<String> dataFormatNames = new ArrayList<>();
-        File f = new File(project.getBasedir(), "target/classes");
-        f = new File(f, "META-INF/services/org/apache/camel/dataformat");
-        if (f.exists() && f.isDirectory()) {
-            File[] files = f.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // skip directories as there may be a sub .resolver directory
-                    if (file.isDirectory()) {
-                        continue;
-                    }
-                    String name = file.getName();
-                    if (name.charAt(0) != '.') {
-                        dataFormatNames.add(name);
-                    }
-                }
-            }
-        }
-        return dataFormatNames;
-    }
-
-    private List<String> findLanguageNames() {
-        List<String> languageNames = new ArrayList<>();
-        File f = new File(project.getBasedir(), "target/classes");
-        f = new File(f, "META-INF/services/org/apache/camel/language");
-        if (f.exists() && f.isDirectory()) {
-            File[] files = f.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    // skip directories as there may be a sub .resolver directory
-                    if (file.isDirectory()) {
-                        continue;
-                    }
-                    String name = file.getName();
-                    if (name.charAt(0) != '.') {
-                        languageNames.add(name);
-                    }
-                }
-            }
-        }
-        return languageNames;
+        Collections.sort(names);
+        return names;
     }
 
     private boolean isFailFast() {
         return failFast != null && failFast;
+    }
+
+    private String wrapEnumValues(List<String> enumValues) {
+        // comma to space so we can wrap words (which uses space)
+        return String.join(", ", enumValues);
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -83,6 +83,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
         this.checkException = checkException;
     }
 
+    @Override
     protected java.util.logging.Logger getLogger() {
         return JUL_LOG;
     }
@@ -96,14 +97,16 @@ public class CamelDestination extends AbstractDestination implements Configurabl
     }
 
     /**
-     * @param inMessage the incoming message
-     * @return the inbuilt backchannel
+     * @param  inMessage the incoming message
+     * @return           the inbuilt backchannel
      */
+    @Override
     protected Conduit getInbuiltBackChannel(Message inMessage) {
         //we can pass the message back by looking up the camelExchange from inMessage
         return new BackChannelConduit(inMessage);
     }
 
+    @Override
     public void activate() {
         LOG.debug("CamelDestination activate().... ");
         ObjectHelper.notNull(camelContext, "CamelContext", this);
@@ -125,6 +128,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
         }
     }
 
+    @Override
     public void deactivate() {
         try {
             ServiceHelper.stopService(consumer);
@@ -133,6 +137,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
         }
     }
 
+    @Override
     public void shutdown() {
         LOG.debug("CamelDestination shutdown()");
         this.deactivate();
@@ -147,10 +152,10 @@ public class CamelDestination extends AbstractDestination implements Configurabl
     }
 
     protected void incoming(org.apache.camel.Exchange camelExchange) {
-        LOG.debug("server received request: ", camelExchange);
+        LOG.debug("server received request: {}", camelExchange);
         DefaultCxfMessageMapper beanBinding = new DefaultCxfMessageMapper();
-        org.apache.cxf.message.Message inMessage =
-            beanBinding.createCxfMessageFromCamelExchange(camelExchange, headerFilterStrategy);
+        org.apache.cxf.message.Message inMessage
+                = beanBinding.createCxfMessageFromCamelExchange(camelExchange, headerFilterStrategy);
 
         inMessage.put(CamelTransportConstants.CAMEL_EXCHANGE, camelExchange);
         ((MessageImpl) inMessage).setDestination(this);
@@ -160,6 +165,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
         incomingObserver.onMessage(inMessage);
     }
 
+    @Override
     public String getBeanName() {
         if (endpointInfo == null || endpointInfo.getName() == null) {
             return "default" + BASE_BEAN_NAME_SUFFIX;
@@ -182,10 +188,11 @@ public class CamelDestination extends AbstractDestination implements Configurabl
     }
 
     protected class ConsumerProcessor implements Processor {
+        @Override
         public void process(Exchange exchange) {
             try {
                 incoming(exchange);
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 exchange.setException(ex);
             }
         }
@@ -208,21 +215,24 @@ public class CamelDestination extends AbstractDestination implements Configurabl
          *
          * @param observer the observer to notify on receipt of incoming
          */
+        @Override
         public void setMessageObserver(MessageObserver observer) {
             // shouldn't be called for a back channel conduit
         }
 
         /**
-         * Send an outbound message, assumed to contain all the name-value
-         * mappings of the corresponding input message (if any).
+         * Send an outbound message, assumed to contain all the name-value mappings of the corresponding input message
+         * (if any).
          *
          * @param message the message to be sent.
          */
+        @Override
         public void prepare(Message message) throws IOException {
             message.put(CamelTransportConstants.CAMEL_EXCHANGE, inMessage.get(CamelTransportConstants.CAMEL_EXCHANGE));
             message.setContent(OutputStream.class, new CamelOutputStream(message));
         }
 
+        @Override
         protected java.util.logging.Logger getLogger() {
             return JUL_LOG;
         }
@@ -232,12 +242,13 @@ public class CamelDestination extends AbstractDestination implements Configurabl
     /**
      * Mark message as a partial message.
      *
-     * @param partialResponse the partial response message
-     * @param decoupledTarget the decoupled target
-     * @return <tt>true</tt> if partial responses is supported
+     * @param  partialResponse the partial response message
+     * @param  decoupledTarget the decoupled target
+     * @return                 <tt>true</tt> if partial responses is supported
      */
-    protected boolean markPartialResponse(Message partialResponse,
-                                          EndpointReferenceType decoupledTarget) {
+    protected boolean markPartialResponse(
+            Message partialResponse,
+            EndpointReferenceType decoupledTarget) {
         return true;
     }
 
@@ -252,7 +263,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
         // copy the camel in message header to the out message
         camelExchange.getOut().getHeaders().putAll(camelExchange.getIn().getHeaders());
         CxfHeaderHelper.propagateCxfToCamel(headerFilterStrategy, outMessage,
-                                            camelExchange.getOut(), camelExchange);
+                camelExchange.getOut(), camelExchange);
     }
 
     /**
@@ -267,7 +278,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
 
         // Prepare the message and get the send out message
         private void commitOutputMessage() throws IOException {
-            Exchange camelExchange = (Exchange)outMessage.get(CamelTransportConstants.CAMEL_EXCHANGE);
+            Exchange camelExchange = (Exchange) outMessage.get(CamelTransportConstants.CAMEL_EXCHANGE);
 
             propagateResponseHeadersToCamel(outMessage, camelExchange);
 
@@ -278,7 +289,7 @@ public class CamelDestination extends AbstractDestination implements Configurabl
             }
             OutputStream outputStream = outMessage.getContent(OutputStream.class);
             if (outputStream instanceof CachedOutputStream) {
-                camelExchange.getOut().setBody(((CachedOutputStream)outputStream).getInputStream());
+                camelExchange.getOut().setBody(((CachedOutputStream) outputStream).getInputStream());
             } else {
                 camelExchange.getOut().setBody(outputStream);
             }

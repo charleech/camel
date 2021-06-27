@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,13 +23,12 @@ import javax.xml.ws.Holder;
 import javax.xml.ws.RequestWrapper;
 
 @WebService
-@XmlSeeAlso({MyOrderType.class})
+@XmlSeeAlso({ MyOrderType.class })
 public interface MyOrderEndpoint {
     String myOrder(Holder<String> strPart, int iAmount, Holder<String> strCustomer);
+
     @RequestWrapper(className = "org.apache.camel.component.cxf.holder.MyOrderType")
     String mySecureOrder(
-        @WebParam(name = "iAmount")                 
-        int iAmount, 
-        @WebParam(mode = WebParam.Mode.INOUT, name = "ENVELOPE_HEADER", header = true)
-        Holder<String> envelopeHeader);
+            @WebParam(name = "iAmount") int iAmount,
+            @WebParam(mode = WebParam.Mode.INOUT, name = "ENVELOPE_HEADER", header = true) Holder<String> envelopeHeader);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.etcd.cloud;
 
 import java.util.List;
@@ -48,7 +47,7 @@ public class EtcdWatchServiceDiscovery
         super(configuration);
 
         this.serversRef = new AtomicReference<>();
-        this.index = new AtomicLong(0);
+        this.index = new AtomicLong();
         this.servicePath = ObjectHelper.notNull(configuration.getServicePath(), "servicePath");
     }
 
@@ -61,8 +60,8 @@ public class EtcdWatchServiceDiscovery
         }
 
         return serversRef.get().stream()
-            .filter(s -> name.equalsIgnoreCase(s.getName()))
-            .collect(Collectors.toList());
+                .filter(s -> name.equalsIgnoreCase(s.getName()))
+                .collect(Collectors.toList());
     }
 
     // *************************************************************************
@@ -110,11 +109,11 @@ public class EtcdWatchServiceDiscovery
 
         try {
             getClient().get(servicePath)
-                .recursive()
-                .waitForChange(index.get())
-                .timeout(1, TimeUnit.SECONDS)
-                .send()
-                .addListener(this);
+                    .recursive()
+                    .waitForChange(index.get())
+                    .timeout(1, TimeUnit.SECONDS)
+                    .send()
+                    .addListener(this);
         } catch (Exception e) {
             throw new RuntimeCamelException(e);
         }

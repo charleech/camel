@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,32 +21,36 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * A series of tests to check the IP lookup operation.
  */
 public class DnsIpEndpointTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint resultEndpoint;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate template;
 
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    @Override
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:start").to("dns:ip").to("mock:result");
             }
         };
     }
 
     @Test
-    public void testNullIPRequests() throws Exception {
+    void testNullIPRequests() throws Exception {
         resultEndpoint.expectedMessageCount(0);
         try {
             template.sendBodyAndHeader("hello", "dns.domain", null);
@@ -58,7 +62,7 @@ public class DnsIpEndpointTest extends CamelTestSupport {
     }
 
     @Test
-    public void testEmptyIPRequests() throws Exception {
+    void testEmptyIPRequests() throws Exception {
         resultEndpoint.expectedMessageCount(0);
         try {
             template.sendBodyAndHeader("hello", "dns.domain", "");
@@ -70,11 +74,11 @@ public class DnsIpEndpointTest extends CamelTestSupport {
     }
 
     @Test
-    @Ignore("Run manually, performs DNS lookup to remote apache.org server")
-    public void testValidIPRequests() throws Exception {
+    @Disabled("Run manually, performs DNS lookup to remote apache.org server")
+    void testValidIPRequests() throws Exception {
         resultEndpoint.expectedMessageCount(1);
 
-        resultEndpoint.expectedBodiesReceived("140.211.11.131");
+        resultEndpoint.expectedBodiesReceived("40.79.78.1");
 
         template.sendBodyAndHeader("hello", "dns.domain", "www.apache.org");
         resultEndpoint.assertIsSatisfied();

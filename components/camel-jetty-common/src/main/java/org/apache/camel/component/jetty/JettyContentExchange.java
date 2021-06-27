@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ public interface JettyContentExchange {
     void setRequestContent(String data, String charset) throws UnsupportedEncodingException;
 
     void setRequestContent(InputStream ins);
-    
+
     void setRequestContent(InputStream ins, int contentLength);
 
     void addRequestHeader(String key, String s);
@@ -57,7 +57,7 @@ public interface JettyContentExchange {
     void send(HttpClient client) throws IOException;
 
     // Methods to retrieve the response
-    
+
     byte[] getBody();
 
     String getUrl();

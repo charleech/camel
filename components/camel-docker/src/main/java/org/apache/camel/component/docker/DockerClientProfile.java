@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -142,9 +142,13 @@ public class DockerClientProfile {
 
     public String toUrl() throws DockerException {
         ObjectHelper.notNull(this.host, "host");
-        ObjectHelper.notNull(this.port, "port");
 
-        return ((this.socket) ? "unix" : "tcp") + "://" + host + ":" + port;
+        if (this.socket != null && this.socket) {
+            return String.format("unix://%s", host);
+        }
+
+        ObjectHelper.notNull(this.port, "port");
+        return String.format("tcp://%s:%d", host, port);
     }
 
     public Boolean isTlsVerify() {
@@ -203,7 +207,7 @@ public class DockerClientProfile {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        DockerClientProfile other = (DockerClientProfile)obj;
+        DockerClientProfile other = (DockerClientProfile) obj;
         if (certPath == null) {
             if (other.certPath != null) {
                 return false;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,14 @@ package org.apache.camel.component.ahc;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AhcProducePostDoWhileTest extends BaseAhcTest {
 
     @Test
     public void testAhcDoWhile() throws Exception {
-        getMockEndpoint("mock:line").expectedBodiesReceived("Bye World", "Bye Bye World", "Bye Bye Bye World", "Bye Bye Bye Bye World");
+        getMockEndpoint("mock:line").expectedBodiesReceived("Bye World", "Bye Bye World", "Bye Bye Bye World",
+                "Bye Bye Bye Bye World");
         getMockEndpoint("mock:result").expectedBodiesReceived("done");
 
         template.requestBody("direct:start", "World", String.class);
@@ -38,14 +39,14 @@ public class AhcProducePostDoWhileTest extends BaseAhcTest {
             @Override
             public void configure() throws Exception {
                 from("direct:start").streamCaching()
-                    .loopDoWhile(body().isNotEqualTo("done"))
-                        .to(getAhcEndpointUri())
-                        .to("mock:line")
-                        .filter(exchangeProperty(Exchange.LOOP_INDEX).isEqualTo(3))
-                            .setBody().constant("done")
+                        .loopDoWhile(body().isNotEqualTo("done"))
+                            .to(getAhcEndpointUri())
+                            .to("mock:line")
+                            .filter(exchangeProperty(Exchange.LOOP_INDEX).isEqualTo(3))
+                                .setBody().constant("done")
+                            .end()
                         .end()
-                    .end()
-                    .to("mock:result");
+                        .to("mock:result");
 
                 from(getTestServerEndpointUri())
                         .transform(simple("Bye ${body}"));

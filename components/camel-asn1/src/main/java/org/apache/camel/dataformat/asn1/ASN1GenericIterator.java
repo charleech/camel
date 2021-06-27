@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ public class ASN1GenericIterator<T> implements Iterator<T>, Closeable {
 
     public ASN1GenericIterator(Class<T> clazz, InputStream inputStream) {
         if (inputStream instanceof ASN1InputStream) {
-            this.asn1InputStream = (ASN1InputStream)inputStream;
+            this.asn1InputStream = (ASN1InputStream) inputStream;
         } else {
             this.asn1InputStream = new ASN1InputStream(inputStream);
         }
@@ -67,7 +67,6 @@ public class ASN1GenericIterator<T> implements Iterator<T>, Closeable {
             }
             return availableDataInCurrentEntry;
         } catch (IOException exception) {
-            // Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }
@@ -88,7 +87,6 @@ public class ASN1GenericIterator<T> implements Iterator<T>, Closeable {
                 return null;
             }
         } catch (Throwable exception) {
-            // Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }

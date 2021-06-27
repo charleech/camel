@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,13 @@
  */
 package org.apache.camel.component.jasypt;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class MainTest extends Assert {
+public class MainTest {
 
     @Test
     public void testMainShowOptions() throws Exception {
-        Main.main(new String[]{});
+        Main.main(new String[] {});
     }
 
     @Test

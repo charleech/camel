@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,24 +18,27 @@ package org.apache.camel.component.snmp;
 
 import java.net.URI;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultPollingEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
-import org.snmp4j.CommandResponderEvent;
+import org.apache.camel.support.DefaultPollingEndpoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.snmp4j.PDU;
 import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.security.SecurityLevel;
 
 /**
- * The snmp component gives you the ability to poll SNMP capable devices or receiving traps.
+ * Receive traps and poll SNMP (Simple Network Management Protocol) capable devices.
  */
-@UriEndpoint(firstVersion = "2.1.0", scheme = "snmp", title = "SNMP", syntax = "snmp:host:port", consumerOnly = true, label = "monitoring")
+@UriEndpoint(firstVersion = "2.1.0", scheme = "snmp", title = "SNMP", syntax = "snmp:host:port",
+             category = { Category.MONITORING })
 public class SnmpEndpoint extends DefaultPollingEndpoint {
 
     public static final String DEFAULT_COMMUNITY = "public";
@@ -43,11 +46,15 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     public static final int DEFAULT_SNMP_RETRIES = 2;
     public static final int DEFAULT_SNMP_TIMEOUT = 1500;
 
+    private static final Logger LOG = LoggerFactory.getLogger(SnmpEndpoint.class);
+
     private transient String address;
 
-    @UriPath(description = "Hostname of the SNMP enabled device") @Metadata(required = true)
+    @UriPath(description = "Hostname of the SNMP enabled device")
+    @Metadata(required = true)
     private String host;
-    @UriPath(description = "Port number of the SNMP enabled device") @Metadata(required = true)
+    @UriPath(description = "Port number of the SNMP enabled device")
+    @Metadata(required = true)
     private Integer port;
     @UriParam(defaultValue = "udp", enums = "tcp,udp")
     private String protocol = "udp";
@@ -61,7 +68,7 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     private String snmpCommunity = DEFAULT_COMMUNITY;
     @UriParam
     private SnmpActionType type;
-    @UriParam(label = "consumer", defaultValue = "60000")
+    @UriParam(label = "consumer", defaultValue = "60000", javaType = "java.time.Duration")
     private long delay = 60000;
     @UriParam(defaultValue = "" + SecurityLevel.AUTH_PRIV, enums = "1,2,3", label = "security")
     private int securityLevel = SecurityLevel.AUTH_PRIV;
@@ -79,7 +86,7 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     private String snmpContextName;
     @UriParam
     private String snmpContextEngineId;
-    @UriParam(javaType = "java.lang.String")
+    @UriParam
     private OIDList oids = new OIDList();
     @UriParam(label = "consumer", defaultValue = "false")
     private boolean treeList;
@@ -94,6 +101,7 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
         super(uri, component);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         if (this.type == SnmpActionType.TRAP) {
             SnmpTrapConsumer answer = new SnmpTrapConsumer(this, processor);
@@ -108,23 +116,21 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
         }
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         if (this.type == SnmpActionType.TRAP) {
             return new SnmpTrapProducer(this);
         } else {
-            return new SnmpProducer(this);
+            // add the support: snmp walk (use snmp4j GET_NEXT)
+            return new SnmpProducer(this, this.type);
         }
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     /**
      * creates an exchange for the given message
      *
-     * @param pdu the pdu
-     * @return an exchange
+     * @param  pdu the pdu
+     * @return     an exchange
      */
     public Exchange createExchange(PDU pdu) {
         Exchange exchange = super.createExchange();
@@ -133,29 +139,17 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * creates an exchange for the given message
-     *
-     * @param pdu the pdu
-     * @param event a snmp4j CommandResponderEvent
-     * @return an exchange
-     */
-    public Exchange createExchange(PDU pdu, CommandResponderEvent event) {
-        Exchange exchange = super.createExchange();
-        exchange.setIn(new SnmpMessage(getCamelContext(), pdu, event));
-        return exchange;
-    }
-
-    /**
      * creates and configures the endpoint
      *
-     * @throws Exception if unable to setup connection
-     * @deprecated use {@link #start()} instead
+     * @throws     Exception if unable to setup connection
+     * @deprecated           use {@link #start()} instead
      */
     @Deprecated
     public void initiate() throws Exception {
         // noop
     }
 
+    @Override
     public long getDelay() {
         return delay;
     }
@@ -187,8 +181,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
 
     /**
      * Defines which values you are interested in. Please have a look at the Wikipedia to get a better understanding.
-     * You may provide a single OID or a coma separated list of OIDs.
-     * Example: oids="1.3.6.1.2.1.1.3.0,1.3.6.1.2.1.25.3.2.1.5.1,1.3.6.1.2.1.25.3.5.1.1.1,1.3.6.1.2.1.43.5.1.1.11.1"
+     * You may provide a single OID or a coma separated list of OIDs. Example:
+     * oids="1.3.6.1.2.1.1.3.0,1.3.6.1.2.1.25.3.2.1.5.1,1.3.6.1.2.1.25.3.5.1.1.1,1.3.6.1.2.1.43.5.1.1.11.1"
      */
     public void setOids(OIDList oids) {
         this.oids = oids;
@@ -260,8 +254,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     @Override
-    protected void doStart() throws Exception {
-        super.doStart();
+    protected void doInit() throws Exception {
+        super.doInit();
 
         URI uri = URI.create(getEndpointUri());
         String host = uri.getHost();
@@ -277,10 +271,9 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
             }
         }
 
-
         // set the address
         String address = String.format("%s:%s/%d", getProtocol(), host, port);
-        log.debug("Using snmp address {}", address);
+        LOG.debug("Using snmp address {}", address);
         setAddress(address);
     }
 
@@ -289,15 +282,14 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * Sets the security level for this target. The supplied security level must
-     * be supported by the security model dependent information associated with
-     * the security name set for this target.
+     * Sets the security level for this target. The supplied security level must be supported by the security model
+     * dependent information associated with the security name set for this target.
      * <p/>
-     * The value 1 means: No authentication and no encryption. Anyone can create and read messages with this security level
-     * The value 2 means: Authentication and no encryption. Only the one with the right authentication key can create
-     * messages with this security level, but anyone can read the contents of the message.
-     * The value 3 means: Authentication and encryption. Only the one with the right authentication key can create messages
-     * with this security level, and only the one with the right encryption/decryption key can read the contents of the message.
+     * The value 1 means: No authentication and no encryption. Anyone can create and read messages with this security
+     * level The value 2 means: Authentication and no encryption. Only the one with the right authentication key can
+     * create messages with this security level, but anyone can read the contents of the message. The value 3 means:
+     * Authentication and encryption. Only the one with the right authentication key can create messages with this
+     * security level, and only the one with the right encryption/decryption key can read the contents of the message.
      */
     public void setSecurityLevel(int securityLevel) {
         this.securityLevel = securityLevel;
@@ -319,8 +311,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * Authentication protocol to use if security level is set to enable authentication
-     * The possible values are: MD5, SHA1
+     * Authentication protocol to use if security level is set to enable authentication The possible values are: MD5,
+     * SHA1
      */
     public void setAuthenticationProtocol(String authenticationProtocol) {
         this.authenticationProtocol = authenticationProtocol;
@@ -332,8 +324,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
 
     /**
      * The authentication passphrase. If not <code>null</code>, <code>authenticationProtocol</code> must also be not
-     * <code>null</code>. RFC3414 11.2 requires passphrases to have a minimum length of 8 bytes.
-     * If the length of <code>authenticationPassphrase</code> is less than 8 bytes an <code>IllegalArgumentException</code> is thrown.
+     * <code>null</code>. RFC3414 11.2 requires passphrases to have a minimum length of 8 bytes. If the length of
+     * <code>authenticationPassphrase</code> is less than 8 bytes an <code>IllegalArgumentException</code> is thrown.
      */
     public void setAuthenticationPassphrase(String authenticationPassphrase) {
         this.authenticationPassphrase = authenticationPassphrase;
@@ -344,7 +336,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * The privacy protocol ID to be associated with this user. If set to <code>null</code>, this user only supports unencrypted messages.
+     * The privacy protocol ID to be associated with this user. If set to <code>null</code>, this user only supports
+     * unencrypted messages.
      */
     public void setPrivacyProtocol(String privacyProtocol) {
         this.privacyProtocol = privacyProtocol;
@@ -355,8 +348,8 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * The privacy passphrase. If not <code>null</code>, <code>privacyProtocol</code> must also be not <code>null</code>.
-     * RFC3414 11.2 requires passphrases to have a minimum length of 8 bytes. If the length of
+     * The privacy passphrase. If not <code>null</code>, <code>privacyProtocol</code> must also be not
+     * <code>null</code>. RFC3414 11.2 requires passphrases to have a minimum length of 8 bytes. If the length of
      * <code>authenticationPassphrase</code> is less than 8 bytes an <code>IllegalArgumentException</code> is thrown.
      */
     public void setPrivacyPassphrase(String privacyPassphrase) {
@@ -390,8 +383,7 @@ public class SnmpEndpoint extends DefaultPollingEndpoint {
     }
 
     /**
-     * Sets the flag whether the scoped PDU will be displayed as the list
-     * if it has child elements in its tree
+     * Sets the flag whether the scoped PDU will be displayed as the list if it has child elements in its tree
      */
     public void setTreeList(boolean treeList) {
         this.treeList = treeList;

@@ -23,26 +23,21 @@
     <parent>
         <artifactId>components</artifactId>
         <groupId>org.apache.camel</groupId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>camel-rss</artifactId>
     <packaging>jar</packaging>
     <name>Camel :: RSS</name>
     <description>Camel RSS support</description>
-  
+
     <properties>
-        <camel.osgi.export.pkg>org.apache.camel.component.rss.*;${camel.osgi.version},org.apache.camel.dataformat.rss.*</camel.osgi.export.pkg>
-        <camel.osgi.export.service>
-            org.apache.camel.spi.ComponentResolver;component=rss,
-            org.apache.camel.spi.DataFormatResolver;dataformat=rss
-        </camel.osgi.export.service>
     </properties>
- 
+
     <dependencies>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-support</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -52,10 +47,10 @@
                     <groupId>org.apache.abdera</groupId>
                     <artifactId>abdera-extensions-main</artifactId>
                 </exclusion>
-            </exclusions>      
+            </exclusions>
         </dependency>
         <dependency>
-            <groupId>rome</groupId>
+            <groupId>com.rometools</groupId>
             <artifactId>rome</artifactId>
             <version>${rome-version}</version>
         </dependency>
@@ -63,17 +58,7 @@
         <!-- test dependencies -->
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test</artifactId>      
-            <scope>test</scope>
-        </dependency>          
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <artifactId>camel-test-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -82,8 +67,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -104,5 +89,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
 </project>

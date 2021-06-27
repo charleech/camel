@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,10 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 public class ElsqlConsumer extends SqlConsumer {
 
-    public ElsqlConsumer(DefaultSqlEndpoint endpoint, Processor processor, NamedParameterJdbcTemplate namedJdbcTemplate, String query, SqlParameterSource parameterSource,
+    public ElsqlConsumer(DefaultSqlEndpoint endpoint, Processor processor, NamedParameterJdbcTemplate namedJdbcTemplate,
+                         String query, SqlParameterSource parameterSource,
                          SqlPrepareStatementStrategy sqlPrepareStatementStrategy, SqlProcessingStrategy sqlProcessingStrategy) {
-        super(endpoint, processor, namedJdbcTemplate, query, parameterSource, sqlPrepareStatementStrategy, sqlProcessingStrategy);
+        super(endpoint, processor, namedJdbcTemplate, query, parameterSource, sqlPrepareStatementStrategy,
+              sqlProcessingStrategy);
     }
 }

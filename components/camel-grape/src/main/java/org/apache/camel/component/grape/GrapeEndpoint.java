@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.List;
 import groovy.grape.Grape;
 import groovy.lang.Closure;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -32,9 +33,10 @@ import org.apache.camel.support.DefaultEndpoint;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
- * The grape component allows you to fetch, load and manage additional jars when CamelContext is running.
+ * Fetch, load and manage additional jars dynamically after Camel Context was started.
  */
-@UriEndpoint(firstVersion = "2.16.0", scheme = "grape", syntax = "grape:defaultCoordinates", title = "Grape", producerOnly = true, label = "management,deployment")
+@UriEndpoint(firstVersion = "2.16.0", scheme = "grape", syntax = "grape:defaultCoordinates", title = "Grape",
+             producerOnly = true, category = { Category.MANAGEMENT, Category.DEPLOYMENT })
 public class GrapeEndpoint extends DefaultEndpoint {
 
     @UriPath(description = "Maven coordinates to use as default to grab if the message body is empty.")
@@ -52,7 +54,7 @@ public class GrapeEndpoint extends DefaultEndpoint {
         return DefaultGroovyMethods.each(patchesRepository.listPatches(), new Closure<Object>(null, null) {
             public void doCall(String it) {
                 MavenCoordinates coordinates = MavenCoordinates.parseMavenCoordinates(it);
-                LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>(5);
+                LinkedHashMap<String, Object> map = new LinkedHashMap<>(5);
                 map.put("classLoader", classLoader);
                 map.put("group", coordinates.getGroupId());
                 map.put("module", coordinates.getArtifactId());
@@ -76,11 +78,6 @@ public class GrapeEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) {
         throw new UnsupportedOperationException("Grape component supports only the producer side of the route.");
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     public String getDefaultCoordinates() {

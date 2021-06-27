@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,24 +16,19 @@
  */
 package org.apache.camel.component.undertow.rest;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.undertow.BaseUndertowTest;
 import org.apache.camel.component.undertow.DefaultUndertowHttpBinding;
 import org.apache.camel.component.undertow.UndertowHttpBinding;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RestUndertowHttpGetWildcardsTest extends BaseUndertowTest {
-    
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        UndertowHttpBinding binding = new DefaultUndertowHttpBinding();
-        jndi.bind("mybinding", binding);
-        return jndi;
-    }
+
+    @BindToRegistry("mybinding")
+    private UndertowHttpBinding binding = new DefaultUndertowHttpBinding();
 
     @Test
     public void testProducerGet() throws Exception {
@@ -53,28 +48,16 @@ public class RestUndertowHttpGetWildcardsTest extends BaseUndertowTest {
             @Override
             public void configure() throws Exception {
                 // configure to use undertow on localhost with the given port
-                restConfiguration().component("undertow").host("localhost").port(getPort()).endpointProperty("undertowHttpBinding", "#mybinding");
+                restConfiguration().component("undertow").host("localhost").port(getPort());
 
                 // use the rest DSL to define the rest services
-                rest("/users/")
-                    .get("{id}/{query}")
-                        .route()
-                        .to("log:query")
-                        .process(new Processor() {
-                            public void process(Exchange exchange) throws Exception {
-                                String id = exchange.getIn().getHeader("id", String.class);
-                                exchange.getOut().setBody(id + ";Goofy");
-                            }
-                        }).endRest()
-                    .get("{id}/basic")
-                        .route()
-                        .to("log:input")
-                        .process(new Processor() {
-                            public void process(Exchange exchange) throws Exception {
-                                String id = exchange.getIn().getHeader("id", String.class);
-                                exchange.getOut().setBody(id + ";Donald Duck");
-                            }
-                        }).endRest();
+                rest("/users/").get("{id}/{query}").route().to("log:query").process(exchange -> {
+                    String id = exchange.getIn().getHeader("id", String.class);
+                    exchange.getMessage().setBody(id + ";Goofy");
+                }).endRest().get("{id}/basic").route().to("log:input").process(exchange -> {
+                    String id = exchange.getIn().getHeader("id", String.class);
+                    exchange.getMessage().setBody(id + ";Donald Duck");
+                }).endRest();
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,25 +23,28 @@ import org.xml.sax.InputSource;
 import com.thaiopensource.relaxng.SchemaFactory;
 import com.thaiopensource.validate.Schema;
 import com.thaiopensource.xml.sax.Jaxp11XMLReaderCreator;
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.util.StringHelper;
 
 /**
- * Validates the payload of a message using RelaxNG Syntax using Jing library.
+ * Validate XML against a RelaxNG schema (XML Syntax or Compact Syntax) using Jing library.
  */
-@UriEndpoint(firstVersion = "1.1.0", scheme = "jing", title = "Jing", syntax = "jing:resourceUri", producerOnly = true, label = "validation")
+@UriEndpoint(firstVersion = "1.1.0", scheme = "jing", title = "Jing", syntax = "jing:resourceUri", producerOnly = true,
+             category = { Category.VALIDATION })
 public class JingEndpoint extends DefaultEndpoint {
 
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String resourceUri;
     @UriParam
     private boolean compactSyntax;
@@ -66,17 +69,13 @@ public class JingEndpoint extends DefaultEndpoint {
         throw new UnsupportedOperationException("This endpoint does not support consumer");
     }
 
-    @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
     public String getResourceUri() {
         return resourceUri;
     }
 
     /**
-     * URL to a local resource on the classpath or a full URL to a remote resource or resource on the file system which contains the schema to validate against.
+     * URL to a local resource on the classpath or a full URL to a remote resource or resource on the file system which
+     * contains the schema to validate against.
      */
     public void setResourceUri(String resourceUri) {
         this.resourceUri = resourceUri;
@@ -89,8 +88,8 @@ public class JingEndpoint extends DefaultEndpoint {
     /**
      * Whether to validate using RelaxNG compact syntax or not.
      * <p/>
-     * By default this is <tt>false</tt> for using RelaxNG XML Syntax (rng)
-     * And <tt>true</tt> is for using  RelaxNG Compact Syntax (rnc)
+     * By default this is <tt>false</tt> for using RelaxNG XML Syntax (rng) And <tt>true</tt> is for using RelaxNG
+     * Compact Syntax (rnc)
      */
     public void setCompactSyntax(boolean compactSyntax) {
         this.compactSyntax = compactSyntax;
@@ -121,9 +120,24 @@ public class JingEndpoint extends DefaultEndpoint {
     }
 
     @Override
+    protected void doInit() throws Exception {
+        super.doInit();
+
+        if (ResourceHelper.isClasspathUri(resourceUri)) {
+            initialize();
+        }
+    }
+
+    @Override
     protected void doStart() throws Exception {
         super.doStart();
 
+        if (!ResourceHelper.isClasspathUri(resourceUri)) {
+            initialize();
+        }
+    }
+
+    private void initialize() throws Exception {
         if (inputSource == null) {
             StringHelper.notEmpty(resourceUri, "resourceUri", this);
             InputStream inputStream = ResourceHelper.resolveMandatoryResourceAsInputStream(getCamelContext(), resourceUri);

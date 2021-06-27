@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecBinding;
 import org.apache.camel.component.exec.ExecCommand;
@@ -29,6 +30,7 @@ import org.apache.camel.component.exec.ExecResult;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import static org.apache.camel.component.exec.impl.ExecParseUtils.splitToWhiteSpaceSeparatedTokens;
 
 /**
@@ -40,6 +42,7 @@ public class DefaultExecBinding implements ExecBinding {
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultExecBinding.class);
 
+    @Override
     @SuppressWarnings("unchecked")
     public ExecCommand readInput(Exchange exchange, ExecEndpoint endpoint) {
         ObjectHelper.notNull(exchange, "exchange");
@@ -51,7 +54,10 @@ public class DefaultExecBinding implements ExecBinding {
         String dir = getAndRemoveHeader(exchange.getIn(), EXEC_COMMAND_WORKING_DIR, endpoint.getWorkingDir(), String.class);
         long timeout = getAndRemoveHeader(exchange.getIn(), EXEC_COMMAND_TIMEOUT, endpoint.getTimeout(), Long.class);
         String outFilePath = getAndRemoveHeader(exchange.getIn(), EXEC_COMMAND_OUT_FILE, endpoint.getOutFile(), String.class);
-        boolean useStderrOnEmptyStdout = getAndRemoveHeader(exchange.getIn(), EXEC_USE_STDERR_ON_EMPTY_STDOUT, endpoint.isUseStderrOnEmptyStdout(), Boolean.class);
+        boolean useStderrOnEmptyStdout = getAndRemoveHeader(exchange.getIn(), EXEC_USE_STDERR_ON_EMPTY_STDOUT,
+                endpoint.isUseStderrOnEmptyStdout(), Boolean.class);
+        LoggingLevel commandLogLevel = getAndRemoveHeader(exchange.getIn(), EXEC_COMMAND_LOG_LEVEL,
+                endpoint.getCommandLogLevel(), LoggingLevel.class);
         InputStream input = exchange.getIn().getBody(InputStream.class);
 
         // If the args is a list of strings already..
@@ -72,7 +78,7 @@ public class DefaultExecBinding implements ExecBinding {
         }
 
         File outFile = outFilePath == null ? null : new File(outFilePath);
-        return new ExecCommand(cmd, argsList, dir, timeout, input, outFile, useStderrOnEmptyStdout);
+        return new ExecCommand(cmd, argsList, dir, timeout, input, outFile, useStderrOnEmptyStdout, commandLogLevel);
     }
 
     private boolean isListOfStrings(Object o) {
@@ -83,7 +89,7 @@ public class DefaultExecBinding implements ExecBinding {
             return false;
         }
         @SuppressWarnings("rawtypes")
-        List argsList = (List)o;
+        List argsList = (List) o;
         for (Object s : argsList) {
             if (s.getClass() != String.class) {
                 return false;
@@ -92,6 +98,7 @@ public class DefaultExecBinding implements ExecBinding {
         return true;
     }
 
+    @Override
     public void writeOutput(Exchange exchange, ExecResult result) {
         ObjectHelper.notNull(exchange, "exchange");
         ObjectHelper.notNull(result, "result");
@@ -105,13 +112,12 @@ public class DefaultExecBinding implements ExecBinding {
     }
 
     /**
-     * Write the {@link ExecResult} in the message body. Write the stderr and
-     * the exit value for convenience in the message headers. <br>
-     * The stdout and/or resultFile should be accessible using a converter or
-     * using the result object directly.
+     * Write the {@link ExecResult} in the message body. Write the stderr and the exit value for convenience in the
+     * message headers. <br>
+     * The stdout and/or resultFile should be accessible using a converter or using the result object directly.
      * 
      * @param message a Camel message
-     * @param result an {@link ExecResult} instance
+     * @param result  an {@link ExecResult} instance
      */
     protected void writeOutputInMessage(Message message, ExecResult result) {
         message.setHeader(EXEC_STDERR, result.getStderr());
@@ -120,8 +126,8 @@ public class DefaultExecBinding implements ExecBinding {
     }
 
     /**
-     * Gets and removes the <code> <code>headerName</code> header form the input
-     * <code>message</code> (the header will not be propagated)
+     * Gets and removes the <code> <code>headerName</code> header form the input <code>message</code> (the header will
+     * not be propagated)
      */
     protected <T> T getAndRemoveHeader(Message message, String headerName, T defaultValue, Class<T> headerType) {
         T h = message.getHeader(headerName, defaultValue, headerType);

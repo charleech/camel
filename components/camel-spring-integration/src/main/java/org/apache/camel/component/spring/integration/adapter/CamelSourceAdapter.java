@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,8 +35,8 @@ import org.springframework.messaging.MessageHandler;
 import org.springframework.messaging.MessageHeaders;
 
 /**
- * A CamelContext will be injected into CameSourceAdapter which will
- * let Spring Integration channel talk to the CamelContext certain endpoint
+ * A CamelContext will be injected into CameSourceAdapter which will let Spring Integration channel talk to the
+ * CamelContext certain endpoint
  */
 public class CamelSourceAdapter extends AbstractCamelAdapter implements InitializingBean, DisposableBean {
     private static final Logger LOG = LoggerFactory.getLogger(CamelSourceAdapter.class);
@@ -48,20 +48,22 @@ public class CamelSourceAdapter extends AbstractCamelAdapter implements Initiali
     private final AtomicBoolean initialized = new AtomicBoolean();
 
     public void setRequestChannel(MessageChannel channel) {
-        requestChannel = channel;        
+        requestChannel = channel;
     }
 
     public MessageChannel getChannel() {
         return requestChannel;
     }
 
-    public void setReplyChannel(DirectChannel channel) {        
+    public void setReplyChannel(DirectChannel channel) {
         replyChannel = channel;
     }
 
     protected class ConsumerProcessor implements Processor {
+        @Override
         public void process(final Exchange exchange) throws Exception {
-            org.springframework.messaging.Message<?> request = SpringIntegrationBinding.createSpringIntegrationMessage(exchange);
+            org.springframework.messaging.Message<?> request
+                    = SpringIntegrationBinding.createSpringIntegrationMessage(exchange);
 
             if (exchange.getPattern().isOutCapable()) {
                 exchange.getIn().getHeaders().put(MessageHeaders.REPLY_CHANNEL, replyChannel);
@@ -79,17 +81,19 @@ public class CamelSourceAdapter extends AbstractCamelAdapter implements Initiali
                     }
                 });
             }
-                 
+
             requestChannel.send(request);
         }
     }
 
+    @Override
     public final void afterPropertiesSet() throws Exception {
         if (initialized.compareAndSet(false, true)) {
             initialize();
         }
     }
 
+    @Override
     public void destroy() throws Exception {
         if (consumer != null) {
             ServiceHelper.stopAndShutdownService(consumer);

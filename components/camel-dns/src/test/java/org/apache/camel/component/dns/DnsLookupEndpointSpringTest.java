@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,26 +25,29 @@ import org.apache.camel.Predicate;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.xbill.DNS.Record;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * A set of test cases to make DNS lookups.
  */
 public class DnsLookupEndpointSpringTest extends CamelSpringTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint resultEndpoint;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate template;
 
     @Test
-    public void testDNSWithNoHeaders() throws Exception {
+    void testDNSWithNoHeaders() throws Exception {
         resultEndpoint.expectedMessageCount(0);
         try {
             template.sendBody("hello");
@@ -56,20 +59,20 @@ public class DnsLookupEndpointSpringTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testDNSWithEmptyNameHeader() throws Exception {
+    void testDNSWithEmptyNameHeader() throws Exception {
         resultEndpoint.expectedMessageCount(0);
         try {
             template.sendBodyAndHeader("hello", "dns.name", "");
             fail("Should have thrown exception");
         } catch (Throwable t) {
-            assertTrue(t.toString(), t.getCause() instanceof IllegalArgumentException);
+            assertTrue(t.getCause() instanceof IllegalArgumentException, t.toString());
         }
         resultEndpoint.assertIsSatisfied();
     }
 
     @Test
-    @Ignore("Testing behind nat produces timeouts")
-    public void testDNSWithNameHeader() throws Exception {
+    @Disabled("Testing behind nat produces timeouts")
+    void testDNSWithNameHeader() throws Exception {
         resultEndpoint.expectedMessageCount(1);
         resultEndpoint.expectedMessagesMatches(new Predicate() {
             public boolean matches(Exchange exchange) {
@@ -84,8 +87,8 @@ public class DnsLookupEndpointSpringTest extends CamelSpringTestSupport {
     }
 
     @Test
-    @Ignore("Testing behind nat produces timeouts")
-    public void testDNSWithNameHeaderAndType() throws Exception {
+    @Disabled("Testing behind nat produces timeouts")
+    void testDNSWithNameHeaderAndType() throws Exception {
         resultEndpoint.expectedMessageCount(1);
         resultEndpoint.expectedMessagesMatches(new Predicate() {
             public boolean matches(Exchange exchange) {

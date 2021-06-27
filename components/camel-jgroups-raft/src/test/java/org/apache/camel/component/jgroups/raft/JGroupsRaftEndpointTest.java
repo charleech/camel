@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,15 @@ import java.io.DataOutput;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jgroups.raft.utils.NopStateMachine;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.raft.RaftHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class JGroupsRaftEndpointTest extends CamelTestSupport {
 
@@ -35,7 +38,8 @@ public class JGroupsRaftEndpointTest extends CamelTestSupport {
     static final String CLUSTER_NAME1 = "JGroupsraftEndpointTest1";
     static final String CONFIGURED_ENDPOINT_URI1 = "jgroups-raft:" + CLUSTER_NAME1 + "?raftHandle=#rh";
     static final String CLUSTER_NAME2 = "JGroupsraftEndpointTest2";
-    static final String CONFIGURED_ENDPOINT_URI2 = "jgroups-raft:" + CLUSTER_NAME2 + "?stateMachine=#sm&raftId=C&channelProperties=raftC.xml";
+    static final String CONFIGURED_ENDPOINT_URI2
+            = "jgroups-raft:" + CLUSTER_NAME2 + "?stateMachine=#sm&raftId=C&channelProperties=raftC.xml";
 
     StateMachine sm = new StateMachine() {
         @Override
@@ -55,13 +59,11 @@ public class JGroupsRaftEndpointTest extends CamelTestSupport {
     };
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
+    protected void bindToRegistry(Registry registry) throws Exception {
         JChannel ch = new JChannel("raftB.xml").name("B");
         RaftHandle handle = new RaftHandle(ch, new NopStateMachine()).raftId("B");
-        JndiRegistry registry = new JndiRegistry(createJndiContext());
         registry.bind("rh", handle);
         registry.bind("sm", sm);
-        return registry;
     }
 
     @Override

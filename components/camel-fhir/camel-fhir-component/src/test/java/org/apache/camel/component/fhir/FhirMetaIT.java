@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.fhir;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.fhir.api.ExtraParameters;
 import org.apache.camel.component.fhir.internal.FhirApiCollection;
@@ -25,13 +26,16 @@ import org.apache.camel.component.fhir.internal.FhirMetaApiMethod;
 import org.hl7.fhir.dstu3.model.Meta;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.instance.model.api.IBaseMetaType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 /**
- * Test class for {@link org.apache.camel.component.fhir.api.FhirMeta} APIs.
- * The class source won't be generated again if the generator MOJO finds it under src/test/java.
+ * Test class for {@link org.apache.camel.component.fhir.api.FhirMeta} APIs. The class source won't be generated again
+ * if the generator MOJO finds it under src/test/java.
  */
 public class FhirMetaIT extends AbstractFhirTestSupport {
 
@@ -54,7 +58,7 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         IBaseMetaType result = requestBodyAndHeaders("direct://ADD", null, headers);
 
         LOG.debug("add: " + result);
-        assertNotNull("add result", result);
+        assertNotNull(result, "add result");
         assertEquals(1, result.getTag().size());
     }
 
@@ -66,11 +70,7 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         Meta inMeta = new Meta();
         inMeta.addTag().setSystem("urn:system1").setCode("urn:code1");
         // add meta
-        meta = fhirClient.meta().
-                                add().
-                                onResource(this.patient.getIdElement()).
-                                meta(inMeta).
-                                execute();
+        meta = fhirClient.meta().add().onResource(this.patient.getIdElement()).meta(inMeta).execute();
         assertEquals(1, meta.getTag().size());
 
         //delete meta
@@ -83,7 +83,7 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         IBaseMetaType result = requestBodyAndHeaders("direct://DELETE", null, headers);
 
         LOG.debug("delete: " + result);
-        assertNotNull("delete result", result);
+        assertNotNull(result, "delete result");
         assertEquals(0, result.getTag().size());
     }
 
@@ -98,7 +98,7 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         IBaseMetaType result = requestBodyAndHeaders("direct://GET_FROM_RESOURCE", null, headers);
 
         LOG.debug("getFromResource: " + result);
-        assertNotNull("getFromResource result", result);
+        assertNotNull(result, "getFromResource result");
         assertEquals(0, result.getTag().size());
     }
 
@@ -106,7 +106,7 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
     public void testGetFromServer() throws Exception {
         // using Class message body for single parameter "metaType"
         IBaseMetaType result = requestBody("direct://GET_FROM_SERVER", Meta.class);
-        assertNotNull("getFromServer result", result);
+        assertNotNull(result, "getFromServer result");
         LOG.debug("getFromServer: " + result);
     }
 
@@ -116,12 +116,12 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         // parameter type is Class
         headers.put("CamelFhir.metaType", Meta.class);
         // parameter type is String
-        headers.put("CamelFhir.theResourceName", "Patient");
+        headers.put("CamelFhir.resourceType", "Patient");
 
         IBaseMetaType result = requestBodyAndHeaders("direct://GET_FROM_TYPE", null, headers);
 
         LOG.debug("getFromType: " + result);
-        assertNotNull("getFromType result", result);
+        assertNotNull(result, "getFromType result");
     }
 
     @Test
@@ -130,13 +130,13 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
         // parameter type is Class
         headers.put("CamelFhir.metaType", Meta.class);
         // parameter type is String
-        headers.put("CamelFhir.theResourceName", "Patient");
+        headers.put("CamelFhir.resourceType", "Patient");
         headers.put(ExtraParameters.PREFER_RESPONSE_TYPE.getHeaderName(), Patient.class);
 
         Meta result = requestBodyAndHeaders("direct://GET_FROM_TYPE", null, headers);
 
         LOG.debug("getFromType: " + result);
-        assertNotNull("getFromType result", result);
+        assertNotNull(result, "getFromType result");
     }
 
     @Override
@@ -145,23 +145,23 @@ public class FhirMetaIT extends AbstractFhirTestSupport {
             public void configure() {
                 // test route for add
                 from("direct://ADD")
-                    .to("fhir://" + PATH_PREFIX + "/add");
+                        .to("fhir://" + PATH_PREFIX + "/add");
 
                 // test route for delete
                 from("direct://DELETE")
-                    .to("fhir://" + PATH_PREFIX + "/delete");
+                        .to("fhir://" + PATH_PREFIX + "/delete");
 
                 // test route for getFromResource
                 from("direct://GET_FROM_RESOURCE")
-                    .to("fhir://" + PATH_PREFIX + "/getFromResource");
+                        .to("fhir://" + PATH_PREFIX + "/getFromResource");
 
                 // test route for getFromServer
                 from("direct://GET_FROM_SERVER")
-                    .to("fhir://" + PATH_PREFIX + "/getFromServer?inBody=metaType");
+                        .to("fhir://" + PATH_PREFIX + "/getFromServer?inBody=metaType");
 
                 // test route for getFromType
                 from("direct://GET_FROM_TYPE")
-                    .to("fhir://" + PATH_PREFIX + "/getFromType");
+                        .to("fhir://" + PATH_PREFIX + "/getFromType");
 
             }
         };

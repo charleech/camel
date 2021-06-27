@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.apache.camel.http.common;
 
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
+import org.apache.camel.support.DefaultHeaderFilterStrategy;
 
 public class HttpHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
-    
+
     public HttpHeaderFilterStrategy() {
-        initialize();  
+        initialize();
     }
 
     protected void initialize() {
@@ -39,12 +39,12 @@ public class HttpHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
         getOutFilter().add("upgrade");
         getOutFilter().add("via");
         getOutFilter().add("warning");
-        
+
         setLowerCase(true);
-        
+
         // filter headers begin with "Camel" or "org.apache.camel"
         // must ignore case for Http based transports
-        setOutFilterPattern("(?i)(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
-        setInFilterPattern("(?i)(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
+        setOutFilterStartsWith(CAMEL_FILTER_STARTS_WITH);
+        setInFilterStartsWith(CAMEL_FILTER_STARTS_WITH);
     }
 }

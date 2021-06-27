@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,7 @@ public interface JaxbNamespacePrefixMapper {
      * <p/>
      * The key is the namespace, the value is the prefix to use.
      *
-     * @param namespaces  namespace mappings
+     * @param namespaces namespace mappings
      */
     void setNamespaces(Map<String, String> namespaces);
 

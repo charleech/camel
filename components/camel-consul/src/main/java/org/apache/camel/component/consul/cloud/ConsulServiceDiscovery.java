@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.consul.cloud;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,16 +36,20 @@ import org.apache.camel.impl.cloud.DefaultServiceDiscovery;
 import org.apache.camel.impl.cloud.DefaultServiceHealth;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.function.Suppliers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ConsulServiceDiscovery extends DefaultServiceDiscovery {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
+
     private final Supplier<Consul> client;
     private final QueryOptions queryOptions;
 
     public ConsulServiceDiscovery(ConsulConfiguration configuration) throws Exception {
-        this.client = Suppliers.memorize(
-            () -> configuration.createConsulClient(getCamelContext()),
-            e -> RuntimeCamelException.wrapRuntimeCamelException(e)
-        );
+        this.client = Suppliers.memorize(() -> configuration.createConsulClient(getCamelContext()),
+                e -> {
+                    throw RuntimeCamelException.wrapRuntimeCamelException(e);
+                });
 
         ImmutableQueryOptions.Builder builder = ImmutableQueryOptions.builder();
         ObjectHelper.ifNotEmpty(configuration.getDatacenter(), builder::datacenter);
@@ -55,16 +60,15 @@ public final class ConsulServiceDiscovery extends DefaultServiceDiscovery {
 
     @Override
     public List<ServiceDefinition> getServices(String name) {
-        List<CatalogService> services = client.get().catalogClient()
-            .getService(name, queryOptions)
-            .getResponse();
-        List<ServiceHealth> healths = client.get().healthClient()
-            .getAllServiceInstances(name, queryOptions)
-            .getResponse();
+        try {
+            List<CatalogService> services = client.get().catalogClient().getService(name, queryOptions).getResponse();
+            List<ServiceHealth> healths = client.get().healthClient().getAllServiceInstances(name, queryOptions).getResponse();
 
-        return services.stream()
-            .map(service -> newService(name, service, healths))
-            .collect(Collectors.toList());
+            return services.stream().map(service -> newService(name, service, healths)).collect(Collectors.toList());
+        } catch (Exception e) {
+            LOGGER.warn("Error getting '{}' services from consul.", name, e);
+            return Collections.emptyList();
+        }
     }
 
     // *************************
@@ -72,9 +76,7 @@ public final class ConsulServiceDiscovery extends DefaultServiceDiscovery {
     // *************************
 
     private boolean isHealthy(ServiceHealth serviceHealth) {
-        return serviceHealth.getChecks().stream().allMatch(
-            check -> ObjectHelper.equal(check.getStatus(), "passing", true)
-        );
+        return serviceHealth.getChecks().stream().allMatch(check -> ObjectHelper.equal(check.getStatus(), "passing", true));
     }
 
     private ServiceDefinition newService(String serviceName, CatalogService service, List<ServiceHealth> serviceHealthList) {
@@ -82,9 +84,8 @@ public final class ConsulServiceDiscovery extends DefaultServiceDiscovery {
         ObjectHelper.ifNotEmpty(service.getServiceId(), val -> meta.put(ServiceDefinition.SERVICE_META_ID, val));
         ObjectHelper.ifNotEmpty(service.getServiceName(), val -> meta.put(ServiceDefinition.SERVICE_META_NAME, val));
         ObjectHelper.ifNotEmpty(service.getNode(), val -> meta.put("service.node", val));
+        ObjectHelper.ifNotEmpty(service.getServiceMeta(), meta::putAll);
 
-        // Consul < 1.0.7 does not have a concept of meta-data so meta is
-        // retrieved using tags
         List<String> tags = service.getServiceTags();
         if (tags != null) {
             for (String tag : service.getServiceTags()) {
@@ -97,22 +98,11 @@ public final class ConsulServiceDiscovery extends DefaultServiceDiscovery {
             }
         }
 
-        // From Consul => 1.0.7, a new meta data attribute has been introduced
-        // and it is now taken ito account
-        service.getServiceMeta().ifPresent(
-            serviceMeta -> serviceMeta.forEach(meta::put)
-        );
-
         return new DefaultServiceDefinition(
-            serviceName,
-            service.getServiceAddress(),
-            service.getServicePort(),
-            meta,
-            new DefaultServiceHealth(
-                serviceHealthList.stream()
-                    .filter(h -> ObjectHelper.equal(h.getService().getId(), service.getServiceId()))
-                    .allMatch(this::isHealthy)
-            )
-        );
+                serviceName, service.getServiceAddress(), service.getServicePort(), meta,
+                new DefaultServiceHealth(
+                        serviceHealthList.stream()
+                                .filter(h -> ObjectHelper.equal(h.getService().getId(), service.getServiceId()))
+                                .allMatch(this::isHealthy)));
     }
 }

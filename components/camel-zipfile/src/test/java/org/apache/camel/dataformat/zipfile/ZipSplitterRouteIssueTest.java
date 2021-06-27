@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,17 +15,20 @@
  * limitations under the License.
  */
 package org.apache.camel.dataformat.zipfile;
+
 import java.io.File;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 
 public class ZipSplitterRouteIssueTest extends CamelTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("target/zip");
         super.setUp();
@@ -39,7 +42,7 @@ public class ZipSplitterRouteIssueTest extends CamelTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testSplitterWithWrongFile() throws Exception {
         getMockEndpoint("mock:entry").expectedMessageCount(0);
@@ -47,7 +50,7 @@ public class ZipSplitterRouteIssueTest extends CamelTestSupport {
 
         //Send a file which is not exit
         template.sendBody("direct:decompressFiles", new File("src/test/resources/data"));
-        
+
         assertMockEndpointsSatisfied();
     }
 
@@ -57,9 +60,9 @@ public class ZipSplitterRouteIssueTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 errorHandler(deadLetterChannel("mock:errors"));
-                
+
                 from("direct:decompressFiles")
-                    .split(new ZipSplitter()).streaming().shareUnitOfWork()
+                        .split(new ZipSplitter()).streaming().shareUnitOfWork()
                         .to("log:entry")
                         .to("mock:entry");
             }

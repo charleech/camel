@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,20 @@
  */
 package org.apache.camel.component.kafka;
 
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
+import org.apache.camel.support.DefaultHeaderFilterStrategy;
 
 public class KafkaHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
 
     public KafkaHeaderFilterStrategy() {
-        initialize();  
+        initialize();
     }
 
     protected void initialize() {
         // filter out kafka record metadata
         getInFilter().add("org.apache.kafka.clients.producer.RecordMetadata");
 
-        // filter headers begin with "Camel" or "org.apache.camel"
-        setOutFilterPattern("(?i)(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
-        setInFilterPattern("(?i)(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
+        // filter headers beginning with "Camel" or "org.apache.camel" or "kafka."
+        setOutFilterStartsWith("Camel", "camel", "org.apache.camel.", "kafka.");
+        setInFilterStartsWith("Camel", "camel", "org.apache.camel.", "kafka.");
     }
 }

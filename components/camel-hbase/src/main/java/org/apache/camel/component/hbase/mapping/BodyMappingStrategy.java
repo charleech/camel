@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.apache.camel.Message;
 import org.apache.camel.component.hbase.model.HBaseData;
 
 /**
- * A {@link org.apache.camel.component.hbase.mapping.CellMappingStrategy} implementation.
- * It distinguishes between multiple cell, by reading headers with index suffix.
+ * A {@link org.apache.camel.component.hbase.mapping.CellMappingStrategy} implementation. It distinguishes between
+ * multiple cell, by reading headers with index suffix.
  * <p/>
  * In case of multiple headers:
  * <ul>
@@ -43,6 +43,7 @@ public class BodyMappingStrategy implements CellMappingStrategy {
     /**
      * Applies the cells to the {@link org.apache.camel.Exchange}.
      */
+    @Override
     public void applyGetResults(Message message, HBaseData data) {
         if (data == null) {
             return;
@@ -53,6 +54,7 @@ public class BodyMappingStrategy implements CellMappingStrategy {
     /**
      * Applies the cells to the {@link org.apache.camel.Exchange}.
      */
+    @Override
     public void applyScanResults(Message message, HBaseData data) {
         if (data == null) {
             return;

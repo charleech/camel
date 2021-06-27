@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,31 +19,40 @@ package org.apache.camel.component.olingo2;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
+import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.olingo2.internal.Olingo2ApiCollection;
 import org.apache.camel.component.olingo2.internal.Olingo2ApiName;
 import org.apache.camel.component.olingo2.internal.Olingo2Constants;
 import org.apache.camel.component.olingo2.internal.Olingo2PropertiesHelper;
+import org.apache.camel.spi.ExtendedPropertyConfigurerGetter;
+import org.apache.camel.spi.PropertyConfigurer;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.PropertyBindingSupport;
 import org.apache.camel.support.component.AbstractApiEndpoint;
 import org.apache.camel.support.component.ApiMethod;
 import org.apache.camel.support.component.ApiMethodPropertiesHelper;
 
 /**
- * Communicates with OData 2.0 services using Apache Olingo.
+ * Communicate with OData 2.0 services using Apache Olingo.
  */
-@UriEndpoint(firstVersion = "2.14.0", scheme = "olingo2", title = "Olingo2", syntax = "olingo2:apiName/methodName", label = "cloud")
+@UriEndpoint(firstVersion = "2.14.0", scheme = "olingo2", title = "Olingo2", syntax = "olingo2:apiName/methodName",
+             apiSyntax = "apiName/methodName",
+             category = { Category.CLOUD })
 public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2Configuration> {
 
     protected static final String RESOURCE_PATH_PROPERTY = "resourcePath";
     protected static final String RESPONSE_HANDLER_PROPERTY = "responseHandler";
     protected static final String SERVICE_URI_PROPERTY = "serviceUri";
+    protected static final String FILTER_ALREADY_SEEN = "filterAlreadySeen";
 
     private static final String KEY_PREDICATE_PROPERTY = "keyPredicate";
     private static final String QUERY_PARAMS_PROPERTY = "queryParams";
@@ -57,31 +66,26 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
     // unparsed variants
     private static final String UREAD_METHOD = "uread";
 
-    private final Set<String> endpointPropertyNames;
+    private Set<String> olingo2endpointPropertyNames;
 
     @UriParam
     private Olingo2Configuration configuration;
 
     private Olingo2AppWrapper apiProxy;
 
-    public Olingo2Endpoint(String uri, Olingo2Component component,
-                           Olingo2ApiName apiName, String methodName, Olingo2Configuration endpointConfiguration) {
-        super(uri, component, apiName, methodName, Olingo2ApiCollection.getCollection().getHelper(apiName), endpointConfiguration);
-
+    public Olingo2Endpoint(String uri, Olingo2Component component, Olingo2ApiName apiName, String methodName,
+                           Olingo2Configuration endpointConfiguration) {
+        super(uri, component, apiName, methodName, Olingo2ApiCollection.getCollection().getHelper(apiName),
+              endpointConfiguration);
         this.configuration = endpointConfiguration;
-
-        // get all endpoint property names
-        endpointPropertyNames = new HashSet<>(getPropertiesHelper().getValidEndpointProperties(configuration));
-        // avoid adding edm as queryParam
-        endpointPropertyNames.add(EDM_PROPERTY);
-        endpointPropertyNames.add(ENDPOINT_HTTP_HEADERS_PROPERTY);
-        endpointPropertyNames.add(SERVICE_URI_PROPERTY);
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new Olingo2Producer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         // make sure inBody is not set for consumers
         if (inBody != null) {
@@ -92,33 +96,86 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
             throw new IllegalArgumentException("Only read method is supported for consumer endpoints");
         }
         final Olingo2Consumer consumer = new Olingo2Consumer(this, processor);
-        // also set consumer.* properties
+        consumer.setSplitResult(configuration.isSplitResult());
         configureConsumer(consumer);
         return consumer;
     }
 
     @Override
     protected ApiMethodPropertiesHelper<Olingo2Configuration> getPropertiesHelper() {
-        return Olingo2PropertiesHelper.getHelper();
+        return Olingo2PropertiesHelper.getHelper(getCamelContext());
     }
 
+    @Override
     protected String getThreadProfileName() {
         return Olingo2Constants.THREAD_PROFILE_NAME;
     }
 
     @Override
     public void configureProperties(Map<String, Object> options) {
-        // handle individual query params
-        parseQueryParams(options);
+        // filter out options that are with $ as they are for query
+        Map<String, Object> query = new LinkedHashMap<>();
+        Map<String, Object> known = new LinkedHashMap<>();
+        options.forEach((k, v) -> {
+            if (k.startsWith("$")) {
+                query.put(k, v);
+            } else {
+                known.put(k, v);
+            }
+        });
+        options.keySet().removeIf(known::containsKey);
 
-        super.configureProperties(options);
+        // configure endpoint first (from the known options) and then specialized configuration class afterwards
+        PropertyConfigurer configurer = getComponent().getEndpointPropertyConfigurer();
+        if (configurer instanceof ExtendedPropertyConfigurerGetter) {
+            ExtendedPropertyConfigurerGetter getter = (ExtendedPropertyConfigurerGetter) configurer;
+            for (String name : getter.getAllOptions(this).keySet()) {
+                if (known.containsKey(name)) {
+                    Object value = known.get(name);
+                    boolean hit = configurer.configure(getCamelContext(), this, name, value, true);
+                    if (hit) {
+                        known.remove(name);
+                    }
+                }
+            }
+        }
+        // configure on configuration first to be reflection free
+        configurer = getCamelContext().adapt(ExtendedCamelContext.class).getConfigurerResolver()
+                .resolvePropertyConfigurer(configuration.getClass().getName(), getCamelContext());
+        if (configurer != null) {
+            PropertyBindingSupport.build()
+                    .withConfigurer(configurer)
+                    .withIgnoreCase(true)
+                    .withTarget(configuration)
+                    .withCamelContext(getCamelContext())
+                    .withProperties(known)
+                    .withRemoveParameters(true)
+                    .bind();
+        }
+        super.configureProperties(known);
+        if (!known.isEmpty()) {
+            // handle individual query params
+            query.putAll(known);
+        }
+        // and remove from original options as it was used by query
+        options.keySet().removeIf(query::containsKey);
+        // this will parse query and expand these $ keys into the actual query keys
+        parseQueryParams(query);
+        // and restore back to options
+        options.putAll(query);
     }
 
     @Override
     protected void afterConfigureProperties() {
+        olingo2endpointPropertyNames = new HashSet<>(getEndpointPropertyNames());
+        olingo2endpointPropertyNames.add(EDM_PROPERTY);
+        olingo2endpointPropertyNames.add(ENDPOINT_HTTP_HEADERS_PROPERTY);
+        olingo2endpointPropertyNames.add(SERVICE_URI_PROPERTY);
+        olingo2endpointPropertyNames.add(FILTER_ALREADY_SEEN);
+
         // set default inBody
         if (!(READ_METHOD.equals(methodName) || DELETE_METHOD.equals(methodName) || UREAD_METHOD.equals(methodName))
-            && inBody == null) {
+                && inBody == null) {
             inBody = DATA_PROPERTY;
         }
         createProxy();
@@ -153,7 +210,8 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
     @Override
     public void interceptPropertyNames(Set<String> propertyNames) {
         // add edm, and responseHandler property names
-        // edm is computed on first call to getApiProxy(), and responseHandler is provided by consumer and producer
+        // edm is computed on first call to getApiProxy(), and responseHandler
+        // is provided by consumer and producer
         if (!DELETE_METHOD.equals(methodName)) {
             propertyNames.add(EDM_PROPERTY);
         }
@@ -162,9 +220,13 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
 
     @Override
     public void interceptProperties(Map<String, Object> properties) {
+        Map<String, String> endpointHttpHeaders = (Map<String, String>) properties.get(ENDPOINT_HTTP_HEADERS_PROPERTY);
 
         // read Edm if not set yet
-        properties.put(EDM_PROPERTY, apiProxy.getEdm());
+        properties.put(EDM_PROPERTY, apiProxy.getEdm(endpointHttpHeaders));
+
+        // handle filterAlreadySeen property
+        properties.put(FILTER_ALREADY_SEEN, configuration.isFilterAlreadySeen());
 
         // handle keyPredicate
         final String keyPredicate = (String) properties.get(KEY_PREDICATE_PROPERTY);
@@ -173,9 +235,10 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
             // make sure a resource path is provided
             final String resourcePath = (String) properties.get(RESOURCE_PATH_PROPERTY);
             if (resourcePath == null) {
-                throw new IllegalArgumentException("Resource path must be provided in endpoint URI, or URI parameter '"
-                    + RESOURCE_PATH_PROPERTY + "', or exchange header '"
-                    + Olingo2Constants.PROPERTY_PREFIX + RESOURCE_PATH_PROPERTY + "'");
+                throw new IllegalArgumentException(
+                        "Resource path must be provided in endpoint URI, or URI parameter '" + RESOURCE_PATH_PROPERTY
+                                                   + "', or exchange header '"
+                                                   + Olingo2Constants.PROPERTY_PREFIX + RESOURCE_PATH_PROPERTY + "'");
             }
 
             // append keyPredicate to dynamically create resource path
@@ -197,16 +260,13 @@ public class Olingo2Endpoint extends AbstractApiEndpoint<Olingo2ApiName, Olingo2
 
             final Map.Entry<String, Object> entry = it.next();
             final String paramName = entry.getKey();
-            
-            /**
-             * Avoid swallowing consumer scheduler properties, which
-             * get processed in configureProperties()
-             */
+
+            // avoid swallowing consumer scheduler properties, which get processed in configureProperties()
             if (paramName.startsWith("consumer.")) {
                 continue;
             }
 
-            if (!endpointPropertyNames.contains(paramName)) {
+            if (!olingo2endpointPropertyNames.contains(paramName)) {
 
                 // add to query params
                 final Object value = entry.getValue();

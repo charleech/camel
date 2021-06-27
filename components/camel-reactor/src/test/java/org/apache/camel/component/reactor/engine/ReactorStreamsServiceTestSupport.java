@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,11 +17,13 @@
 package org.apache.camel.component.reactor.engine;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.ExtendedCamelContext;
 import org.apache.camel.component.reactive.streams.ReactiveStreamsComponent;
 import org.apache.camel.component.reactive.streams.ReactiveStreamsConstants;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsService;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.impl.engine.PrototypeExchangeFactory;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.camel.util.ObjectHelper;
 
 class ReactorStreamsServiceTestSupport extends CamelTestSupport {
@@ -31,10 +33,12 @@ class ReactorStreamsServiceTestSupport extends CamelTestSupport {
     protected CamelContext createCamelContext() throws Exception {
         CamelContext context = super.createCamelContext();
 
+        // camel-reactor does not work with pooled exchanges
+        context.adapt(ExtendedCamelContext.class).setExchangeFactory(new PrototypeExchangeFactory());
+
         context.addComponent(
-            ReactiveStreamsConstants.SCHEME,
-            ReactiveStreamsComponent.withServiceType(ReactorStreamsConstants.SERVICE_NAME)
-        );
+                ReactiveStreamsConstants.SCHEME,
+                ReactiveStreamsComponent.withServiceType(ReactorStreamsConstants.SERVICE_NAME));
 
         return context;
     }
@@ -52,8 +56,7 @@ class ReactorStreamsServiceTestSupport extends CamelTestSupport {
 
     protected ReactiveStreamsComponent getReactiveStreamsComponent() {
         return ObjectHelper.notNull(
-            context.getComponent(ReactiveStreamsConstants.SCHEME, ReactiveStreamsComponent.class),
-            ReactiveStreamsConstants.SCHEME
-        );
+                context.getComponent(ReactiveStreamsConstants.SCHEME, ReactiveStreamsComponent.class),
+                ReactiveStreamsConstants.SCHEME);
     }
 }

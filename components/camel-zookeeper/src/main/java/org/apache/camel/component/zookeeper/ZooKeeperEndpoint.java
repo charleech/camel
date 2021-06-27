@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,21 +18,23 @@ package org.apache.camel.component.zookeeper;
 
 import java.util.List;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.api.management.ManagedAttribute;
 import org.apache.camel.api.management.ManagedOperation;
 import org.apache.camel.api.management.ManagedResource;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The zookeeper component allows interaction with a ZooKeeper cluster.
+ * Manage ZooKeeper clusters.
  */
 @ManagedResource(description = "ZooKeeper Endpoint")
-@UriEndpoint(firstVersion = "2.9.0", scheme = "zookeeper", title = "ZooKeeper", syntax = "zookeeper:serverUrls/path", label = "clustering")
+@UriEndpoint(firstVersion = "2.9.0", scheme = "zookeeper", title = "ZooKeeper", syntax = "zookeeper:serverUrls/path",
+             category = { Category.CLUSTERING, Category.MANAGEMENT, Category.BIGDATA })
 public class ZooKeeperEndpoint extends DefaultEndpoint {
     @UriParam
     private ZooKeeperConfiguration configuration;
@@ -44,18 +46,16 @@ public class ZooKeeperEndpoint extends DefaultEndpoint {
         this.connectionManager = new ZooKeeperConnectionManager(this);
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new ZooKeeperProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         ZooKeeperConsumer answer = new ZooKeeperConsumer(this, processor);
         configureConsumer(answer);
         return answer;
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     public void setConfiguration(ZooKeeperConfiguration configuration) {
@@ -131,22 +131,6 @@ public class ZooKeeperEndpoint extends DefaultEndpoint {
 
     public void setBackoff(long backoff) {
         getConfiguration().setBackoff(backoff);
-    }
-
-    /**
-     * @deprecated The usage of this property has no effect at all.
-     */
-    @Deprecated
-    public boolean getAwaitExistence() {
-        return getConfiguration().shouldAwaitExistence();
-    }
-
-    /**
-     * @deprecated The usage of this property has no effect at all.
-     */
-    @Deprecated
-    public void setAwaitExistence(boolean awaitExistence) {
-        getConfiguration().setAwaitExistence(awaitExistence);
     }
 
     @ManagedOperation

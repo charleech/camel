@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,16 +17,16 @@
 package org.apache.camel.itest.async;
 
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.BeforeClass;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeAll;
 
 public class HttpAsyncTestSupport extends CamelTestSupport {
-    
+
     protected static int port;
 
-    @BeforeClass
-    public static void initPort() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(23000);
+    @BeforeAll
+    public static void initPort() {
+        port = AvailablePortFinder.getNextAvailable();
     }
 
     protected int getPort() {

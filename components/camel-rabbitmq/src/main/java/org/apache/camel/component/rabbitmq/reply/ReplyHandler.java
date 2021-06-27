@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.apache.camel.component.rabbitmq.reply;
 
 import com.rabbitmq.client.AMQP;
 
-
 /**
  * Handles a reply.
  */
@@ -27,15 +26,15 @@ public interface ReplyHandler {
     /**
      * The reply message was received
      *
-     * @param correlationId  the correlation id
-     * @param reply  the reply message
+     * @param correlationId the correlation id
+     * @param reply         the reply message
      */
     void onReply(String correlationId, AMQP.BasicProperties properties, byte[] reply);
 
     /**
      * The reply message was not received and a timeout triggered
      *
-     * @param correlationId  the correlation id
+     * @param correlationId the correlation id
      */
     void onTimeout(String correlationId);
 }

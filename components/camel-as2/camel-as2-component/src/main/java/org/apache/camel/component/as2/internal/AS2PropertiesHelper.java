@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.as2.internal;
 
+import org.apache.camel.CamelContext;
 import org.apache.camel.component.as2.AS2Configuration;
 import org.apache.camel.support.component.ApiMethodPropertiesHelper;
 
@@ -26,13 +27,13 @@ public final class AS2PropertiesHelper extends ApiMethodPropertiesHelper<AS2Conf
 
     private static AS2PropertiesHelper helper;
 
-    private AS2PropertiesHelper() {
-        super(AS2Configuration.class, AS2Constants.PROPERTY_PREFIX);
+    private AS2PropertiesHelper(CamelContext context) {
+        super(context, AS2Configuration.class, AS2Constants.PROPERTY_PREFIX);
     }
 
-    public static synchronized AS2PropertiesHelper getHelper() {
+    public static synchronized AS2PropertiesHelper getHelper(CamelContext context) {
         if (helper == null) {
-            helper = new AS2PropertiesHelper();
+            helper = new AS2PropertiesHelper(context);
         }
         return helper;
     }

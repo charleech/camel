@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.service;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,11 +23,11 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.cloud.ServiceDefinition;
 import org.apache.camel.cloud.ServiceRegistry;
-import org.apache.camel.spi.annotations.Component;
-import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.impl.cloud.ServiceRegistryHelper;
 import org.apache.camel.impl.cloud.ServiceRegistrySelectors;
 import org.apache.camel.spi.Metadata;
+import org.apache.camel.spi.annotations.Component;
+import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.URISupport;
@@ -66,7 +65,7 @@ public class ServiceComponent extends DefaultComponent {
         // definition
         final Map<String, String> params = new HashMap<>();
 
-        for (Map.Entry<String, Object> entry: parameters.entrySet()) {
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             if (!entry.getKey().startsWith(ServiceDefinition.SERVICE_META_PREFIX)) {
                 continue;
             }
@@ -82,15 +81,14 @@ public class ServiceComponent extends DefaultComponent {
 
         // remove all the service related options so the underlying component
         // does not fail because of unknown parameters
-        parameters.keySet().removeAll(parameters.keySet());
+        parameters.keySet().removeAll(params.keySet());
 
         return new ServiceEndpoint(
-            uri,
-            this,
-            service,
-            params,
-            URISupport.appendParametersToURI(delegateUri, parameters)
-        );
+                uri,
+                this,
+                service,
+                params,
+                URISupport.appendParametersToURI(delegateUri, parameters));
     }
 
     public ServiceRegistry getService() {
@@ -123,8 +121,7 @@ public class ServiceComponent extends DefaultComponent {
     private ServiceRegistry getServiceRegistry() {
         if (service == null) {
             return ServiceRegistryHelper.lookupService(getCamelContext(), serviceSelector).orElseThrow(
-                () -> new IllegalStateException("No cluster service found")
-            );
+                    () -> new IllegalStateException("No cluster service found"));
         }
 
         return service;

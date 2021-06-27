@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.apache.camel.component.zookeepermaster;
 
 import org.apache.camel.component.zookeepermaster.group.Group;
-import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.spi.Metadata;
+import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.support.service.ServiceHelper;
 import org.apache.curator.framework.CuratorFramework;
 

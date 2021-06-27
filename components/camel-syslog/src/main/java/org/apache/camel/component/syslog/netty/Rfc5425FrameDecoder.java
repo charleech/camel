@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import org.apache.camel.component.netty4.ChannelHandlerFactory;
+import org.apache.camel.component.netty.ChannelHandlerFactory;
 
 public class Rfc5425FrameDecoder extends ByteToMessageDecoder implements ChannelHandlerFactory {
 
@@ -33,7 +33,7 @@ public class Rfc5425FrameDecoder extends ByteToMessageDecoder implements Channel
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (currentFramelength == null) {
             // find index of the first space, it should be after the length field
-            int index = indexOf(in, Unpooled.wrappedBuffer(new byte[]{' '}));
+            int index = indexOf(in, Unpooled.wrappedBuffer(new byte[] { ' ' }));
 
             // Read part until the first space, if we have found one
             StringBuffer lengthbuffer = new StringBuffer();
@@ -74,9 +74,8 @@ public class Rfc5425FrameDecoder extends ByteToMessageDecoder implements Channel
     }
 
     /**
-     * Borrowed from the DelimiterBasedFrameDecoder Returns the number of bytes
-     * between the readerIndex of the haystack and the first needle found in the
-     * haystack. -1 is returned if no needle is found in the haystack.
+     * Borrowed from the DelimiterBasedFrameDecoder Returns the number of bytes between the readerIndex of the haystack
+     * and the first needle found in the haystack. -1 is returned if no needle is found in the haystack.
      */
     private static int indexOf(ByteBuf haystack, ByteBuf needle) {
         for (int i = haystack.readerIndex(); i < haystack.writerIndex(); i++) {

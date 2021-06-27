@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public interface CamelSpringWSEndpointMapping extends EndpointMapping {
     /**
      * Used by Camel Spring Web Services endpoint to register consumers
      * 
-     * @param key unique consumer key
+     * @param key      unique consumer key
      * @param endpoint consumer
      */
     void addConsumer(EndpointMappingKey key, MessageEndpoint endpoint);

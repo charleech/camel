@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.camel.Consumer;
 import org.apache.camel.Converter;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -42,7 +43,7 @@ import static org.apache.camel.component.quickfixj.QuickfixjEndpoint.EVENT_CATEG
 import static org.apache.camel.component.quickfixj.QuickfixjEndpoint.MESSAGE_TYPE_KEY;
 import static org.apache.camel.component.quickfixj.QuickfixjEndpoint.SESSION_ID_KEY;
 
-@Converter
+@Converter(generateLoader = true)
 public final class QuickfixjConverters {
     private static final Logger LOG = LoggerFactory.getLogger(QuickfixjConverters.class);
 
@@ -62,7 +63,8 @@ public final class QuickfixjConverters {
     }
 
     @Converter
-    public static Message toMessage(byte[] value, Exchange exchange) throws InvalidMessage, ConfigError, UnsupportedEncodingException {
+    public static Message toMessage(byte[] value, Exchange exchange)
+            throws InvalidMessage, ConfigError, UnsupportedEncodingException {
         DataDictionary dataDictionary = getDataDictionary(exchange);
         String charsetName = ExchangeHelper.getCharsetName(exchange);
 
@@ -84,7 +86,8 @@ public final class QuickfixjConverters {
     }
 
     @Converter
-    public static InputStream toInputStream(Message value, Exchange exchange) throws InvalidMessage, ConfigError, UnsupportedEncodingException {
+    public static InputStream toInputStream(Message value, Exchange exchange)
+            throws InvalidMessage, ConfigError, UnsupportedEncodingException {
         if (exchange != null) {
             String charsetName = ExchangeHelper.getCharsetName(exchange);
             if (charsetName != null) {
@@ -97,7 +100,7 @@ public final class QuickfixjConverters {
     }
 
     private static DataDictionary getDataDictionary(Exchange exchange) throws ConfigError {
-        Object dictionaryValue = exchange.getProperties().get(QuickfixjEndpoint.DATA_DICTIONARY_KEY);
+        Object dictionaryValue = exchange.getProperty(QuickfixjEndpoint.DATA_DICTIONARY_KEY);
 
         DataDictionary dataDictionary = null;
         if (dictionaryValue instanceof DataDictionary) {
@@ -115,12 +118,37 @@ public final class QuickfixjConverters {
         return dataDictionary;
     }
 
-    public static Exchange toExchange(Endpoint endpoint, SessionID sessionID, Message message, QuickfixjEventCategory eventCategory) {
+    public static Exchange toExchange(
+            Endpoint endpoint, SessionID sessionID, Message message, QuickfixjEventCategory eventCategory) {
         return toExchange(endpoint, sessionID, message, eventCategory, ExchangePattern.InOnly);
     }
 
-    public static Exchange toExchange(Endpoint endpoint, SessionID sessionID, Message message, QuickfixjEventCategory eventCategory, ExchangePattern exchangePattern) {
+    public static Exchange toExchange(
+            Endpoint endpoint, SessionID sessionID, Message message, QuickfixjEventCategory eventCategory,
+            ExchangePattern exchangePattern) {
         Exchange exchange = endpoint.createExchange(exchangePattern);
+
+        org.apache.camel.Message camelMessage = exchange.getIn();
+        camelMessage.setHeader(EVENT_CATEGORY_KEY, eventCategory);
+        camelMessage.setHeader(SESSION_ID_KEY, sessionID);
+
+        if (message != null) {
+            try {
+                camelMessage.setHeader(MESSAGE_TYPE_KEY, message.getHeader().getString(MsgType.FIELD));
+            } catch (FieldNotFound e) {
+                LOG.warn("Message type field not found in QFJ message: {}, continuing...", message);
+            }
+        }
+        camelMessage.setBody(message);
+
+        return exchange;
+    }
+
+    public static Exchange toExchange(
+            Consumer consumer, SessionID sessionID, Message message, QuickfixjEventCategory eventCategory,
+            ExchangePattern exchangePattern) {
+        Exchange exchange = consumer.createExchange(false);
+        exchange.setPattern(exchangePattern);
 
         org.apache.camel.Message camelMessage = exchange.getIn();
         camelMessage.setHeader(EVENT_CATEGORY_KEY, eventCategory);

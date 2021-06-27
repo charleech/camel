@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,7 @@ import org.apache.commons.csv.CSVRecord;
 /**
  * Test {@link CsvRecordConverter} implementation.
  * <p>
- * This implementation is explicitely created in a subpackage to check the
- * visibility of {@link CsvRecordConverter}.
+ * This implementation is explicitely created in a subpackage to check the visibility of {@link CsvRecordConverter}.
  * </p>
  */
 public class MyCvsRecordConverter implements CsvRecordConverter<List<String>> {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,8 +19,10 @@ package org.apache.camel.language.mvel;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -41,11 +43,12 @@ public class MvelComponentTest extends CamelTestSupport {
 
     @Test
     public void testMvelTemplate() throws Exception {
-        Exchange exchange = template.request("direct:a", new Processor() {
+        Exchange exchange = template.request("direct:b", new Processor() {
             @Override
             public void process(Exchange exchange) throws Exception {
                 exchange.getIn().setBody(7);
-                exchange.getIn().setHeader(MvelConstants.MVEL_TEMPLATE, "{ \"text\": \"@{\"The result is \" + request.body * 3}\" }");
+                exchange.getIn().setHeader(MvelConstants.MVEL_TEMPLATE,
+                        "{ \"text\": \"@{\"The result is \" + request.body * 3}\" }");
             }
         });
 
@@ -54,23 +57,26 @@ public class MvelComponentTest extends CamelTestSupport {
 
     @Test
     public void testMvelUri() throws Exception {
-        Exchange exchange = template.request("direct:a", new Processor() {
+        Exchange exchange = template.request("direct:b", new Processor() {
             @Override
             public void process(Exchange exchange) throws Exception {
                 exchange.getIn().setBody(7);
-                exchange.getIn().setHeader(MvelConstants.MVEL_RESOURCE_URI, getClass().getClassLoader().getResource("template2.mvel").toURI().toString());
+                exchange.getIn().setHeader(MvelConstants.MVEL_RESOURCE_URI,
+                        getClass().getClassLoader().getResource("template2.mvel").toURI().toString());
             }
         });
 
         assertEquals("{ \"text\": \"The result is 28\" }", exchange.getOut().getBody());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 // START SNIPPET: example
-                from("direct:a").
-                        to("mvel:template.mvel");
+                from("direct:a").to("mvel:template.mvel");
+
+                from("direct:b").to("mvel:template.mvel?allowTemplateFromHeader=true&allowContextMapAll=true");
                 // END SNIPPET: example
             }
         };

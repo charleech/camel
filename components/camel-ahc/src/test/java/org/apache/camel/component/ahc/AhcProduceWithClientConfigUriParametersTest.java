@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.ahc;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AhcProduceWithClientConfigUriParametersTest extends BaseAhcTest {
     @Test
@@ -30,7 +30,7 @@ public class AhcProduceWithClientConfigUriParametersTest extends BaseAhcTest {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Override
     protected String getAhcEndpointUri() {
         return super.getAhcEndpointUri() + "?clientConfig.maxRequestRetry=3&clientConfig.followRedirect=true";
@@ -42,15 +42,15 @@ public class AhcProduceWithClientConfigUriParametersTest extends BaseAhcTest {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to(getAhcEndpointUri())
-                    .to("mock:result");
+                        .to(getAhcEndpointUri())
+                        .to("mock:result");
 
                 from(getTestServerEndpointUri())
                         .process(new Processor() {
                             public void process(Exchange exchange) throws Exception {
                                 // redirect to test the client config worked as we told it to follow redirects
-                                exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "301");
-                                exchange.getOut().setHeader("Location", getTestServerEndpointTwoUrl());
+                                exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, "301");
+                                exchange.getMessage().setHeader("Location", getTestServerEndpointTwoUrl());
                             }
                         });
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.apache.camel.component.jms;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -27,10 +26,12 @@ import javax.jms.ConnectionFactory;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.apache.camel.test.junit5.TestSupport.body;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JmsProduerConcurrentWithReplyTest extends CamelTestSupport {
 
@@ -52,11 +53,7 @@ public class JmsProduerConcurrentWithReplyTest extends CamelTestSupport {
         final List<Future<String>> futures = new ArrayList<>();
         for (int i = 0; i < files; i++) {
             final int index = i;
-            Future<String> out = executor.submit(new Callable<String>() {
-                public String call() throws Exception {
-                    return template.requestBody("direct:start", "Message " + index, String.class);
-                }
-            });
+            Future<String> out = executor.submit(() -> template.requestBody("direct:start", "Message " + index, String.class));
             futures.add(out);
         }
 
@@ -69,6 +66,7 @@ public class JmsProduerConcurrentWithReplyTest extends CamelTestSupport {
         executor.shutdownNow();
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 

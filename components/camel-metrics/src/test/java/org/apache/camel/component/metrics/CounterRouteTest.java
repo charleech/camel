@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,13 +27,11 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
-import org.apache.camel.test.spring.CamelSpringDelegatingTestContextLoader;
-import org.apache.camel.test.spring.CamelSpringRunner;
-import org.apache.camel.test.spring.MockEndpoints;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.apache.camel.test.spring.junit5.MockEndpoints;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
@@ -49,26 +47,25 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-@RunWith(CamelSpringRunner.class)
+@CamelSpringTest
 @ContextConfiguration(
-        classes = { CounterRouteTest.TestConfig.class },
-        loader = CamelSpringDelegatingTestContextLoader.class)
+                      classes = { CounterRouteTest.TestConfig.class })
 @MockEndpoints
 public class CounterRouteTest {
 
-    @EndpointInject(uri = "mock:out")
+    @EndpointInject("mock:out")
     private MockEndpoint endpoint;
 
-    @Produce(uri = "direct:in-1")
+    @Produce("direct:in-1")
     private ProducerTemplate producer1;
 
-    @Produce(uri = "direct:in-2")
+    @Produce("direct:in-2")
     private ProducerTemplate producer2;
 
-    @Produce(uri = "direct:in-3")
+    @Produce("direct:in-3")
     private ProducerTemplate producer3;
 
-    @Produce(uri = "direct:in-4")
+    @Produce("direct:in-4")
     private ProducerTemplate producer4;
 
     private MetricRegistry mockRegistry;
@@ -114,7 +111,7 @@ public class CounterRouteTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         // TODO - 12.05.2014, Lauri - is there any better way to set this up?
         mockRegistry = endpoint.getCamelContext().getRegistry().lookupByNameAndType(METRIC_REGISTRY_NAME, MetricRegistry.class);
@@ -122,7 +119,7 @@ public class CounterRouteTest {
         inOrder = Mockito.inOrder(mockRegistry, mockCounter);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         endpoint.reset();
         reset(mockRegistry, mockCounter);

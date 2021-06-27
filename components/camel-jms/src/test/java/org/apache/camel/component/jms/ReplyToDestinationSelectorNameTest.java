@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,11 @@ import javax.jms.ConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -45,6 +46,7 @@ public class ReplyToDestinationSelectorNameTest extends CamelTestSupport {
         assertEquals("Bye Camel", body2);
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -60,12 +62,12 @@ public class ReplyToDestinationSelectorNameTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("activemq:queue:foo?replyTo=queue:bar&replyToDestinationSelectorName=replyId")
-                    .to("mock:result");
+                        .to("activemq:queue:foo?replyTo=queue:bar&replyToDestinationSelectorName=replyId")
+                        .to("mock:result");
 
                 from("activemq:queue:foo")
-                    .log("Using header named replyId with value as correlation - ${header.replyId}")
-                    .transform(body().prepend("Bye "));
+                        .log("Using header named replyId with value as correlation - ${header.replyId}")
+                        .transform(body().prepend("Bye "));
             }
         };
     }

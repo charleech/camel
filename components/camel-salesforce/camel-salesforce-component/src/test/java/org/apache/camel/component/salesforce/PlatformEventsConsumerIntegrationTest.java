@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,17 +26,19 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.salesforce.api.dto.PlatformEvent;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.entry;
 
+@Standalone
 public class PlatformEventsConsumerIntegrationTest extends AbstractSalesforceTestBase {
 
     @Test
     public void shouldConsumePlatformEvents() throws InterruptedException, ExecutionException {
         final ExecutorService parallel = Executors.newSingleThreadExecutor();
 
-        final Future<PlatformEvent> futurePlatformEvent = parallel.submit(() -> consumer.receiveBody("salesforce:event/TestEvent__e", PlatformEvent.class));
+        final Future<PlatformEvent> futurePlatformEvent
+                = parallel.submit(() -> consumer.receiveBody("salesforce:event/TestEvent__e?replayId=-1", PlatformEvent.class));
 
         // it takes some time for the subscriber to subscribe, so we'll try to
         // send repeated platform events and wait until the first one is

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.SagaCompletionMode;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
+@EnabledIfEnvironmentVariable(named = "LRA_COORDINATOR_URL", matches = ".*",
+                              disabledReason = "Coordinator URL not provided")
 public class LRATimeoutIT extends AbstractLRATestSupport {
 
     @Test
-    @Ignore("https://issues.jboss.org/browse/JBTM-2979")
     public void testTimeoutCalledCorrectly() throws Exception {
 
         MockEndpoint compensate = getMockEndpoint("mock:compensate");

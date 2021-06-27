@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AhcProducerConnectionCloseHeadersTest extends BaseAhcTest {
 
@@ -50,8 +50,8 @@ public class AhcProducerConnectionCloseHeadersTest extends BaseAhcTest {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to(getAhcEndpointUri() + "?connectionClose=true")
-                    .to("mock:result");
+                        .to(getAhcEndpointUri() + "?connectionClose=true")
+                        .to("mock:result");
 
                 from(getTestServerEndpointUri())
                         // Remove the message header here

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,16 +19,16 @@ package org.apache.camel.component.jdbc;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test based on user forum request about this component
  */
 public class JdbcAnotherRouteTest extends AbstractJdbcTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint mock;
-    
+
     @Test
     public void testTimerInvoked() throws Exception {
         mock.expectedMinimumMessageCount(1);
@@ -41,10 +41,8 @@ public class JdbcAnotherRouteTest extends AbstractJdbcTestSupport {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 // trigger every second
-                from("timer://kickoff?period=1s").
-                    setBody(constant("select * from customer")).
-                    to("jdbc:testdb").
-                    to("mock:result");
+                from("timer://kickoff?period=1000").setBody(constant("select * from customer")).to("jdbc:testdb")
+                        .to("mock:result");
             }
         };
     }

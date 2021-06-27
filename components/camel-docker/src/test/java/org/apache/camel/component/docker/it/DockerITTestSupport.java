@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import java.util.Properties;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.docker.DockerComponent;
 import org.apache.camel.component.docker.DockerConfiguration;
-import org.apache.camel.support.IntrospectionSupport;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.support.PropertyBindingSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public class DockerITTestSupport extends CamelTestSupport {
 
@@ -39,10 +39,10 @@ public class DockerITTestSupport extends CamelTestSupport {
         properties.load(getClass().getResourceAsStream(TEST_OPTIONS_PROPERTIES));
 
         Map<String, Object> options = new HashMap<>();
-        properties.entrySet().forEach((e) -> options.put(e.getKey().toString(), e.getValue()));
+        properties.entrySet().forEach(e -> options.put(e.getKey().toString(), e.getValue()));
 
         DockerConfiguration configuration = new DockerConfiguration();
-        IntrospectionSupport.setProperties(configuration, options);
+        PropertyBindingSupport.bindProperties(context, configuration, options);
 
         DockerComponent component = new DockerComponent();
         component.setConfiguration(configuration);

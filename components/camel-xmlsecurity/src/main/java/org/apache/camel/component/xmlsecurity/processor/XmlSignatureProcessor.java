@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,16 +27,17 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import org.xml.sax.SAXException;
-import org.apache.camel.BytesSource;
+
+import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.validator.DefaultLSResourceResolver;
 import org.apache.camel.component.xmlsecurity.api.XmlSignatureConstants;
 import org.apache.camel.component.xmlsecurity.api.XmlSignatureException;
-import org.apache.camel.converter.IOConverter;
+import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.support.ResourceHelper;
+import org.apache.camel.util.xml.BytesSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,10 +49,20 @@ public abstract class XmlSignatureProcessor implements Processor {
         try {
             SantuarioUtil.initializeSantuario();
             SantuarioUtil.addSantuarioJSR105Provider();
-        } catch (Throwable t) { //NOPMD
+        } catch (Exception t) {
             // provider not in classpath, ignore and fall back to jre default
             LOG.info("Cannot add the SantuarioJSR105Provider due to {0}, fall back to JRE default.", t);
         }
+    }
+
+    protected final CamelContext context;
+
+    public XmlSignatureProcessor(CamelContext context) {
+        this.context = context;
+    }
+
+    public CamelContext getCamelContext() {
+        return context;
     }
 
     public abstract XmlSignatureConfiguration getConfiguration();
@@ -80,9 +91,9 @@ public abstract class XmlSignatureProcessor implements Processor {
         if (props == null) {
             return;
         }
-        for (String prop : props.keySet()) {
-            Object val = props.get(prop);
-            cryptoContext.setProperty(prop, val);
+        for (Map.Entry<String, ?> prop : props.entrySet()) {
+            Object val = prop.getValue();
+            cryptoContext.setProperty(prop.getKey(), val);
             LOG.debug("Context property {} set to value {}", prop, val);
         }
     }
@@ -102,24 +113,25 @@ public abstract class XmlSignatureProcessor implements Processor {
         if (schemaResourceUri == null || schemaResourceUri.isEmpty()) {
             return null;
         }
-        InputStream is = ResourceHelper.resolveResourceAsInputStream(getConfiguration().getCamelContext().getClassResolver(),
+        InputStream is = ResourceHelper.resolveResourceAsInputStream(getCamelContext(),
                 schemaResourceUri);
         if (is == null) {
             throw new XmlSignatureException(
                     "XML Signature component is wrongly configured: No XML schema found for specified schema resource URI "
-                            + schemaResourceUri);
+                                            + schemaResourceUri);
         }
-        byte[] bytes = null;
+        byte[] bytes;
         try {
-            bytes = IOConverter.toBytes(is);
+            bytes = message.getExchange().getContext().getTypeConverter().convertTo(byte[].class, is);
         } finally {
             // and make sure to close the input stream after the schema has been loaded
             IOHelper.close(is);
         }
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        schemaFactory.setResourceResolver(new DefaultLSResourceResolver(getConfiguration().getCamelContext(), getConfiguration()
-                .getSchemaResourceUri()));
+        schemaFactory.setResourceResolver(new DefaultLSResourceResolver(
+                getCamelContext(), getConfiguration()
+                        .getSchemaResourceUri()));
         LOG.debug("Instantiating schema for validation");
         return schemaFactory.newSchema(new BytesSource(bytes));
     }

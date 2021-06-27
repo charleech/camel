@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,17 @@ package org.apache.camel.component.mail;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test for idempotent repository.
  */
 public class MailIdempotentRepositoryDuplicateNotRemoveTest extends MailIdempotentRepositoryDuplicateTest {
 
+    @Override
     @Test
     public void testIdempotent() throws Exception {
         assertEquals(1, myRepo.getCacheSize());
@@ -47,11 +50,12 @@ public class MailIdempotentRepositoryDuplicateNotRemoveTest extends MailIdempote
         assertEquals(5, myRepo.getCacheSize());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("imap://jones@localhost?password=secret&idempotentRepository=#myRepo&idempotentRepositoryRemoveOnCommit=false&consumer.initialDelay=100&consumer.delay=100")
-                    .routeId("foo").noAutoStartup()
+                from("imap://jones@localhost?password=secret&idempotentRepository=#myRepo&idempotentRepositoryRemoveOnCommit=false&initialDelay=100&delay=100")
+                        .routeId("foo").noAutoStartup()
                         .to("mock:result");
             }
         };

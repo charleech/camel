@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.sql;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringJoiner;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.NoTypeConversionAvailableException;
@@ -31,14 +32,26 @@ public final class SqlHelper {
     /**
      * Resolve the query by loading the query from the classpath or file resource if needed.
      */
-    public static String resolveQuery(CamelContext camelContext, String query, String placeholder) throws NoTypeConversionAvailableException, IOException {
+    public static String resolveQuery(CamelContext camelContext, String query, String placeholder)
+            throws NoTypeConversionAvailableException, IOException {
         String answer = query;
         if (ResourceHelper.hasScheme(query)) {
-            InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(camelContext, query);
-            answer = camelContext.getTypeConverter().mandatoryConvertTo(String.class, is);
+            try (InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(camelContext, query)) {
+                answer = camelContext.getTypeConverter().mandatoryConvertTo(String.class, is);
+            }
             if (placeholder != null) {
                 answer = answer.replaceAll(placeholder, "?");
             }
+            // skip lines with comments
+            StringJoiner sj = new StringJoiner("\n");
+            String[] lines = answer.split("\n");
+            for (String line : lines) {
+                String trim = line.trim();
+                if (!trim.isEmpty() && !trim.startsWith("--")) {
+                    sj.add(line);
+                }
+            }
+            answer = sj.toString();
         }
         return answer;
     }

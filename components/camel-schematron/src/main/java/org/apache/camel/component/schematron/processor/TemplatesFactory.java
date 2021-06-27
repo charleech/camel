@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package org.apache.camel.component.schematron.processor;
-
 
 import java.io.InputStream;
 
@@ -34,15 +33,14 @@ import org.apache.camel.component.schematron.exception.SchematronConfigException
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Class generating Templates for a given schematron rules
  */
 public final class TemplatesFactory {
 
-
     private static final TemplatesFactory INSTANCE = new TemplatesFactory();
-    private static final String[] PIPELINE = new String[]{"iso_dsdl_include.xsl", "iso_abstract_expand.xsl", "iso_svrl_for_xslt2.xsl"};
+    private static final String[] PIPELINE
+            = new String[] { "iso_dsdl_include.xsl", "iso_abstract_expand.xsl", "iso_svrl_for_xslt2.xsl" };
     private Logger logger = LoggerFactory.getLogger(TemplatesFactory.class);
 
     /**
@@ -58,9 +56,9 @@ public final class TemplatesFactory {
     /**
      * Generate the schematron template for given rule.
      *
-     * @param rules the schematron rules
-     * @param fac   the transformer factory.
-     * @return schematron template.
+     * @param  rules the schematron rules
+     * @param  fac   the transformer factory.
+     * @return       schematron template.
      */
     public Templates getTemplates(final InputStream rules, final TransformerFactory fac) {
 
@@ -70,7 +68,7 @@ public final class TemplatesFactory {
             for (String template : PIPELINE) {
                 String path = Constants.SCHEMATRON_TEMPLATES_ROOT_DIR
                         .concat("/").concat(template);
-                InputStream xsl =  this.getClass().getClassLoader().getResourceAsStream(path);
+                InputStream xsl = this.getClass().getClassLoader().getResourceAsStream(path);
                 Transformer t = fac.newTransformer(new StreamSource(xsl));
                 DOMResult result = new DOMResult();
                 t.transform(source, result);

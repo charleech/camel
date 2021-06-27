@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
-
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
+
+import static java.util.stream.Collectors.toSet;
 
 @Vetoed
 final class BeanManagerHelper {
@@ -33,20 +33,20 @@ final class BeanManagerHelper {
 
     static <T> Set<T> getReferencesByType(BeanManager manager, Class<T> type, Annotation... qualifiers) {
         return manager.getBeans(type, qualifiers).stream()
-            .map(bean -> getReference(manager, type, bean))
-            .collect(toSet());
+                .map(bean -> getReference(manager, type, bean))
+                .collect(toSet());
     }
 
     static <T> Optional<T> getReferenceByName(BeanManager manager, String name, Class<T> type) {
         return Optional.of(manager.getBeans(name))
-            .map(manager::resolve)
-            .map(bean -> getReference(manager, type, bean));
+                .map(manager::resolve)
+                .map(bean -> getReference(manager, type, bean));
     }
 
     static <T> Optional<T> getReferenceByType(BeanManager manager, Class<T> type, Annotation... qualifiers) {
         return Optional.of(manager.getBeans(type, qualifiers))
-            .map(manager::resolve)
-            .map(bean -> getReference(manager, type, bean));
+                .map(manager::resolve)
+                .map(bean -> getReference(manager, type, bean));
     }
 
     static <T> T getReference(BeanManager manager, Class<T> type, Bean<?> bean) {

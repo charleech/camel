@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,9 +34,10 @@ public abstract class AbstractDescribedSObjectBase extends AbstractSObjectBase {
     public abstract SObjectDescription description();
 
     @SuppressWarnings("boxing")
-    protected static SObjectField createField(String name, String label, String type, String soapType, int length,
-        boolean unique, boolean nillable, boolean nameField, boolean externalId, boolean custom, boolean caseSensitive,
-        boolean idLookup) {
+    protected static SObjectField createField(
+            String name, String label, String type, String soapType, int length, boolean unique, boolean nillable,
+            boolean nameField,
+            boolean externalId, boolean custom, boolean caseSensitive, boolean idLookup) {
         final SObjectField field = new SObjectField();
 
         field.setName(name);

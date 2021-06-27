@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,37 +22,44 @@ import org.apache.abdera.model.Entry;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@DisabledOnOs(OS.AIX)
 public class AtomRouteTest extends CamelTestSupport {
     private static final Logger LOG = LoggerFactory.getLogger(AtomRouteTest.class);
 
     @Test
-    public void testFeedGetsUpdatedEvents() throws Exception {
+    void testFeedGetsUpdatedEvents() throws Exception {
         MockEndpoint endpoint = getMockEndpoint("mock:results");
         endpoint.expectedMessageCount(7);
 
         assertMockEndpointsSatisfied();
 
         List<Exchange> list = endpoint.getReceivedExchanges();
-        String[] expectedTitles = {"Speaking at the Irish Java Technology Conference on Thursday and Friday",
-                                   "a great presentation on REST, JAX-WS and JSR 311",
-                                   "my slides on ActiveMQ and Camel from last weeks Dublin Conference",
-                                   "webcast today on Apache ActiveMQ",
-                                   "Feedback on my Camel talk at the IJTC conference",
-                                   "More thoughts on RESTful Message Queues",
-                                   "ActiveMQ webinar archive available"};
+        String[] expectedTitles = {
+                "Speaking at the Irish Java Technology Conference on Thursday and Friday",
+                "a great presentation on REST, JAX-WS and JSR 311",
+                "my slides on ActiveMQ and Camel from last weeks Dublin Conference",
+                "webcast today on Apache ActiveMQ",
+                "Feedback on my Camel talk at the IJTC conference",
+                "More thoughts on RESTful Message Queues",
+                "ActiveMQ webinar archive available" };
         int counter = 0;
         for (Exchange exchange : list) {
             Entry entry = exchange.getIn().getBody(Entry.class);
-            assertNotNull("No entry found for exchange: " + exchange);
+            assertNotNull(entry, "No entry found for exchange: " + exchange);
 
             String expectedTitle = expectedTitles[counter];
             String title = entry.getTitle();
-            assertEquals("Title of message " + counter, expectedTitle, title);
+            assertEquals(expectedTitle, title, "Title of message " + counter);
 
             LOG.debug("<<<< {}", entry);
 
@@ -61,10 +68,10 @@ public class AtomRouteTest extends CamelTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
-            public void configure() throws Exception {
-                from("atom:file:src/test/data/feed.atom?consumer.delay=500").to("mock:results");
+            public void configure() {
+                from("atom:file:src/test/data/feed.atom?delay=500").to("mock:results");
             }
         };
     }

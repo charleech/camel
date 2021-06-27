@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,25 +27,48 @@ import javax.cache.event.EventType;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.Route;
 import org.apache.camel.ServiceStatus;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.ignite.cache.IgniteCacheComponent;
-import org.apache.camel.impl.JndiRegistry;
+import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.cache.CacheEntryEventSerializableFilter;
 import org.apache.ignite.cache.query.ScanQuery;
 import org.apache.ignite.lang.IgniteBiPredicate;
-import org.junit.After;
-import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
-import static com.google.common.truth.Truth.assert_;
-
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @BindToRegistry("query1")
+    private ScanQuery<Integer, Person> scanQuery1 = new ScanQuery<>(new IgniteBiPredicate<Integer, Person>() {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public boolean apply(Integer key, Person person) {
+            return person.getId() > 50;
+        }
+    });
+
+    @BindToRegistry("remoteFilter1")
+    private CacheEntryEventSerializableFilter<Integer, Person> remoteFilter
+            = new CacheEntryEventSerializableFilter<Integer, IgniteCacheContinuousQueryTest.Person>() {
+                private static final long serialVersionUID = 5624973479995548199L;
+
+                @Override
+                public boolean evaluate(CacheEntryEvent<? extends Integer, ? extends Person> event)
+                        throws CacheEntryListenerException {
+                    return event.getValue().getId() > 150;
+                }
+            };
 
     @Override
     protected String getScheme() {
@@ -70,10 +93,11 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
         assertMockEndpointsSatisfied();
 
         for (Exchange exchange : getMockEndpoint("mock:test1").getExchanges()) {
-            assert_().that(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_NAME)).isEqualTo("testcontinuous1");
-            assert_().that(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_EVENT_TYPE)).isEqualTo(EventType.CREATED);
-            assert_().that(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_KEY)).isIn(persons.keySet());
-            assert_().that(exchange.getIn().getBody()).isIn(persons.values());
+            Assertions.assertThat(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_NAME)).isEqualTo("testcontinuous1");
+            Assertions.assertThat(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_EVENT_TYPE))
+                    .isEqualTo(EventType.CREATED);
+            Assertions.assertThat(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_KEY)).isIn(persons.keySet());
+            Assertions.assertThat(exchange.getIn().getBody()).isIn(persons.values());
         }
     }
 
@@ -135,9 +159,9 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
         assertMockEndpointsSatisfied();
 
         for (Exchange exchange : getMockEndpoint("mock:test4").getExchanges()) {
-            assert_().that(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_NAME)).isEqualTo("testcontinuous1");
-            assert_().that(exchange.getIn().getBody()).isInstanceOf(Iterable.class);
-            assert_().that(Iterators.size(exchange.getIn().getBody(Iterable.class).iterator())).isEqualTo(1);
+            Assertions.assertThat(exchange.getIn().getHeader(IgniteConstants.IGNITE_CACHE_NAME)).isEqualTo("testcontinuous1");
+            Assertions.assertThat(exchange.getIn().getBody()).isInstanceOf(Iterable.class);
+            Assertions.assertThat(Iterators.size(exchange.getIn().getBody(Iterable.class).iterator())).isEqualTo(1);
         }
 
     }
@@ -149,11 +173,15 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
             public void configure() throws Exception {
                 from("ignite-cache:testcontinuous1?query=#query1").routeId("continuousQuery").noAutoStartup().to("mock:test1");
 
-                from("ignite-cache:testcontinuous1?query=#query1&fireExistingQueryResults=true").routeId("continuousQuery.fireExistingEntries").noAutoStartup().to("mock:test2");
+                from("ignite-cache:testcontinuous1?query=#query1&fireExistingQueryResults=true")
+                        .routeId("continuousQuery.fireExistingEntries").noAutoStartup().to("mock:test2");
 
-                from("ignite-cache:testcontinuous1?query=#query1&remoteFilter=#remoteFilter1&fireExistingQueryResults=true").routeId("remoteFilter").noAutoStartup().to("mock:test3");
+                from("ignite-cache:testcontinuous1?query=#query1&remoteFilter=#remoteFilter1&fireExistingQueryResults=true")
+                        .routeId("remoteFilter").noAutoStartup()
+                        .to("mock:test3");
 
-                from("ignite-cache:testcontinuous1?pageSize=10&oneExchangePerUpdate=false").routeId("groupedUpdate").noAutoStartup().to("mock:test4");
+                from("ignite-cache:testcontinuous1?pageSize=10&oneExchangePerUpdate=false").routeId("groupedUpdate")
+                        .noAutoStartup().to("mock:test4");
 
             }
         };
@@ -168,23 +196,20 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
         return answer;
     }
 
-    @Override
-    public boolean isCreateCamelContextPerClass() {
-        return true;
-    }
-
-    @After
+    @AfterEach
     public void deleteCaches() {
         for (String cacheName : ImmutableSet.<String> of("testcontinuous1", "testcontinuous2", "testcontinuous3")) {
-            IgniteCache<?, ?> cache = ignite().cache(cacheName);
-            if (cache == null) {
-                continue;
+            Ignite ignite = ignite();
+            if (ignite != null) {
+                IgniteCache<?, ?> cache = ignite.cache(cacheName);
+                if (cache != null) {
+                    cache.clear();
+                }
             }
-            cache.clear();
         }
     }
 
-    @After
+    @AfterEach
     public void stopAllRoutes() throws Exception {
         for (Route route : context.getRoutes()) {
             if (context.getRouteController().getRouteStatus(route.getId()) != ServiceStatus.Started) {
@@ -194,34 +219,6 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
         }
 
         resetMocks();
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry answer = super.createRegistry();
-
-        ScanQuery<Integer, Person> scanQuery1 = new ScanQuery<>(new IgniteBiPredicate<Integer, Person>() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean apply(Integer key, Person person) {
-                return person.getId() > 50;
-            }
-        });
-
-        CacheEntryEventSerializableFilter<Integer, Person> remoteFilter = new CacheEntryEventSerializableFilter<Integer, IgniteCacheContinuousQueryTest.Person>() {
-            private static final long serialVersionUID = 5624973479995548199L;
-
-            @Override
-            public boolean evaluate(CacheEntryEvent<? extends Integer, ? extends Person> event) throws CacheEntryListenerException {
-                return event.getValue().getId() > 150;
-            }
-        };
-
-        answer.bind("query1", scanQuery1);
-        answer.bind("remoteFilter1", remoteFilter);
-
-        return answer;
     }
 
     public static class Person implements Serializable {
@@ -284,7 +281,8 @@ public class IgniteCacheContinuousQueryTest extends AbstractIgniteTest implement
             }
 
             Person other = (Person) obj;
-            return Objects.equals(this.id, other.id) && Objects.equals(this.name, other.name) && Objects.equals(this.surname, other.surname);
+            return Objects.equals(this.id, other.id) && Objects.equals(this.name, other.name)
+                    && Objects.equals(this.surname, other.surname);
         }
 
     }

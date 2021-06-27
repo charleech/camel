@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,7 +116,9 @@ public class Order {
 
     @Override
     public String toString() {
-        return "Model : " + Order.class.getName() + " : " + String.valueOf(this.orderNr) + ", " + String.valueOf(this.amount) + ", " + String.valueOf(this.instrumentType) + ", "
-               + String.valueOf(this.orderType) + ", " + String.valueOf(this.currency) + ", " + String.valueOf(this.client) + "," + String.valueOf(this.orderDate);
+        return "Model : " + Order.class.getName() + " : " + String.valueOf(this.orderNr) + ", " + String.valueOf(this.amount)
+               + ", " + String.valueOf(this.instrumentType) + ", "
+               + String.valueOf(this.orderType) + ", " + String.valueOf(this.currency) + ", " + String.valueOf(this.client)
+               + "," + String.valueOf(this.orderDate);
     }
 }

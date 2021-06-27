@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.converter;
 
 import java.util.Map;
@@ -31,9 +30,11 @@ class DelegatingXMLStreamReader implements XMLStreamReader {
     private XMLStreamReader reader;
     private final String[] xprefixes;
     private int depth;
+    private Map<String, String> nsmap;
 
     DelegatingXMLStreamReader(XMLStreamReader reader, Map<String, String> nsmap) {
         this.reader = reader;
+        this.nsmap = nsmap;
         //the original nsmap will be mutated if some of its declarations are redundantly present at the current reader 
         Set<String> prefixes = nsmap.keySet();
         for (int i = 0; i < reader.getNamespaceCount(); i++) {
@@ -86,7 +87,11 @@ class DelegatingXMLStreamReader implements XMLStreamReader {
 
     @Override
     public String getNamespaceURI(String prefix) {
-        return reader.getNamespaceURI(prefix);
+        String ret = reader.getNamespaceURI(prefix);
+        if (ret == null) {
+            ret = nsmap.get(prefix);
+        }
+        return ret;
     }
 
     @Override
@@ -104,50 +109,62 @@ class DelegatingXMLStreamReader implements XMLStreamReader {
         return reader.isCharacters();
     }
 
+    @Override
     public boolean isWhiteSpace() {
         return reader.isWhiteSpace();
     }
 
+    @Override
     public String getAttributeValue(String namespaceURI, String localName) {
         return reader.getAttributeValue(namespaceURI, localName);
     }
 
+    @Override
     public int getAttributeCount() {
         return reader.getAttributeCount();
     }
 
+    @Override
     public QName getAttributeName(int index) {
         return reader.getAttributeName(index);
     }
 
+    @Override
     public String getAttributeNamespace(int index) {
         return reader.getAttributeNamespace(index);
     }
 
+    @Override
     public String getAttributeLocalName(int index) {
         return reader.getAttributeLocalName(index);
     }
 
+    @Override
     public String getAttributePrefix(int index) {
         return reader.getAttributePrefix(index);
     }
 
+    @Override
     public String getAttributeType(int index) {
         return reader.getAttributeType(index);
     }
 
+    @Override
     public String getAttributeValue(int index) {
         return reader.getAttributeValue(index);
     }
 
+    @Override
     public boolean isAttributeSpecified(int index) {
         return reader.isAttributeSpecified(index);
     }
 
+    @Override
     public int getNamespaceCount() {
         return (depth == 1 ? xprefixes.length : 0) + reader.getNamespaceCount();
     }
 
+    @Override
     public String getNamespacePrefix(int index) {
         if (depth == 1) {
             return index < xprefixes.length ? xprefixes[index] : reader.getNamespacePrefix(index - xprefixes.length);
@@ -156,94 +173,117 @@ class DelegatingXMLStreamReader implements XMLStreamReader {
         }
     }
 
+    @Override
     public String getNamespaceURI(int index) {
         if (depth == 1) {
-            return index < xprefixes.length ? getNamespaceURI(xprefixes[index]) : reader.getNamespaceURI(index - xprefixes.length);
+            return index < xprefixes.length
+                    ? getNamespaceURI(xprefixes[index]) : reader.getNamespaceURI(index - xprefixes.length);
         } else {
             return reader.getNamespaceURI(index);
         }
     }
 
+    @Override
     public NamespaceContext getNamespaceContext() {
         return reader.getNamespaceContext();
     }
 
+    @Override
     public int getEventType() {
         return reader.getEventType();
     }
 
+    @Override
     public String getText() {
         return reader.getText();
     }
 
+    @Override
     public char[] getTextCharacters() {
         return reader.getTextCharacters();
     }
 
+    @Override
     public int getTextCharacters(int sourceStart, char[] target, int targetStart, int length) throws XMLStreamException {
         return reader.getTextCharacters(sourceStart, target, targetStart, length);
     }
 
+    @Override
     public int getTextStart() {
         return reader.getTextStart();
     }
 
+    @Override
     public int getTextLength() {
         return reader.getTextLength();
     }
 
+    @Override
     public String getEncoding() {
         return reader.getEncoding();
     }
 
+    @Override
     public boolean hasText() {
         return reader.hasText();
     }
 
+    @Override
     public Location getLocation() {
         return reader.getLocation();
     }
 
+    @Override
     public QName getName() {
         return reader.getName();
     }
 
+    @Override
     public String getLocalName() {
         return reader.getLocalName();
     }
 
+    @Override
     public boolean hasName() {
         return reader.hasName();
     }
 
+    @Override
     public String getNamespaceURI() {
         return reader.getNamespaceURI();
     }
 
+    @Override
     public String getPrefix() {
         return reader.getPrefix();
     }
 
+    @Override
     public String getVersion() {
         return reader.getVersion();
     }
 
+    @Override
     public boolean isStandalone() {
         return reader.isStandalone();
     }
 
+    @Override
     public boolean standaloneSet() {
         return reader.standaloneSet();
     }
 
+    @Override
     public String getCharacterEncodingScheme() {
         return reader.getCharacterEncodingScheme();
     }
 
+    @Override
     public String getPITarget() {
         return reader.getPITarget();
     }
 
+    @Override
     public String getPIData() {
         return reader.getPIData();
     }

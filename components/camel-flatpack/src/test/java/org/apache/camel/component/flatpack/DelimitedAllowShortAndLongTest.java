@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.flatpack;
 
 import java.util.List;
@@ -24,30 +23,31 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.apache.camel.util.ObjectHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@CamelSpringTest
 @ContextConfiguration
-public class DelimitedAllowShortAndLongTest extends AbstractJUnit4SpringContextTests {
+public class DelimitedAllowShortAndLongTest {
     private static final Logger LOG = LoggerFactory.getLogger(DelimitedAllowShortAndLongTest.class);
 
-    @EndpointInject(uri = "mock:results")
+    @EndpointInject("mock:results")
     protected MockEndpoint results;
 
-    @EndpointInject(uri = "mock:results-df")
+    @EndpointInject("mock:results-df")
     protected MockEndpoint resultsdf;
 
-    @EndpointInject(uri = "mock:results-xml")
+    @EndpointInject("mock:results-xml")
     protected MockEndpoint resultsxml;
 
-    protected String[] expectedItemDescriptions = {"SOME VALVE", "AN ENGINE", "A BELT", "A BOLT"};
+    protected String[] expectedItemDescriptions = { "SOME VALVE", "AN ENGINE", "A BELT", "A BOLT" };
 
     @Test
     public void testCamel() throws Exception {
@@ -58,10 +58,10 @@ public class DelimitedAllowShortAndLongTest extends AbstractJUnit4SpringContextT
         List<Exchange> list = results.getReceivedExchanges();
         for (Exchange exchange : list) {
             Message in = exchange.getIn();
-            assertEquals("counter", in.getHeader("camelFlatpackCounter"), counter);
+            assertEquals(in.getHeader("camelFlatpackCounter"), counter, "counter");
             Map<?, ?> body = in.getBody(Map.class);
-            assertNotNull("Should have found body as a Map but was: " + ObjectHelper.className(in.getBody()), body);
-            assertEquals("ITEM_DESC", expectedItemDescriptions[counter], body.get("ITEM_DESC"));
+            assertNotNull(body, "Should have found body as a Map but was: " + ObjectHelper.className(in.getBody()));
+            assertEquals(expectedItemDescriptions[counter], body.get("ITEM_DESC"), "ITEM_DESC");
             LOG.info("Result: " + counter + " = " + body);
             counter++;
         }
@@ -76,7 +76,7 @@ public class DelimitedAllowShortAndLongTest extends AbstractJUnit4SpringContextT
         DataSetList data = exchange.getIn().getBody(DataSetList.class);
         int counter = 0;
         for (Map<String, Object> map : data) {
-            assertEquals("ITEM_DESC", expectedItemDescriptions[counter], map.get("ITEM_DESC"));
+            assertEquals(expectedItemDescriptions[counter], map.get("ITEM_DESC"), "ITEM_DESC");
             counter++;
         }
     }
@@ -90,7 +90,7 @@ public class DelimitedAllowShortAndLongTest extends AbstractJUnit4SpringContextT
         DataSetList data = exchange.getIn().getBody(DataSetList.class);
         int counter = 0;
         for (Map<String, Object> map : data) {
-            assertEquals("ITEM_DESC", expectedItemDescriptions[counter], map.get("ITEM_DESC"));
+            assertEquals(expectedItemDescriptions[counter], map.get("ITEM_DESC"), "ITEM_DESC");
             counter++;
         }
     }

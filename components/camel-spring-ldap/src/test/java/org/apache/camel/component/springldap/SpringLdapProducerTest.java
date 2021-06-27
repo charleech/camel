@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,25 +30,26 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.support.DefaultMessage;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class SpringLdapProducerTest extends CamelTestSupport {
 
     @Mock
@@ -59,37 +60,41 @@ public class SpringLdapProducerTest extends CamelTestSupport {
 
     private SpringLdapProducer ldapProducer;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         when(ldapEndpoint.getLdapTemplate()).thenReturn(ldapTemplate);
         ldapProducer = new SpringLdapProducer(ldapEndpoint);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testEmptyExchange() throws Exception {
         Exchange exchange = new DefaultExchange(context);
-        ldapProducer.process(exchange);
+        assertThrows(UnsupportedOperationException.class,
+                () -> ldapProducer.process(exchange));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testWrongBodyType() throws Exception {
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
         in.setBody("");
 
         exchange.setIn(in);
-        ldapProducer.process(exchange);
+        assertThrows(UnsupportedOperationException.class,
+                () -> ldapProducer.process(exchange));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNoDN() throws Exception {
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
 
         Map<String, Object> body = new HashMap<>();
 
-        processBody(exchange, in, body);
+        assertThrows(UnsupportedOperationException.class,
+                () -> processBody(exchange, in, body));
     }
 
     @Test
@@ -111,7 +116,7 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         ldapProducer.process(exchange);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testEmptyDN() throws Exception {
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
@@ -119,10 +124,11 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         Map<String, Object> body = new HashMap<>();
         body.put(SpringLdapProducer.DN, "");
 
-        processBody(exchange, in, body);
+        assertThrows(UnsupportedOperationException.class,
+                () -> processBody(exchange, in, body));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNullDN() throws Exception {
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
@@ -130,10 +136,11 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         Map<String, Object> body = new HashMap<>();
         body.put(SpringLdapProducer.DN, null);
 
-        processBody(exchange, in, body);
+        assertThrows(UnsupportedOperationException.class,
+                () -> processBody(exchange, in, body));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNullOperation() throws Exception {
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
@@ -141,7 +148,8 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         Map<String, Object> body = new HashMap<>();
         body.put(SpringLdapProducer.DN, " ");
 
-        processBody(exchange, in, body);
+        assertThrows(UnsupportedOperationException.class,
+                () -> processBody(exchange, in, body));
     }
 
     @Test
@@ -161,7 +169,7 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         when(ldapEndpoint.scopeValue()).thenReturn(scope);
 
         processBody(exchange, in, body);
-        verify(ldapTemplate).search(eq(dn), eq(filter), eq(scope), ArgumentMatchers.<AttributesMapper<String>>any());
+        verify(ldapTemplate).search(eq(dn), eq(filter), eq(scope), ArgumentMatchers.<AttributesMapper<String>> any());
     }
 
     @Test
@@ -221,7 +229,8 @@ public class SpringLdapProducerTest extends CamelTestSupport {
     @Test
     public void testModifyAttributes() throws Exception {
         String dn = "cn=dn";
-        ModificationItem[] modificationItems = new ModificationItem[] {new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("key", "value"))};
+        ModificationItem[] modificationItems
+                = new ModificationItem[] { new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("key", "value")) };
 
         Exchange exchange = new DefaultExchange(context);
         Message in = new DefaultMessage(context);
@@ -246,7 +255,7 @@ public class SpringLdapProducerTest extends CamelTestSupport {
         Map<String, Object> body = new HashMap<>();
         body.put(SpringLdapProducer.DN, dn);
         body.put(SpringLdapProducer.REQUEST, dn);
-        body.put(SpringLdapProducer.FUNCTION, (BiFunction<LdapOperations, String, Void>)(l, q) -> {
+        body.put(SpringLdapProducer.FUNCTION, (BiFunction<LdapOperations, String, Void>) (l, q) -> {
             l.lookup(q);
             return null;
         });

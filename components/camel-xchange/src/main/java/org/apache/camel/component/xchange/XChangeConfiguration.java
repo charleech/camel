@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package org.apache.camel.component.xchange;
-
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,33 +33,45 @@ import org.knowm.xchange.currency.CurrencyPair;
 public class XChangeConfiguration {
 
     // Available service
-    public enum XChangeService { marketdata, metadata, account }
-    
+    public enum XChangeService {
+        marketdata,
+        metadata,
+        account
+    }
+
     // Available methods
     public enum XChangeMethod {
         // Account service methods
-        balances, fundingHistory, wallets, 
+        balances,
+        fundingHistory,
+        wallets,
         // Metadata service methods
-        currencies, currencyMetaData, currencyPairs, currencyPairMetaData,
+        currencies,
+        currencyMetaData,
+        currencyPairs,
+        currencyPairMetaData,
         // Marketdata service methods
-        ticker 
+        ticker
     }
-    
+
     public static final String HEADER_CURRENCY = "Currency";
     public static final String HEADER_CURRENCY_PAIR = "CurrencyPair";
-    
+
     static Map<String, Class<? extends Exchange>> xchangeMapping = new HashMap<>();
 
-    @UriPath(description = "The exchange to connect to") @Metadata(required = true)
+    @UriPath(description = "The exchange to connect to")
+    @Metadata(required = true)
     private String name;
-    @UriParam(description = "The service to call") @Metadata(required = true)
+    @UriParam(description = "The service to call")
+    @Metadata(required = true)
     private XChangeService service;
-    @UriParam(description = "The method to execute") @Metadata(required = true)
+    @UriParam(description = "The method to execute")
+    @Metadata(required = true)
     private XChangeMethod method;
-    @UriParam(description = "The currency") 
+    @UriParam(description = "The currency")
     private Currency currency;
-    @UriParam(description = "The currency pair") 
-    private CurrencyPair currencyPair;
+    @UriParam(description = "The currency pair")
+    private String currencyPair;
 
     public XChangeConfiguration(XChangeComponent component) {
         ObjectHelper.notNull(component, "component");
@@ -94,16 +105,27 @@ public class XChangeConfiguration {
         return currency;
     }
 
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
     public void setCurrency(String curr) {
         this.currency = Currency.getInstanceNoCreate(curr);
     }
 
-    public CurrencyPair getCurrencyPair() {
+    public CurrencyPair getAsCurrencyPair() {
+        if (currencyPair != null) {
+            return new CurrencyPair(currencyPair);
+        }
+        return null;
+    }
+
+    public String getCurrencyPair() {
         return currencyPair;
     }
 
-    public void setCurrencyPair(String pair) {
-        this.currencyPair = new CurrencyPair(pair);
+    public void setCurrencyPair(String currencyPair) {
+        this.currencyPair = currencyPair;
     }
 
     @SuppressWarnings("unchecked")

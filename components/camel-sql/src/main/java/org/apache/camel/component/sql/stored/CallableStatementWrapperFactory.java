@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import org.apache.camel.component.sql.stored.template.TemplateParser;
-import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.support.LRUCacheFactory;
+import org.apache.camel.support.service.ServiceSupport;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -39,7 +39,8 @@ public class CallableStatementWrapperFactory extends ServiceSupport {
     @SuppressWarnings("unchecked")
     private final Map<String, TemplateStoredProcedure> templateCache = LRUCacheFactory.newLRUCache(TEMPLATE_CACHE_DEFAULT_SIZE);
     @SuppressWarnings("unchecked")
-    private final Map<String, BatchCallableStatementCreatorFactory> batchTemplateCache = LRUCacheFactory.newLRUCache(BATCH_TEMPLATE_CACHE_DEFAULT_SIZE);
+    private final Map<String, BatchCallableStatementCreatorFactory> batchTemplateCache
+            = LRUCacheFactory.newLRUCache(BATCH_TEMPLATE_CACHE_DEFAULT_SIZE);
 
     public CallableStatementWrapperFactory(JdbcTemplate jdbcTemplate, TemplateParser templateParser, boolean function) {
         this.jdbcTemplate = jdbcTemplate;

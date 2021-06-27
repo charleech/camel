@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,8 @@ import io.undertow.util.URLUtils;
 
 /**
  * Custom root handler to enable hot swapping individual handlers assigned for each path template and/or HTTP method.
+ *
+ * @see RestRootHandler
  */
 public class CamelRootHandler implements HttpHandler {
     private CamelPathHandler pathHandler;
@@ -31,6 +33,7 @@ public class CamelRootHandler implements HttpHandler {
         pathHandler = new CamelPathHandler(defaultHandler);
     }
 
+    @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         pathHandler.handleRequest(exchange);
     }
@@ -102,7 +105,7 @@ public class CamelRootHandler implements HttpHandler {
         if (path.contains("{")) {
             // Removing a handler for the template path
             String relativePath = path.substring(basePath.length());
-            CamelPathTemplateHandler templateHandler = (CamelPathTemplateHandler)basePathHandler;
+            CamelPathTemplateHandler templateHandler = (CamelPathTemplateHandler) basePathHandler;
             CamelMethodHandler targetHandler = templateHandler.get(relativePath);
             if (targetHandler.remove(methods)) {
                 templateHandler.remove(relativePath);
@@ -115,7 +118,7 @@ public class CamelRootHandler implements HttpHandler {
             // Removing a handler for the static path
             if (basePathHandler instanceof CamelPathTemplateHandler) {
                 String relativePath = path.substring(basePath.length());
-                CamelPathTemplateHandler templateHandler = (CamelPathTemplateHandler)basePathHandler;
+                CamelPathTemplateHandler templateHandler = (CamelPathTemplateHandler) basePathHandler;
                 CamelMethodHandler targetHandler = templateHandler.getDefault();
                 if (targetHandler.remove(methods)) {
                     templateHandler.remove(relativePath);
@@ -124,7 +127,7 @@ public class CamelRootHandler implements HttpHandler {
                     }
                 }
             } else {
-                CamelMethodHandler targetHandler = (CamelMethodHandler)basePathHandler;
+                CamelMethodHandler targetHandler = (CamelMethodHandler) basePathHandler;
                 if (targetHandler.remove(methods)) {
                     if (prefixMatch) {
                         pathHandler.removePrefixPath(basePath);
@@ -140,6 +143,7 @@ public class CamelRootHandler implements HttpHandler {
         return pathHandler.isEmpty();
     }
 
+    @Override
     public String toString() {
         return pathHandler.toString();
     }

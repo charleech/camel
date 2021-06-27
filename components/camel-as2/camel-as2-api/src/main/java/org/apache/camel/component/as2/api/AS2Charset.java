@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,10 @@ public interface AS2Charset {
     /**
      * Name of charset parameter in Content-Type header values.
      */
-    public static final String PARAM = "charset";
+    String PARAM = "charset";
 
     /**
      * Character Set Name for US ASCII
      */
-    public static final String US_ASCII = "US-ASCII";
+    String US_ASCII = "US-ASCII";
 }

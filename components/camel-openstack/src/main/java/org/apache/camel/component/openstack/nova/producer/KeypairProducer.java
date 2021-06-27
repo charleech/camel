@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,20 +38,20 @@ public class KeypairProducer extends AbstractOpenstackProducer {
     public void process(Exchange exchange) throws Exception {
         String operation = getOperation(exchange);
         switch (operation) {
-        case OpenstackConstants.CREATE:
-            doCreate(exchange);
-            break;
-        case OpenstackConstants.GET:
-            doGet(exchange);
-            break;
-        case OpenstackConstants.GET_ALL:
-            doGetAll(exchange);
-            break;
-        case OpenstackConstants.DELETE:
-            doDelete(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation " + operation);
+            case OpenstackConstants.CREATE:
+                doCreate(exchange);
+                break;
+            case OpenstackConstants.GET:
+                doGet(exchange);
+                break;
+            case OpenstackConstants.GET_ALL:
+                doGetAll(exchange);
+                break;
+            case OpenstackConstants.DELETE:
+                doDelete(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation " + operation);
         }
     }
 
@@ -84,7 +84,7 @@ public class KeypairProducer extends AbstractOpenstackProducer {
         final String keypairName = msg.getHeader(OpenstackConstants.NAME, String.class);
         StringHelper.notEmpty(keypairName, "Keypair name");
         final ActionResponse response = os.compute().keypairs().delete(keypairName);
-        checkFailure(response, msg, "Delete keypair " + keypairName);
+        checkFailure(response, exchange, "Delete keypair " + keypairName);
     }
 
 }

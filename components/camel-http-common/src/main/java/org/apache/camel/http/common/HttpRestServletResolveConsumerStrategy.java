@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.http.common;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.camel.support.RestConsumerContextPathMatcher;
@@ -41,7 +42,8 @@ public class HttpRestServletResolveConsumerStrategy extends HttpServletResolveCo
             paths.add(new HttpRestConsumerPath(entry.getValue()));
         }
 
-        RestConsumerContextPathMatcher.ConsumerPath<HttpConsumer> best = RestConsumerContextPathMatcher.matchBestPath(method, path, paths);
+        RestConsumerContextPathMatcher.ConsumerPath<HttpConsumer> best
+                = RestConsumerContextPathMatcher.matchBestPath(method, path, paths);
         if (best != null) {
             answer = best.getConsumer();
         }

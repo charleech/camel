@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,8 +30,8 @@ public class BindyUnmarshalCommaIssue2Test extends BindyUnmarshalCommaIssueTest 
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .unmarshal(new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.csv2.WeatherModel.class))
-                    .to("mock:result");
+                        .unmarshal(new BindyCsvDataFormat(org.apache.camel.dataformat.bindy.csv2.WeatherModel.class))
+                        .to("mock:result");
             }
         };
     }

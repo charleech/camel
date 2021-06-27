@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,17 @@ import javax.jms.Destination;
 import javax.jms.TextMessage;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.CamelJmsTestHelper;
 import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.jms.core.JmsTemplate;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JmsAnotherCustomJMSReplyToTest extends CamelTestSupport {
     private JmsComponent amq;
@@ -63,18 +62,16 @@ public class JmsAnotherCustomJMSReplyToTest extends CamelTestSupport {
         assertMockEndpointsSatisfied();
     }
 
-
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
 
             public void configure() throws Exception {
                 from("activemq:queue:hello")
                         .setExchangePattern(ExchangePattern.InOnly)
-                        .process(new Processor() {
-                            public void process(Exchange exchange) throws Exception {
-                                exchange.getIn().setBody("What's your name");
-                                exchange.getIn().setHeader("JMSReplyTo", "nameReplyQueue");
-                            }
+                        .process(exchange -> {
+                            exchange.getIn().setBody("What's your name");
+                            exchange.getIn().setHeader("JMSReplyTo", "nameReplyQueue");
                         })
                         .to("activemq:queue:nameRequestor?preserveMessageQos=true");
 
@@ -83,6 +80,7 @@ public class JmsAnotherCustomJMSReplyToTest extends CamelTestSupport {
         };
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 

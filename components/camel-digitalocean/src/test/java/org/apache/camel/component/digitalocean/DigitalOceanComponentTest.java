@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,29 +18,35 @@ package org.apache.camel.component.digitalocean;
 
 import com.myjeeva.digitalocean.impl.DigitalOceanClient;
 import com.myjeeva.digitalocean.pojo.Account;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.digitalocean.constants.DigitalOceanHeaders;
 import org.apache.camel.component.digitalocean.constants.DigitalOceanOperations;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DigitalOceanComponentTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint mockResultEndpoint;
+
+    @BindToRegistry("digitalOceanClient")
+    DigitalOceanClient digitalOceanClient = new DigitalOceanClientMock();
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:getAccountInfo")
-                    .setHeader(DigitalOceanHeaders.OPERATION, constant(DigitalOceanOperations.get))
-                    .to("digitalocean:account?digitalOceanClient=#digitalOceanClient")
-                    .to("mock:result");
+                        .setHeader(DigitalOceanHeaders.OPERATION, constant(DigitalOceanOperations.get))
+                        .to("digitalocean:account?digitalOceanClient=#digitalOceanClient")
+                        .to("mock:result");
             }
         };
     }
@@ -51,16 +57,7 @@ public class DigitalOceanComponentTest extends CamelTestSupport {
         mockResultEndpoint.expectedMinimumMessageCount(1);
         Exchange exchange = template.request("direct:getAccountInfo", null);
         assertMockEndpointsSatisfied();
-        assertIsInstanceOf(Account.class, exchange.getOut().getBody());
-        assertEquals(exchange.getIn().getBody(Account.class).getEmail(), "camel@apache.org");
-    }
-
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        DigitalOceanClient digitalOceanClient = new DigitalOceanClientMock();
-        registry.bind("digitalOceanClient", digitalOceanClient);
-        return registry;
+        assertIsInstanceOf(Account.class, exchange.getMessage().getBody());
+        assertEquals("camel@apache.org", exchange.getMessage().getBody(Account.class).getEmail());
     }
 }

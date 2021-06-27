@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,8 @@ public class ResultSetIterator implements Iterator, Closeable {
     private final AtomicBoolean closed = new AtomicBoolean();
     private int rowNum;
 
-    public ResultSetIterator(Connection connection, Statement statement, ResultSet resultSet, RowMapper rowMapper) throws SQLException {
+    public ResultSetIterator(Connection connection, Statement statement, ResultSet resultSet,
+                             RowMapper rowMapper) throws SQLException {
         this.connection = connection;
         this.statement = statement;
         this.resultSet = resultSet;

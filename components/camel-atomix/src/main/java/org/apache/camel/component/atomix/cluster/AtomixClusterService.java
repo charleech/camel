@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,15 +20,16 @@ import java.util.List;
 
 import io.atomix.AtomixReplica;
 import io.atomix.catalyst.transport.Address;
-import io.atomix.catalyst.transport.Transport;
 import io.atomix.copycat.server.storage.StorageLevel;
 import org.apache.camel.CamelContext;
-import org.apache.camel.impl.cluster.AbstractCamelClusterService;
+import org.apache.camel.support.cluster.AbstractCamelClusterService;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class AtomixClusterService extends AbstractCamelClusterService<AtomixClusterView> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AtomixClusterService.class);
 
     private Address address;
     private AtomixClusterConfiguration configuration;
@@ -97,16 +98,16 @@ public final class AtomixClusterService extends AbstractCamelClusterService<Atom
         configuration.setNodes(nodes);
     }
 
-    public Class<? extends Transport> getTransport() {
-        return configuration.getTransport();
+    public String getTransport() {
+        return configuration.getTransportClassName();
     }
 
-    public void setTransport(Class<? extends Transport> transport) {
-        configuration.setTransport(transport);
+    public void setTransportClassName(String transport) {
+        configuration.setTransportClassName(transport);
     }
 
     public AtomixReplica getAtomix() {
-        return configuration.getAtomix();
+        return (AtomixReplica) configuration.getAtomix();
     }
 
     public void setAtomix(AtomixReplica atomix) {
@@ -143,7 +144,7 @@ public final class AtomixClusterService extends AbstractCamelClusterService<Atom
         super.doStop();
 
         if (atomix != null) {
-            log.debug("Leaving atomix cluster replica {}", atomix);
+            LOG.debug("Leaving atomix cluster replica {}", atomix);
             atomix.leave().join();
         }
     }
@@ -163,13 +164,13 @@ public final class AtomixClusterService extends AbstractCamelClusterService<Atom
             atomix = AtomixClusterHelper.createReplica(getCamelContext(), address, configuration);
 
             if (ObjectHelper.isNotEmpty(configuration.getNodes())) {
-                log.debug("Bootstrap cluster on address {} for nodes: {}", address, configuration.getNodes());
+                LOG.debug("Bootstrap cluster on address {} for nodes: {}", address, configuration.getNodes());
                 this.atomix.bootstrap(configuration.getNodes()).join();
-                log.debug("Bootstrap cluster done");
+                LOG.debug("Bootstrap cluster done");
             } else {
-                log.debug("Bootstrap cluster on address {}", address, configuration.getNodes());
+                LOG.debug("Bootstrap cluster on address {}", address);
                 this.atomix.bootstrap().join();
-                log.debug("Bootstrap cluster done");
+                LOG.debug("Bootstrap cluster done");
             }
         }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,6 +52,7 @@ public class DummyOrder implements Serializable {
         this.quantity = quantity;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -60,7 +61,7 @@ public class DummyOrder implements Serializable {
             return false;
         }
 
-        DummyOrder that = (DummyOrder)o;
+        DummyOrder that = (DummyOrder) o;
 
         if (itemId != that.itemId) {
             return false;
@@ -75,22 +76,24 @@ public class DummyOrder implements Serializable {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int result;
-        result = (int)(orderId ^ (orderId >>> 32));
-        result = 31 * result + (int)(itemId ^ (itemId >>> 32));
+        result = (int) (orderId ^ (orderId >>> 32));
+        result = 31 * result + (int) (itemId ^ (itemId >>> 32));
         result = 31 * result + quantity;
         return result;
     }
 
+    @Override
     public String toString() {
         return "DummyOrder{"
-            + "orderId="
-            + orderId
-            + ", itemId="
-            + itemId
-            + ", quantity="
-            + quantity
-            + '}';
+               + "orderId="
+               + orderId
+               + ", itemId="
+               + itemId
+               + ", quantity="
+               + quantity
+               + '}';
     }
 }

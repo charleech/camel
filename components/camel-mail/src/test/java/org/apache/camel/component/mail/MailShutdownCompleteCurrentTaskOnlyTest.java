@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.mail;
+
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Store;
@@ -23,10 +24,12 @@ import javax.mail.internet.MimeMessage;
 import org.apache.camel.ShutdownRunningTask;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test for shutdown.
@@ -34,7 +37,7 @@ import org.jvnet.mock_javamail.Mailbox;
 public class MailShutdownCompleteCurrentTaskOnlyTest extends CamelTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         prepareMailbox();
         super.setUp();
@@ -55,7 +58,7 @@ public class MailShutdownCompleteCurrentTaskOnlyTest extends CamelTestSupport {
         context.stop();
 
         // should NOT route all 5
-        assertTrue("Should NOT complete all messages, was: " + bar.getReceivedCounter(), bar.getReceivedCounter() < 5);
+        assertTrue(bar.getReceivedCounter() < 5, "Should NOT complete all messages, was: " + bar.getReceivedCounter());
     }
 
     private void prepareMailbox() throws Exception {
@@ -79,18 +82,18 @@ public class MailShutdownCompleteCurrentTaskOnlyTest extends CamelTestSupport {
         folder.close(true);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("pop3://jones@localhost?password=secret&consumer.initialDelay=100&consumer.delay=100").routeId("route1")
-                         // let it complete only current task so we shutdown faster
-                         .shutdownRunningTask(ShutdownRunningTask.CompleteCurrentTaskOnly)
-                         .delay(1000).to("seda:foo");
+                from("pop3://jones@localhost?password=secret&initialDelay=100&delay=100").routeId("route1")
+                        // let it complete only current task so we shutdown faster
+                        .shutdownRunningTask(ShutdownRunningTask.CompleteCurrentTaskOnly)
+                        .delay(1000).to("seda:foo");
 
                 from("seda:foo").routeId("route2").to("mock:bar");
             }
         };
     }
-
 
 }

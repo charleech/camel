@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.AsyncProcessorSupport;
-import org.apache.camel.support.AsyncProcessorHelper;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -67,7 +66,7 @@ public class UnwrapStreamProcessor extends AsyncProcessorSupport {
 
                 private void addData() {
                     Object body;
-                    if (data.size() == 0) {
+                    if (data.isEmpty()) {
                         body = null;
                     } else if (data.size() == 1) {
                         body = data.get(0);
@@ -80,11 +79,13 @@ public class UnwrapStreamProcessor extends AsyncProcessorSupport {
                         Exchange copy = (Exchange) body;
                         exchange.setException(copy.getException());
                         exchange.setIn(copy.getIn());
-                        exchange.setOut(copy.getOut());
+                        if (copy.hasOut()) {
+                            exchange.setOut(copy.getOut());
+                        }
                         exchange.getProperties().clear();
                         exchange.getProperties().putAll(copy.getProperties());
                     } else {
-                        exchange.getOut().setBody(body);
+                        exchange.getMessage().setBody(body);
                     }
                 }
 

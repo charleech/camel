@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,8 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.apache.velocity.util.ExtProperties;
 
 /**
- * Camel specific {@link ClasspathResourceLoader} that loads resources using the
- * Camel {@link ClassResolver} used by the Velocity.
+ * Camel specific {@link ClasspathResourceLoader} that loads resources using the Camel {@link ClassResolver} used by the
+ * Velocity.
  */
 public class CamelVelocityClasspathResourceLoader extends ClasspathResourceLoader {
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.kubernetes.cloud;
 
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.model.cloud.ServiceCallConfigurationDefinition;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Manual test")
+@Disabled("Manual test")
 public class ServiceCallClientRouteTest extends CamelTestSupport {
 
     @Test
@@ -54,10 +53,7 @@ public class ServiceCallClientRouteTest extends CamelTestSupport {
                 // register configuration
                 context.setServiceCallConfiguration(config);
 
-                from("direct:start")
-                    .serviceCall("cdi-camel-jetty")
-                    .serviceCall("cdi-camel-jetty")
-                    .to("mock:result");
+                from("direct:start").serviceCall("cdi-camel-jetty").serviceCall("cdi-camel-jetty").to("mock:result");
             }
         };
     }

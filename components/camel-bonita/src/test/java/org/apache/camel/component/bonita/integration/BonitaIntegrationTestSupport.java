@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,20 +17,14 @@
 package org.apache.camel.component.bonita.integration;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public class BonitaIntegrationTestSupport extends CamelTestSupport {
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
         final CamelContext context = super.createCamelContext();
-
-        PropertiesComponent component = new PropertiesComponent();
-        component.setLocation("classpath:test-options.properties");
-
-        context.addComponent("properties", component);
-
+        context.getPropertiesComponent().setLocation("classpath:test-options.properties");
         return context;
     }
 }

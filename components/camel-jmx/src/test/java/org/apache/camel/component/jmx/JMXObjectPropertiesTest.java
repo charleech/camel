@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.camel.component.jmx.beans.ISimpleMXBean;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests that the objectName is created with the hashtable of objectProperties
@@ -43,7 +43,7 @@ public class JMXObjectPropertiesTest extends SimpleBeanFixture {
     protected void initRegistry() {
         Map<String, String> ht = new Hashtable<>();
         ht.put("name", "simpleBean");
-        getRegistry().put("myTable", ht);
+        getRegistry().bind("myTable", ht);
     }
 
 }

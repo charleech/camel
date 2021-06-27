@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,8 @@
 package org.apache.camel.component.stream;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class StreamRouteBuilderTest extends CamelTestSupport {
 
@@ -32,13 +32,14 @@ public class StreamRouteBuilderTest extends CamelTestSupport {
         template.sendBody("direct:start", "This is bytes\n".getBytes());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:start").setHeader("stream", constant(System.out))
-                    .to("stream:err", "stream:out", "stream:header");
+                        .to("stream:err", "stream:out", "stream:header");
             }
         };
     }
-    
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,20 +17,27 @@
 package org.apache.camel.component.hystrix.processor;
 
 import com.netflix.hystrix.exception.HystrixBadRequestException;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.spi.CircuitBreakerConstants;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HystrixBadRequestExceptionTest extends CamelTestSupport {
 
     @Test
     public void testHystrix() throws Exception {
         getMockEndpoint("mock:fallback").expectedMessageCount(0);
-        getMockEndpoint("mock:result").expectedBodiesReceived("Hello World");
-        getMockEndpoint("mock:result").expectedPropertyReceived(HystrixConstants.HYSTRIX_RESPONSE_SUCCESSFUL_EXECUTION, true);
-        getMockEndpoint("mock:result").expectedPropertyReceived(HystrixConstants.HYSTRIX_RESPONSE_FROM_FALLBACK, false);
+        getMockEndpoint("mock:result").expectedMessageCount(0);
 
-        template.sendBody("direct:start", "Hello World");
+        Exchange out = template.send("direct:start", e -> e.getMessage().setBody("Hello World"));
+        assertTrue(out.isFailed());
+        assertFalse(out.getProperty(CircuitBreakerConstants.RESPONSE_SUCCESSFUL_EXECUTION, boolean.class));
+        assertFalse(out.getProperty(CircuitBreakerConstants.RESPONSE_FROM_FALLBACK, boolean.class));
+        assertTrue(out.getException() instanceof HystrixBadRequestException);
 
         assertMockEndpointsSatisfied();
     }
@@ -41,15 +48,15 @@ public class HystrixBadRequestExceptionTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("log:start")
-                    .hystrix()
+                        .to("log:start")
+                        .circuitBreaker()
                         .throwException(new HystrixBadRequestException("Should not fallback"))
-                    .onFallback()
+                        .onFallback()
                         .to("mock:fallback")
                         .transform().constant("Fallback message")
-                    .end()
-                    .to("log:result")
-                    .to("mock:result");
+                        .end()
+                        .to("log:result")
+                        .to("mock:result");
             }
         };
     }

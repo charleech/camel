@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -68,15 +68,15 @@ public abstract class AbstractOpenstackProducer extends DefaultProducer {
     }
 
     protected String getOperation(Exchange exchange) {
-        final String operation = exchange.getIn().getHeader(OpenstackConstants.OPERATION, endpoint.getOperation(), String.class);
+        final String operation
+                = exchange.getIn().getHeader(OpenstackConstants.OPERATION, endpoint.getOperation(), String.class);
         StringHelper.notEmpty(operation, "Operation");
         return operation;
     }
 
-    protected void checkFailure(ActionResponse response, Message msg, String operation) {
-        msg.setFault(!response.isSuccess());
+    protected void checkFailure(ActionResponse response, Exchange exchange, String operation) {
         if (!response.isSuccess()) {
-            msg.setBody(String.format(" %s was not successful: %s", operation, response.getFault()));
+            exchange.setException(new OpenstackOperationException(operation, response.getFault(), response.getCode()));
         }
     }
 }

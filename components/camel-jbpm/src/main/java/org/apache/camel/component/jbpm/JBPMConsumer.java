@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.component.jbpm.emitters.CamelEventEmitter;
 import org.apache.camel.component.jbpm.listeners.CamelCaseEventListener;
@@ -38,17 +36,16 @@ import org.kie.internal.runtime.manager.InternalRuntimeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class JBPMConsumer extends DefaultConsumer implements DeploymentEventListener {
-    
+
     private static final transient Logger LOGGER = LoggerFactory.getLogger(JBPMConsumer.class);
-   
+
     private JBPMEndpoint endpoint;
     private JBPMConfiguration configuration;
-    
+
     public JBPMConsumer(Endpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        
+
         this.endpoint = (JBPMEndpoint) endpoint;
         this.configuration = ((JBPMEndpoint) getEndpoint()).getConfiguration();
     }
@@ -56,63 +53,59 @@ public class JBPMConsumer extends DefaultConsumer implements DeploymentEventList
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        
-        DeploymentService deploymentService = (DeploymentService) ServiceRegistry.get().service(ServiceRegistry.DEPLOYMENT_SERVICE);        
-        
+
+        DeploymentService deploymentService
+                = (DeploymentService) ServiceRegistry.get().service(ServiceRegistry.DEPLOYMENT_SERVICE);
+
         if (configuration.getDeploymentId() != null) {
-            InternalRuntimeManager manager = (InternalRuntimeManager) deploymentService.getRuntimeManager(configuration.getDeploymentId());
+            InternalRuntimeManager manager
+                    = (InternalRuntimeManager) deploymentService.getRuntimeManager(configuration.getDeploymentId());
             configure(manager, this);
-            
+
             LOGGER.debug("JBPM Camel Consumer configured and started for deployment id {}", configuration.getDeploymentId());
         } else {
-            
+
             ((ListenerSupport) deploymentService).addListener(this);
-            
+
             for (DeployedUnit deployed : deploymentService.getDeployedUnits()) {
                 InternalRuntimeManager manager = (InternalRuntimeManager) deployed.getRuntimeManager();
-                configure(manager, this); 
+                configure(manager, this);
             }
-            
+
             LOGGER.debug("JBPM Camel Consumer configured and started on all available deployments");
         }
-        
-        
+
     }
 
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        DeploymentService deploymentService = (DeploymentService) ServiceRegistry.get().service(ServiceRegistry.DEPLOYMENT_SERVICE);        
+        DeploymentService deploymentService
+                = (DeploymentService) ServiceRegistry.get().service(ServiceRegistry.DEPLOYMENT_SERVICE);
         if (configuration.getDeploymentId() != null) {
             LOGGER.debug("JBPM Camel Consumer unconfigured and stopped for deployment id {}", configuration.getDeploymentId());
         } else {
             ((ListenerSupport) deploymentService).removeListener(this);
-            
+
             LOGGER.debug("JBPM Camel Consumer unconfigured and stopped on all available deployments");
         }
-        
+
         if (JBPMConstants.JBPM_EVENT_EMITTER.equals(configuration.getEventListenerType())) {
             ServiceRegistry.get().remove("CamelEventEmitter");
         }
-        
+
     }
 
     public void sendMessage(String eventType, Object body) {
-        Exchange exchange = getEndpoint().createExchange(ExchangePattern.InOnly);
+        Exchange exchange = createExchange(false);
         exchange.getIn().setHeader("EventType", eventType);
-        
+
         exchange.getIn().setBody(body);
 
         if (!endpoint.isSynchronous()) {
-            getAsyncProcessor().process(exchange, new AsyncCallback() {
-                @Override
-                public void done(boolean doneSync) {
-                    // handle any thrown exception
-                    if (exchange.getException() != null) {
-                        getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-                    }
-                }
-            });
+            // use default consumer callback
+            AsyncCallback cb = defaultConsumerCallback(exchange, false);
+            getAsyncProcessor().process(exchange, cb);
         } else {
             try {
                 getProcessor().process(exchange);
@@ -124,66 +117,64 @@ public class JBPMConsumer extends DefaultConsumer implements DeploymentEventList
             if (exchange.getException() != null) {
                 getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
             }
+            releaseExchange(exchange, false);
         }
     }
-    
+
     @Override
     public void onDeploy(DeploymentEvent event) {
         InternalRuntimeManager manager = (InternalRuntimeManager) event.getDeployedUnit().getRuntimeManager();
-        configure(manager, this);       
-
+        configure(manager, this);
     }
 
     @Override
-    public void onUnDeploy(DeploymentEvent event) {  
+    public void onUnDeploy(DeploymentEvent event) {
         // no-op
     }
 
     @Override
     public void onActivate(DeploymentEvent event) {
         // no-op
-        
     }
 
     @Override
     public void onDeactivate(DeploymentEvent event) {
         // no-op
-        
     }
 
-    
     protected void configure(InternalRuntimeManager manager, JBPMConsumer consumer) {
         String eventListenerType = configuration.getEventListenerType();
         if (eventListenerType == null) {
             return;
         }
-        
-       
+
         configureConsumer(eventListenerType, manager, consumer);
-        
     }
-    
+
     protected void configureConsumer(String eventListenerType, InternalRuntimeManager manager, JBPMConsumer consumer) {
         LOGGER.debug("Configuring Camel JBPM Consumer for {} on runtime manager {}", eventListenerType, manager);
-       
+
         CacheManager cacheManager = manager.getCacheManager();
         JBPMCamelConsumerAware consumerAware = null;
         if (JBPMConstants.JBPM_PROCESS_EVENT_LISTENER.equals(eventListenerType)) {
-            consumerAware = (JBPMCamelConsumerAware) cacheManager.get("new org.apache.camel.component.jbpm.listeners.CamelProcessEventListener()");
+            consumerAware = (JBPMCamelConsumerAware) cacheManager
+                    .get("new org.apache.camel.component.jbpm.listeners.CamelProcessEventListener()");
             if (consumerAware == null) {
                 consumerAware = new CamelProcessEventListener();
                 cacheManager.add("new org.apache.camel.component.jbpm.listeners.CamelProcessEventListener()", consumerAware);
             }
             LOGGER.debug("Configuring JBPMConsumer on process event listener {}", consumerAware);
         } else if (JBPMConstants.JBPM_TASK_EVENT_LISTENER.equals(eventListenerType)) {
-            consumerAware = (JBPMCamelConsumerAware) cacheManager.get("new org.apache.camel.component.jbpm.listeners.CamelTaskEventListener()");
+            consumerAware = (JBPMCamelConsumerAware) cacheManager
+                    .get("new org.apache.camel.component.jbpm.listeners.CamelTaskEventListener()");
             if (consumerAware == null) {
                 consumerAware = new CamelTaskEventListener();
                 cacheManager.add("new org.apache.camel.component.jbpm.listeners.CamelTaskEventListener()", consumerAware);
             }
             LOGGER.debug("Configuring JBPMConsumer on task event listener {}", consumerAware);
         } else if (JBPMConstants.JBPM_CASE_EVENT_LISTENER.equals(eventListenerType)) {
-            consumerAware = (JBPMCamelConsumerAware) cacheManager.get("new org.apache.camel.component.jbpm.listeners.CamelCaseEventListener()");
+            consumerAware = (JBPMCamelConsumerAware) cacheManager
+                    .get("new org.apache.camel.component.jbpm.listeners.CamelCaseEventListener()");
             if (consumerAware == null) {
                 consumerAware = new CamelCaseEventListener();
                 cacheManager.add("new org.apache.camel.component.jbpm.listeners.CamelCaseEventListener()", consumerAware);
@@ -191,14 +182,14 @@ public class JBPMConsumer extends DefaultConsumer implements DeploymentEventList
             LOGGER.debug("Configuring JBPMConsumer on case event listener {}", consumerAware);
         } else if (JBPMConstants.JBPM_EVENT_EMITTER.equals(eventListenerType)) {
             LOGGER.debug("Configuring JBPMConsumer for event emitter");
-            ServiceRegistry.get().register("CamelEventEmitter", new CamelEventEmitter(this, configuration.getEmitterSendItems()));
-            
+            ServiceRegistry.get().register("CamelEventEmitter",
+                    new CamelEventEmitter(this, configuration.getEmitterSendItems()));
+
             return;
-        }        
-  
+        }
+
         LOGGER.debug("Adding consumer {} on {}", consumer, consumerAware);
-        consumerAware.addConsumer(consumer);    
-        
+        consumerAware.addConsumer(consumer);
     }
 
     @Override

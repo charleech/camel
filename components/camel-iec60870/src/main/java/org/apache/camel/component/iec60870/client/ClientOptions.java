@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,7 @@ public class ClientOptions extends BaseOptions<ClientOptions> {
     /**
      * Data module options
      */
-    @UriParam(javaType = "DataModuleOptions")
+    @UriParam(javaType = "org.eclipse.neoscada.protocol.iec60870.client.data.DataModuleOptions")
     private DataModuleOptions.Builder dataModuleOptions;
 
     // dummy for doc generation
@@ -38,14 +38,20 @@ public class ClientOptions extends BaseOptions<ClientOptions> {
      * Whether background scan transmissions should be ignored.
      */
     @UriParam(label = "data", defaultValue = "true")
-    private boolean ignoreBackgroundScan;
+    private boolean ignoreBackgroundScan = true;
 
     // dummy for doc generation
     /**
      * Whether to include the source address
      */
-    @UriParam(label = "data", defaultValue = "true")
-    private boolean causeSourceAddress;
+    @UriParam(label = "data")
+    private byte causeSourceAddress;
+
+    /**
+     * Timeout in millis to wait for client to establish a connected connection.
+     */
+    @UriParam(label = "data", defaultValue = "10000")
+    private int connectionTimeout = 10000;
 
     public ClientOptions() {
         this.dataModuleOptions = new DataModuleOptions.Builder();
@@ -80,12 +86,13 @@ public class ClientOptions extends BaseOptions<ClientOptions> {
 
     // wrapper methods - DataModuleOptions
 
-    public void setCauseSourceAddress(final Byte causeSourceAddress) {
-        this.dataModuleOptions.setCauseSourceAddress(causeSourceAddress);
+    public byte getCauseSourceAddress() {
+        return causeSourceAddress;
     }
 
-    public Byte getCauseSourceAddress() {
-        return this.dataModuleOptions.getCauseSourceAddress();
+    public void setCauseSourceAddress(final byte causeSourceAddress) {
+        this.causeSourceAddress = causeSourceAddress;
+        this.dataModuleOptions.setCauseSourceAddress(causeSourceAddress);
     }
 
     public void setIgnoreBackgroundScan(final boolean ignoreBackgroundScan) {
@@ -94,5 +101,13 @@ public class ClientOptions extends BaseOptions<ClientOptions> {
 
     public boolean isIgnoreBackgroundScan() {
         return this.dataModuleOptions.isIgnoreBackgroundScan();
+    }
+
+    public int getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
     }
 }

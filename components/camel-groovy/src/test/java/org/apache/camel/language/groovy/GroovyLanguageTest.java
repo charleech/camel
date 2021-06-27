@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,8 @@
  */
 package org.apache.camel.language.groovy;
 
-import org.apache.camel.test.junit4.LanguageTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.LanguageTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class GroovyLanguageTest extends LanguageTestSupport {
 
@@ -28,6 +28,7 @@ public class GroovyLanguageTest extends LanguageTestSupport {
         assertExpression("headers.foo", "abc");
     }
 
+    @Override
     protected String getLanguageName() {
         return "groovy";
     }

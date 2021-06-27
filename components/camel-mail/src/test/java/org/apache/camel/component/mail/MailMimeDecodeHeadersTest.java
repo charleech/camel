@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import javax.mail.internet.MimeUtility;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
 
 /**
@@ -85,6 +85,7 @@ public class MailMimeDecodeHeadersTest extends CamelTestSupport {
         mockPlain.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
@@ -96,10 +97,10 @@ public class MailMimeDecodeHeadersTest extends CamelTestSupport {
                         .setHeader("subject", constant(nonAsciiSubject))
                         .to("smtp://plain@localhost", "smtp://decoded@localhost");
 
-                from("pop3://localhost?username=plain&password=secret&consumer.initialDelay=100&consumer.delay=100")
+                from("pop3://localhost?username=plain&password=secret&initialDelay=100&delay=100")
                         .to("mock:plain");
 
-                from("pop3://localhost?username=decoded&password=secret&consumer.initialDelay=100&consumer.delay=100&mimeDecodeHeaders=true")
+                from("pop3://localhost?username=decoded&password=secret&initialDelay=100&delay=100&mimeDecodeHeaders=true")
                         .to("mock:decoded");
             }
         };

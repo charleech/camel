@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,11 +51,12 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
         this.sipPresenceAgent = sipPresenceAgent;
     }
 
+    @Override
     public void processRequest(RequestEvent requestEvent) {
         Request request = requestEvent.getRequest();
         ServerTransaction serverTransactionId = requestEvent.getServerTransaction();
 
-        LOG.debug("Request: {}", request.getMethod()); 
+        LOG.debug("Request: {}", request.getMethod());
         LOG.debug("Server Transaction Id: {}", serverTransactionId);
 
         if (request.getMethod().equals(Request.SUBSCRIBE)) {
@@ -66,7 +67,7 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
             LOG.debug("Received expected request with method: {}. No further processing done", request.getMethod());
         }
     }
-    
+
     private void sendNotification(EventHeader eventHeader, boolean isInitial, Object body) throws SipException, ParseException {
         /*
          * NOTIFY requests MUST contain a "Subscription-State" header with a
@@ -78,25 +79,26 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
          * subscription at this time. The "terminated" value indicates that
          * the subscription is not active.
          */
-        
+
         Request notifyRequest = dialog.createRequest("NOTIFY");
 
         // Mark the contact header, to check that the remote contact is updated
-        ((SipURI)sipPresenceAgent.getConfiguration().getContactHeader().getAddress().getURI()).setParameter(
+        ((SipURI) sipPresenceAgent.getConfiguration().getContactHeader().getAddress().getURI()).setParameter(
                 sipPresenceAgent.getConfiguration().getFromUser(), sipPresenceAgent.getConfiguration().getFromHost());
 
         SubscriptionStateHeader sstate;
         if (isInitial) {
             // Initial state is pending, second time we assume terminated (Expires==0)
-            sstate = 
-                sipPresenceAgent.getConfiguration().getHeaderFactory().createSubscriptionStateHeader(isInitial ? SubscriptionStateHeader.PENDING : SubscriptionStateHeader.TERMINATED);
-    
+            sstate = sipPresenceAgent.getConfiguration().getHeaderFactory().createSubscriptionStateHeader(
+                    isInitial ? SubscriptionStateHeader.PENDING : SubscriptionStateHeader.TERMINATED);
+
             // Need a reason for terminated
             if (sstate.getState().equalsIgnoreCase("terminated")) {
                 sstate.setReasonCode("deactivated");
             }
         } else {
-            sstate = sipPresenceAgent.getConfiguration().getHeaderFactory().createSubscriptionStateHeader(SubscriptionStateHeader.ACTIVE);
+            sstate = sipPresenceAgent.getConfiguration().getHeaderFactory()
+                    .createSubscriptionStateHeader(SubscriptionStateHeader.ACTIVE);
         }
 
         notifyRequest.addHeader(sstate);
@@ -104,13 +106,14 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
         notifyRequest.setHeader(sipPresenceAgent.getConfiguration().getContactHeader());
         notifyRequest.setContent(body, sipPresenceAgent.getConfiguration().getContentTypeHeader());
         LOG.debug("Sending the following NOTIFY request to Subscriber: {}", notifyRequest);
-        
+
         ClientTransaction clientTransactionId = sipPresenceAgent.getProvider().getNewClientTransaction(notifyRequest);
 
         dialog.sendRequest(clientTransactionId);
     }
-    
-    private void processPublish(RequestEvent requestEvent,
+
+    private void processPublish(
+            RequestEvent requestEvent,
             ServerTransaction serverTransactionId) {
         try {
             Request request = requestEvent.getRequest();
@@ -122,13 +125,14 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
 
             // Send notification to subscriber
             sendNotification(eventHeader, false, request.getContent());
-                     
+
         } catch (Exception e) {
             LOG.error("Exception thrown during publish/notify processing in the Sip Presence Agent Listener", e);
         }
     }
 
-    public void processSubscribe(RequestEvent requestEvent,
+    public void processSubscribe(
+            RequestEvent requestEvent,
             ServerTransaction serverTransaction) {
         SipProvider sipProvider = (SipProvider) requestEvent.getSource();
         Request request = requestEvent.getRequest();
@@ -169,36 +173,40 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
             // Expires header is mandatory in 2xx responses to SUBSCRIBE
             response.addHeader(sipPresenceAgent.getConfiguration().getExpiresHeader());
             st.sendResponse(response);
-            
+
             LOG.debug("SipPresenceAgentListener: Sent OK Message");
             LOG.debug("SipPresenceAgentListener response: {}", response);
             sendNotification(eventHeader, isInitial, request.getContent());
 
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOG.error("Exception thrown during Notify processing in the SipPresenceAgentListener.", e);
         }
     }
 
+    @Override
     public synchronized void processResponse(ResponseEvent responseReceivedEvent) {
         Response response = responseReceivedEvent.getResponse();
         Integer statusCode = response.getStatusCode();
         if (SIP_MESSAGE_CODES.containsKey(statusCode)) {
-            LOG.debug(SIP_MESSAGE_CODES.get(statusCode) + " received from Subscriber");
+            LOG.debug("{} received from Subscriber", SIP_MESSAGE_CODES.get(statusCode));
         }
     }
 
+    @Override
     public void processTimeout(javax.sip.TimeoutEvent timeoutEvent) {
         if (LOG.isWarnEnabled()) {
             LOG.warn("TimeoutEvent received at Sip Presence Agent Listener");
         }
     }
 
+    @Override
     public void processIOException(IOExceptionEvent exceptionEvent) {
         if (LOG.isWarnEnabled()) {
             LOG.warn("IOExceptionEvent received at SipPresenceAgentListener");
         }
     }
 
+    @Override
     public void processTransactionTerminated(
             TransactionTerminatedEvent transactionTerminatedEvent) {
         if (LOG.isWarnEnabled()) {
@@ -206,6 +214,7 @@ public class SipPresenceAgentListener implements SipListener, SipMessageCodes {
         }
     }
 
+    @Override
     public void processDialogTerminated(
             DialogTerminatedEvent dialogTerminatedEvent) {
         if (LOG.isWarnEnabled()) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.rss;
 import java.util.Date;
 import java.util.Map;
 
-import com.sun.syndication.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndEntry;
 import org.apache.camel.component.feed.EntryFilter;
 import org.apache.camel.component.feed.FeedEndpoint;
 import org.apache.camel.support.LRUCacheFactory;
@@ -27,8 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filters out all entries which occur before the last time of the entry we saw
- * (assuming entries arrive sorted in order).
+ * Filters out all entries which occur before the last time of the entry we saw (assuming entries arrive sorted in
+ * order).
  */
 public class UpdatedDateFilter implements EntryFilter {
 
@@ -42,6 +42,7 @@ public class UpdatedDateFilter implements EntryFilter {
         this.lastUpdate = lastUpdate;
     }
 
+    @Override
     public boolean isValidEntry(FeedEndpoint endpoint, Object feed, Object entry) {
         Date updated = ((SyndEntry) entry).getUpdatedDate();
         if (updated == null) {

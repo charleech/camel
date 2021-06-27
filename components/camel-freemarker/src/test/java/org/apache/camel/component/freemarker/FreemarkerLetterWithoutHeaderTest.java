@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,13 @@ package org.apache.camel.component.freemarker;
 import org.apache.camel.builder.RouteBuilder;
 
 public class FreemarkerLetterWithoutHeaderTest extends FreemarkerLetterTest {
-    
+
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("direct:a").
-                    to("freemarker:org/apache/camel/component/freemarker/header.ftl").
-                    to("freemarker:org/apache/camel/component/freemarker/letterWithoutHeader.ftl").to("mock:result");
+                from("direct:a").to("freemarker:org/apache/camel/component/freemarker/header.ftl")
+                        .to("freemarker:org/apache/camel/component/freemarker/letterWithoutHeader.ftl").to("mock:result");
             }
         };
     }

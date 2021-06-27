@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,17 +33,15 @@ import org.apache.camel.dataformat.bindy.BindyAbstractFactory;
 import org.apache.camel.dataformat.bindy.BindyFixedLengthFactory;
 import org.apache.camel.dataformat.bindy.FormatFactory;
 import org.apache.camel.dataformat.bindy.util.ConverterUtils;
-import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.annotations.Dataformat;
 import org.apache.camel.support.ExchangeHelper;
-import org.apache.camel.util.IOHelper;
 import org.apache.camel.support.ObjectHelper;
+import org.apache.camel.util.IOHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A <a href="http://camel.apache.org/data-format.html">data format</a> (
- * {@link DataFormat}) using Bindy to marshal to and from Fixed Length
+ * Marshal and unmarshal between POJOs and fixed field length format using Camel Bindy
  */
 @Dataformat("bindy-fixed")
 public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
@@ -68,6 +66,7 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
         return "bindy-fixed";
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void marshal(Exchange exchange, Object body, OutputStream outputStream) throws Exception {
         BindyFixedLengthFactory factory = (BindyFixedLengthFactory) getFactory();
@@ -159,7 +158,7 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
     private boolean isPreparedList(Object object) {
         if (List.class.isAssignableFrom(object.getClass())) {
             List<?> list = (List<?>) object;
-            if (list.size() > 0) {
+            if (!list.isEmpty()) {
                 // Check first entry, should be enough
                 Object entry = list.get(0);
                 if (Map.class.isAssignableFrom(entry.getClass())) {
@@ -175,6 +174,7 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
         return false;
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream inputStream) throws Exception {
         BindyFixedLengthFactory factory = (BindyFixedLengthFactory) getFactory();
         org.apache.camel.util.ObjectHelper.notNull(factory, "not instantiated");
@@ -195,7 +195,7 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
             isEolSet = true;
         }
 
-        AtomicInteger count = new AtomicInteger(0);
+        AtomicInteger count = new AtomicInteger();
 
         try {
 
@@ -246,7 +246,7 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
 
             // BigIntegerFormatFactory if models list is empty or not
             // If this is the case (correspond to an empty stream, ...)
-            if (models.size() == 0) {
+            if (models.isEmpty() && !isAllowEmptyStream()) {
                 throw new java.lang.IllegalArgumentException("No records have been defined in the file");
             } else {
                 return extractUnmarshalResult(models);
@@ -261,7 +261,8 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
 
     private String getNextNonEmptyLine(Scanner scanner, AtomicInteger count, boolean isEolSet) {
         String line = "";
-        while (org.apache.camel.util.ObjectHelper.isEmpty(line) && ((isEolSet && scanner.hasNext()) || (!isEolSet && scanner.hasNextLine()))) {
+        while (org.apache.camel.util.ObjectHelper.isEmpty(line)
+                && ((isEolSet && scanner.hasNext()) || (!isEolSet && scanner.hasNextLine()))) {
             count.incrementAndGet();
             if (!isEolSet) {
                 line = scanner.nextLine();
@@ -291,8 +292,10 @@ public class BindyFixedLengthDataFormat extends BindyAbstractDataFormat {
             }
             if ((myLine.length() < factory.recordLength()
                     && !factory.isIgnoreMissingChars()) || (myLine.length() > factory.recordLength())) {
-                throw new java.lang.IllegalArgumentException("Size of the record: " + myLine.length()
-                        + " is not equal to the value provided in the model: " + factory.recordLength());
+                throw new java.lang.IllegalArgumentException(
+                        "Size of the record: " + myLine.length()
+                                                             + " is not equal to the value provided in the model: "
+                                                             + factory.recordLength());
             }
         }
 

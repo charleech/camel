@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@ package org.apache.camel.component.box;
 
 import org.apache.camel.component.box.internal.BoxApiName;
 import org.apache.camel.component.box.internal.BoxPropertiesHelper;
-
 import org.apache.camel.support.component.AbstractApiProducer;
 
 /**
@@ -27,6 +26,6 @@ import org.apache.camel.support.component.AbstractApiProducer;
 public class BoxProducer extends AbstractApiProducer<BoxApiName, BoxConfiguration> {
 
     public BoxProducer(BoxEndpoint endpoint) {
-        super(endpoint, BoxPropertiesHelper.getHelper());
+        super(endpoint, BoxPropertiesHelper.getHelper(endpoint.getCamelContext()));
     }
 }

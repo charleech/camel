@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,14 @@
 package org.apache.camel.cdi.test;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.camel.Endpoint;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.cdi.CdiCamelExtension;
-import org.apache.camel.cdi.ContextName;
 import org.apache.camel.cdi.Uri;
 import org.apache.camel.cdi.bean.FirstCamelContextBean;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -42,22 +43,22 @@ import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
 public class UriQualifierWithContextTest {
 
     @Inject
-    @Uri(value = "mock:outbound") @ContextName("first")
+    @Uri(value = "mock:outbound")
     private MockEndpoint outbound;
 
     @Inject
-    @Uri(value = "direct:inbound") @ContextName("first")
+    @Uri(value = "direct:inbound")
     private ProducerTemplate inbound;
 
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test classes
-            .addClasses(FirstCamelContextBean.class, UriWithContextRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test classes
+                .addClasses(FirstCamelContextBean.class, UriWithContextRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -71,15 +72,15 @@ public class UriQualifierWithContextTest {
     }
 }
 
-@ContextName("first")
+@Named("first")
 class UriWithContextRoute extends RouteBuilder {
 
     @Inject
-    @Uri(value = "direct:inbound") @ContextName("first")
+    @Uri(value = "direct:inbound")
     Endpoint inbound;
 
     @Inject
-    @Uri(value = "mock:outbound") @ContextName("first")
+    @Uri(value = "mock:outbound")
     MockEndpoint outbound;
 
     @Override

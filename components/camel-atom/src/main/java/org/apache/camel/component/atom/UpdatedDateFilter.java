@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Filters out all entries which occur before the last time of the entry we saw (assuming
- * entries arrive sorted in order).
+ * Filters out all entries which occur before the last time of the entry we saw (assuming entries arrive sorted in
+ * order).
  */
 public class UpdatedDateFilter implements EntryFilter {
 
@@ -37,16 +37,17 @@ public class UpdatedDateFilter implements EntryFilter {
         this.lastUpdate = lastUpdate;
     }
 
-    public boolean isValidEntry(FeedEndpoint endpoint, Object feed, Object entry) {        
-        Date updated = ((Entry)entry).getUpdated();
+    @Override
+    public boolean isValidEntry(FeedEndpoint endpoint, Object feed, Object entry) {
+        Date updated = ((Entry) entry).getUpdated();
         if (updated == null) {
             // never been updated so get published date
-            updated = ((Entry)entry).getPublished();
-        }        
+            updated = ((Entry) entry).getPublished();
+        }
         if (updated == null) {
             LOG.debug("No updated time for entry so assuming its valid: entry=[{}]", entry);
             return true;
-        }        
+        }
         if (lastUpdate != null) {
             // we need to skip the latest updated entry
             if (lastUpdate.after(updated) || lastUpdate.equals(updated)) {

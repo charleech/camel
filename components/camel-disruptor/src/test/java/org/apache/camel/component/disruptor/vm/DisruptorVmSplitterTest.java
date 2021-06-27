@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,29 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.disruptor.vm;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.component.vm.AbstractVmTestSupport;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class DisruptorVmSplitterTest extends AbstractVmTestSupport {
 
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("splitterBean", new SplitWordsBean());
-        return jndi;
-    }
-
+    @BindToRegistry("splitterBean")
+    private SplitWordsBean swb = new SplitWordsBean();
 
     @Test
-    public void testSplitUsingMethodCall() throws Exception {
+    void testSplitUsingMethodCall() throws Exception {
         MockEndpoint resultEndpoint = getMockEndpoint("mock:result");
         resultEndpoint.expectedBodiesReceived("Claus", "James", "Willem");
 
@@ -45,22 +39,21 @@ public class DisruptorVmSplitterTest extends AbstractVmTestSupport {
         assertMockEndpointsSatisfied();
     }
 
-
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("disruptor-vm:server").split().method("splitterBean", "splitWords").to("mock:result");
             }
         };
     }
 
     @Override
-    protected RouteBuilder createRouteBuilderForSecondContext() throws Exception {
+    protected RouteBuilder createRouteBuilderForSecondContext() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:start").to("disruptor-vm:server");
             }
         };

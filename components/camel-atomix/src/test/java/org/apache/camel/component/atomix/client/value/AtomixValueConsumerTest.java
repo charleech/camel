@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.atomix.client.value;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -26,8 +27,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.apache.camel.component.atomix.client.AtomixClientTestSupport;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class AtomixValueConsumerTest extends AtomixClientTestSupport {
     private static final String VALUE_NAME = UUID.randomUUID().toString();
@@ -53,9 +54,11 @@ public class AtomixValueConsumerTest extends AtomixClientTestSupport {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
-        value.close();
+        if (value != null) {
+            value.close();
+        }
 
         super.tearDown();
     }
@@ -65,7 +68,7 @@ public class AtomixValueConsumerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Test
-    public void testEvents() throws Exception {
+    void testEvents() throws Exception {
         String val1 = context().getUuidGenerator().generateUuid();
         String val2 = context().getUuidGenerator().generateUuid();
 
@@ -88,11 +91,11 @@ public class AtomixValueConsumerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Override
-    protected RoutesBuilder createRouteBuilder() throws Exception {
+    protected RoutesBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 fromF("atomix-value:%s", VALUE_NAME)
-                    .to("mock:result");
+                        .to("mock:result");
             }
         };
     }

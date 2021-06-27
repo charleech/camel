@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,13 @@ package org.apache.camel.component.jcache;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.cache.Cache;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class JCacheProducerClearTest extends JCacheComponentTestSupport {
 
@@ -44,7 +47,7 @@ public class JCacheProducerClearTest extends JCacheComponentTestSupport {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:clear")
-                    .to("jcache://test-cache");
+                        .to("jcache://test-cache");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,17 +22,21 @@ import java.util.Map;
 import com.rabbitmq.client.ConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.junit.Test;
+import org.apache.camel.support.SimpleRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class RabbitMQComponentTest {
+public class RabbitMQComponentTest extends CamelTestSupport {
 
-    private CamelContext context = Mockito.mock(CamelContext.class);
+    @Override
+    public boolean isUseRouteBuilder() {
+        return super.isUseRouteBuilder();
+    }
 
     @Test
     public void testDefaultProperties() throws Exception {
@@ -97,23 +101,24 @@ public class RabbitMQComponentTest {
         String uri = "rabbitmq:special.host:14/queuey";
         String remaining = "special.host:14/queuey";
 
-        RabbitMQComponent comp = new RabbitMQComponent(context);
+        RabbitMQComponent comp = context.getComponent("rabbitmq", RabbitMQComponent.class);
         comp.setAutoDetectConnectionFactory(false);
-        return comp.createEndpoint(uri, remaining, params);
+        return (RabbitMQEndpoint) comp.createEndpoint(uri, params);
     }
 
     @Test
     public void testConnectionFactoryRef() throws Exception {
         SimpleRegistry registry = new SimpleRegistry();
         ConnectionFactory connectionFactoryMock = Mockito.mock(ConnectionFactory.class);
-        registry.put("connectionFactoryMock", connectionFactoryMock);
+        registry.bind("connectionFactoryMock", connectionFactoryMock);
 
         CamelContext defaultContext = new DefaultCamelContext(registry);
 
         Map<String, Object> params = new HashMap<>();
         params.put("connectionFactory", "#connectionFactoryMock");
 
-        RabbitMQEndpoint endpoint = new RabbitMQComponent(defaultContext).createEndpoint("rabbitmq:localhost/exchange", "localhost/exchange", params);
+        RabbitMQEndpoint endpoint = new RabbitMQComponent(defaultContext).createEndpoint("rabbitmq:localhost/exchange",
+                "localhost/exchange", params);
 
         assertSame(connectionFactoryMock, endpoint.getConnectionFactory());
 

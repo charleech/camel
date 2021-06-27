@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,25 @@ package org.apache.camel.opentracing;
 
 import io.opentracing.noop.NoopTracer;
 import io.opentracing.noop.NoopTracerFactory;
-
+import io.opentracing.util.GlobalTracerTestUtil;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OpentracingSpanCollectorInRegistryTest extends CamelTestSupport {
 
     private OpenTracingTracer openTracing;
+    @BindToRegistry("tracer")
+    private NoopTracer c = NoopTracerFactory.create();
+
+    @Override
+    public void doPreSetup() {
+        GlobalTracerTestUtil.resetGlobalTracer();
+    }
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
@@ -36,13 +46,6 @@ public class OpentracingSpanCollectorInRegistryTest extends CamelTestSupport {
         openTracing.init(context);
 
         return context;
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("tracer", NoopTracerFactory.create());
-        return registry;
     }
 
     @Test

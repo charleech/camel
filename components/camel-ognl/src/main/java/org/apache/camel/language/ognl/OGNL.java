@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.apache.camel.language.LanguageAnnotation;
+import org.apache.camel.support.language.LanguageAnnotation;
 
 /**
- * An annotation for injection of <a href="http://www.ognl.org/">OGNL</a> expressions
- *  into method parameters, fields or properties
+ * An annotation for injection of <a href="http://www.ognl.org/">OGNL</a> expressions into method parameters, fields or
+ * properties
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 @LanguageAnnotation(language = "ognl")
 public @interface OGNL {
     String value();

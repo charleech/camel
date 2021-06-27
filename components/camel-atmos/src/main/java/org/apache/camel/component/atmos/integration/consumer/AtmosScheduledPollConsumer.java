@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import org.apache.camel.component.atmos.AtmosConfiguration;
 import org.apache.camel.component.atmos.AtmosEndpoint;
 import org.apache.camel.support.ScheduledPollConsumer;
 
-
 public abstract class AtmosScheduledPollConsumer extends ScheduledPollConsumer {
 
     protected AtmosEndpoint endpoint;
@@ -37,9 +36,8 @@ public abstract class AtmosScheduledPollConsumer extends ScheduledPollConsumer {
     protected abstract int poll() throws Exception;
 
     /**
-     * Lifecycle method invoked when the consumer has created.
-     * Internally create or reuse a connection to the low level atmos client
-     * @throws Exception
+     * Lifecycle method invoked when the consumer has created. Internally create or reuse a connection to the low level
+     * atmos client
      */
     @Override
     protected void doStart() throws Exception {
@@ -52,9 +50,7 @@ public abstract class AtmosScheduledPollConsumer extends ScheduledPollConsumer {
     }
 
     /**
-     * Lifecycle method invoked when the consumer has destroyed.
-     * Erase the reference to the atmos low level client
-     * @throws Exception
+     * Lifecycle method invoked when the consumer has destroyed. Erase the reference to the atmos low level client
      */
     @Override
     protected void doStop() throws Exception {

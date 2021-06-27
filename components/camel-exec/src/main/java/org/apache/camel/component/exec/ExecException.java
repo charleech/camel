@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.exec;
 
 import java.io.InputStream;
+
 import org.apache.camel.RuntimeCamelException;
 
 /**
@@ -37,7 +38,8 @@ public class ExecException extends RuntimeCamelException {
         this.stdout = stdout;
     }
 
-    public ExecException(String message, final InputStream stdout, final InputStream stderr, final int exitValue, Throwable cause) {
+    public ExecException(String message, final InputStream stdout, final InputStream stderr, final int exitValue,
+                         Throwable cause) {
         super(message, cause);
         this.exitValue = exitValue;
         this.stderr = stderr;

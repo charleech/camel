@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,12 +43,14 @@ public class ShortFormatFactory extends AbstractFormatFactory {
 
     private static class ShortFormat extends AbstractNumberFormat<Short> {
 
+        @Override
         public String format(Short object) throws Exception {
             return object.toString();
         }
 
+        @Override
         public Short parse(String string) throws Exception {
-            return new Short(string);
+            return Short.valueOf(string);
         }
 
     }

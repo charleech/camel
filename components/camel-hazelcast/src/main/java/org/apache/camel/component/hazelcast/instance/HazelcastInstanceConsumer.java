@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,10 +18,9 @@ package org.apache.camel.component.hazelcast.instance;
 
 import java.net.InetSocketAddress;
 
+import com.hazelcast.cluster.MembershipEvent;
+import com.hazelcast.cluster.MembershipListener;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.hazelcast.HazelcastComponentHelper;
@@ -39,20 +38,18 @@ public class HazelcastInstanceConsumer extends DefaultConsumer {
 
     class HazelcastMembershipListener implements MembershipListener {
 
+        @Override
         public void memberAdded(MembershipEvent event) {
             this.sendExchange(event, HazelcastConstants.ADDED);
         }
 
+        @Override
         public void memberRemoved(MembershipEvent event) {
             this.sendExchange(event, HazelcastConstants.REMOVED);
         }
 
-        public void memberAttributeChanged(MemberAttributeEvent event) {
-            this.sendExchange(event, HazelcastConstants.UPDATED);
-        }
-
         private void sendExchange(MembershipEvent event, String action) {
-            Exchange exchange = getEndpoint().createExchange();
+            Exchange exchange = createExchange(false);
 
             HazelcastComponentHelper.setListenerHeaders(exchange, HazelcastConstants.INSTANCE_LISTENER, action);
 
@@ -70,8 +67,12 @@ public class HazelcastInstanceConsumer extends DefaultConsumer {
             }
 
             if (exchange.getException() != null) {
-                getExceptionHandler().handleException("Error processing exchange for Hazelcast consumer on your Hazelcast cluster.", exchange, exchange.getException());
+                getExceptionHandler().handleException(
+                        "Error processing exchange for Hazelcast consumer on your Hazelcast cluster.", exchange,
+                        exchange.getException());
             }
+
+            releaseExchange(exchange, false);
         }
 
     }

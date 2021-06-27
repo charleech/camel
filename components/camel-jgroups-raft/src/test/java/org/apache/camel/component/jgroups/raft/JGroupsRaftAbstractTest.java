@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,11 @@ package org.apache.camel.component.jgroups.raft;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.jgroups.Address;
 import org.jgroups.raft.RaftHandle;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class JGroupsRaftAbstractTest extends CamelTestSupport {
     protected void checkHeaders(Exchange exchange) {

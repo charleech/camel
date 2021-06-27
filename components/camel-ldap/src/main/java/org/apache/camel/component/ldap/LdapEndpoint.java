@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,10 @@ package org.apache.camel.component.ldap;
 
 import java.net.URISyntaxException;
 import java.util.Map;
+
 import javax.naming.directory.SearchControls;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -31,16 +33,18 @@ import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The ldap component allows you to perform searches in LDAP servers using filters as the message payload.
+ * Perform searches on LDAP servers.
  */
-@UriEndpoint(firstVersion = "1.5.0", scheme = "ldap", title = "LDAP", syntax = "ldap:dirContextName", producerOnly = true, label = "ldap")
+@UriEndpoint(firstVersion = "1.5.0", scheme = "ldap", title = "LDAP", syntax = "ldap:dirContextName", producerOnly = true,
+             category = { Category.SEARCH, Category.LDAP })
 public class LdapEndpoint extends DefaultEndpoint {
     public static final String SYSTEM_DN = "ou=system";
     public static final String OBJECT_SCOPE = "object";
     public static final String ONELEVEL_SCOPE = "onelevel";
     public static final String SUBTREE_SCOPE = "subtree";
 
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String dirContextName;
     @UriParam(defaultValue = SYSTEM_DN)
     private String base = SYSTEM_DN;
@@ -56,16 +60,14 @@ public class LdapEndpoint extends DefaultEndpoint {
         this.dirContextName = remaining;
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new RuntimeCamelException("An LDAP Consumer would be the LDAP server itself! No such support here");
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new LdapProducer(this, dirContextName, base, toSearchControlScope(scope), pageSize, returnedAttributes);
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     public String getDirContextName() {
@@ -73,24 +75,27 @@ public class LdapEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * Name of either a {@link javax.naming.directory.DirContext}, or {@link java.util.Hashtable}, or {@link Map} bean to lookup in the registry.
-     * If the bean is either a Hashtable or Map then a new {@link javax.naming.directory.DirContext} instance is created for each use. If the bean
-     * is a {@link javax.naming.directory.DirContext} then the bean is used as given. The latter may not be possible in all situations where
-     * the {@link javax.naming.directory.DirContext} must not be shared, and in those situations it can be better to use {@link java.util.Hashtable} or {@link Map} instead.
+     * Name of either a {@link javax.naming.directory.DirContext}, or {@link java.util.Hashtable}, or {@link Map} bean
+     * to lookup in the registry. If the bean is either a Hashtable or Map then a new
+     * {@link javax.naming.directory.DirContext} instance is created for each use. If the bean is a
+     * {@link javax.naming.directory.DirContext} then the bean is used as given. The latter may not be possible in all
+     * situations where the {@link javax.naming.directory.DirContext} must not be shared, and in those situations it can
+     * be better to use {@link java.util.Hashtable} or {@link Map} instead.
      */
     public void setDirContextName(String dirContextName) {
         this.dirContextName = dirContextName;
     }
 
     /**
-     * When specified the ldap module uses paging to retrieve all results (most LDAP Servers throw an exception when trying to retrieve more than 1000 entries in one query).
-     * To be able to use this a LdapContext (subclass of DirContext) has to be passed in as ldapServerBean (otherwise an exception is thrown)
+     * When specified the ldap module uses paging to retrieve all results (most LDAP Servers throw an exception when
+     * trying to retrieve more than 1000 entries in one query). To be able to use this a LdapContext (subclass of
+     * DirContext) has to be passed in as ldapServerBean (otherwise an exception is thrown)
      */
     public void setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
     }
 
-    public int getPageSize() {
+    public Integer getPageSize() {
         return pageSize;
     }
 
@@ -135,8 +140,9 @@ public class LdapEndpoint extends DefaultEndpoint {
         } else if (scope.equalsIgnoreCase(SUBTREE_SCOPE)) {
             return SearchControls.SUBTREE_SCOPE;
         } else {
-            throw new IllegalArgumentException("Invalid search scope \"" + scope
-                + "\" for LdapEndpoint: " + getEndpointUri());
+            throw new IllegalArgumentException(
+                    "Invalid search scope \"" + scope
+                                               + "\" for LdapEndpoint: " + getEndpointUri());
         }
     }
 }

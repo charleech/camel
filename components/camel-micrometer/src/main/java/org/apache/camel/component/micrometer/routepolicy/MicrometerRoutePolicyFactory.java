@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.micrometer.routepolicy;
 
 import java.util.concurrent.TimeUnit;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.NamedNode;
@@ -24,7 +25,8 @@ import org.apache.camel.spi.RoutePolicy;
 import org.apache.camel.spi.RoutePolicyFactory;
 
 /**
- * A {@link org.apache.camel.spi.RoutePolicyFactory} to plugin and use metrics for gathering route utilization statistics
+ * A {@link org.apache.camel.spi.RoutePolicyFactory} to plugin and use metrics for gathering route utilization
+ * statistics
  */
 public class MicrometerRoutePolicyFactory implements RoutePolicyFactory {
 

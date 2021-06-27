@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.apache.camel.dataformat.univocity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests the options of {@link org.apache.camel.dataformat.univocity.UniVocityFixedWidthDataFormat}.
@@ -30,7 +31,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureNullValue() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setNullValue("N/A");
 
         assertEquals("N/A", dataFormat.getNullValue());
@@ -41,7 +42,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureSkipEmptyLines() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setSkipEmptyLines(true);
 
         assertTrue(dataFormat.getSkipEmptyLines());
@@ -52,7 +53,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureIgnoreTrailingWhitespaces() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setIgnoreTrailingWhitespaces(true);
 
         assertTrue(dataFormat.getIgnoreTrailingWhitespaces());
@@ -63,7 +64,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureIgnoreLeadingWhitespaces() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setIgnoreLeadingWhitespaces(true);
 
         assertTrue(dataFormat.getIgnoreLeadingWhitespaces());
@@ -74,7 +75,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureHeadersDisabled() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setHeadersDisabled(true);
 
         assertTrue(dataFormat.isHeadersDisabled());
@@ -85,18 +86,18 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureHeaders() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
-                .setHeaders(new String[]{"A", "B", "C"});
+                .setFieldLengths(new int[] { 1, 2, 3 })
+                .setHeaders(new String[] { "A", "B", "C" });
 
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.getHeaders());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.createAndConfigureWriterSettings().getHeaders());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.createAndConfigureParserSettings().getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.createAndConfigureWriterSettings().getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.createAndConfigureParserSettings().getHeaders());
     }
 
     @Test
     public void shouldConfigureHeaderExtractionEnabled() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setHeaderExtractionEnabled(true);
 
         assertTrue(dataFormat.getHeaderExtractionEnabled());
@@ -106,7 +107,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureNumberOfRecordsToRead() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setNumberOfRecordsToRead(42);
 
         assertEquals(Integer.valueOf(42), dataFormat.getNumberOfRecordsToRead());
@@ -116,7 +117,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureEmptyValue() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setEmptyValue("empty");
 
         assertEquals("empty", dataFormat.getEmptyValue());
@@ -126,7 +127,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureLineSeparator() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setLineSeparator("ls");
 
         assertEquals("ls", dataFormat.getLineSeparator());
@@ -137,7 +138,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureNormalizedLineSeparator() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setNormalizedLineSeparator('n');
 
         assertEquals(Character.valueOf('n'), dataFormat.getNormalizedLineSeparator());
@@ -148,7 +149,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureComment() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setComment('c');
 
         assertEquals(Character.valueOf('c'), dataFormat.getComment());
@@ -159,7 +160,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureLazyLoad() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setLazyLoad(true);
 
         assertTrue(dataFormat.isLazyLoad());
@@ -168,7 +169,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureAsMap() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setAsMap(true);
 
         assertTrue(dataFormat.isAsMap());
@@ -177,7 +178,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigurePadding() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setPadding('p');
 
         assertEquals(Character.valueOf('p'), dataFormat.getPadding());
@@ -188,7 +189,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureSkipTrailingCharsUntilNewline() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setSkipTrailingCharsUntilNewline(true);
 
         assertTrue(dataFormat.getSkipTrailingCharsUntilNewline());
@@ -198,7 +199,7 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureRecordEndsOnNewline() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
+                .setFieldLengths(new int[] { 1, 2, 3 })
                 .setRecordEndsOnNewline(true);
 
         assertTrue(dataFormat.getRecordEndsOnNewline());
@@ -208,9 +209,9 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureFieldLengthWithLengthsOnly() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3});
+                .setFieldLengths(new int[] { 1, 2, 3 });
 
-        assertArrayEquals(new int[]{1, 2, 3}, dataFormat.getFieldLengths());
+        assertArrayEquals(new int[] { 1, 2, 3 }, dataFormat.getFieldLengths());
 
         dataFormat.createAndConfigureWriterSettings();
     }
@@ -218,43 +219,42 @@ public final class UniVocityFixedWidthDataFormatTest {
     @Test
     public void shouldConfigureFieldLengthWithHeadersAndLengths() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
-                .setHeaders(new String[]{"A", "B", "C"});
+                .setFieldLengths(new int[] { 1, 2, 3 })
+                .setHeaders(new String[] { "A", "B", "C" });
 
-        assertArrayEquals(new int[]{1, 2, 3}, dataFormat.getFieldLengths());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.getHeaders());
+        assertArrayEquals(new int[] { 1, 2, 3 }, dataFormat.getFieldLengths());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.getHeaders());
 
         dataFormat.createAndConfigureWriterSettings();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldNotAllowNoFieldLengths() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat();
-
-        dataFormat.createAndConfigureWriterSettings();
+        assertThrows(IllegalArgumentException.class, () -> dataFormat.createAndConfigureWriterSettings());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldNotAllowHeadersAndLengthsOfDifferentSize() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3, 4})
-                .setHeaders(new String[]{"A", "B", "C"});
+                .setFieldLengths(new int[] { 1, 2, 3, 4 })
+                .setHeaders(new String[] { "A", "B", "C" });
 
-        assertArrayEquals(new int[]{1, 2, 3, 4}, dataFormat.getFieldLengths());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.getHeaders());
+        assertArrayEquals(new int[] { 1, 2, 3, 4 }, dataFormat.getFieldLengths());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.getHeaders());
 
-        dataFormat.createAndConfigureWriterSettings();
+        assertThrows(IllegalArgumentException.class, () -> dataFormat.createAndConfigureWriterSettings());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldNotAllowHeadersWithSameName() {
         UniVocityFixedWidthDataFormat dataFormat = new UniVocityFixedWidthDataFormat()
-                .setFieldLengths(new int[]{1, 2, 3})
-                .setHeaders(new String[]{"A", "B", "A"});
+                .setFieldLengths(new int[] { 1, 2, 3 })
+                .setHeaders(new String[] { "A", "B", "A" });
 
-        assertArrayEquals(new int[]{1, 2, 3}, dataFormat.getFieldLengths());
-        assertArrayEquals(new String[]{"A", "B", "A"}, dataFormat.getHeaders());
+        assertArrayEquals(new int[] { 1, 2, 3 }, dataFormat.getFieldLengths());
+        assertArrayEquals(new String[] { "A", "B", "A" }, dataFormat.getHeaders());
 
-        dataFormat.createAndConfigureWriterSettings();
+        assertThrows(IllegalArgumentException.class, () -> dataFormat.createAndConfigureWriterSettings());
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 package org.apache.camel.component.rss;
+
 import org.apache.camel.builder.RouteBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 public class RssPollingConsumerWithBasicAuthTest extends RssPollingConsumerTest {
 
@@ -26,17 +27,18 @@ public class RssPollingConsumerWithBasicAuthTest extends RssPollingConsumerTest 
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("rss:http://localhost:" + JettyTestServer.getInstance().port + "/?splitEntries=false&username=camel&password=camelPass").to("mock:result");
+                from("rss:http://localhost:" + JettyTestServer.getInstance().port
+                     + "/?splitEntries=false&username=camel&password=camelPass").to("mock:result");
             }
         };
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startServer() {
         JettyTestServer.getInstance().startServer();
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopServer() {
         JettyTestServer.getInstance().stopServer();
     }

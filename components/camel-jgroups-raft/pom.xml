@@ -23,24 +23,27 @@
     <parent>
         <groupId>org.apache.camel</groupId>
         <artifactId>components</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>camel-jgroups-raft</artifactId>
     <packaging>jar</packaging>
-    <name>Camel :: jgroups-raft</name>
+    <name>Camel :: JGroups Raft</name>
     <description>Camel jgroups-raft support</description>
 
     <properties>
-        <camel.osgi.export.pkg>org.apache.camel.component.jgroups-raft</camel.osgi.export.pkg>
-        <camel.osgi.export.service>org.apache.camel.spi.ComponentResolver;component=jgroups-raft</camel.osgi.export.service>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-core</artifactId>
+            <artifactId>camel-support</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-cluster</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups-raft</artifactId>
@@ -49,28 +52,13 @@
 
         <!-- Testing dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test</artifactId>
-            <scope>test</scope>
-        </dependency>   
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
+            <artifactId>camel-test-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,18 +72,18 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
-       <plugins>
-          <plugin>
-             <artifactId>maven-surefire-plugin</artifactId>
-             <configuration>
-                <systemPropertyVariables>
-                    <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
-                </systemPropertyVariables>
-                <argLine>${camel.surefire.fork.vmargs} -Djava.net.preferIPv4Stack=true</argLine>
-             </configuration>
-          </plugin>
-       </plugins>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
+                    </systemPropertyVariables>
+                    <argLine>${camel.surefire.fork.vmargs} -Djava.net.preferIPv4Stack=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>

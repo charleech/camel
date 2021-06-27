@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,19 +22,25 @@ import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.support.DefaultProducer;
+import org.apache.camel.support.EndpointHelper;
 import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.IOHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Language producer.
  */
 public class LanguageProducer extends DefaultProducer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(LanguageProducer.class);
+
     public LanguageProducer(LanguageEndpoint endpoint) {
         super(endpoint);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         String script = null;
 
@@ -71,6 +77,9 @@ public class LanguageProducer extends DefaultProducer {
                 is = getEndpoint().getResourceAsInputStream();
             } else if (ResourceHelper.hasScheme(script)) {
                 is = ResourceHelper.resolveMandatoryResourceAsInputStream(getEndpoint().getCamelContext(), script);
+            } else if (EndpointHelper.isReferenceParameter(script)) {
+                String ref = "ref:" + script.substring(1);
+                is = ResourceHelper.resolveMandatoryResourceAsInputStream(getEndpoint().getCamelContext(), ref);
             }
 
             if (is != null && !getEndpoint().isBinary()) {
@@ -99,7 +108,7 @@ public class LanguageProducer extends DefaultProducer {
         if (exp != null) {
             try {
                 result = exp.evaluate(exchange, Object.class);
-                log.debug("Evaluated expression as: {} with: {}", result, exchange);
+                LOG.debug("Evaluated expression as: {} with: {}", result, exchange);
             } finally {
                 if (!getEndpoint().isCacheScript()) {
                     // some languages add themselves as a service which we then need to remove if we are not cached

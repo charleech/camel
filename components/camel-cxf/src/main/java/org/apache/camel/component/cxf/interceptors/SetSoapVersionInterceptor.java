@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,11 +28,13 @@ public class SetSoapVersionInterceptor extends AbstractSoapInterceptor {
         super(Phase.WRITE);
         addBefore(SoapOutInterceptor.class.getName());
     }
+
+    @Override
     public void handleMessage(SoapMessage message) throws Fault {
-        if (message.getExchange() != null) { 
+        if (message.getExchange() != null) {
             if (message.getExchange().getInMessage() instanceof SoapMessage) {
-                message.setVersion(((SoapMessage)message.getExchange().getInMessage()).getVersion());
-            } 
+                message.setVersion(((SoapMessage) message.getExchange().getInMessage()).getVersion());
+            }
         }
     }
 

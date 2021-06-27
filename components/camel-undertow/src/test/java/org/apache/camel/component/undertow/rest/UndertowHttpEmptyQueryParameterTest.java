@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,9 @@ package org.apache.camel.component.undertow.rest;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.undertow.BaseUndertowTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class UndertowHttpEmptyQueryParameterTest extends BaseUndertowTest {
 
@@ -43,8 +45,8 @@ public class UndertowHttpEmptyQueryParameterTest extends BaseUndertowTest {
             @Override
             public void configure() throws Exception {
                 from("undertow:http://0.0.0.0:{{port}}/foo")
-                    .to("mock:input")
-                    .transform().simple("Header: ${header.id}");
+                        .to("mock:input")
+                        .transform().simple("Header: ${header.id}");
             }
         };
     }

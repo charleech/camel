@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.hazelcast.policy;
 
 import java.util.concurrent.TimeUnit;
@@ -29,7 +28,7 @@ public final class HazelcastRoutePolicyMain {
 
     public static void main(final String[] args) throws Exception {
         Main main = new Main();
-        main.addRouteBuilder(new RouteBuilder() {
+        main.configure().addRoutesBuilder(new RouteBuilder() {
             public void configure() {
                 HazelcastRoutePolicy policy = new HazelcastRoutePolicy();
                 policy.setLockMapName("camel:lock:map");
@@ -38,11 +37,11 @@ public final class HazelcastRoutePolicyMain {
                 policy.setTryLockTimeout(5, TimeUnit.SECONDS);
 
                 from("file:///tmp/camel?DELETE=true")
-                    .routeId(args[1])
-                    .routePolicy(policy)
-                    .setHeader("HazelcastRouteID", constant(args[1]))
-                    .setHeader("HazelcastServiceName", constant(args[0]))
-                    .to("log:org.apache.camel.component.hazelcast?level=INFO&showAll=true");
+                        .routeId(args[1])
+                        .routePolicy(policy)
+                        .setHeader("HazelcastRouteID", constant(args[1]))
+                        .setHeader("HazelcastServiceName", constant(args[0]))
+                        .to("log:org.apache.camel.component.hazelcast?level=INFO&showAll=true");
             }
         });
 

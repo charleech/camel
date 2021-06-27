@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,13 @@ package org.apache.camel.component.olingo4;
 import java.util.Map;
 
 import org.apache.camel.component.olingo4.internal.Olingo4ApiName;
+import org.apache.camel.spi.Configurer;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
 import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.jsse.SSLContextParameters;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -34,6 +35,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
  * Component configuration for Olingo4 component.
  */
 @UriParams
+@Configurer(extended = true)
 public class Olingo4Configuration {
 
     private static final String DEFAULT_CONTENT_TYPE = ContentType.APPLICATION_JSON.toString();
@@ -42,7 +44,8 @@ public class Olingo4Configuration {
     @UriPath
     @Metadata(required = true)
     private Olingo4ApiName apiName;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String methodName;
     @UriParam
     private String serviceUri;
@@ -56,12 +59,16 @@ public class Olingo4Configuration {
     private int socketTimeout = DEFAULT_TIMEOUT;
     @UriParam
     private HttpHost proxy;
-    @UriParam
+    @UriParam(label = "security")
     private SSLContextParameters sslContextParameters;
-    @UriParam
+    @UriParam(label = "advanced")
     private HttpAsyncClientBuilder httpAsyncClientBuilder;
-    @UriParam
+    @UriParam(label = "advanced")
     private HttpClientBuilder httpClientBuilder;
+    @UriParam
+    private boolean filterAlreadySeen;
+    @UriParam(label = "consumer", defaultValue = "true")
+    private boolean splitResult = true;
 
     public Olingo4ApiName getApiName() {
         return apiName;
@@ -101,7 +108,8 @@ public class Olingo4Configuration {
     }
 
     /**
-     * Content-Type header value can be used to specify JSON or XML message format, defaults to application/json;charset=utf-8
+     * Content-Type header value can be used to specify JSON or XML message format, defaults to
+     * application/json;charset=utf-8
      */
     public void setContentType(String contentType) {
         this.contentType = contentType;
@@ -167,8 +175,9 @@ public class Olingo4Configuration {
     }
 
     /**
-     * Custom HTTP async client builder for more complex HTTP client configuration, overrides connectionTimeout, socketTimeout, proxy and sslContext.
-     * Note that a socketTimeout MUST be specified in the builder, otherwise OData requests could block indefinitely
+     * Custom HTTP async client builder for more complex HTTP client configuration, overrides connectionTimeout,
+     * socketTimeout, proxy and sslContext. Note that a socketTimeout MUST be specified in the builder, otherwise OData
+     * requests could block indefinitely
      */
     public void setHttpAsyncClientBuilder(HttpAsyncClientBuilder httpAsyncClientBuilder) {
         this.httpAsyncClientBuilder = httpAsyncClientBuilder;
@@ -179,42 +188,69 @@ public class Olingo4Configuration {
     }
 
     /**
-     * Custom HTTP client builder for more complex HTTP client configuration, overrides connectionTimeout, socketTimeout, proxy and sslContext.
-     * Note that a socketTimeout MUST be specified in the builder, otherwise OData requests could block indefinitely
+     * Custom HTTP client builder for more complex HTTP client configuration, overrides connectionTimeout,
+     * socketTimeout, proxy and sslContext. Note that a socketTimeout MUST be specified in the builder, otherwise OData
+     * requests could block indefinitely
      */
     public void setHttpClientBuilder(HttpClientBuilder httpClientBuilder) {
         this.httpClientBuilder = httpClientBuilder;
     }
 
+    /**
+     * Filter flag for filtering out already seen results
+     */
+    public boolean isFilterAlreadySeen() {
+        return filterAlreadySeen;
+    }
+
+    /**
+     * Set this to true to filter out results that have already been communicated by this component.
+     * 
+     * @param filterAlreadySeen
+     */
+    public void setFilterAlreadySeen(boolean filterAlreadySeen) {
+        this.filterAlreadySeen = filterAlreadySeen;
+    }
+
+    public boolean isSplitResult() {
+        return splitResult;
+    }
+
+    /**
+     * For endpoints that return an array or collection, a consumer endpoint will map every element to distinct
+     * messages, unless splitResult is set to false.
+     */
+    public void setSplitResult(boolean splitResult) {
+        this.splitResult = splitResult;
+    }
+
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .append(serviceUri)
-            .append(contentType)
-            .append(httpHeaders)
-            .append(connectTimeout)
-            .append(socketTimeout)
-            .append(proxy)
-            .append(sslContextParameters)
-            .append(httpAsyncClientBuilder)
-            .append(httpClientBuilder)
-            .hashCode();
+        return new HashCodeBuilder().append(serviceUri).append(contentType).append(httpHeaders).append(connectTimeout)
+                .append(socketTimeout).append(proxy)
+                .append(sslContextParameters).append(httpAsyncClientBuilder).append(httpClientBuilder).hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Olingo4Configuration) {
             Olingo4Configuration other = (Olingo4Configuration) obj;
-            return serviceUri == null ? other.serviceUri == null : serviceUri.equals(other.serviceUri)
-                && contentType == null ? other.contentType == null : contentType.equals(other.contentType)
-                && httpHeaders == null ? other.httpHeaders == null : httpHeaders.equals(other.httpHeaders)
-                && connectTimeout == other.connectTimeout
-                && socketTimeout == other.socketTimeout
-                && proxy == null ? other.proxy == null : proxy.equals(other.proxy)
-                && sslContextParameters == null ? other.sslContextParameters == null : sslContextParameters.equals(other.sslContextParameters)
-                && httpAsyncClientBuilder == null ? other.httpAsyncClientBuilder == null
-                : httpAsyncClientBuilder.equals(other.httpAsyncClientBuilder)
-                && httpClientBuilder == null ? other.httpClientBuilder == null : httpClientBuilder.equals(other.httpClientBuilder);
+            return serviceUri == null
+                    ? other.serviceUri == null
+                    : serviceUri.equals(other.serviceUri) && contentType == null
+                            ? other.contentType == null
+                    : contentType.equals(other.contentType) && httpHeaders == null
+                            ? other.httpHeaders == null
+                    : httpHeaders.equals(other.httpHeaders) && connectTimeout == other.connectTimeout
+                            && socketTimeout == other.socketTimeout && proxy == null
+                            ? other.proxy == null
+                    : proxy.equals(other.proxy) && sslContextParameters == null
+                            ? other.sslContextParameters == null
+                    : sslContextParameters.equals(other.sslContextParameters) && httpAsyncClientBuilder == null
+                            ? other.httpAsyncClientBuilder == null
+                    : httpAsyncClientBuilder.equals(other.httpAsyncClientBuilder) && httpClientBuilder == null
+                            ? other.httpClientBuilder == null
+                    : httpClientBuilder.equals(other.httpClientBuilder);
         }
         return false;
     }

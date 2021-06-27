@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.cdi.test;
 
 import java.util.Properties;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
@@ -33,11 +34,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Arquillian.class)
@@ -59,16 +59,16 @@ public class UndefinedPropertyTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     public void lookupDefinedProperty(CamelContext context) throws Exception {
         assertThat("Resolved property value is incorrect",
-            context.resolvePropertyPlaceholders("{{from}}"), is(equalTo("inbound")));
+                context.resolvePropertyPlaceholders("{{from}}"), is(equalTo("inbound")));
     }
 
     @Test
@@ -78,9 +78,9 @@ public class UndefinedPropertyTest {
             fail("No exception is thrown!");
         } catch (Exception cause) {
             assertThat("Exception thrown is incorrect", cause,
-                is(instanceOf(IllegalArgumentException.class)));
+                    is(instanceOf(IllegalArgumentException.class)));
             assertThat("Exception message is incorrect", cause.getMessage(),
-                is(equalTo("Property with key [to] not found in properties from text: {{to}}")));
+                    is(equalTo("Property with key [to] not found in properties from text: {{to}}")));
         }
     }
 }

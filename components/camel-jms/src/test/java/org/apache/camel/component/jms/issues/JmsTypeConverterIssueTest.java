@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,16 +32,20 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.CamelJmsTestHelper;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Unit test based on user forum issue.
  */
 public class JmsTypeConverterIssueTest extends CamelTestSupport {
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -99,6 +103,7 @@ public class JmsTypeConverterIssueTest extends CamelTestSupport {
     }
 
     private static class FixateHeaderValuesProcessor implements Processor {
+        @Override
         public void process(Exchange exchange) throws Exception {
             String id = exchange.getIn().getHeader("agentId", String.class);
             exchange.getIn().setHeader("agentId", id);
@@ -106,6 +111,7 @@ public class JmsTypeConverterIssueTest extends CamelTestSupport {
     }
 
     private static class ReadLocalFile implements Processor {
+        @Override
         public void process(Exchange exchange) throws Exception {
             String filename = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
             exchange.getIn().setBody(new File(filename));
@@ -113,9 +119,10 @@ public class JmsTypeConverterIssueTest extends CamelTestSupport {
     }
 
     private static class FilterProcessor implements Processor {
+        @Override
         public void process(Exchange exchange) throws Exception {
             Document document = exchange.getIn().getBody(Document.class);
-            assertNotNull("Should be able to convert to XML Document", document);
+            assertNotNull(document, "Should be able to convert to XML Document");
 
             XPathFactory factory = XPathFactory.newInstance();
             XPath xpath = factory.newXPath();
@@ -124,7 +131,7 @@ public class JmsTypeConverterIssueTest extends CamelTestSupport {
             String expr = "//portal[/portal/@agent = '" + id + "']";
 
             NodeList nodes = (NodeList) xpath.compile(expr).evaluate(document, XPathConstants.NODESET);
-            assertNotNull("Should be able to do xpath", nodes);
+            assertNotNull(nodes, "Should be able to do xpath");
             assertEquals(1, nodes.getLength());
 
             String portalId = nodes.item(0).getFirstChild().getTextContent();

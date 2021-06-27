@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import org.apache.camel.component.salesforce.api.TypeReferences;
 import org.apache.camel.component.salesforce.api.dto.Limits.LimitsDeserializer;
 
@@ -164,7 +163,8 @@ public final class Limits implements Serializable {
         if (usages == null) {
             this.usages = new HashMap<>();
         } else {
-            this.usages = usages.entrySet().stream().collect(Collectors.toMap(e -> String.valueOf(e.getKey()), Entry::getValue));
+            this.usages
+                    = usages.entrySet().stream().collect(Collectors.toMap(e -> String.valueOf(e.getKey()), Entry::getValue));
         }
     }
 
@@ -311,7 +311,7 @@ public final class Limits implements Serializable {
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return "Limits: " + usages.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue())
-                .collect(Collectors.joining(", "));
+        return "Limits: "
+               + usages.entrySet().stream().map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining(", "));
     }
 }

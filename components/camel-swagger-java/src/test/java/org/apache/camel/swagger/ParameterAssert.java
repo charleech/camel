@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,14 +19,13 @@ package org.apache.camel.swagger;
 import java.lang.invoke.MethodType;
 import java.util.List;
 
-import static java.lang.invoke.MethodHandles.publicLookup;
-
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.parameters.SerializableParameter;
 import io.swagger.models.properties.Property;
-
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.ObjectAssert;
+
+import static java.lang.invoke.MethodHandles.publicLookup;
 
 public final class ParameterAssert extends ObjectAssert<Parameter> {
 
@@ -66,7 +65,7 @@ public final class ParameterAssert extends ObjectAssert<Parameter> {
     public ParameterAssert isGivenIn(final String in) {
         final String actualIn = actual.getIn();
         Assertions.assertThat(actualIn).as("Parameter should be specified in %s, but it's in %s", in, actualIn)
-            .isEqualTo(in);
+                .isEqualTo(in);
 
         return this;
     }
@@ -79,7 +78,7 @@ public final class ParameterAssert extends ObjectAssert<Parameter> {
         Assertions.assertThat(items).isNotNull();
         final String actualArrayType = items.getType();
         Assertions.assertThat(actualArrayType).as("Parameter array should be of %s type, but it's of %s", type,
-            actualArrayType);
+                actualArrayType);
 
         return this;
     }

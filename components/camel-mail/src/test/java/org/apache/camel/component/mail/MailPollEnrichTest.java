@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.mail;
+
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Store;
@@ -22,10 +23,12 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test with poll enrich
@@ -33,7 +36,7 @@ import org.jvnet.mock_javamail.Mailbox;
 public class MailPollEnrichTest extends CamelTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         prepareMailbox();
         super.setUp();
@@ -86,12 +89,13 @@ public class MailPollEnrichTest extends CamelTestSupport {
         folder.close(true);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 from("direct:start")
-                    .pollEnrich("pop3://bill@localhost?password=secret&consumer.initialDelay=100&consumer.delay=100", 5000)
-                    .to("log:mail", "mock:result");
+                        .pollEnrich("pop3://bill@localhost?password=secret&initialDelay=100&delay=100", 5000)
+                        .to("log:mail", "mock:result");
             }
         };
     }

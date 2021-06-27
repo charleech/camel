@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.camel.test.AvailablePortFinder;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.ProxyAuthenticator;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
@@ -38,25 +38,24 @@ public class HttpProxyMojoIntegrationTest extends CamelSalesforceMojoIntegration
 
     private HttpProxyServer proxy;
 
-    @Before
+    @BeforeEach
     public void startProxy() {
         httpProxyPort = AvailablePortFinder.getNextAvailable();
 
-        proxy = DefaultHttpProxyServer.bootstrap().withPort(httpProxyPort)
-            .withProxyAuthenticator(new ProxyAuthenticator() {
-                @Override
-                public String getRealm() {
-                    return HTTP_PROXY_REALM;
-                }
+        proxy = DefaultHttpProxyServer.bootstrap().withPort(httpProxyPort).withProxyAuthenticator(new ProxyAuthenticator() {
+            @Override
+            public String getRealm() {
+                return HTTP_PROXY_REALM;
+            }
 
-                @Override
-                public boolean authenticate(String userName, String password) {
-                    return HTTP_PROXY_USER_NAME.equals(userName) && HTTP_PROXY_PASSWORD.equals(password);
-                }
-            }).start();
+            @Override
+            public boolean authenticate(String userName, String password) {
+                return HTTP_PROXY_USER_NAME.equals(userName) && HTTP_PROXY_PASSWORD.equals(password);
+            }
+        }).start();
     }
 
-    @After
+    @AfterEach
     public void stopProxy() {
         proxy.stop();
     }

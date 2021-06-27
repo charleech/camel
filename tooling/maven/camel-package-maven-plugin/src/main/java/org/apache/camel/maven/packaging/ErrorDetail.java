@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,8 @@ public final class ErrorDetail {
     private final List<String> missingEndpointDocumentation = new ArrayList<>();
 
     public boolean hasErrors() {
-        return missingLabel || missingDescription || missingSyntax || missingUriPath || !missingComponentDocumentation.isEmpty() || !missingEndpointDocumentation.isEmpty();
+        return missingLabel || missingDescription || missingSyntax || missingUriPath || !missingComponentDocumentation.isEmpty()
+                || !missingEndpointDocumentation.isEmpty();
     }
 
     public String getKind() {

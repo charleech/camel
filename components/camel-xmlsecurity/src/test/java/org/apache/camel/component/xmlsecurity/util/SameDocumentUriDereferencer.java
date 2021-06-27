@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import javax.xml.crypto.dsig.XMLSignatureFactory;
 public final class SameDocumentUriDereferencer implements URIDereferencer {
 
     private static final URIDereferencer INSTANCE = new SameDocumentUriDereferencer();
-    
+
     private SameDocumentUriDereferencer() {
         // singelton
     }
@@ -40,8 +40,7 @@ public final class SameDocumentUriDereferencer implements URIDereferencer {
         return INSTANCE;
     }
 
-    
-
+    @Override
     public Data dereference(URIReference uriReference, XMLCryptoContext context) throws URIReferenceException {
 
         if (uriReference == null) {
@@ -53,8 +52,9 @@ public final class SameDocumentUriDereferencer implements URIDereferencer {
         }
 
         if (!(uriReference instanceof DOMURIReference && context instanceof DOMCryptoContext)) {
-            throw new IllegalArgumentException(String.format("This %s implementation supports the DOM XML mechanism only.",
-                    URIDereferencer.class.getName()));
+            throw new IllegalArgumentException(
+                    String.format("This %s implementation supports the DOM XML mechanism only.",
+                            URIDereferencer.class.getName()));
         }
 
         String uriString = uriReference.getURI();

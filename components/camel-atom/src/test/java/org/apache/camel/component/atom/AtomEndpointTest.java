@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,17 @@
 package org.apache.camel.component.atom;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 /**
  * Unit test for AtomPollingConsumer
  */
+@DisabledOnOs(OS.AIX)
 public class AtomEndpointTest extends AtomPollingConsumerTest {
 
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    @Override
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 AtomEndpoint atom = new AtomEndpoint();

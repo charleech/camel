@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,26 @@
  */
 package org.apache.camel.component.kubernetes.persistent_volumes_claims;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.spi.UriEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The Kubernetes Persistent Volumes Claims component provides a producer to execute kubernetes persistent volume claim operations.
+ * Perform operations on Kubernetes Persistent Volumes Claims and get notified on Persistent Volumes Claim changes.
  */
-@UriEndpoint(firstVersion = "2.17.0", scheme = "kubernetes-persistent-volumes-claims", title = "Kubernetes Persistent Volume Claim",
-    syntax = "kubernetes-persistent-volumes-claims:masterUrl", producerOnly = true, label = "container,cloud,paas")
+@UriEndpoint(firstVersion = "2.17.0", scheme = "kubernetes-persistent-volumes-claims",
+             title = "Kubernetes Persistent Volume Claim",
+             syntax = "kubernetes-persistent-volumes-claims:masterUrl", producerOnly = true,
+             category = { Category.CONTAINER, Category.CLOUD, Category.PAAS })
 public class KubernetesPersistentVolumesClaimsEndpoint extends AbstractKubernetesEndpoint {
 
-    public KubernetesPersistentVolumesClaimsEndpoint(String uri, KubernetesPersistentVolumesClaimsComponent component, KubernetesConfiguration config) {
+    public KubernetesPersistentVolumesClaimsEndpoint(
+                                                     String uri, KubernetesPersistentVolumesClaimsComponent component,
+                                                     KubernetesConfiguration config) {
         super(uri, component, config);
     }
 

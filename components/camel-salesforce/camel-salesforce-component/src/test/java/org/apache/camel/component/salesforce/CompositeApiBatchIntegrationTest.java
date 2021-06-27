@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.googlecode.junittoolbox.ParallelParameterized;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.salesforce.api.dto.AbstractQueryRecordsBase;
@@ -38,13 +35,19 @@ import org.apache.camel.component.salesforce.api.dto.composite.SObjectBatchRespo
 import org.apache.camel.component.salesforce.api.dto.composite.SObjectBatchResult;
 import org.apache.camel.component.salesforce.api.utils.Version;
 import org.apache.camel.component.salesforce.dto.generated.Account;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized.Parameters;
+import org.apache.camel.test.junit5.params.Parameter;
+import org.apache.camel.test.junit5.params.Parameterized;
+import org.apache.camel.test.junit5.params.Parameters;
+import org.apache.camel.test.junit5.params.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-@RunWith(ParallelParameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Parameterized
 public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase {
 
     public static class Accounts extends AbstractQueryRecordsBase {
@@ -61,21 +64,18 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
 
     }
 
-    private static final Set<String> VERSIONS = new HashSet<>(
-        Arrays.asList(SalesforceEndpointConfig.DEFAULT_VERSION, "34.0", "36.0", "37.0", "39.0"));
+    private static final Set<String> VERSIONS
+            = new HashSet<>(Arrays.asList(SalesforceEndpointConfig.DEFAULT_VERSION, "34.0", "36.0", "37.0", "39.0"));
+
+    @Parameter
+    protected String format;
+
+    @Parameter(1)
+    protected String version;
 
     private String accountId;
 
-    private final String batchuri;
-
-    private final String version;
-
-    public CompositeApiBatchIntegrationTest(final String format, final String version) {
-        this.version = version;
-        batchuri = "salesforce:composite-batch?format=" + format;
-    }
-
-    @After
+    @AfterEach
     public void removeRecords() {
         try {
             template.sendBody("salesforce:deleteSObject?sObjectName=Account&sObjectId=" + accountId, null);
@@ -86,13 +86,12 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         template.request("direct:deleteBatchAccounts", null);
     }
 
-    @Before
+    @BeforeEach
     public void setupRecords() {
         final Account account = new Account();
         account.setName("Composite API Batch");
 
-        final CreateSObjectResult result = template.requestBody("salesforce:createSObject", account,
-            CreateSObjectResult.class);
+        final CreateSObjectResult result = template.requestBody("salesforce:createSObject", account, CreateSObjectResult.class);
 
         accountId = result.getId();
     }
@@ -113,9 +112,9 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
 
         batch.addDelete("Account", accountId);
 
-        final SObjectBatchResponse response = template.requestBody(batchuri, batch, SObjectBatchResponse.class);
+        final SObjectBatchResponse response = template.requestBody(batchUri(), batch, SObjectBatchResponse.class);
 
-        assertNotNull("Response should be provided", response);
+        assertNotNull(response, "Response should be provided");
 
         assertFalse(response.hasErrors());
     }
@@ -130,8 +129,7 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
     }
 
     /**
-     * The XML format fails, as Salesforce API wrongly includes whitespaces
-     * inside tag names. E.g.  <Ant Migration Tool>
+     * The XML format fails, as Salesforce API wrongly includes whitespaces inside tag names. E.g. <Ant Migration Tool>
      * https://www.w3.org/TR/2008/REC-xml-20081126/#NT-NameChar
      */
     @Test
@@ -148,15 +146,19 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `LimitsSnapshot` node, JSON does not
+        // JSON and XML structure are different, XML has `LimitsSnapshot` node,
+        // JSON does not
         @SuppressWarnings("unchecked")
         final Map<String, Object> limits = (Map<String, Object>) result.getOrDefault("LimitsSnapshot", result);
 
         @SuppressWarnings("unchecked")
         final Map<String, String> apiRequests = (Map<String, String>) limits.get("DailyApiRequests");
 
-        // for JSON value will be Integer, for XML (no type information) it will be String
-        assertEquals("15000", String.valueOf(apiRequests.get("Max")));
+        // for JSON value will be Integer, for XML (no type information) it will
+        // be String
+        // This number can be different per org, and future releases,
+        // so let's just make sure it's greater than zero
+        assertTrue(Integer.valueOf(String.valueOf(apiRequests.get("Max"))) > 0);
     }
 
     @Test
@@ -176,7 +178,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `Result` node, JSON does not
+        // JSON and XML structure are different, XML has `Result` node, JSON
+        // does not
         @SuppressWarnings("unchecked")
         final Map<String, Object> creationOutcome = (Map<String, Object>) result.getOrDefault("Result", result);
 
@@ -206,7 +209,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `Account` node, JSON does not
+        // JSON and XML structure are different, XML has `Account` node, JSON
+        // does not
         @SuppressWarnings("unchecked")
         final Map<String, String> data = (Map<String, String>) result.getOrDefault("Account", result);
 
@@ -239,7 +243,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `QueryResult` node, JSON does not
+        // JSON and XML structure are different, XML has `QueryResult` node,
+        // JSON does not
         @SuppressWarnings("unchecked")
         final Map<String, String> data = (Map<String, String>) result.getOrDefault("QueryResult", result);
 
@@ -260,7 +265,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `QueryResult` node, JSON does not
+        // JSON and XML structure are different, XML has `QueryResult` node,
+        // JSON does not
         @SuppressWarnings("unchecked")
         final Map<String, String> data = (Map<String, String>) result.getOrDefault("QueryResult", result);
 
@@ -285,7 +291,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
         @SuppressWarnings("unchecked")
         final Map<String, Object> result = (Map<String, Object>) batchResult.getResult();
 
-        // JSON and XML structure are different, XML has `User` node, JSON does not
+        // JSON and XML structure are different, XML has `User` node, JSON does
+        // not
         @SuppressWarnings("unchecked")
         final Map<String, String> data = (Map<String, String>) result.getOrDefault("User", result);
 
@@ -298,8 +305,10 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
     public void shouldSupportSearch() {
         final SObjectBatch batch = new SObjectBatch(version);
 
-        // we cannot rely on search returning the `Composite API Batch` account as the search indexer runs
-        // asynchronously to object creation, so that account might not be indexed at this time, so we search for
+        // we cannot rely on search returning the `Composite API Batch` account
+        // as the search indexer runs
+        // asynchronously to object creation, so that account might not be
+        // indexed at this time, so we search for
         // `United` Account that should be created with developer instance
         batch.addSearch("FIND {United} IN Name Fields RETURNING Account (Name)");
 
@@ -312,17 +321,22 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
 
         final Object searchResult;
         if (firstBatchResult instanceof Map) {
-            // the JSON and XML responses differ, XML has a root node which can be either SearchResults or
+            // the JSON and XML responses differ, XML has a root node which can
+            // be either SearchResults or
             // SearchResultWithMetadata
-            // furthermore version 37.0 search results are no longer array, but dictionary of {
-            // "searchRecords": [<array>] } and the XML output changed to <SearchResultWithMetadata><searchRecords>, so
+            // furthermore version 37.0 search results are no longer array, but
+            // dictionary of {
+            // "searchRecords": [<array>] } and the XML output changed to
+            // <SearchResultWithMetadata><searchRecords>, so
             // we have:
             // @formatter:off
-            // | version | format | response syntax                                                       |
-            // |    34   |  JSON  | {attributes={type=Account...                                          |
-            // |    34   |  XML   | {SearchResults={attributes={type=Account...                           |
-            // |    37   |  JSON  | {searchRecords=[{attributes={type=Account...                          |
-            // |    37   |  XML   | {SearchResultWithMetadata={searchRecords={attributes={type=Account... |
+            // | version | format | response syntax |
+            // | 34 | JSON | {attributes={type=Account... |
+            // | 34 | XML | {SearchResults={attributes={type=Account... |
+            // | 37 | JSON | {searchRecords=[{attributes={type=Account... |
+            // | 37 | XML |
+            // {SearchResultWithMetadata={searchRecords={attributes={type=Account...
+            // |
             // @formatter:on
             @SuppressWarnings("unchecked")
             final Map<String, Object> tmp = (Map<String, Object>) firstBatchResult;
@@ -330,7 +344,8 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
             @SuppressWarnings("unchecked")
             final Map<String, Object> nested = (Map<String, Object>) tmp.getOrDefault("SearchResultWithMetadata", tmp);
 
-            // JSON and XML structure are different, XML has `SearchResults` node, JSON does not
+            // JSON and XML structure are different, XML has `SearchResults`
+            // node, JSON does not
             searchResult = nested.getOrDefault("searchRecords", nested.getOrDefault("SearchResults", nested));
         } else {
             searchResult = firstBatchResult;
@@ -356,10 +371,10 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
             @Override
             public void configure() throws Exception {
                 from("direct:deleteBatchAccounts")
-                    .to("salesforce:query?sObjectClass=" + Accounts.class.getName()
-                        + "&sObjectQuery=SELECT Id FROM Account WHERE Name = 'Account created from Composite batch API'")
-                    .split(simple("${body.records}")).setHeader("sObjectId", simple("${body.id}"))
-                    .to("salesforce:deleteSObject?sObjectName=Account").end();
+                        .to("salesforce:query?sObjectClass=" + Accounts.class.getName()
+                            + "&sObjectQuery=SELECT Id FROM Account WHERE Name = 'Account created from Composite batch API'")
+                        .split(simple("${body.records}")).setHeader("sObjectId", simple("${body.id}"))
+                        .to("salesforce:deleteSObject?sObjectName=Account").end();
             }
         };
     }
@@ -370,18 +385,21 @@ public class CompositeApiBatchIntegrationTest extends AbstractSalesforceTestBase
     }
 
     SObjectBatchResponse testBatch(final SObjectBatch batch) {
-        final SObjectBatchResponse response = template.requestBody(batchuri, batch, SObjectBatchResponse.class);
+        final SObjectBatchResponse response = template.requestBody(batchUri(), batch, SObjectBatchResponse.class);
 
-        assertNotNull("Response should be provided", response);
+        assertNotNull(response, "Response should be provided");
 
-        assertFalse("Received errors in: " + response, response.hasErrors());
+        assertFalse(response.hasErrors(), "Received errors in: " + response);
 
         return response;
     }
 
     @Parameters(name = "format = {0}, version = {1}")
     public static Iterable<Object[]> formats() {
-        return VERSIONS.stream().flatMap(v -> Stream.of(new Object[] {"JSON", v}, new Object[] {"XML", v}))
-            .collect(Collectors.toList());
+        return VERSIONS.stream().map(v -> new Object[] { "JSON", v }).collect(Collectors.toList());
+    }
+
+    private String batchUri() {
+        return "salesforce:composite-batch?format=" + format;
     }
 }

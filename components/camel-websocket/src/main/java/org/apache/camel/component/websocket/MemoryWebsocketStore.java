@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,15 +49,15 @@ public class MemoryWebsocketStore extends ConcurrentHashMap<String, DefaultWebso
     }
 
     @Override
-    public void start() throws Exception {
+    public void start() {
         // noop
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         clear();
     }
-    
+
     private String getKey(DefaultWebsocket ws) {
         StringBuilder sb = new StringBuilder();
         if (ws.getConnectionKey() == null && ws.getPathSpec() == null) {

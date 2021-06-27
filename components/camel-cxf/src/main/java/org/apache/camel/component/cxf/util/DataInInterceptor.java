@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.DepthXMLStreamReader;
 import org.apache.cxf.staxutils.StaxUtils;
 
-
 public class DataInInterceptor extends AbstractInDatabindingInterceptor {
     // CXF requires JUL for Message
     private static final Logger JUL_LOG = LogUtils.getL7dLogger(DataInInterceptor.class);
@@ -41,6 +40,7 @@ public class DataInInterceptor extends AbstractInDatabindingInterceptor {
         super(Phase.UNMARSHAL);
     }
 
+    @Override
     public void handleMessage(Message message) throws Fault {
         DepthXMLStreamReader xmlReader = getXMLStreamReader(message);
         try {

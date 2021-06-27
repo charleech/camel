@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,33 +36,34 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.support.ObjectHelper;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * <b>Camel</b> based test cases for {@link CsvDataFormat}.
  */
 public class CsvMarshalHeaderWithCustomMarshallFactoryTest extends CamelTestSupport {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+    @TempDir
+    public File folder;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     private ProducerTemplate producerTemplate;
 
     private File outputFile;
 
     @Override
     protected void doPreSetup() throws Exception {
-        outputFile = new File(folder.newFolder(), "output.csv");
+        outputFile = new File(folder, "output.csv");
     }
 
     @Test
-    public void testSendBody() throws IOException {
+    void testSendBody() throws IOException {
         Map<String, String> body = new LinkedHashMap<>();
         body.put("first_name", "John");
         body.put("last_name", "Doe");
@@ -83,7 +84,8 @@ public class CsvMarshalHeaderWithCustomMarshallFactoryTest extends CamelTestSupp
         return new RouteBuilder() {
             @Override
             public void configure() {
-                String uri = String.format("file:%s?charset=utf-8&fileExist=Append", outputFile.getParentFile().getAbsolutePath());
+                String uri
+                        = String.format("file:%s?charset=utf-8&fileExist=Append", outputFile.getParentFile().getAbsolutePath());
                 from("direct:start").marshal(createCsvDataFormat()).to(uri);
             }
         };
@@ -94,7 +96,7 @@ public class CsvMarshalHeaderWithCustomMarshallFactoryTest extends CamelTestSupp
         dataFormat.setDelimiter('\t');
         dataFormat.setTrim(true);
         dataFormat.setIgnoreSurroundingSpaces(true);
-        dataFormat.setHeader((String[]) Arrays.asList("first_name", "last_name").toArray());
+        dataFormat.setHeader(Arrays.asList("first_name", "last_name").toArray(new String[0]));
         dataFormat.setMarshallerFactory(new CsvMarshallerFactory() {
 
             @Override
@@ -127,6 +129,7 @@ public class CsvMarshalHeaderWithCustomMarshallFactoryTest extends CamelTestSupp
             }
         }
 
+        @Override
         @SuppressWarnings("unchecked")
         public void marshal(Exchange exchange, Object object, OutputStream outputStream) throws IOException {
             Iterator<Map<String, String>> it = (Iterator<Map<String, String>>) ObjectHelper.createIterator(object);

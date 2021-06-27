@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,5 +25,6 @@ import org.apache.camel.component.micrometer.json.AbstractMicrometerService;
  * Service holding the {@link MicrometerMessageHistory} which registers all message history metrics.
  */
 @ManagedResource(description = "MicrometerMessageHistory")
-public final class MicrometerMessageHistoryService extends AbstractMicrometerService implements CamelContextAware, StaticService, MicrometerMessageHistoryMBean {
+public final class MicrometerMessageHistoryService extends AbstractMicrometerService
+        implements CamelContextAware, StaticService, MicrometerMessageHistoryMBean {
 }

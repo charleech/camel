@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,27 +26,40 @@ import org.ehcache.event.CacheEventListener;
 
 public class EhcacheConsumer extends DefaultConsumer implements CacheEventListener<Object, Object> {
     private final EhcacheConfiguration configuration;
-    private final EhcacheManager manager;
-    private final Cache cache;
+    private final String cacheName;
+    private Cache cache;
 
-    public EhcacheConsumer(EhcacheEndpoint endpoint, String cacheName, EhcacheConfiguration configuration, Processor processor) throws Exception {
+    public EhcacheConsumer(EhcacheEndpoint endpoint, String cacheName, EhcacheConfiguration configuration,
+                           Processor processor) throws Exception {
         super(endpoint, processor);
-
         this.configuration = configuration;
-        this.manager = endpoint.getManager();
-        this.cache = manager.getCache(cacheName, configuration.getKeyType(), configuration.getValueType());
+        this.cacheName = cacheName;
+    }
+
+    @Override
+    public EhcacheEndpoint getEndpoint() {
+        return (EhcacheEndpoint) super.getEndpoint();
     }
 
     @Override
     protected void doStart() throws Exception {
         super.doStart();
 
+        Class<?> kt = null;
+        if (configuration.getKeyType() != null) {
+            kt = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getKeyType());
+        }
+        Class<?> vt = null;
+        if (configuration.getValueType() != null) {
+            vt = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getValueType());
+        }
+        this.cache = getEndpoint().getManager().getCache(cacheName, kt, vt);
+
         this.cache.getRuntimeConfiguration().registerCacheEventListener(
-            this,
-            configuration.getEventOrdering(),
-            configuration.getEventFiring(),
-            configuration.getEventTypes()
-        );
+                this,
+                configuration.getEventOrdering(),
+                configuration.getEventFiring(),
+                configuration.getEventTypesSet());
     }
 
     @Override
@@ -59,7 +72,7 @@ public class EhcacheConsumer extends DefaultConsumer implements CacheEventListen
     @Override
     public void onEvent(CacheEvent<?, ?> event) {
         if (isRunAllowed()) {
-            final Exchange exchange = getEndpoint().createExchange();
+            final Exchange exchange = createExchange(false);
             final Message message = exchange.getIn();
 
             message.setHeader(EhcacheConstants.KEY, event.getKey());
@@ -71,6 +84,8 @@ public class EhcacheConsumer extends DefaultConsumer implements CacheEventListen
                 getProcessor().process(exchange);
             } catch (Exception e) {
                 getExceptionHandler().handleException("Error processing exchange", exchange, e);
+            } finally {
+                releaseExchange(exchange, false);
             }
         }
     }

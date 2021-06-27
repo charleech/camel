@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,15 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.transaction.TransactionContext;
 import org.mockito.Mockito;
 
-import static org.mockito.Mockito.*;
-
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class HazelcastSedaRecoverableConsumerRollbackTest extends HazelcastSedaRecoverableConsumerTest {
 
+    @Override
     protected void trainHazelcastInstance(HazelcastInstance hazelcastInstance) {
         TransactionContext transactionContext = Mockito.mock(TransactionContext.class);
         HazelcastException hazelcastException = new HazelcastException("Could not obtain Connection!!!");
@@ -40,6 +44,7 @@ public class HazelcastSedaRecoverableConsumerRollbackTest extends HazelcastSedaR
         when(transactionContext.getQueue("foo")).thenReturn(tqueue);
     }
 
+    @Override
     protected void verifyHazelcastInstance(HazelcastInstance hazelcastInstance) {
         verify(hazelcastInstance, times(2)).getQueue("foo");
         verify(hazelcastInstance, atLeastOnce()).newTransactionContext();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,63 +31,67 @@ import org.apache.camel.test.AvailablePortFinder;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
-public abstract class WsProducerTestBase extends Assert {
-    
+public abstract class WsProducerTestBase {
+
     protected static final String TEST_MESSAGE = "Hello World!";
     protected static final int PORT = AvailablePortFinder.getNextAvailable();
-    
+
     protected CamelContext camelContext;
     protected ProducerTemplate template;
     protected Server server;
-   
+
     public void startTestServer() throws Exception {
         // start a simple websocket echo service
         server = new Server(PORT);
         Connector connector = getConnector();
         server.addConnector(connector);
-        
+
         ServletContextHandler ctx = new ServletContextHandler();
         ctx.setContextPath("/");
         ctx.addServlet(TestServletFactory.class.getName(), "/*");
- 
+
         server.setHandler(ctx);
 
         server.start();
         assertTrue(server.isStarted());
     }
-    
+
     public void stopTestServer() throws Exception {
         server.stop();
         server.destroy();
     }
-    
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
         TestMessages.getInstance().getMessages().clear();
 
         startTestServer();
-        
+
         camelContext = new DefaultCamelContext();
         camelContext.start();
-        
+
         setUpComponent();
         template = camelContext.createProducerTemplate();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         template.stop();
         camelContext.stop();
-        
+
         stopTestServer();
     }
 
@@ -96,7 +100,7 @@ public abstract class WsProducerTestBase extends Assert {
     protected abstract Connector getConnector() throws Exception;
 
     protected abstract String getTargetURL();
-    
+
     protected String getTextTestMessage() {
         return TEST_MESSAGE;
     }
@@ -104,7 +108,7 @@ public abstract class WsProducerTestBase extends Assert {
     protected byte[] getByteTestMessage() throws UnsupportedEncodingException {
         return TEST_MESSAGE.getBytes("utf-8");
     }
-    
+
     @Test
     public void testWriteToWebsocket() throws Exception {
         String testMessage = getTextTestMessage();
@@ -113,7 +117,7 @@ public abstract class WsProducerTestBase extends Assert {
         verifyMessage(testMessage, TestMessages.getInstance().getMessages().get(0));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testWriteBytesToWebsocket() throws Exception {
         byte[] testMessageBytes = getByteTestMessage();
@@ -122,19 +126,19 @@ public abstract class WsProducerTestBase extends Assert {
         verifyMessage(testMessageBytes, TestMessages.getInstance().getMessages().get(0));
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testWriteStreamToWebsocket() throws Exception {
         byte[] testMessageBytes = createLongByteTestMessage();
-        testWriteToWebsocket(new ByteArrayInputStream(testMessageBytes)); 
+        testWriteToWebsocket(new ByteArrayInputStream(testMessageBytes));
         assertEquals(1, TestMessages.getInstance().getMessages().size());
         verifyMessage(testMessageBytes, TestMessages.getInstance().getMessages().get(0));
     }
-    
+
     private void testWriteToWebsocket(Object message) throws Exception {
         Exchange exchange = sendMessage(getTargetURL(), message);
         assertNull(exchange.getException());
-        
+
         long towait = 5000;
         while (towait > 0) {
             if (TestMessages.getInstance().getMessages().size() == 1) {
@@ -160,18 +164,18 @@ public abstract class WsProducerTestBase extends Assert {
             assertEquals(original, result);
         } else if (original instanceof byte[] && result instanceof byte[]) {
             // use string-equals as our bytes are string'able
-            assertEquals(new String((byte[])original), new String((byte[])result));
+            assertEquals(new String((byte[]) original), new String((byte[]) result));
         } else if (original instanceof InputStream) {
             assertTrue(result instanceof byte[] || result instanceof InputStream);
             if (result instanceof byte[]) {
-                result = new ByteArrayInputStream((byte[])result);
+                result = new ByteArrayInputStream((byte[]) result);
             }
             try {
                 int oc = 0;
                 int or = 0;
                 while (oc != -1) {
-                    oc = ((InputStream)original).read();
-                    or = ((InputStream)result).read();
+                    oc = ((InputStream) original).read();
+                    or = ((InputStream) result).read();
                     assertEquals(oc, or);
                 }
                 assertEquals(-1, or);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,11 @@ import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsServi
 import org.apache.camel.component.reactive.streams.engine.DefaultCamelReactiveStreamsService;
 import org.apache.camel.component.reactive.streams.support.ReactiveStreamsTestService;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CamelReactiveStreamsTest {
 
@@ -35,7 +36,7 @@ public class CamelReactiveStreamsTest {
             context.start();
 
             CamelReactiveStreamsService service1 = CamelReactiveStreams.get(context);
-            Assert.assertTrue(service1 instanceof DefaultCamelReactiveStreamsService);
+            assertTrue(service1 instanceof DefaultCamelReactiveStreamsService);
         } finally {
             context.stop();
         }
@@ -50,8 +51,8 @@ public class CamelReactiveStreamsTest {
             CamelReactiveStreamsService service1 = CamelReactiveStreams.get(context);
             CamelReactiveStreamsService service2 = CamelReactiveStreams.get(context);
 
-            Assert.assertTrue(service1 instanceof DefaultCamelReactiveStreamsService);
-            Assert.assertEquals(service1, service2);
+            assertTrue(service1 instanceof DefaultCamelReactiveStreamsService);
+            assertEquals(service1, service2);
         } finally {
             context.stop();
         }
@@ -62,7 +63,7 @@ public class CamelReactiveStreamsTest {
         ReactiveStreamsComponent component = new ReactiveStreamsComponent();
 
         SimpleRegistry registry = new SimpleRegistry();
-        registry.put("dummy", new ReactiveStreamsTestService("from-registry"));
+        registry.bind("dummy", new ReactiveStreamsTestService("from-registry"));
 
         DefaultCamelContext context = new DefaultCamelContext(registry);
         context.addComponent(ReactiveStreamsConstants.SCHEME, component);
@@ -73,9 +74,9 @@ public class CamelReactiveStreamsTest {
             CamelReactiveStreamsService service1 = CamelReactiveStreams.get(context);
             CamelReactiveStreamsService service2 = CamelReactiveStreams.get(context);
 
-            Assert.assertEquals(service1, service2);
-            Assert.assertTrue(service1 instanceof ReactiveStreamsTestService);
-            Assert.assertEquals("from-registry", service1.getId());
+            assertEquals(service1, service2);
+            assertTrue(service1 instanceof ReactiveStreamsTestService);
+            assertEquals("from-registry", service1.getId());
         } finally {
             context.stop();
         }
@@ -95,9 +96,9 @@ public class CamelReactiveStreamsTest {
             CamelReactiveStreamsService service1 = CamelReactiveStreams.get(context);
             CamelReactiveStreamsService service2 = CamelReactiveStreams.get(context);
 
-            Assert.assertEquals(service1, service2);
-            Assert.assertTrue(service1 instanceof ReactiveStreamsTestService);
-            Assert.assertEquals("test-service", service1.getId());
+            assertEquals(service1, service2);
+            assertTrue(service1 instanceof ReactiveStreamsTestService);
+            assertEquals("test-service", service1.getId());
         } finally {
             context.stop();
         }

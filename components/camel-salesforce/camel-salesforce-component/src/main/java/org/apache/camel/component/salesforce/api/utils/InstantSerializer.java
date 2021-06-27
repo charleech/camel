@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ final class InstantSerializer extends StdSerializer<Instant> {
 
     @Override
     public void serialize(final Instant value, final JsonGenerator gen, final SerializerProvider serializers)
-        throws IOException {
+            throws IOException {
         final ZonedDateTime zonedDateTime = value.atZone(ZoneId.systemDefault());
 
         serializers.defaultSerializeValue(zonedDateTime, gen);

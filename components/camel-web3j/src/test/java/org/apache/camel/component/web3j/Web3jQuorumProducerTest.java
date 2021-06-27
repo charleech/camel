@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.apache.camel.component.web3j;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.web3j.protocol.core.Request;
@@ -37,28 +37,26 @@ import org.web3j.quorum.methods.response.Vote;
 import org.web3j.quorum.methods.response.Voter;
 
 import static org.apache.camel.component.web3j.Web3jConstants.OPERATION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 public class Web3jQuorumProducerTest extends Web3jMockTestSupport {
 
     @Mock
+    @BindToRegistry("mockQuorum")
     protected Quorum mockQuorum;
 
-    @Produce(uri = "direct:start")
+    @Produce("direct:start")
     protected ProducerTemplate template;
 
     @Mock
     protected Request request;
 
+    @Override
     protected String getUrl() {
         return "web3j://http://127.0.0.1:8545?web3j=#mockQuorum&quorumAPI=true&";
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("mockQuorum", mockQuorum);
-        return registry;
     }
 
     @Override
@@ -79,7 +77,7 @@ public class Web3jQuorumProducerTest extends Web3jMockTestSupport {
         Exchange exchange = createExchangeWithBodyAndHeader(null, OPERATION, Web3jConstants.QUORUM_NODE_INFO);
         template.send(exchange);
         QuorumNodeInfo.NodeInfo body = exchange.getIn().getBody(QuorumNodeInfo.NodeInfo.class);
-        assertTrue(body != null);
+        assertNotNull(body);
     }
 
     @Test

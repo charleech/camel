@@ -32,7 +32,9 @@
     </bean>
 
     <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;broker.useJmx=false"/>
+        <property name="brokerURL">
+            <bean class="org.apache.camel.component.jms.CamelJmsTestHelper" factory-method="createBrokerUrl"/>
+        </property>
     </bean>
 
     <!-- setup spring jms TX manager -->
@@ -41,7 +43,7 @@
     </bean>
 
     <!-- define our activemq component -->
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <bean id="activemq" class="org.apache.camel.component.jms.JmsComponent">
         <property name="connectionFactory" ref="poolConnectionFactory"/>
         <!-- define the jms consumer/producer as transacted -->
         <property name="transacted" value="true"/>
@@ -58,7 +60,7 @@
         <property name="redeliveryPolicy" ref="myPolicy"/>
     </bean>
     <!-- and let it try to redeliver up till 4 times -->
-    <bean id="myPolicy" class="org.apache.camel.processor.RedeliveryPolicy">
+    <bean id="myPolicy" class="org.apache.camel.processor.errorhandler.RedeliveryPolicy">
         <property name="maximumRedeliveries" value="4"/>
     </bean>
     <!-- END SNIPPET: e3 -->

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,29 +22,27 @@ import java.util.UUID;
 
 import org.apache.camel.component.openstack.common.OpenstackConstants;
 import org.apache.camel.component.openstack.neutron.producer.PortProducer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.networking.PortService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.network.Port;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class PortProducerTest extends NeutronProducerTestSupport {
 
     private Port dummyPort;
@@ -61,12 +59,12 @@ public class PortProducerTest extends NeutronProducerTestSupport {
     @Captor
     private ArgumentCaptor<String> portIdCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(networkingService.port()).thenReturn(portService);
 
         producer = new PortProducer(endpoint, client);
-        when(portService.create(any())).thenReturn(testOSport);
+        when(portService.create((Port) any())).thenReturn(testOSport);
         when(portService.get(anyString())).thenReturn(testOSport);
 
         List<Port> getAllList = new ArrayList<>();
@@ -120,7 +118,7 @@ public class PortProducerTest extends NeutronProducerTestSupport {
         producer.process(exchange);
 
         final List<Port> result = msg.getBody(List.class);
-        assertTrue(result.size() == 2);
+        assertEquals(2, result.size());
         assertEquals(testOSport, result.get(0));
     }
 
@@ -154,14 +152,6 @@ public class PortProducerTest extends NeutronProducerTestSupport {
 
         verify(portService).delete(portIdCaptor.capture());
         assertEquals(portID, portIdCaptor.getValue());
-        assertFalse(msg.isFault());
-
-        //in case of failure
-        final String failureMessage = "fail";
-        when(portService.delete(anyString())).thenReturn(ActionResponse.actionFailed(failureMessage, 404));
-        producer.process(exchange);
-        assertTrue(msg.isFault());
-        assertTrue(msg.getBody(String.class).contains(failureMessage));
     }
 
     private Port createPort() {

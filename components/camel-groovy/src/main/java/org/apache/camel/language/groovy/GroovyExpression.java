@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.support.ExpressionSupport;
 import org.apache.camel.support.ExchangeHelper;
+import org.apache.camel.support.ExpressionSupport;
 
 public class GroovyExpression extends ExpressionSupport {
     private final String text;
@@ -40,10 +40,12 @@ public class GroovyExpression extends ExpressionSupport {
         return "groovy: " + text;
     }
 
+    @Override
     protected String assertionFailureMessage(Exchange exchange) {
         return "groovy: " + text;
     }
 
+    @Override
     public <T> T evaluate(Exchange exchange, Class<T> type) {
         Script script = instantiateScript(exchange);
         script.setBinding(createBinding(exchange));
@@ -56,35 +58,35 @@ public class GroovyExpression extends ExpressionSupport {
     private Script instantiateScript(Exchange exchange) {
         // Get the script from the cache, or create a new instance
         GroovyLanguage language = (GroovyLanguage) exchange.getContext().resolveLanguage("groovy");
-        Class<Script> scriptClass = language.getScriptFromCache(text);
+        Set<GroovyShellFactory> shellFactories = exchange.getContext().getRegistry().findByType(GroovyShellFactory.class);
+        GroovyShellFactory shellFactory = null;
+        String fileName = null;
+        if (shellFactories.size() == 1) {
+            shellFactory = shellFactories.iterator().next();
+            fileName = shellFactory.getFileName(exchange);
+        }
+        final String key = fileName != null ? fileName + text : text;
+        Class<Script> scriptClass = language.getScriptFromCache(key);
         if (scriptClass == null) {
-            GroovyShell shell;
-            Set<GroovyShellFactory> shellFactories = exchange.getContext().getRegistry().findByType(GroovyShellFactory.class);
-            if (shellFactories.size() > 1) {
-                throw new IllegalStateException("Too many GroovyShellFactory instances found: " + shellFactories.size());
-            } else if (shellFactories.size() == 1) {
-                shell = shellFactories.iterator().next().createGroovyShell(exchange);
-            } else {
-                ClassLoader cl = exchange.getContext().getApplicationContextClassLoader();
-                shell = cl != null ? new GroovyShell(cl) : new GroovyShell();
-            }
-            scriptClass = shell.getClassLoader().parseClass(text);
-            language.addScriptToCache(text, scriptClass);
+            ClassLoader cl = exchange.getContext().getApplicationContextClassLoader();
+            GroovyShell shell = shellFactory != null ? shellFactory.createGroovyShell(exchange)
+                    : cl != null ? new GroovyShell(cl) : new GroovyShell();
+            scriptClass = fileName != null
+                    ? shell.getClassLoader().parseClass(text, fileName) : shell.getClassLoader().parseClass(text);
+            language.addScriptToCache(key, scriptClass);
         }
 
         // New instance of the script
         try {
             return scriptClass.newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeCamelException(e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeCamelException(e);
         }
     }
 
     private Binding createBinding(Exchange exchange) {
         Map<String, Object> variables = new HashMap<>();
-        ExchangeHelper.populateVariableMap(exchange, variables);
+        ExchangeHelper.populateVariableMap(exchange, variables, true);
         return new Binding(variables);
     }
 }

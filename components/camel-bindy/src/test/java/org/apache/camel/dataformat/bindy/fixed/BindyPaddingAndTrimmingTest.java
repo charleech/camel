@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,16 +22,19 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 import org.apache.camel.dataformat.bindy.annotation.FixedLengthRecord;
 import org.apache.camel.model.dataformat.BindyType;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.hamcrest.core.Is;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BindyPaddingAndTrimmingTest extends CamelTestSupport {
 
     private static final String URI_DIRECT_UNMARSHAL = "direct:unmarshall";
     private static final String URI_MOCK_UNMARSHAL_RESULT = "mock:unmarshal_result";
 
-    @EndpointInject(uri = URI_MOCK_UNMARSHAL_RESULT)
+    @EndpointInject(URI_MOCK_UNMARSHAL_RESULT)
     private MockEndpoint unmarhsalResult;
 
     @Override
@@ -54,7 +57,7 @@ public class BindyPaddingAndTrimmingTest extends CamelTestSupport {
         unmarhsalResult.assertIsSatisfied();
         MyBindyModel myBindyModel = unmarhsalResult.getReceivedExchanges().get(0).getIn().getBody(MyBindyModel.class);
         assertEquals("foo  ", myBindyModel.foo);
-        assertThat(myBindyModel.bar, Is.is(""));
+        assertThat(myBindyModel.bar, is(""));
     }
 
     @Test

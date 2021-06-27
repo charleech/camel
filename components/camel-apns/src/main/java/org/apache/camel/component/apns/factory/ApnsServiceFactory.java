@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import com.notnoop.apns.ApnsService;
 import com.notnoop.apns.ApnsServiceBuilder;
 import com.notnoop.apns.ReconnectPolicy;
 import com.notnoop.apns.internal.Utilities;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.RuntimeCamelException;
@@ -72,10 +71,12 @@ public class ApnsServiceFactory implements CamelContextAware {
         this.camelContext = camelContext;
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
@@ -240,14 +241,14 @@ public class ApnsServiceFactory implements CamelContextAware {
         }
 
         switch (getConnectionStrategy()) {
-        case QUEUE:
-            builder.asQueued();
-            break;
-        case POOL:
-            builder.asPool(getPoolSize());
-            break;
-        default:
-            break;
+            case QUEUE:
+                builder.asQueued();
+                break;
+            case POOL:
+                builder.asPool(getPoolSize());
+                break;
+            default:
+                break;
         }
     }
 
@@ -257,15 +258,15 @@ public class ApnsServiceFactory implements CamelContextAware {
         }
 
         switch (getReconnectionPolicy()) {
-        case EVERY_HALF_HOUR:
-            builder.withReconnectPolicy(ReconnectPolicy.Provided.EVERY_HALF_HOUR);
-            break;
-        case EVERY_NOTIFICATION:
-            builder.withReconnectPolicy(ReconnectPolicy.Provided.EVERY_NOTIFICATION);
-            break;
-        default:
-            builder.withReconnectPolicy(ReconnectPolicy.Provided.NEVER);
-            break;
+            case EVERY_HALF_HOUR:
+                builder.withReconnectPolicy(ReconnectPolicy.Provided.EVERY_HALF_HOUR);
+                break;
+            case EVERY_NOTIFICATION:
+                builder.withReconnectPolicy(ReconnectPolicy.Provided.EVERY_NOTIFICATION);
+                break;
+            default:
+                builder.withReconnectPolicy(ReconnectPolicy.Provided.NEVER);
+                break;
         }
     }
 

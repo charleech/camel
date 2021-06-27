@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.caffeine.loadcache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.BindToRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public class CaffeineLoadCacheTestSupport extends CamelTestSupport {
 
     private Cache cache;
 
-    @Override
-    public void setUp() throws Exception {
+    @BindToRegistry("cache")
+    public Cache createCache() {
         CacheLoader cl = new CacheLoader<Integer, Integer>() {
 
             @Override
@@ -36,16 +35,7 @@ public class CaffeineLoadCacheTestSupport extends CamelTestSupport {
                 return key + 1;
             }
         };
-        cache = Caffeine.newBuilder().build(cl);
-        super.setUp();
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("cache", cache);
-
-        return registry;
+        return cache = Caffeine.newBuilder().build(cl);
     }
 
     protected Cache getTestCache() {

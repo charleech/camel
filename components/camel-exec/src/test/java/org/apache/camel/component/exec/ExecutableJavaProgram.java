@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,14 +20,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 
 /**
- * A test Java main class to be executed. The behavior of the program is
- * controlled by the arguments that the {@link #main(String[])} receives. Valid
- * arguments are the public static fields of the class.
+ * A test Java main class to be executed. The behavior of the program is controlled by the arguments that the
+ * {@link #main(String[])} receives. Valid arguments are the public static fields of the class.
  */
 public class ExecutableJavaProgram {
     /**
-     * Start 2 threads that print text in the stdout and stderr, each printing
-     * {@link #LINES_TO_PRINT_FROM_EACH_THREAD} lines.
+     * Start 2 threads that print text in the stdout and stderr, each printing {@link #LINES_TO_PRINT_FROM_EACH_THREAD}
+     * lines.
      */
     public static final String THREADS = "threads";
 
@@ -113,6 +112,7 @@ public class ExecutableJavaProgram {
     }
 
     private static class ErrPrinter implements Runnable {
+        @Override
         public void run() {
             for (int t = 0; t < LINES_TO_PRINT_FROM_EACH_THREAD; t++) {
                 System.err.println(PRINT_IN_STDERR);
@@ -121,6 +121,7 @@ public class ExecutableJavaProgram {
     }
 
     private static class OutPrinter implements Runnable {
+        @Override
         public void run() {
             for (int t = 0; t < LINES_TO_PRINT_FROM_EACH_THREAD; t++) {
                 System.out.println(PRINT_IN_STDOUT);

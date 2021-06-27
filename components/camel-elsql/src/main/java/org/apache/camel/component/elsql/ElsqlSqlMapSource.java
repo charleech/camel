@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,12 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.language.simple.SimpleLanguage;
 import org.springframework.jdbc.core.namedparam.AbstractSqlParameterSource;
 
 /**
- * A {@link org.springframework.jdbc.core.namedparam.SqlParameterSource} that is used by {@link com.opengamma.elsql.ElSql}
- * to lookup parameter values. This source will lookup in the Camel {@link Exchange} and {@link org.apache.camel.Message}
- * assuming they are Map based.
+ * A {@link org.springframework.jdbc.core.namedparam.SqlParameterSource} that is used by
+ * {@link com.opengamma.elsql.ElSql} to lookup parameter values. This source will lookup in the Camel {@link Exchange}
+ * and {@link org.apache.camel.Message} assuming they are Map based.
  */
 public class ElsqlSqlMapSource extends AbstractSqlParameterSource {
 
@@ -69,7 +68,8 @@ public class ElsqlSqlMapSource extends AbstractSqlParameterSource {
             // so we have to use # instead and replace them back
             paramName = paramName.replace('#', ':');
 
-            answer = SimpleLanguage.expression(paramName).evaluate(exchange, Object.class);
+            answer = exchange.getContext().resolveLanguage("simple").createExpression(paramName).evaluate(exchange,
+                    Object.class);
         } else {
             answer = bodyMap.get(paramName);
             if (answer == null) {

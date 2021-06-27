@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ribbon.cloud;
 
 import org.apache.camel.RoutesBuilder;
@@ -46,19 +45,18 @@ public class RibbonServiceCallRegistryRouteTest extends RibbonServiceCallRouteTe
                 context.setServiceCallConfiguration(config);
 
                 from("direct:start")
-                    .serviceCall()
+                        .serviceCall()
                         .name("myService")
-                        .component("jetty")
+                        .component("http")
                         .end()
-                    .to("mock:result");
+                        .to("mock:result");
                 from("jetty:http://localhost:9090")
-                    .to("mock:9090")
-                    .transform().constant("9090");
+                        .to("mock:9090")
+                        .transform().constant("9090");
                 from("jetty:http://localhost:9091")
-                    .to("mock:9091")
-                    .transform().constant("9091");
+                        .to("mock:9091")
+                        .transform().constant("9091");
             }
         };
     }
 }
-

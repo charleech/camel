@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,13 @@ package org.apache.camel.spring.spi;
 
 import org.apache.camel.NamedNode;
 import org.apache.camel.Processor;
+import org.apache.camel.Route;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.ErrorHandlerBuilder;
 import org.apache.camel.builder.ErrorHandlerBuilderRef;
+import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
-import org.apache.camel.spi.RouteContext;
+import org.apache.camel.model.errorhandler.ErrorHandlerHelper;
 import org.apache.camel.spi.TransactedPolicy;
 import org.apache.camel.util.ObjectHelper;
 import org.slf4j.Logger;
@@ -53,10 +55,12 @@ public class SpringTransactionPolicy implements TransactedPolicy {
         this.transactionManager = transactionManager;
     }
 
-    public void beforeWrap(RouteContext routeContext, NamedNode definition) {
+    @Override
+    public void beforeWrap(Route route, NamedNode definition) {
     }
 
-    public Processor wrap(RouteContext routeContext, Processor processor) {
+    @Override
+    public Processor wrap(Route route, Processor processor) {
         TransactionErrorHandler answer;
 
         // the goal is to configure the error handler builder on the route as a transacted error handler,
@@ -66,8 +70,8 @@ public class SpringTransactionPolicy implements TransactedPolicy {
         // if we should not support this we do not need to wrap the processor as we only need one transacted error handler
 
         // find the existing error handler builder
-        RouteDefinition route = (RouteDefinition) routeContext.getRoute();
-        ErrorHandlerBuilder builder = (ErrorHandlerBuilder) route.getErrorHandlerBuilder();
+        RouteDefinition routeDefinition = (RouteDefinition) route.getRoute();
+        ErrorHandlerBuilder builder = (ErrorHandlerBuilder) routeDefinition.getErrorHandlerFactory();
 
         // check if its a ref if so then do a lookup
         if (builder instanceof ErrorHandlerBuilderRef) {
@@ -77,19 +81,16 @@ public class SpringTransactionPolicy implements TransactedPolicy {
             // only lookup if there was explicit an error handler builder configured
             // otherwise its just the "default" that has not explicit been configured
             // and if so then we can safely replace that with our transacted error handler
-            if (ErrorHandlerBuilderRef.isErrorHandlerBuilderConfigured(ref)) {
+            if (ErrorHandlerHelper.isErrorHandlerFactoryConfigured(ref)) {
                 LOG.debug("Looking up ErrorHandlerBuilder with ref: {}", ref);
-                builder = (ErrorHandlerBuilder)ErrorHandlerBuilderRef.lookupErrorHandlerBuilder(routeContext, ref);
+                builder = (ErrorHandlerBuilder) ErrorHandlerHelper.lookupErrorHandlerFactory(route, ref, true);
             }
         }
 
         if (builder != null && builder.supportTransacted()) {
             // already a TX error handler then we are good to go
             LOG.debug("The ErrorHandlerBuilder configured is already a TransactionErrorHandlerBuilder: {}", builder);
-            answer = createTransactionErrorHandler(routeContext, processor, builder);
-            answer.setExceptionPolicy(builder.getExceptionPolicyStrategy());
-            // configure our answer based on the existing error handler
-            builder.configure(routeContext, answer);
+            answer = createTransactionErrorHandler(route, processor, builder);
         } else {
             // no transaction error handler builder configure so create a temporary one as we got all
             // the needed information form the configured builder anyway this allow us to use transacted
@@ -104,25 +105,24 @@ public class SpringTransactionPolicy implements TransactedPolicy {
             txBuilder.setSpringTransactionPolicy(this);
             if (builder != null) {
                 // use error handlers from the configured builder
-                txBuilder.setErrorHandlers(routeContext, builder.getErrorHandlers(routeContext));
+                route.addErrorHandlerFactoryReference(builder, txBuilder);
             }
-            answer = createTransactionErrorHandler(routeContext, processor, txBuilder);
-            answer.setExceptionPolicy(txBuilder.getExceptionPolicyStrategy());
-            // configure our answer based on the existing error handler
-            txBuilder.configure(routeContext, answer);
+            answer = createTransactionErrorHandler(route, processor, txBuilder);
 
             // set the route to use our transacted error handler builder
-            route.setErrorHandlerBuilder(txBuilder);
+            route.setErrorHandlerFactory(txBuilder);
         }
 
         // return with wrapped transacted error handler
         return answer;
     }
 
-    protected TransactionErrorHandler createTransactionErrorHandler(RouteContext routeContext, Processor processor, ErrorHandlerBuilder builder) {
+    protected TransactionErrorHandler createTransactionErrorHandler(
+            Route route, Processor processor, ErrorHandlerBuilder builder) {
         TransactionErrorHandler answer;
         try {
-            answer = (TransactionErrorHandler) builder.createErrorHandler(routeContext, processor);
+            ModelCamelContext mcc = route.getCamelContext().adapt(ModelCamelContext.class);
+            answer = (TransactionErrorHandler) mcc.getModelReifierFactory().createErrorHandler(route, builder, processor);
         } catch (Exception e) {
             throw RuntimeCamelException.wrapRuntimeCamelException(e);
         }

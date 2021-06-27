@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,40 +20,42 @@ import org.apache.camel.CamelExecutionException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-
 import static org.apache.camel.component.pubnub.PubNubConstants.TIMETOKEN;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PubNubPublishTest extends PubNubTestBase {
     private String endpoint = "pubnub:someChannel?pubnub=#pubnub";
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint mockResult;
 
     @Test
     public void testPubNub() throws Exception {
-        stubFor(post(urlPathEqualTo("/publish/myPublishKey/mySubscribeKey/0/someChannel/0")).willReturn(aResponse().withStatus(200).withBody("[1,\"Sent\",\"14598111595318003\"]")));
+        stubFor(post(urlPathEqualTo("/publish/myPublishKey/mySubscribeKey/0/someChannel/0"))
+                .willReturn(aResponse().withStatus(200).withBody("[1,\"Sent\",\"14598111595318003\"]")));
         mockResult.expectedMessageCount(1);
         mockResult.expectedHeaderReceived(TIMETOKEN, "14598111595318003");
         template.sendBody("direct:publish", new Hello("Hi"));
         assertMockEndpointsSatisfied();
     }
 
-    @Test(expected = CamelExecutionException.class)
+    @Test
     public void testPublishEmptyBody() throws Exception {
-        template.sendBody("direct:publish", null);
+        assertThrows(CamelExecutionException.class,
+                () -> template.sendBody("direct:publish", null));
     }
 
     @Test
     public void testFireWithOperationHeader() throws Exception {
         stubFor(get(urlPathEqualTo("/publish/myPublishKey/mySubscribeKey/0/someChannel/0/%22Hi%22"))
-            .willReturn(aResponse().withBody("[1,\"Sent\",\"14598111595318003\"]")));
+                .willReturn(aResponse().withBody("[1,\"Sent\",\"14598111595318003\"]")));
         mockResult.expectedMessageCount(1);
         mockResult.expectedHeaderReceived(TIMETOKEN, "14598111595318003");
 

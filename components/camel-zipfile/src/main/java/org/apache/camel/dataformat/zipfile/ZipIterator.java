@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,8 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Iterator which can go through the ZipInputStream according to ZipEntry
- * Based on the thread <a href="http://camel.465427.n5.nabble.com/zip-file-best-practices-td5713437.html">zip file best practices</a>
+ * The Iterator which can go through the ZipInputStream according to ZipEntry Based on the thread
+ * <a href="http://camel.465427.n5.nabble.com/zip-file-best-practices-td5713437.html">zip file best practices</a>
  */
 public class ZipIterator implements Iterator<Message>, Closeable {
     static final Logger LOGGER = LoggerFactory.getLogger(ZipIterator.class);
@@ -43,6 +43,7 @@ public class ZipIterator implements Iterator<Message>, Closeable {
     private boolean allowEmptyDirectory;
     private volatile ZipInputStream zipInputStream;
     private volatile Message parent;
+    private volatile boolean first;
 
     public ZipIterator(Exchange exchange, InputStream inputStream) {
         this.exchange = exchange;
@@ -53,6 +54,7 @@ public class ZipIterator implements Iterator<Message>, Closeable {
             zipInputStream = new ZipInputStream(new BufferedInputStream(inputStream));
         }
         parent = null;
+        first = true;
     }
 
     @Override
@@ -71,10 +73,12 @@ public class ZipIterator implements Iterator<Message>, Closeable {
                 } else {
                     availableDataInCurrentEntry = true;
                 }
+                if (first && parent == null) {
+                    throw new IllegalStateException("Unable to unzip the file, it may be corrupted.");
+                }
             }
             return availableDataInCurrentEntry;
         } catch (IOException exception) {
-            //Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }
@@ -86,6 +90,12 @@ public class ZipIterator implements Iterator<Message>, Closeable {
         }
         Message answer = parent;
         parent = null;
+
+        if (first && answer == null) {
+            throw new IllegalStateException("Unable to unzip the file, it may be corrupted.");
+        }
+
+        first = false;
         checkNullAnswer(answer);
 
         return answer;
@@ -112,7 +122,6 @@ public class ZipIterator implements Iterator<Message>, Closeable {
                 return null;
             }
         } catch (IOException exception) {
-            //Just wrap the IOException as CamelRuntimeException
             throw new RuntimeCamelException(exception);
         }
     }

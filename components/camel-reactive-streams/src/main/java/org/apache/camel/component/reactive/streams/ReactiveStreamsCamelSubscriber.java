@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,11 +37,11 @@ public class ReactiveStreamsCamelSubscriber implements Subscriber<Exchange>, Clo
      */
     private static final long UNBOUNDED_REQUESTS = Long.MAX_VALUE;
 
+    private final String name;
+
     private ReactiveStreamsConsumer consumer;
 
     private Subscription subscription;
-
-    private String name;
 
     private long requested;
 

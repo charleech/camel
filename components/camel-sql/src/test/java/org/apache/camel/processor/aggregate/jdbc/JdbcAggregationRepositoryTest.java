@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,17 @@ package org.apache.camel.processor.aggregate.jdbc;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultExchange;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JdbcAggregationRepositoryTest extends AbstractJdbcAggregationTestSupport {
 
+    @Override
     void configureJdbcAggregationRepository() {
         repo.setReturnOldExchange(true);
     }
-    
+
     @Test
     public void testOperations() {
         // Can't get something we have not put in...
@@ -42,8 +45,9 @@ public class JdbcAggregationRepositoryTest extends AbstractJdbcAggregationTestSu
         actual = repo.get(context, "foo");
         assertEquals("counter:1", actual.getIn().getBody());
 
-        // Change it..
+        // Change it after reading the current exchange with version
         Exchange exchange2 = new DefaultExchange(context);
+        exchange2 = repo.get(context, "foo");
         exchange2.getIn().setBody("counter:2");
         actual = repo.add(context, "foo", exchange2);
         // the old one

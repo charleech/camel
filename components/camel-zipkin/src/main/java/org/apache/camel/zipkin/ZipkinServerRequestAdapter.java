@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,7 +50,7 @@ class ZipkinServerRequestAdapter {
         if (eventNotifier.isIncludeMessageBody() || eventNotifier.isIncludeMessageBodyStreams()) {
             boolean streams = eventNotifier.isIncludeMessageBodyStreams();
             StreamCache cache = prepareBodyForLogging(exchange, streams);
-            String body = MessageHelper.extractBodyForLogging(exchange.hasOut() ? exchange.getOut() : exchange.getIn(), "", streams, streams);
+            String body = MessageHelper.extractBodyForLogging(exchange.getMessage(), "", streams, streams);
             span.tag("camel.server.exchange.message.request.body", body);
             if (cache != null) {
                 cache.reset();

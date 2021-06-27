@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm;
 
 /**
- * Indicates that class implementing this interface should receive (at some point)
- * JBPMConsumer instance that is required to operate.
+ * Indicates that class implementing this interface should receive (at some point) JBPMConsumer instance that is
+ * required to operate.
  */
 public interface JBPMCamelConsumerAware {
 
     void addConsumer(JBPMConsumer consumer);
-    
+
     void removeConsumer(JBPMConsumer consumer);
 }

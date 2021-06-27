@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,13 @@ package org.apache.camel.component.ignite.set;
  */
 public enum IgniteSetOperation {
 
-    CONTAINS, ADD, SIZE, REMOVE, ITERATOR, CLEAR, RETAIN_ALL, ARRAY
+    CONTAINS,
+    ADD,
+    SIZE,
+    REMOVE,
+    ITERATOR,
+    CLEAR,
+    RETAIN_ALL,
+    ARRAY
 
 }

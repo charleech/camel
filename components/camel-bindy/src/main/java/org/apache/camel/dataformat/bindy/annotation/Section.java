@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.dataformat.bindy.annotation;
 
 import java.lang.annotation.Documented;
@@ -22,8 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * This annotation allows to define during the marshaling process how a message
- * must be reconstruct
+ * This annotation allows to define during the marshaling process how a message must be reconstruct
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

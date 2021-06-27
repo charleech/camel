@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,9 @@ import org.apache.jackrabbit.value.DateValue;
 import org.apache.jackrabbit.value.StringValue;
 
 /**
- * A helper class to transform Object into JCR {@link Value} implementations 
+ * A helper class to transform Object into JCR {@link Value} implementations
  */
-@Converter
+@Converter(generateLoader = true)
 public final class JcrConverter {
 
     private JcrConverter() {

@@ -19,75 +19,115 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.apache.camel</groupId>
-    <artifactId>camel-parent</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
-    <relativePath>../parent</relativePath>
-  </parent>
-  
-  <artifactId>archetypes</artifactId>
-  <name>Camel :: Archetypes</name>
-  <description>Camel Archetypes</description>
-  <packaging>pom</packaging>
-
-  <modules>
-    <module>camel-archetype-api-component</module>
-    <module>camel-archetype-blueprint</module>
-    <module>camel-archetype-cdi</module>
-    <module>camel-archetype-component</module>
-    <module>camel-archetype-dataformat</module>
-    <module>camel-archetype-java</module>
-    <module>camel-archetype-java8</module>
-    <module>camel-archetype-spring</module>
-    <module>camel-archetype-spring-boot</module>
-    <module>camel-archetype-web</module>
-  </modules>
-
-  <build>
-    <plugins>
-
-      <!-- generate and attach Camel archetype catalog -->
-      <plugin>
+    <parent>
         <groupId>org.apache.camel</groupId>
-        <artifactId>camel-package-maven-plugin</artifactId>
-        <version>${project.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-and-attach-archetype-catalog</goal>
-            </goals>
-            <phase>process-resources</phase>
-          </execution>
-        </executions>
-      </plugin>
+        <artifactId>camel-parent</artifactId>
+        <version>3.10.0-SNAPSHOT</version>
+        <relativePath>../parent</relativePath>
+    </parent>
 
-    </plugins>
+    <artifactId>archetypes</artifactId>
+    <name>Camel :: Archetypes</name>
+    <description>Camel Archetypes</description>
+    <packaging>pom</packaging>
 
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-eclipse-plugin</artifactId>
-          <configuration>
-            <buildcommands>
-              <java.lang.String>com.atlassw.tools.eclipse.checkstyle.CheckstyleBuilder</java.lang.String>
-            </buildcommands>
-            <projectnatures>
-              <nature>com.atlassw.tools.eclipse.checkstyle.CheckstyleNature</nature>
-            </projectnatures>
-            <additionalConfig>
-              <file>
-                <name>.checkstyle</name>
-                <location>/camel-eclipse-checkstyle</location>
-              </file>
-            </additionalConfig>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+    <modules>
+        <module>camel-archetype-api-component</module>
+        <module>camel-archetype-cdi</module>
+        <module>camel-archetype-component</module>
+        <module>camel-archetype-dataformat</module>
+        <module>camel-archetype-java</module>
+        <module>camel-archetype-main</module>
+        <module>camel-archetype-spring</module>
+        <module>camel-archetype-endpointdsl</module>
+    </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>archetypes-skip-tests</id>
+            <activation>
+                <property><name>skipTests</name></property>
+            </activation>
+            <properties>
+                <archetype.test.skip>true</archetype.test.skip>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+
+            <!-- skip flatten plugin as this breaks all the archetypes -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <executions>
+                    <execution>
+                        <id>default-cli</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                        <configuration>
+                            <updatePomFile>false</updatePomFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- generate and attach Camel archetype catalog -->
+            <plugin>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-package-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate-and-attach-archetype-catalog</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <configuration>
+                        <buildcommands>
+                            <java.lang.String>com.atlassw.tools.eclipse.checkstyle.CheckstyleBuilder</java.lang.String>
+                        </buildcommands>
+                        <projectnatures>
+                            <nature>com.atlassw.tools.eclipse.checkstyle.CheckstyleNature</nature>
+                        </projectnatures>
+                        <additionalConfig>
+                            <file>
+                                <name>.checkstyle</name>
+                                <location>/camel-eclipse-checkstyle</location>
+                            </file>
+                        </additionalConfig>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

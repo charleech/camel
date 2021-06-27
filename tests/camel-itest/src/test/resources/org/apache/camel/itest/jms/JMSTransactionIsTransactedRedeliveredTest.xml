@@ -19,7 +19,6 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:camel="http://camel.apache.org/schema/spring"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
@@ -32,14 +31,14 @@
   </bean>
 
   <bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-    <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;broker.useJmx=false"/>
+    <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;create=false"/>
   </bean>
 
   <bean id="jmsTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
     <property name="connectionFactory" ref="poolConnectionFactory"/>
   </bean>
 
-  <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+  <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
     <property name="connectionFactory" ref="poolConnectionFactory"/>
     <property name="transacted" value="true"/>
     <property name="transactionManager" ref="jmsTransactionManager"/>
@@ -60,7 +59,7 @@
       <transacted/>
       <to uri="mock:before"/>
       <process ref="myBeforeProcessor"/>
-      <to uri="jetty:http://localhost:{{Jetty.port}}/test"/>
+      <to uri="http://localhost:{{Jetty.port}}/test"/>
       <process ref="myAfterProcessor"/>
       <to uri="mock:result"/>
     </route>

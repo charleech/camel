@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,23 +24,24 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class SpringMarshalOmitFieldsTest extends XStreamDataFormatOmitFieldsTest {
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         setUseRouteBuilder(false);
 
         final AbstractXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(
-            "org/apache/camel/dataformat/xstream/SpringMarshalOmitFieldsTest.xml");
+                "org/apache/camel/dataformat/xstream/SpringMarshalOmitFieldsTest.xml");
 
         setCamelContextService(new Service() {
-            public void start() throws Exception {
+            public void start() {
                 applicationContext.start();
             }
 
-            public void stop() throws Exception {
+            public void stop() {
                 applicationContext.stop();
             }
         });
 
         return SpringCamelContext.springCamelContext(applicationContext, true);
     }
-   
+
 }

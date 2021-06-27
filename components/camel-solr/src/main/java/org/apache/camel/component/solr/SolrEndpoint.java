@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,23 +19,26 @@ package org.apache.camel.component.solr;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.Optional;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 
 /**
- * The solr component allows you to interface with an Apache Lucene Solr server.
+ * Perform operations against Apache Lucene Solr.
  */
-@UriEndpoint(firstVersion = "2.9.0", scheme = "solr,solrs,solrCloud", title = "Solr", syntax = "solr:url", producerOnly = true, label = "monitoring,search")
+@UriEndpoint(firstVersion = "2.9.0", scheme = "solr,solrs,solrCloud", title = "Solr", syntax = "solr:url", producerOnly = true,
+             category = { Category.MONITORING, Category.SEARCH })
 public class SolrEndpoint extends DefaultEndpoint {
 
     private String scheme = "http://";
@@ -67,6 +70,10 @@ public class SolrEndpoint extends DefaultEndpoint {
     private String collection;
     @UriParam
     private String requestHandler;
+    @UriParam(label = "security", secret = true)
+    private String username;
+    @UriParam(label = "security", secret = true)
+    private String password;
 
     public SolrEndpoint(String endpointUri, SolrComponent component, String address) throws Exception {
         super(endpointUri, component);
@@ -80,9 +87,13 @@ public class SolrEndpoint extends DefaultEndpoint {
     /**
      * Set the ZooKeeper host information which the solrCloud could use, such as "zkhost=localhost:8123".
      */
-    public void setZkHost(String zkHost) throws UnsupportedEncodingException {
-        String decoded = URLDecoder.decode(zkHost, "UTF-8");
-        this.zkHost = decoded;
+    public void setZkHost(String zkHost) {
+        try {
+            String decoded = URLDecoder.decode(zkHost, "UTF-8");
+            this.zkHost = decoded;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getZkHost() {
@@ -108,7 +119,7 @@ public class SolrEndpoint extends DefaultEndpoint {
     private CloudSolrClient getCloudServer() {
         CloudSolrClient rVal = null;
         if (this.getZkHost() != null && this.getCollection() != null) {
-            rVal = new CloudSolrClient.Builder().withZkHost(zkHost).build();
+            rVal = new CloudSolrClient.Builder(java.util.Arrays.asList(zkHost), Optional.empty()).build();
             rVal.setDefaultCollection(this.getCollection());
         }
         return rVal;
@@ -123,19 +134,24 @@ public class SolrEndpoint extends DefaultEndpoint {
             ref = new SolrComponent.SolrServerReference();
             CloudSolrClient cloudServer = getCloudServer();
             if (cloudServer == null) {
-                HttpSolrClient solrServer = new HttpSolrClient.Builder(url).build();                
-                ConcurrentUpdateSolrClient solrStreamingServer = new ConcurrentUpdateSolrClient.Builder(url).withQueueSize(streamingQueueSize).withThreadCount(streamingThreadCount).build();
-                
-                // set the properties on the solr server               
+                HttpSolrClient.Builder solrServerBuilder = new HttpSolrClient.Builder(url);
+                ConcurrentUpdateSolrClient solrStreamingServer = new ConcurrentUpdateSolrClient.Builder(url)
+                        .withQueueSize(streamingQueueSize)
+                        .withThreadCount(streamingThreadCount)
+                        .build();
                 if (soTimeout != null) {
-                    solrServer.setSoTimeout(soTimeout);
+                    solrServerBuilder.withSocketTimeout(soTimeout);
                 }
                 if (connectionTimeout != null) {
-                    solrServer.setConnectionTimeout(connectionTimeout);
-                }                
+                    solrServerBuilder.withConnectionTimeout(connectionTimeout);
+                }
+
+                HttpSolrClient solrServer = solrServerBuilder.build();
+                // set the properties on the solr server
                 if (followRedirects != null) {
                     solrServer.setFollowRedirects(followRedirects);
-                }                
+                }
+
                 ref.setSolrServer(solrServer);
                 ref.setUpdateSolrServer(solrStreamingServer);
             }
@@ -161,11 +177,6 @@ public class SolrEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new UnsupportedOperationException("Consumer not supported for Solr endpoint.");
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     /**
@@ -217,7 +228,8 @@ public class SolrEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * Read timeout on the underlying HttpConnectionManager. This is desirable for queries, but probably not for indexing
+     * Read timeout on the underlying HttpConnectionManager. This is desirable for queries, but probably not for
+     * indexing
      */
     public void setSoTimeout(Integer soTimeout) {
         this.soTimeout = soTimeout;
@@ -276,6 +288,28 @@ public class SolrEndpoint extends DefaultEndpoint {
      */
     public void setAllowCompression(Boolean allowCompression) {
         this.allowCompression = allowCompression;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * Sets username for basic auth plugin enabled servers
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets password for basic auth plugin enabled servers
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 
 }

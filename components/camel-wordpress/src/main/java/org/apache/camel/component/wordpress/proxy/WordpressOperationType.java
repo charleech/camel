@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,7 +25,8 @@ import org.apache.camel.component.wordpress.api.model.UserSearchCriteria;
  */
 public enum WordpressOperationType {
 
-    post(PostSearchCriteria.class), user(UserSearchCriteria.class);
+    post(PostSearchCriteria.class),
+    user(UserSearchCriteria.class);
 
     private final Class<? extends SearchCriteria> criteriaType;
 

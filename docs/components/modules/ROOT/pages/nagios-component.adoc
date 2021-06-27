@@ -1,9 +1,20 @@
 [[nagios-component]]
-== Nagios Component
+= Nagios Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-nagios/src/main/docs/nagios-component.adoc
+:docTitle: Nagios
+:artifactId: camel-nagios
+:description: Send passive checks to Nagios using JSendNSCA.
+:since: 2.3
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/nagios.adoc[opts=optional]
 
-*Available as of Camel version 2.3*
+*Since Camel {since}*
 
-The <<nagios-component,Nagios>> component allows you to send passive checks
+*{component-header}*
+
+The xref:nagios-component.adoc[Nagios] component allows you to send passive checks
 to http://nagios.org[Nagios].
 
 Maven users will need to add the following dependency to their `pom.xml`
@@ -19,35 +30,40 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 ------------------------------
 nagios://host[:port][?Options]
 ------------------------------
 
-Camel provides two abilities with the <<nagios-component,Nagios>>
+Camel provides two abilities with the xref:nagios-component.adoc[Nagios]
 component. You can send passive check messages by sending a message to
 its endpoint. +
  Camel also provides a EventNotifer which allows
 you to send notifications to Nagios.
 
-### Options
+== Options
 
 
 
 
 
 // component options: START
-The Nagios component supports 2 options, which are listed below.
+The Nagios component supports 7 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *connectionTimeout* (producer) | Connection timeout in millis. | 5000 | int
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *timeout* (producer) | Sending timeout in millis. | 5000 | int
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
 | *configuration* (advanced) | To use a shared NagiosConfiguration |  | NagiosConfiguration
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
+| *encryption* (security) | To specify an encryption method. There are 7 enums and the value can be one of: NONE, TRIPLE_DES, XOR, RIJNDAEL128, RIJNDAEL192, RIJNDAEL256, BLOWFISH |  | Encryption
+| *password* (security) | Password to be authenticated when sending checks to Nagios. |  | String
 |===
 // component options: END
 
@@ -66,7 +82,7 @@ nagios:host:port
 
 with the following path and query parameters:
 
-==== Path Parameters (2 parameters):
+=== Path Parameters (2 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -77,49 +93,25 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (7 parameters):
+=== Query Parameters (6 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
 | *connectionTimeout* (producer) | Connection timeout in millis. | 5000 | int
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *sendSync* (producer) | Whether or not to use synchronous when sending a passive check. Setting it to false will allow Camel to continue routing the message and the passive check message will be send asynchronously. | true | boolean
 | *timeout* (producer) | Sending timeout in millis. | 5000 | int
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
-| *encryption* (security) | To specify an encryption method. |  | Encryption
-| *encryptionMethod* (security) | *Deprecated* To specify an encryption method. |  | NagiosEncryptionMethod
+| *encryption* (security) | To specify an encryption method. There are 7 enums and the value can be one of: NONE, TRIPLE_DES, XOR, RIJNDAEL128, RIJNDAEL192, RIJNDAEL256, BLOWFISH |  | Encryption
 | *password* (security) | Password to be authenticated when sending checks to Nagios. |  | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 10 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.nagios.configuration.connection-timeout* | Connection timeout in millis. | 5000 | Integer
-| *camel.component.nagios.configuration.encryption* | To specify an encryption method. |  | Encryption
-| *camel.component.nagios.configuration.host* | This is the address of the Nagios host where checks should be send. |  | String
-| *camel.component.nagios.configuration.nagios-settings* |  |  | NagiosSettings
-| *camel.component.nagios.configuration.password* | Password to be authenticated when sending checks to Nagios. |  | String
-| *camel.component.nagios.configuration.port* | The port number of the host. |  | Integer
-| *camel.component.nagios.configuration.timeout* | Sending timeout in millis. | 5000 | Integer
-| *camel.component.nagios.enabled* | Enable nagios component | true | Boolean
-| *camel.component.nagios.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-| *camel.component.nagios.configuration.encryption-method* | To specify an encryption method. |  | NagiosEncryptionMethod
-|===
-// spring-boot-auto-configure options: END
 
 
 
 
-### Sending message examples
+== Sending message examples
 
 You can send a message to Nagios where the message payload contains the
 message. By default it will be `OK` level and use the
@@ -146,9 +138,9 @@ To send a `CRITICAL` message you can send the headers such as:
         template.sendBodyAndHeaders("direct:start", "Hello Nagios", headers);
 -----------------------------------------------------------------------------
 
-### Using `NagiosEventNotifer`
+== Using `NagiosEventNotifer`
 
-The <<nagios-component,Nagios>> component also provides an
+The xref:nagios-component.adoc[Nagios] component also provides an
 EventNotifer which you can use to send events to
 Nagios. For example we can enable this from Java as follows:
 
@@ -166,12 +158,8 @@ Nagios. For example we can enable this from Java as follows:
 
 In Spring XML its just a matter of defining a Spring bean with the type
 `EventNotifier` and Camel will pick it up as documented here:
-link:advanced-configuration-of-camelcontext-using-spring.html[Advanced
+xref:manual::advanced-configuration-of-camelcontext-using-spring.adoc[Advanced
 configuration of CamelContext using Spring].
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$nagios-starter.adoc[]

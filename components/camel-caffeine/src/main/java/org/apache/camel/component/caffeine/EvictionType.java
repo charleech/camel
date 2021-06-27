@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ public enum EvictionType {
     SIZE_BASED("size_based"),
     TIME_BASED("time_based");
 
-
     private static EvictionType[] values = values();
     private final String type;
 
@@ -42,6 +41,7 @@ public enum EvictionType {
         throw new IllegalArgumentException(String.format("Eviction type '%s' is not supported by this component.", name));
     }
 
+    @Override
     public String toString() {
         return type;
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,14 +22,16 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
@@ -39,17 +41,21 @@ public class ElSqlConsumerDeleteTest extends CamelTestSupport {
     private EmbeddedDatabase db;
     private JdbcTemplate jdbcTemplate;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         db = new EmbeddedDatabaseBuilder()
-                .setType(EmbeddedDatabaseType.DERBY).addScript("sql/createAndPopulateDatabase.sql").build();
+                .setName(getClass().getSimpleName())
+                .setType(EmbeddedDatabaseType.DERBY)
+                .addScript("sql/createAndPopulateDatabase.sql").build();
 
         jdbcTemplate = new JdbcTemplate(db);
 
         super.setUp();
     }
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
 
@@ -57,7 +63,7 @@ public class ElSqlConsumerDeleteTest extends CamelTestSupport {
     }
 
     @Test
-    public void testConsume() throws Exception {
+    void testConsume() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(3);
 
@@ -82,16 +88,18 @@ public class ElSqlConsumerDeleteTest extends CamelTestSupport {
                 break;
             }
         }
-        assertEquals("Should have deleted all 3 rows", new Integer(0), jdbcTemplate.queryForObject("select count(*) from projects", Integer.class));
+        assertEquals(Integer.valueOf(0), jdbcTemplate.queryForObject("select count(*) from projects", Integer.class),
+                "Should have deleted all 3 rows");
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 getContext().getComponent("elsql", ElsqlComponent.class).setDataSource(db);
-                getContext().getComponent("elsql", ElsqlComponent.class).setResourceUri("elsql/projects.elsql,elsql/delete.elsql");
+                getContext().getComponent("elsql", ElsqlComponent.class)
+                        .setResourceUri("elsql/projects.elsql,elsql/delete.elsql");
 
                 from("elsql:allProjects?consumer.onConsume=deleteProject")
                         .to("mock:result");

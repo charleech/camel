@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.dns.cloud;
 
 import java.util.Arrays;
@@ -39,7 +38,6 @@ import org.xbill.DNS.SRVRecord;
 import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
-
 public final class DnsServiceDiscovery extends DefaultServiceDiscovery {
     private static final Comparator<SRVRecord> COMPARATOR = comparator();
     private final DnsConfiguration configuration;
@@ -58,11 +56,11 @@ public final class DnsServiceDiscovery extends DefaultServiceDiscovery {
         List<ServiceDefinition> services;
         if (Objects.nonNull(records) && lookup.getResult() == Lookup.SUCCESSFUL) {
             services = Arrays.stream(records)
-                .filter(SRVRecord.class::isInstance)
-                .map(SRVRecord.class::cast)
-                .sorted(COMPARATOR)
-                .map(record -> asService(name, record))
-                .collect(Collectors.toList());
+                    .filter(SRVRecord.class::isInstance)
+                    .map(SRVRecord.class::cast)
+                    .sorted(COMPARATOR)
+                    .map(record -> asService(name, record))
+                    .collect(Collectors.toList());
         } else {
             services = Collections.emptyList();
         }
@@ -73,8 +71,8 @@ public final class DnsServiceDiscovery extends DefaultServiceDiscovery {
     private Lookup createLookup(String name) {
         try {
             return new Lookup(
-                String.format("%s.%s.%s", name, configuration.getProto(), configuration.getDomain()),
-                Type.SRV);
+                    String.format("%s.%s.%s", name, configuration.getProto(), configuration.getDomain()),
+                    Type.SRV);
         } catch (TextParseException e) {
             throw new RuntimeCamelException(e);
         }
@@ -93,10 +91,9 @@ public final class DnsServiceDiscovery extends DefaultServiceDiscovery {
         ObjectHelper.ifNotEmpty(record.getWeight(), val -> meta.put("weight", Integer.toString(val)));
 
         return new DefaultServiceDefinition(
-            serviceName,
-            record.getTarget().toString(true),
-            record.getPort(),
-            meta
-        );
+                serviceName,
+                record.getTarget().toString(true),
+                record.getPort(),
+                meta);
     }
 }

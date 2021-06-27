@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,12 +33,13 @@ public class PurchaseOrder {
         if (o instanceof PurchaseOrder) {
             PurchaseOrder that = (PurchaseOrder) o;
             return ObjectHelper.equal(this.name, that.name)
-                && ObjectHelper.equal(this.amount, that.amount)
-                && ObjectHelper.equal(this.price, that.price);
+                    && ObjectHelper.equal(this.amount, that.amount)
+                    && ObjectHelper.equal(this.price, that.price);
         }
         return false;
     }
 
+    @Override
     public int hashCode() {
         return (int) (name.hashCode() + (price * 100) + (amount * 100));
     }

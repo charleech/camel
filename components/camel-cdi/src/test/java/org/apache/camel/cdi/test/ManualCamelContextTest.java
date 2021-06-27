@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.cdi.test;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 
 import org.apache.camel.CamelContext;
@@ -39,9 +40,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class ManualCamelContextTest {
@@ -69,19 +70,20 @@ public class ManualCamelContextTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test classes
-            .addClasses(SimpleCamelRoute.class, ManualCamelRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test classes
+                .addClasses(SimpleCamelRoute.class, ManualCamelRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     @InSequence(1)
     public void verifyContext(CamelContext context) {
         assertThat("Number of routes is incorrect!", context.getRoutes().size(), is(equalTo(1)));
-        assertThat("Configured route is incorrect!", context.getRouteController().getRouteStatus("simple"), is(equalTo(ServiceStatus.Started)));
+        assertThat("Configured route is incorrect!", context.getRouteController().getRouteStatus("simple"),
+                is(equalTo(ServiceStatus.Started)));
     }
 
     @Test
@@ -90,7 +92,8 @@ public class ManualCamelContextTest {
         context.addRoutes(builder);
 
         assertThat("Number of routes is incorrect!", context.getRoutes().size(), is(equalTo(2)));
-        assertThat("Configured route is incorrect!", context.getRouteController().getRouteStatus("manual"), is(equalTo(ServiceStatus.Started)));
+        assertThat("Configured route is incorrect!", context.getRouteController().getRouteStatus("manual"),
+                is(equalTo(ServiceStatus.Started)));
     }
 
     @Test

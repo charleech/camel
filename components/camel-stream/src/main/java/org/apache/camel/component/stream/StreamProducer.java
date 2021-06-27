@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -32,14 +30,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.camel.CamelExchangeException;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Producer that can write to streams
  */
 public class StreamProducer extends DefaultProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(StreamProducer.class);
 
     private static final String TYPES = "out,err,file,header,url";
     private static final String INVALID_URI = "Invalid uri, valid form: 'stream:{" + TYPES + "}'";
@@ -47,7 +50,7 @@ public class StreamProducer extends DefaultProducer {
     private StreamEndpoint endpoint;
     private String uri;
     private OutputStream outputStream;
-    private AtomicInteger count = new AtomicInteger();
+    private final AtomicInteger count = new AtomicInteger();
 
     public StreamProducer(StreamEndpoint endpoint, String uri) throws Exception {
         super(endpoint);
@@ -66,6 +69,7 @@ public class StreamProducer extends DefaultProducer {
         closeStream(null, true);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         delay(endpoint.getDelay());
 
@@ -79,30 +83,10 @@ public class StreamProducer extends DefaultProducer {
         }
     }
 
-    private OutputStream resolveStreamFromUrl() throws IOException {
-        String u = endpoint.getUrl();
-        StringHelper.notEmpty(u, "url");
-        log.debug("About to write to url: {}", u);
-
-        URL url = new URL(u);
-        URLConnection c = url.openConnection();
-        c.setDoOutput(true);
-        if (endpoint.getConnectTimeout() > 0) {
-            c.setConnectTimeout(endpoint.getConnectTimeout());
-        }
-        if (endpoint.getReadTimeout() > 0) {
-            c.setReadTimeout(endpoint.getReadTimeout());
-        }
-        if (endpoint.getHttpHeaders() != null) {
-            endpoint.getHttpHeaders().forEach((k, v) -> c.addRequestProperty(k, v.toString()));
-        }
-        return c.getOutputStream();
-    }
-
     private OutputStream resolveStreamFromFile() throws IOException {
         String fileName = endpoint.getFileName();
         StringHelper.notEmpty(fileName, "fileName");
-        log.debug("About to write to file: {}", fileName);
+        LOG.debug("About to write to file: {}", fileName);
         File f = new File(fileName);
         // will create a new file if missing or append to existing
         f.getParentFile().mkdirs();
@@ -118,7 +102,7 @@ public class StreamProducer extends DefaultProducer {
         if (ms == 0) {
             return;
         }
-        log.trace("Delaying {} millis", ms);
+        LOG.trace("Delaying {} millis", ms);
         Thread.sleep(ms);
     }
 
@@ -126,7 +110,7 @@ public class StreamProducer extends DefaultProducer {
         Object body = exchange.getIn().getBody();
 
         if (body == null) {
-            log.debug("Body is null, cannot write it to the stream.");
+            LOG.debug("Body is null, cannot write it to the stream.");
             return;
         }
 
@@ -134,7 +118,7 @@ public class StreamProducer extends DefaultProducer {
         if (!(body instanceof String)) {
             byte[] bytes = exchange.getIn().getBody(byte[].class);
             if (bytes != null) {
-                log.debug("Writing as byte[]: {} to {}", bytes, outputStream);
+                LOG.debug("Writing as byte[]: {} to {}", bytes, outputStream);
                 outputStream.write(bytes);
                 return;
             }
@@ -145,8 +129,8 @@ public class StreamProducer extends DefaultProducer {
         Charset charset = endpoint.getCharset();
         Writer writer = new OutputStreamWriter(outputStream, charset);
         BufferedWriter bw = IOHelper.buffered(writer);
-        if (log.isDebugEnabled()) {
-            log.debug("Writing as text: {} to {} using encoding: {}", body, outputStream, charset);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Writing as text: {} to {} using encoding: {}", body, outputStream, charset);
         }
         bw.write(s);
         bw.write(System.lineSeparator());
@@ -164,11 +148,9 @@ public class StreamProducer extends DefaultProducer {
             outputStream = System.err;
         } else if ("file".equals(uri)) {
             outputStream = resolveStreamFromFile();
-        } else if ("url".equals(uri)) {
-            outputStream = resolveStreamFromUrl();
         }
         count.set(outputStream == null ? 0 : endpoint.getAutoCloseCount());
-        log.debug("Opened stream '{}'", endpoint.getEndpointKey());
+        LOG.debug("Opened stream '{}'", endpoint.getEndpointKey());
     }
 
     private void openStream(final Exchange exchange) throws Exception {
@@ -177,14 +159,14 @@ public class StreamProducer extends DefaultProducer {
         }
         if ("header".equals(uri)) {
             outputStream = resolveStreamFromHeader(exchange.getIn().getHeader("stream"), exchange);
-            log.debug("Opened stream '{}'", endpoint.getEndpointKey());
+            LOG.debug("Opened stream '{}'", endpoint.getEndpointKey());
         } else {
             openStream();
         }
     }
-    
+
     private Boolean isDone(Exchange exchange) {
-        return exchange != null && exchange.getProperty(Exchange.SPLIT_COMPLETE, Boolean.FALSE, Boolean.class);
+        return exchange != null && exchange.getProperty(ExchangePropertyKey.SPLIT_COMPLETE, Boolean.FALSE, Boolean.class);
     }
 
     private void closeStream(Exchange exchange, boolean force) throws Exception {
@@ -204,7 +186,7 @@ public class StreamProducer extends DefaultProducer {
         if (!systemStream && expiredStream) {
             outputStream.close();
             outputStream = null;
-            log.debug("Closed stream '{}'", endpoint.getEndpointKey());
+            LOG.debug("Closed stream '{}'", endpoint.getEndpointKey());
         }
     }
 

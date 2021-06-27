@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.servicenow.releases.helsinki;
 
 import javax.ws.rs.HttpMethod;
@@ -54,15 +53,15 @@ class HelsinkiServiceNowServiceCatalogCategoriesProcessor extends AbstractServic
         final String apiVersion = getApiVersion(in);
 
         Response response = client.reset()
-            .types(MediaType.APPLICATION_JSON_TYPE)
-            .path("sn_sc")
-            .path(apiVersion)
-            .path("servicecatalog")
-            .path("categories")
-            .path(ObjectHelper.notNull(sysId, "sysId"))
-            .query(ServiceNowParams.SYSPARM_VIEW, in)
-            .query(responseModel)
-            .invoke(HttpMethod.GET);
+                .types(MediaType.APPLICATION_JSON_TYPE)
+                .path("sn_sc")
+                .path(apiVersion)
+                .path("servicecatalog")
+                .path("categories")
+                .path(ObjectHelper.notNull(sysId, "sysId"))
+                .query(ServiceNowParams.SYSPARM_VIEW, in)
+                .query(responseModel)
+                .invoke(HttpMethod.GET);
 
         setBodyAndHeaders(in, responseModel, response);
     }

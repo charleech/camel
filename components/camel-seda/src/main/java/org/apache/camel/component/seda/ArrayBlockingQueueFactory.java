@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,6 +69,6 @@ public class ArrayBlockingQueueFactory<E> implements BlockingQueueFactory<E> {
     @Override
     public ArrayBlockingQueue<E> create(int capacity) {
         return fair == null
-            ? new ArrayBlockingQueue<>(defaultCapacity) : new ArrayBlockingQueue<>(defaultCapacity, fair);
+                ? new ArrayBlockingQueue<>(capacity) : new ArrayBlockingQueue<>(capacity, fair);
     }
 }

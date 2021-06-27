@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ public interface PrinterOperationsInterface {
     /**
      * Prints the document.
      *
-     * @param doc document to print
+     * @param  doc            document to print
      * @throws PrintException is thrown if printing failed
      */
     void print(Doc doc, String jobName) throws PrintException;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeTimedOutException;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.vm.AbstractVmTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DisruptorVmTimeoutIssueTest extends AbstractVmTestSupport {
 
     @Test
-    public void testDisruptorVmTimeoutWithAnotherDisruptorVm() throws Exception {
+    void testDisruptorVmTimeoutWithAnotherDisruptorVm() throws Exception {
         try {
             template2.requestBody("disruptor-vm:start1?timeout=4000", "Hello");
             fail("Should have thrown an exception");
@@ -39,7 +42,7 @@ public class DisruptorVmTimeoutIssueTest extends AbstractVmTestSupport {
     }
 
     @Test
-    public void testDisruptorVmTimeoutWithProcessor() throws Exception {
+    void testDisruptorVmTimeoutWithProcessor() throws Exception {
         try {
             template2.requestBody("disruptor-vm:start2?timeout=4000", "Hello");
             fail("Should have thrown an exception");
@@ -51,10 +54,10 @@ public class DisruptorVmTimeoutIssueTest extends AbstractVmTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("disruptor-vm:end")
                         .delay(3000).transform().constant("Bye World");
             }
@@ -62,10 +65,10 @@ public class DisruptorVmTimeoutIssueTest extends AbstractVmTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilderForSecondContext() throws Exception {
+    protected RouteBuilder createRouteBuilderForSecondContext() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 errorHandler(noErrorHandler());
 
                 from("disruptor-vm:start1?timeout=4000")

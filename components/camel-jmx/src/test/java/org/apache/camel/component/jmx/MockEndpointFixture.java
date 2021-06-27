@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,28 +28,29 @@ import org.apache.camel.Message;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Waits for messages to arrive on the mock endpoint and performs assertions on the message bodies.
  */
 public class MockEndpointFixture {
     MockEndpoint mMockEndpoint;
-    
+
     public MockEndpointFixture(MockEndpoint aMockEndpoint) {
         setMockEndpoint(aMockEndpoint);
     }
-    
+
     protected void waitForMessages() throws InterruptedException {
         waitForMessages(mMockEndpoint);
     }
 
     protected void waitForMessages(MockEndpoint aMockEndpoint) throws InterruptedException {
         mMockEndpoint.await(10, TimeUnit.SECONDS);
-        assertEquals("Expected number of messages didn't arrive before timeout", aMockEndpoint.getExpectedCount(), aMockEndpoint.getReceivedCounter());
+        assertEquals(aMockEndpoint.getExpectedCount(), aMockEndpoint.getReceivedCounter(),
+                "Expected number of messages didn't arrive before timeout");
     }
-    
+
     protected MockEndpoint getMockEndpoint() {
         return mMockEndpoint;
     }
@@ -88,8 +89,7 @@ public class MockEndpointFixture {
     }
 
     /**
-     * Resets the mock endpoint so we can run another test. This will clear out any
-     * previously received messages.
+     * Resets the mock endpoint so we can run another test. This will clear out any previously received messages.
      */
     protected void resetMockEndpoint() {
         getMockEndpoint().reset();

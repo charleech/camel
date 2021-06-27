@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,17 +21,21 @@ import java.util.Map;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
-import org.apache.camel.Attachment;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Producer;
+import org.apache.camel.attachment.Attachment;
+import org.apache.camel.attachment.AttachmentMessage;
+import org.apache.camel.attachment.DefaultAttachment;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.support.DefaultAttachment;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test for Camel attachments and Mail attachments.
@@ -50,7 +54,7 @@ public class MailAttachmentTest extends CamelTestSupport {
 
         // create the exchange with the mail message that is multipart with a file and a Hello World text/plain message.
         Exchange exchange = endpoint.createExchange();
-        Message in = exchange.getIn();
+        AttachmentMessage in = exchange.getIn(AttachmentMessage.class);
         in.setBody("Hello World");
         DefaultAttachment att = new DefaultAttachment(new FileDataSource("src/test/data/logo.jpeg"));
         att.addHeader("Content-Description", "some sample content");
@@ -74,30 +78,31 @@ public class MailAttachmentTest extends CamelTestSupport {
         assertEquals("Hello World", out.getIn().getBody(String.class));
 
         // attachment
-        Map<String, Attachment> attachments = out.getIn().getAttachmentObjects();
-        assertNotNull("Should have attachments", attachments);
+        Map<String, Attachment> attachments = out.getIn(AttachmentMessage.class).getAttachmentObjects();
+        assertNotNull(attachments, "Should have attachments");
         assertEquals(1, attachments.size());
 
-        Attachment attachment = out.getIn().getAttachmentObject("logo.jpeg");
+        Attachment attachment = out.getIn(AttachmentMessage.class).getAttachmentObject("logo.jpeg");
         DataHandler handler = attachment.getDataHandler();
-        assertNotNull("The logo should be there", handler);
+        assertNotNull(handler, "The logo should be there");
 
         // content type should match
         boolean match1 = "image/jpeg; name=logo.jpeg".equals(handler.getContentType());
         boolean match2 = "application/octet-stream; name=logo.jpeg".equals(handler.getContentType());
-        assertTrue("Should match 1 or 2", match1 || match2);
+        assertTrue(match1 || match2, "Should match 1 or 2");
 
-        assertEquals("Handler name should be the file name", "logo.jpeg", handler.getName());
+        assertEquals("logo.jpeg", handler.getName(), "Handler name should be the file name");
 
         assertEquals("some sample content", attachment.getHeader("content-description"));
 
         producer.stop();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("pop3://james@mymailserver.com?password=secret&consumer.initialDelay=100&consumer.delay=100").to("mock:result");
+                from("pop3://james@mymailserver.com?password=secret&initialDelay=100&delay=100").to("mock:result");
             }
         };
     }

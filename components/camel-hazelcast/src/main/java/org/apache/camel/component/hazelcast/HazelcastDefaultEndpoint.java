@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,6 @@ import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.component.hazelcast.queue.HazelcastQueueConfiguration;
-import org.apache.camel.component.hazelcast.seda.HazelcastSedaConfiguration;
-import org.apache.camel.component.hazelcast.topic.HazelcastTopicConfiguration;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
@@ -35,7 +32,8 @@ import org.apache.camel.support.DefaultEndpoint;
 public abstract class HazelcastDefaultEndpoint extends DefaultEndpoint {
 
     protected HazelcastCommand command;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     protected String cacheName;
     @UriParam
     protected HazelcastInstance hazelcastInstance;
@@ -43,30 +41,23 @@ public abstract class HazelcastDefaultEndpoint extends DefaultEndpoint {
     protected String hazelcastInstanceName;
     @UriParam
     private HazelcastOperation defaultOperation;
-    @UriParam
-    private HazelcastSedaConfiguration hazelcastSedaConfiguration; // to include component schema docs
-    @UriParam
-    private HazelcastTopicConfiguration hazelcastTopicConfiguration; 
-    @UriParam
-    private HazelcastQueueConfiguration hazelcastQueueConfiguration; 
 
     public HazelcastDefaultEndpoint(HazelcastInstance hazelcastInstance, String endpointUri, Component component) {
         this(hazelcastInstance, endpointUri, component, null);
     }
 
-    public HazelcastDefaultEndpoint(HazelcastInstance hazelcastInstance, String endpointUri, Component component, String cacheName) {
+    public HazelcastDefaultEndpoint(HazelcastInstance hazelcastInstance, String endpointUri, Component component,
+                                    String cacheName) {
         super(endpointUri, component);
         this.cacheName = cacheName;
         this.hazelcastInstance = hazelcastInstance;
     }
 
+    @Override
     public abstract Consumer createConsumer(Processor processor) throws Exception;
 
+    @Override
     public abstract Producer createProducer() throws Exception;
-
-    public boolean isSingleton() {
-        return true;
-    }
 
     public HazelcastCommand getCommand() {
         return command;
@@ -106,8 +97,8 @@ public abstract class HazelcastDefaultEndpoint extends DefaultEndpoint {
     }
 
     /**
-     * The hazelcast instance reference name which can be used for hazelcast endpoint.
-     * If you don't specify the instance reference, camel use the default hazelcast instance from the camel-hazelcast instance.
+     * The hazelcast instance reference name which can be used for hazelcast endpoint. If you don't specify the instance
+     * reference, camel use the default hazelcast instance from the camel-hazelcast instance.
      */
     public void setHazelcastInstanceName(String hazelcastInstanceName) {
         this.hazelcastInstanceName = hazelcastInstanceName;

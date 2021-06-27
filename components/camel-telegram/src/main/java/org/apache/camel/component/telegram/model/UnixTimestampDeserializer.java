@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,12 @@
  */
 package org.apache.camel.component.telegram.model;
 
-
 import java.io.IOException;
 import java.time.Instant;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,7 @@ public class UnixTimestampDeserializer extends JsonDeserializer<Instant> {
     @Override
     public Instant deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         try {
-            Long unixTimestamp = Long.parseLong(jsonParser.getText());
+            long unixTimestamp = Long.parseLong(jsonParser.getText());
 
             return Instant.ofEpochSecond(unixTimestamp);
         } catch (Exception e) {

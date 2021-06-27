@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,13 +26,13 @@ import java.util.UUID;
 
 import org.apache.camel.component.openstack.common.OpenstackConstants;
 import org.apache.camel.component.openstack.swift.producer.ObjectProducer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.openstack4j.api.storage.ObjectStorageObjectService;
 import org.openstack4j.model.common.ActionResponse;
 import org.openstack4j.model.common.Payload;
@@ -40,16 +40,14 @@ import org.openstack4j.model.common.Payloads;
 import org.openstack4j.model.storage.object.SwiftObject;
 import org.openstack4j.model.storage.object.options.ObjectLocation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class ObjectProducerTest extends SwiftProducerTestSupport {
 
     private static final String CONTAINER_NAME = "containerName";
@@ -77,7 +75,7 @@ public class ObjectProducerTest extends SwiftProducerTestSupport {
     @Captor
     private ArgumentCaptor<Map<String, String>> dataCaptor;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         when(objectStorageService.objects()).thenReturn(objectService);
 
@@ -132,7 +130,6 @@ public class ObjectProducerTest extends SwiftProducerTestSupport {
         assertEquals(mockOsObject, msg.getBody(List.class).get(0));
     }
 
-
     @Test
     public void deleteObjectTest() throws Exception {
         when(objectService.delete(anyString(), anyString())).thenReturn(ActionResponse.actionSuccess());
@@ -145,23 +142,6 @@ public class ObjectProducerTest extends SwiftProducerTestSupport {
         verify(objectService).delete(containerNameCaptor.capture(), objectNameCaptor.capture());
         assertEquals(CONTAINER_NAME, containerNameCaptor.getValue());
         assertEquals(OBJECT_NAME, objectNameCaptor.getValue());
-
-        assertFalse(msg.isFault());
-    }
-
-
-    @Test
-    public void deleteObjectFailTest() throws Exception {
-        final String failMessage = "fail";
-        when(objectService.delete(anyString(), anyString())).thenReturn(ActionResponse.actionFailed(failMessage, 401));
-        msg.setHeader(OpenstackConstants.OPERATION, OpenstackConstants.DELETE);
-        msg.setHeader(SwiftConstants.CONTAINER_NAME, CONTAINER_NAME);
-        msg.setHeader(SwiftConstants.OBJECT_NAME, OBJECT_NAME);
-
-        producer.process(exchange);
-
-        assertTrue(msg.isFault());
-        assertTrue(msg.getBody(String.class).contains(failMessage));
     }
 
     @Test
@@ -197,7 +177,6 @@ public class ObjectProducerTest extends SwiftProducerTestSupport {
 
         assertEquals(md, msg.getBody(Map.class));
     }
-
 
     private Payload<File> getTmpPayload() throws IOException {
         return Payloads.create(File.createTempFile("payloadPreffix", ".txt"));

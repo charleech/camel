@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,11 +27,13 @@ import org.apache.camel.support.LanguageSupport;
 @Language("ognl")
 public class OgnlLanguage extends LanguageSupport {
 
+    @Override
     public Predicate createPredicate(String expression) {
         expression = loadResource(expression);
         return new OgnlExpression(this, expression, Boolean.class);
     }
 
+    @Override
     public Expression createExpression(String expression) {
         expression = loadResource(expression);
         return new OgnlExpression(this, expression, Object.class);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -54,7 +54,7 @@ public class AS2BHttpServerConnection extends DefaultBHttpServerConnection {
                                     HttpMessageParserFactory<HttpRequest> requestParserFactory,
                                     HttpMessageWriterFactory<HttpResponse> responseWriterFactory) {
         super(buffersize, fragmentSizeHint, chardecoder, charencoder, constraints, incomingContentStrategy,
-                outgoingContentStrategy, requestParserFactory, responseWriterFactory);
+              outgoingContentStrategy, requestParserFactory, responseWriterFactory);
     }
 
     @Override

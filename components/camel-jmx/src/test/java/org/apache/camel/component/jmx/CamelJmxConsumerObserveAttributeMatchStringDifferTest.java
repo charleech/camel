@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.apache.camel.RoutesBuilder;
 import org.apache.camel.api.management.ManagedCamelContext;
 import org.apache.camel.api.management.mbean.ManagedRouteMBean;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class CamelJmxConsumerObserveAttributeMatchStringDifferTest extends CamelTestSupport {
 
@@ -62,10 +62,11 @@ public class CamelJmxConsumerObserveAttributeMatchStringDifferTest extends Camel
             public void configure() throws Exception {
                 String id = getContext().getName();
 
-                fromF("jmx:platform?objectDomain=org.apache.camel&key.context=%s&key.type=routes&key.name=\"foo\"&observedAttribute=Tracing&stringToCompare=true&notifyDiffer=true", id)
-                    .routeId("jmxRoute")
-                    .to("log:jmx")
-                    .to("mock:result");
+                fromF("jmx:platform?objectDomain=org.apache.camel&key.context=%s&key.type=routes&key.name=\"foo\"&observedAttribute=Tracing&stringToCompare=true&notifyDiffer=true",
+                        id)
+                                .routeId("jmxRoute")
+                                .to("log:jmx")
+                                .to("mock:result");
 
                 from("direct:foo").routeId("foo").to("log:foo", "mock:foo");
             }

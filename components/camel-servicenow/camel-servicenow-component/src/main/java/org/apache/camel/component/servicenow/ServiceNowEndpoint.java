@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,21 +16,23 @@
  */
 package org.apache.camel.component.servicenow;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The servicenow component is used to integrate Camel with <a href="http://www.servicenow.com/">ServiceNow</a> cloud services.
+ * Interact with <a href="http://www.servicenow.com/">ServiceNow</a> via its REST API.
  */
-@UriEndpoint(firstVersion = "2.18.0", scheme = "servicenow", title = "ServiceNow", syntax = "servicenow:instanceName", producerOnly = true, label = "api,cloud,management")
+@UriEndpoint(firstVersion = "2.18.0", scheme = "servicenow", title = "ServiceNow", syntax = "servicenow:instanceName",
+             producerOnly = true, category = { Category.API, Category.CLOUD, Category.MANAGEMENT })
 public class ServiceNowEndpoint extends DefaultEndpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceNowEndpoint.class);
 
@@ -41,7 +43,8 @@ public class ServiceNowEndpoint extends DefaultEndpoint {
     @UriParam
     private final ServiceNowConfiguration configuration;
 
-    public ServiceNowEndpoint(String uri, ServiceNowComponent component, ServiceNowConfiguration configuration, String instanceName) throws Exception {
+    public ServiceNowEndpoint(String uri, ServiceNowComponent component, ServiceNowConfiguration configuration,
+                              String instanceName) throws Exception {
         super(uri, component);
 
         this.configuration = configuration;
@@ -52,10 +55,9 @@ public class ServiceNowEndpoint extends DefaultEndpoint {
     public Producer createProducer() throws Exception {
         ServiceNowProducer producer = configuration.getRelease().get(this);
         LOGGER.info("Producer for ServiceNow Rel. {} = {}/{}",
-            configuration.getRelease().name(),
-            producer.getRelease().name(),
-            producer.getClass().getName()
-        );
+                configuration.getRelease().name(),
+                producer.getRelease().name(),
+                producer.getClass().getName());
 
         return producer;
     }
@@ -63,11 +65,6 @@ public class ServiceNowEndpoint extends DefaultEndpoint {
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new UnsupportedOperationException("Consumer is not supported");
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     public ServiceNowConfiguration getConfiguration() {

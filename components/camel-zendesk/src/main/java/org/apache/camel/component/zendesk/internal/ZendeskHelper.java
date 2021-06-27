@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,10 +33,10 @@ public final class ZendeskHelper {
 
     public static Zendesk create(ZendeskConfiguration configuration) {
         return new Zendesk.Builder(configuration.getServerUrl())
-            .setUsername(configuration.getUsername())
-            .setToken(configuration.getToken())
-            .setOauthToken(configuration.getOauthToken())
-            .setPassword(configuration.getPassword())
-            .build();
+                .setUsername(configuration.getUsername())
+                .setToken(configuration.getToken())
+                .setOauthToken(configuration.getOauthToken())
+                .setPassword(configuration.getPassword())
+                .build();
     }
 }

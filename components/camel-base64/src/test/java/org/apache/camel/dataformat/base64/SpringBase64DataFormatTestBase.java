@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,13 +18,15 @@ package org.apache.camel.dataformat.base64;
 
 import org.apache.camel.EndpointInject;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public abstract class SpringBase64DataFormatTestBase extends CamelSpringTestSupport {
 
     protected Base64DataFormat format = new Base64DataFormat();
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint result;
 
     protected void runEncoderTest(byte[] raw, byte[] expected) throws Exception {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.olingo2;
 
 import java.io.IOException;
@@ -38,7 +37,6 @@ public class Olingo2SampleServer {
     private int port;
 
     /**
-     * 
      * @param port
      * @param resourcePath
      */
@@ -58,7 +56,7 @@ public class Olingo2SampleServer {
         webappcontext.setWar(contextPath);
 
         HandlerCollection handlers = new HandlerCollection();
-        handlers.setHandlers(new Handler[] {webappcontext, new DefaultHandler()});
+        handlers.setHandlers(new Handler[] { webappcontext, new DefaultHandler() });
         server.setHandler(handlers);
     }
 
@@ -77,13 +75,14 @@ public class Olingo2SampleServer {
 
     static void generateSampleData(String serviceUrl) throws IOException {
         try {
-            // need to use reflection to avoid a build error even when the sample source is not available 
-            Class<?> clz = Class.forName("org.apache.olingo.sample.annotation.util.AnnotationSampleDataGenerator"); 
+            // need to use reflection to avoid a build error even when the
+            // sample source is not available
+            Class<?> clz = Class.forName("org.apache.olingo.sample.annotation.util.AnnotationSampleDataGenerator");
             Method m = clz.getMethod("generateData", String.class);
             m.invoke(null, serviceUrl);
         } catch (Throwable t) {
             LOG.error("Unable to load the required sample class", t);
-            throw new IOException("unable to load the required sample class");
+            throw new IOException("unable to load the required sample class", t);
         }
     }
 }

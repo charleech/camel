@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,19 +23,21 @@ import com.pubnub.api.callbacks.SubscribeCallback;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.pubnub.api.enums.PNStatusCategory.PNTimeoutCategory;
 import static com.pubnub.api.enums.PNStatusCategory.PNUnexpectedDisconnectCategory;
-
 import static org.apache.camel.component.pubnub.PubNubConstants.CHANNEL;
 import static org.apache.camel.component.pubnub.PubNubConstants.TIMETOKEN;
 
 public class PubNubConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PubNubConsumer.class);
 
     private final PubNubEndpoint endpoint;
     private final PubNubConfiguration pubNubConfiguration;
@@ -48,7 +50,7 @@ public class PubNubConsumer extends DefaultConsumer {
 
     private void initCommunication() throws Exception {
         endpoint.getPubnub().addListener(new PubNubCallback());
-        if (pubNubConfiguration.withPresence()) {
+        if (pubNubConfiguration.isWithPresence()) {
             endpoint.getPubnub().subscribe().channels(Arrays.asList(pubNubConfiguration.getChannel())).withPresence().execute();
         } else {
             endpoint.getPubnub().subscribe().channels(Arrays.asList(pubNubConfiguration.getChannel())).execute();
@@ -92,16 +94,16 @@ public class PubNubConsumer extends DefaultConsumer {
         @Override
         public void status(PubNub pubnub, PNStatus status) {
             if (status.getCategory() == PNUnexpectedDisconnectCategory || status.getCategory() == PNTimeoutCategory) {
-                log.trace("Got status: {}. Reconnecting to PubNub", status);
+                LOG.trace("Got status: {}. Reconnecting to PubNub", status);
                 pubnub.reconnect();
             } else {
-                log.trace("Status message: {}", status);
+                LOG.trace("Status message: {}", status);
             }
         }
 
         @Override
         public void message(PubNub pubnub, PNMessageResult message) {
-            Exchange exchange = endpoint.createExchange();
+            Exchange exchange = createExchange(true);
             Message inmessage = exchange.getIn();
             inmessage.setBody(message);
             inmessage.setHeader(TIMETOKEN, message.getTimetoken());
@@ -109,13 +111,13 @@ public class PubNubConsumer extends DefaultConsumer {
             try {
                 getProcessor().process(exchange);
             } catch (Exception e) {
-                getExceptionHandler().handleException("Error processing exchange", exchange, e);
+                getExceptionHandler().handleException("Error processing exchange", e);
             }
         }
 
         @Override
         public void presence(PubNub pubnub, PNPresenceEventResult presence) {
-            Exchange exchange = endpoint.createExchange();
+            Exchange exchange = createExchange(true);
             Message inmessage = exchange.getIn();
             inmessage.setBody(presence);
             inmessage.setHeader(TIMETOKEN, presence.getTimetoken());
@@ -123,8 +125,7 @@ public class PubNubConsumer extends DefaultConsumer {
             try {
                 getProcessor().process(exchange);
             } catch (Exception e) {
-                exchange.setException(e);
-                getExceptionHandler().handleException("Error processing exchange", exchange, e);
+                getExceptionHandler().handleException("Error processing exchange", e);
             }
         }
 

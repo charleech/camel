@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ public class CamelConduit extends AbstractConduit implements Configurable {
     }
 
     public CamelConduit(CamelContext context, Bus b, EndpointInfo epInfo, EndpointReferenceType targetReference,
-            HeaderFilterStrategy headerFilterStrategy) {
+                        HeaderFilterStrategy headerFilterStrategy) {
         super(getTargetReference(epInfo, targetReference, b));
         String address = epInfo.getAddress();
         if (address != null) {
@@ -93,16 +93,19 @@ public class CamelConduit extends AbstractConduit implements Configurable {
     }
 
     // prepare the message for send out , not actually send out the message
+    @Override
     public void prepare(Message message) throws IOException {
         LOG.trace("CamelConduit send message");
-        CamelOutputStream os = new CamelOutputStream(this.targetCamelEndpointUri, 
-                                                     this.producer, 
-                                                     this.headerFilterStrategy, 
-                                                     this.getMessageObserver(), 
-                                                     message);
+        CamelOutputStream os = new CamelOutputStream(
+                this.targetCamelEndpointUri,
+                this.producer,
+                this.headerFilterStrategy,
+                this.getMessageObserver(),
+                message);
         message.setContent(OutputStream.class, os);
     }
 
+    @Override
     public void close() {
         LOG.trace("CamelConduit closed ");
         // shutdown the producer
@@ -113,10 +116,12 @@ public class CamelConduit extends AbstractConduit implements Configurable {
         }
     }
 
+    @Override
     protected java.util.logging.Logger getLogger() {
         return JUL_LOG;
     }
 
+    @Override
     public String getBeanName() {
         if (endpointInfo == null || endpointInfo.getName() == null) {
             return "default" + BASE_BEAN_NAME_SUFFIX;

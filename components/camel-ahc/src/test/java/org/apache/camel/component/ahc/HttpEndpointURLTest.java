@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,16 @@
  */
 package org.apache.camel.component.ahc;
 
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HttpEndpointURLTest extends CamelTestSupport {
-    
+
     @Test
     public void testHttpEndpointURLWithIPv6() {
-        AhcEndpoint endpoint = (AhcEndpoint)context.getEndpoint("ahc://http://[2a00:8a00:6000:40::1413]:30300/test?test=true");
+        AhcEndpoint endpoint = (AhcEndpoint) context.getEndpoint("ahc://http://[2a00:8a00:6000:40::1413]:30300/test?test=true");
         assertEquals("http://[2a00:8a00:6000:40::1413]:30300/test?test=true", endpoint.getHttpUri().toString());
     }
 

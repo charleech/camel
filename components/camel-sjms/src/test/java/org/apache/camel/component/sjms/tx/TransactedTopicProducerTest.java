@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,20 +16,23 @@
  */
 package org.apache.camel.component.sjms.tx;
 
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.RollbackExchangeException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.sjms.SjmsComponent;
-import org.apache.camel.component.sjms.jms.ConnectionFactoryResource;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.component.sjms.support.JmsTestSupport;
+import org.junit.jupiter.api.Test;
 
-public class TransactedTopicProducerTest extends CamelTestSupport {
+import static org.junit.jupiter.api.Assertions.fail;
+
+public class TransactedTopicProducerTest extends JmsTestSupport {
+
+    private static final String CONNECTION_ID = "test-connection-1";
 
     @Produce
     protected ProducerTemplate template;
@@ -37,48 +40,30 @@ public class TransactedTopicProducerTest extends CamelTestSupport {
     public TransactedTopicProducerTest() {
     }
 
-    @Override
-    protected boolean useJmx() {
-        return false;
-    }
-
     @Test
     public void testRoute() throws Exception {
-        
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedBodiesReceived("Hello World 2");
 
-        template.sendBodyAndHeader("direct:start", "Hello World 1", "isfailed", true);
+        try {
+            template.sendBodyAndHeader("direct:start", "Hello World 1", "isfailed", true);
+            fail("Should throw exception");
+        } catch (Exception e) {
+            // expected
+        }
         template.sendBodyAndHeader("direct:start", "Hello World 2", "isfailed", false);
 
         mock.assertIsSatisfied();
     }
 
-
-    /*
-     * @see org.apache.camel.test.junit4.CamelTestSupport#createCamelContext()
-     * @return
-     * @throws Exception
-     */
     @Override
     protected CamelContext createCamelContext() throws Exception {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://broker?broker.persistent=false&broker.useJmx=false");
-        ConnectionFactoryResource connectionResource = new ConnectionFactoryResource();
-        connectionResource.setConnectionFactory(connectionFactory);
-        connectionResource.setClientId("test-connection-1");
-        CamelContext camelContext = super.createCamelContext();
-        SjmsComponent component = new SjmsComponent();
-        component.setConnectionResource(connectionResource);
-        component.setConnectionCount(1);
-        camelContext.addComponent("sjms", component);
-        return camelContext;
+        CamelContext context = super.createCamelContext();
+        SjmsComponent sjms = context.getComponent("sjms", SjmsComponent.class);
+        sjms.setClientId(CONNECTION_ID);
+        return context;
     }
 
-    /*
-     * @see org.apache.camel.test.junit4.CamelTestSupport#createRouteBuilder()
-     * @return
-     * @throws Exception
-     */
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
@@ -86,23 +71,23 @@ public class TransactedTopicProducerTest extends CamelTestSupport {
             public void configure() {
 
                 from("direct:start")
-                    .to("sjms:topic:test.topic?transacted=true")
-                    .process(
-                         new Processor() {
-                            @Override
-                            public void process(Exchange exchange) throws Exception {
-                                if (exchange.getIn().getHeader("isfailed", Boolean.class)) {
-                                    log.info("We failed.  Should roll back.");
-                                    exchange.getOut().setFault(true);
-                                } else {
-                                    log.info("We passed.  Should commit.");
-                                }
-                            }
-                        });
-                
-                from("sjms:topic:test.topic?durableSubscriptionId=bar&transacted=true")
-                    .to("mock:result");
-                
+                        .to("sjms:topic:test.topic?transacted=true")
+                        .process(
+                                new Processor() {
+                                    @Override
+                                    public void process(Exchange exchange) throws Exception {
+                                        if (exchange.getIn().getHeader("isfailed", Boolean.class)) {
+                                            log.info("We failed.  Should roll back.");
+                                            throw new RollbackExchangeException(exchange);
+                                        } else {
+                                            log.info("We passed.  Should commit.");
+                                        }
+                                    }
+                                });
+
+                from("sjms:topic:test.topic?durableSubscriptionName=bar&transacted=true")
+                        .to("mock:result");
+
             }
         };
     }

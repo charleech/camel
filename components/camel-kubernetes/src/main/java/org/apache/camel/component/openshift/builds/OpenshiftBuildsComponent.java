@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,9 @@ import org.apache.camel.spi.annotations.Component;
 @Component("openshift-builds")
 public class OpenshiftBuildsComponent extends AbstractKubernetesComponent {
 
-    protected AbstractKubernetesEndpoint doCreateEndpoint(String uri, String remaining, KubernetesConfiguration config) throws Exception {
+    @Override
+    protected AbstractKubernetesEndpoint doCreateEndpoint(String uri, String remaining, KubernetesConfiguration config)
+            throws Exception {
         OpenshiftBuildsEndpoint endpoint = new OpenshiftBuildsEndpoint(uri, this, config);
         return endpoint;
     }

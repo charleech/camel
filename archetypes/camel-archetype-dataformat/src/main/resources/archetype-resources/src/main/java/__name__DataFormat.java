@@ -22,12 +22,9 @@ import java.io.OutputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
-import org.apache.camel.support.ServiceSupport;
+import org.apache.camel.support.service.ServiceSupport;
 
-/**
- * A <a href="http://camel.apache.org/data-format.html">data format</a> ({@link DataFormat})
- * for ${name} data.
- */
+@org.apache.camel.spi.annotations.Dataformat("${scheme}")
 public class ${name}DataFormat extends ServiceSupport implements DataFormat, DataFormatName {
 
     public String getDataFormatName() {

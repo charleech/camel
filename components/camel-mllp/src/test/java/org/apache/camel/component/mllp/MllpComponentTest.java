@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests for the  class.
+ * Tests for the class.
  */
 public class MllpComponentTest {
     Boolean initialLogPhiValue;
@@ -35,7 +34,7 @@ public class MllpComponentTest {
 
     MllpComponent instance;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initialLogPhiValue = MllpComponent.logPhi;
         initialLogPhiMaxBytesValue = MllpComponent.logPhiMaxBytes;
@@ -43,7 +42,7 @@ public class MllpComponentTest {
         instance = new MllpComponent();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         MllpComponent.logPhi = initialLogPhiValue;
         MllpComponent.logPhiMaxBytes = initialLogPhiMaxBytesValue;
@@ -84,7 +83,6 @@ public class MllpComponentTest {
         MllpComponent.setLogPhi(false);
         assertEquals(Boolean.FALSE, MllpComponent.logPhi);
     }
-
 
     @Test
     public void testHasLogPhiMaxBytes() throws Exception {

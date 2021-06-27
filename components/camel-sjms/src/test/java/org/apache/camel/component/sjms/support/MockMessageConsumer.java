@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,13 +30,17 @@ public class MockMessageConsumer extends ActiveMQMessageConsumer {
 
     private boolean isBadSession;
 
-    public MockMessageConsumer(ActiveMQSession session, ConsumerId consumerId, ActiveMQDestination dest, String name, String selector, int prefetch,
-                               int maximumPendingMessageCount, boolean noLocal, boolean browser, boolean dispatchAsync, MessageListener messageListener,
+    public MockMessageConsumer(ActiveMQSession session, ConsumerId consumerId, ActiveMQDestination dest, String name,
+                               String selector, int prefetch,
+                               int maximumPendingMessageCount, boolean noLocal, boolean browser, boolean dispatchAsync,
+                               MessageListener messageListener,
                                boolean isBadSession) throws JMSException {
-        super(session, consumerId, dest, name, selector, prefetch, maximumPendingMessageCount, noLocal, browser, dispatchAsync, messageListener);
+        super(session, consumerId, dest, name, selector, prefetch, maximumPendingMessageCount, noLocal, browser, dispatchAsync,
+              messageListener);
         this.isBadSession = isBadSession;
     }
 
+    @Override
     public Message receive(long timeout) throws JMSException {
         if (isBadSession) {
             throw new IllegalStateException("asdf");

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,9 +25,14 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import zipkin2.reporter.Reporter;
+
+import static org.apache.camel.test.junit5.TestSupport.isPlatform;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ManagedZipkinSimpleRouteTest extends CamelTestSupport {
 
@@ -68,12 +73,13 @@ public class ManagedZipkinSimpleRouteTest extends CamelTestSupport {
         }
 
         MBeanServer mbeanServer = getMBeanServer();
-        ObjectName on = new ObjectName("org.apache.camel:context=camel-1,type=services,name=ZipkinTracer");
+        ObjectName on = new ObjectName(
+                "org.apache.camel:context=" + context.getManagementName() + ",type=services,name=ZipkinTracer");
         assertNotNull(on);
         assertTrue(mbeanServer.isRegistered(on));
 
         Float rate = (Float) mbeanServer.getAttribute(on, "Rate");
-        assertEquals("Should be 1.0f", 1.0f, rate.floatValue(), 0.1f);
+        assertEquals(1.0f, rate.floatValue(), 0.1f, "Should be 1.0f");
 
         NotifyBuilder notify = new NotifyBuilder(context).whenDone(5).create();
 

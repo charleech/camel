@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,4 +66,15 @@ public interface CordaConstants {
     String SECURE_HASH = "SECURE_HASH";
     String QUERY_CRITERIA = "QUERY_CRITERIA";
     String PAGE_SPECIFICATION = "PAGE_SPECIFICATION";
+
+    String TERMINATE = "TERMINATE";
+    String ACCEPT_NEWNETWORK_PARAMETERS = "ACCEPT_NEWNETWORK_PARAMETERS";
+    String IS_WAITING_FOR_SHUTDOWN = "IS_WAITING_FOR_SHUTDOWN";
+    String KILL_FLOW = "KILL_FLOW";
+    String NETWORK_PARAMETERS_FEED = "NETWORK_PARAMETERS_FEED";
+    String REFRESH_NETWORK_MAP_CACHE = "REFRESH_NETWORK_MAP_CACHE";
+    String SHUTDOWN = "SHUTDOWN";
+    String UPLOAD_ATTACHMENT_WITH_META_DATA = "UPLOAD_ATTACHMENT_WITH_META_DATA";
+    String WAIT_UNTIL_NETWORK_READY = "WAIT_UNTIL_NETWORK_READY";
+
 }

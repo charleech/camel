@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.spark.RddCallback;
 import org.apache.spark.api.java.JavaRDDLike;
 
+import static java.util.Arrays.asList;
+import static org.apache.camel.support.ObjectHelper.invokeMethodSafe;
 import static org.apache.camel.util.ObjectHelper.findMethodsWithAnnotation;
 
 class AnnotatedRddCallbackProxy implements RddCallback {
@@ -40,8 +40,9 @@ class AnnotatedRddCallbackProxy implements RddCallback {
     AnnotatedRddCallbackProxy(Object objectWithCallback, CamelContext camelContext) {
         this.objectWithCallback = objectWithCallback;
         this.camelContext = camelContext;
-        this.rddCallbacks = findMethodsWithAnnotation(objectWithCallback.getClass(), org.apache.camel.component.spark.annotations.RddCallback.class);
-        if (rddCallbacks.size() == 0) {
+        this.rddCallbacks = findMethodsWithAnnotation(objectWithCallback.getClass(),
+                org.apache.camel.component.spark.annotations.RddCallback.class);
+        if (rddCallbacks.isEmpty()) {
             throw new UnsupportedOperationException("Can't find methods annotated with @RddCallback.");
         }
     }
@@ -61,15 +62,16 @@ class AnnotatedRddCallbackProxy implements RddCallback {
             }
 
             Method callbackMethod = rddCallbacks.get(0);
-            callbackMethod.setAccessible(true);
 
             if (camelContext != null) {
                 for (int i = 1; i < arguments.size(); i++) {
-                    arguments.set(i, camelContext.getTypeConverter().convertTo(callbackMethod.getParameterTypes()[i], arguments.get(i)));
+                    arguments.set(i,
+                            camelContext.getTypeConverter().convertTo(callbackMethod.getParameterTypes()[i], arguments.get(i)));
                 }
             }
 
-            return callbackMethod.invoke(objectWithCallback, arguments.toArray(new Object[arguments.size()]));
+            Object[] args = arguments.toArray(new Object[arguments.size()]);
+            return invokeMethodSafe(callbackMethod, objectWithCallback, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }

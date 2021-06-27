@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,10 @@ import java.io.PipedOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.camel.RuntimeCamelException;
 import org.apache.sshd.client.SshClient;
@@ -41,13 +43,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class SshHelper {
-    
+
     protected static final Logger LOG = LoggerFactory.getLogger(SshHelper.class);
-    
+
     private SshHelper() {
     }
-    
-    public static SshResult sendExecCommand(Map<String, Object> headers, String command, SshEndpoint endpoint, SshClient client) throws Exception {
+
+    public static SshResult sendExecCommand(Map<String, Object> headers, String command, SshEndpoint endpoint, SshClient client)
+            throws Exception {
         SshConfiguration configuration = endpoint.getConfiguration();
 
         if (configuration == null) {
@@ -66,23 +69,32 @@ public final class SshHelper {
         connectFuture.await(configuration.getTimeout());
 
         if (!connectFuture.isDone() || !connectFuture.isConnected()) {
-            throw new RuntimeCamelException("Failed to connect to " + configuration.getHost() + ":" + configuration.getPort() + " within timeout " + configuration.getTimeout() + "ms");
+            throw new RuntimeCamelException(
+                    "Failed to connect to " + configuration.getHost() + ":" + configuration.getPort() + " within timeout "
+                                            + configuration.getTimeout() + "ms");
         }
 
         LOG.debug("Connected to {}:{}", configuration.getHost(), configuration.getPort());
 
         ClientChannel channel = null;
         ClientSession session = null;
-        
+
         try {
             AuthFuture authResult;
             session = connectFuture.getSession();
-    
+
             KeyPairProvider keyPairProvider;
             final String certResource = configuration.getCertResource();
             if (certResource != null) {
                 LOG.debug("Attempting to authenticate using ResourceKey '{}'...", certResource);
-                keyPairProvider = new ResourceHelperKeyPairProvider(new String[]{certResource}, endpoint.getCamelContext());
+                if (endpoint.getCertResourcePassword() != null) {
+                    Supplier<char[]> passwordFinder = () -> endpoint.getCertResourcePassword().toCharArray();
+                    keyPairProvider = new ResourceHelperKeyPairProvider(
+                            new String[] { certResource }, passwordFinder, endpoint.getCamelContext());
+                } else {
+                    keyPairProvider
+                            = new ResourceHelperKeyPairProvider(new String[] { certResource }, endpoint.getCamelContext());
+                }
             } else {
                 keyPairProvider = configuration.getKeyPairProvider();
             }
@@ -90,7 +102,17 @@ public final class SshHelper {
             // either provide a keypair or password identity first
             if (keyPairProvider != null) {
                 LOG.debug("Attempting to authenticate username '{}' using a key identity", userName);
-                KeyPair pair = keyPairProvider.loadKey(configuration.getKeyType());
+                KeyPair pair = null;
+                // If we have no configured key type then just use the first keypair
+                if (configuration.getKeyType() == null) {
+                    Iterator<KeyPair> iterator = keyPairProvider.loadKeys(session).iterator();
+                    if (iterator.hasNext()) {
+                        pair = iterator.next();
+                    }
+                } else {
+                    pair = keyPairProvider.loadKey(session, configuration.getKeyType());
+                }
+
                 session.addPublicKeyIdentity(pair);
             } else {
                 String password = configuration.getPassword();
@@ -108,21 +130,21 @@ public final class SshHelper {
             authResult = session.auth();
 
             authResult.await(configuration.getTimeout());
-    
+
             if (!authResult.isDone() || authResult.isFailure()) {
                 LOG.debug("Failed to authenticate");
                 throw new RuntimeCamelException("Failed to authenticate username " + configuration.getUsername());
             }
-            
+
             InputStream in = null;
             PipedOutputStream reply = new PipedOutputStream();
-        
+
             // for now only two channel types are supported
             // shell option is added for specific purpose for now
             // may need further maintainance for further use cases
             if (Channel.CHANNEL_EXEC.equals(endpoint.getChannelType())) {
                 channel = session.createChannel(Channel.CHANNEL_EXEC, command);
-                in = new ByteArrayInputStream(new byte[]{0});
+                in = new ByteArrayInputStream(new byte[] { 0 });
             } else if (Channel.CHANNEL_SHELL.equals(endpoint.getChannelType())) {
                 // PipedOutputStream and PipedInputStream both are connected to each other to create a communication pipe
                 // this approach is used to send the command and evaluate the response
@@ -131,10 +153,10 @@ public final class SshHelper {
             }
 
             channel.setIn(in);
-    
+
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             channel.setOut(out);
-    
+
             ByteArrayOutputStream err = new ByteArrayOutputStream();
             channel.setErr(err);
             OpenFuture openFuture = channel.open();
@@ -144,7 +166,8 @@ public final class SshHelper {
                 if (openFuture.isOpened()) {
                     Set<ClientChannelEvent> events = channel.waitFor(Arrays.asList(ClientChannelEvent.CLOSED), 0);
                     if (!events.contains(ClientChannelEvent.TIMEOUT)) {
-                        result = new SshResult(command, channel.getExitStatus(),
+                        result = new SshResult(
+                                command, channel.getExitStatus(),
                                 new ByteArrayInputStream(out.toByteArray()),
                                 new ByteArrayInputStream(err.toByteArray()));
                     }
@@ -154,7 +177,8 @@ public final class SshHelper {
                 reply.write(command.getBytes());
                 reply.write(System.lineSeparator().getBytes());
                 String response = getPrompt(channel, out, endpoint);
-                result = new SshResult(command, channel.getExitStatus(),
+                result = new SshResult(
+                        command, channel.getExitStatus(),
                         new ByteArrayInputStream(response.getBytes()),
                         new ByteArrayInputStream(err.toByteArray()));
             }
@@ -163,20 +187,20 @@ public final class SshHelper {
             if (channel != null) {
                 channel.close(true);
             }
-            // need to make sure the session is closed 
+            // need to make sure the session is closed
             if (session != null) {
                 session.close(false);
             }
         }
-        
+
     }
 
     private static String getPrompt(ClientChannel channel, ByteArrayOutputStream output, SshEndpoint endpoint)
-        throws UnsupportedEncodingException, InterruptedException {
+            throws UnsupportedEncodingException, InterruptedException {
 
         while (!channel.isClosed()) {
 
-            String response = new String(output.toByteArray(), "UTF-8");
+            String response = output.toString("UTF-8");
             if (response.trim().endsWith(endpoint.getShellPrompt())) {
                 output.reset();
                 return SshShellOutputStringHelper.betweenBeforeLast(response, System.lineSeparator(), System.lineSeparator());

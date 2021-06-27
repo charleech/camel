@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.apache.camel.component.websocket;
 
 import java.io.IOException;
-import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,46 +29,44 @@ import javax.net.ssl.SSLContext;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.JdkSslContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.camel.support.jsse.KeyManagersParameters;
 import org.apache.camel.support.jsse.KeyStoreParameters;
 import org.apache.camel.support.jsse.SSLContextParameters;
 import org.apache.camel.support.jsse.SSLContextServerParameters;
 import org.apache.camel.support.jsse.TrustManagersParameters;
+import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.AsyncHttpClientConfig;
 import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketTextListener;
+import org.asynchttpclient.ws.WebSocketListener;
 import org.asynchttpclient.ws.WebSocketUpgradeHandler;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
 
-    private static final String NULL_VALUE_MARKER = CamelTestSupport.class.getCanonicalName();
     private static List<String> received = new ArrayList<>();
     private static CountDownLatch latch = new CountDownLatch(10);
-    protected Properties originalValues = new Properties();
-    protected String pwd = "changeit";
-    protected int port;
+
+    private Properties originalValues = new Properties();
+    private String pwd = "changeit";
+    private int port;
+    private Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(16200);
+        port = AvailablePortFinder.getNextAvailable();
 
         super.setUp();
-
-        URL trustStoreUrl = this.getClass().getClassLoader().getResource("jsse/localhost.ks");
-        setSystemProp("javax.net.ssl.trustStore", trustStoreUrl.toURI().getPath());
-    }
-
-    protected void setSystemProp(String key, String value) {
-        String originalValue = System.setProperty(key, value);
-        originalValues.put(key, originalValue != null ? originalValue : NULL_VALUE_MARKER);
     }
 
     protected AsyncHttpClient createAsyncHttpSSLClient() throws IOException, GeneralSecurityException {
@@ -77,13 +74,22 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         AsyncHttpClient c;
         AsyncHttpClientConfig config;
 
-        DefaultAsyncHttpClientConfig.Builder builder =
-                new DefaultAsyncHttpClientConfig.Builder();
+        DefaultAsyncHttpClientConfig.Builder builder = new DefaultAsyncHttpClientConfig.Builder();
 
-        SSLContext sslContext = new SSLContextParameters().createSSLContext(context());
+        SSLContextParameters sslContextParameters = new SSLContextParameters();
+
+        KeyStoreParameters truststoreParameters = new KeyStoreParameters();
+        truststoreParameters.setResource("jsse/localhost.p12");
+        truststoreParameters.setPassword(pwd);
+
+        TrustManagersParameters clientSSLTrustManagers = new TrustManagersParameters();
+        clientSSLTrustManagers.setKeyStore(truststoreParameters);
+        sslContextParameters.setTrustManagers(clientSSLTrustManagers);
+
+        SSLContext sslContext = sslContextParameters.createSSLContext(context());
         JdkSslContext ssl = new JdkSslContext(sslContext, true, ClientAuth.REQUIRE);
         builder.setSslContext(ssl);
-        builder.setAcceptAnyCertificate(true);
+        builder.setDisableHttpsEndpointIdentificationAlgorithm(true);
         config = builder.build();
         c = new DefaultAsyncHttpClient(config);
 
@@ -93,8 +99,8 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
     protected SSLContextParameters defineSSLContextParameters() {
 
         KeyStoreParameters ksp = new KeyStoreParameters();
-        // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.ks").toString());
-        ksp.setResource("jsse/localhost.ks");
+        // ksp.setResource(this.getClass().getClassLoader().getResource("jsse/localhost.p12").toString());
+        ksp.setResource("jsse/localhost.p12");
         ksp.setPassword(pwd);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -122,32 +128,48 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
         AsyncHttpClient c = createAsyncHttpSSLClient();
         WebSocket websocket = c.prepareGet("wss://127.0.0.1:" + port + "/test").execute(
                 new WebSocketUpgradeHandler.Builder()
-                        .addWebSocketListener(new WebSocketTextListener() {
-                            @Override
-                            public void onMessage(String message) {
-                                received.add(message);
-                                log.info("received --> " + message);
-                                latch.countDown();
-                            }
+                        .addWebSocketListener(new WebSocketListener() {
 
-                            
                             @Override
                             public void onOpen(WebSocket websocket) {
                             }
 
                             @Override
-                            public void onClose(WebSocket websocket) {
+                            public void onClose(WebSocket websocket, int code, String reason) {
+
                             }
 
                             @Override
                             public void onError(Throwable t) {
-                                t.printStackTrace();
+                                log.warn("Unhandled exception: {}", t.getMessage(), t);
                             }
-                        }).build()).get();
+
+                            @Override
+                            public void onBinaryFrame(byte[] payload, boolean finalFragment, int rsv) {
+                            }
+
+                            @Override
+                            public void onTextFrame(String payload, boolean finalFragment, int rsv) {
+                                received.add(payload);
+                                log.info("received --> " + payload);
+                                latch.countDown();
+                            }
+
+                            @Override
+                            public void onPingFrame(byte[] payload) {
+
+                            }
+
+                            @Override
+                            public void onPongFrame(byte[] payload) {
+
+                            }
+                        }).build())
+                .get();
 
         getMockEndpoint("mock:client").expectedBodiesReceived("Hello from WS client");
 
-        websocket.sendMessage("Hello from WS client");
+        websocket.sendTextFrame("Hello from WS client");
         assertTrue(latch.await(10, TimeUnit.SECONDS));
 
         assertMockEndpointsSatisfied();
@@ -157,7 +179,7 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
             assertEquals(">> Welcome on board!", received.get(i));
         }
 
-        websocket.close();
+        websocket.sendCloseFrame();
         c.close();
     }
 
@@ -176,8 +198,8 @@ public class WebsocketSSLRouteExampleTest extends CamelTestSupport {
                         .log(">>> Message received from WebSocket Client : ${body}")
                         .to("mock:client")
                         .loop(10)
-                            .setBody().constant(">> Welcome on board!")
-                            .to("websocket://test");
+                        .setBody().constant(">> Welcome on board!")
+                        .to("websocket://test");
             }
         };
     }

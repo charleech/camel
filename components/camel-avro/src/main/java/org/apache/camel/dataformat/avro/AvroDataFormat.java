@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,16 +63,20 @@ public class AvroDataFormat extends ServiceSupport implements DataFormat, DataFo
         return "avro";
     }
 
+    @Override
     public CamelContext getCamelContext() {
         return camelContext;
     }
 
+    @Override
     public void setCamelContext(CamelContext camelContext) {
         this.camelContext = camelContext;
     }
 
     @Override
-    protected void doStart() throws Exception {
+    protected void doInit() throws Exception {
+        super.doInit();
+
         if (schema != null) {
             if (schema instanceof Schema) {
                 actualSchema = (Schema) schema;
@@ -103,7 +107,7 @@ public class AvroDataFormat extends ServiceSupport implements DataFormat, DataFo
         return instanceClassName;
     }
 
-    public void setInstanceClassName(String className) throws Exception {
+    public void setInstanceClassName(String className) {
         instanceClassName = className;
     }
 
@@ -124,6 +128,7 @@ public class AvroDataFormat extends ServiceSupport implements DataFormat, DataFo
         }
     }
 
+    @Override
     public void marshal(Exchange exchange, Object graph, OutputStream outputStream) throws Exception {
         // the schema should be from the graph class name
         Schema useSchema = actualSchema != null ? actualSchema : loadSchema(graph.getClass().getName());
@@ -134,6 +139,7 @@ public class AvroDataFormat extends ServiceSupport implements DataFormat, DataFo
         encoder.flush();
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream inputStream) throws Exception {
         ObjectHelper.notNull(actualSchema, "schema", this);
 

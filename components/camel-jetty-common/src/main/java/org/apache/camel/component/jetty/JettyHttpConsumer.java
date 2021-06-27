@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,9 @@ public class JettyHttpConsumer extends HttpConsumer {
         super.doStart();
         if (!canConnected) {
             // if we cannot connect then its due to clash on context-path when using Jetty
-            String msg = "Cannot bind this Camel Jetty consumer to the JettyServer connector as there is already an existing Camel Jetty consumer using the same context-path: " + getPath();
+            String msg
+                    = "Cannot bind this Camel Jetty consumer to the JettyServer connector as there is already an existing Camel Jetty consumer using the same context-path: "
+                      + getPath();
             throw new IllegalStateException(msg);
         }
     }

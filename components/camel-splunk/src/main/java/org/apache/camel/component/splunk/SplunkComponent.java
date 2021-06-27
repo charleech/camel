@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,9 @@ package org.apache.camel.component.splunk;
 import java.util.Map;
 
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.apache.camel.spi.Metadata;
 
 /**
  * Represents the component that manages {@link SplunkEndpoint}.
@@ -35,11 +35,13 @@ public class SplunkComponent extends DefaultComponent {
     public SplunkComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         SplunkConfiguration configuration = splunkConfigurationFactory.parseMap(parameters);
+        SplunkEndpoint answer = new SplunkEndpoint(uri, this, configuration);
+        setProperties(answer, parameters);
         configuration.setName(remaining);
-        setProperties(configuration, parameters);
-        return new SplunkEndpoint(uri, this, configuration);
+        return answer;
     }
 
     public SplunkConfigurationFactory getSplunkConfigurationFactory() {

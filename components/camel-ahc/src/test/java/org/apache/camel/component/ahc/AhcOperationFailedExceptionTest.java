@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,18 @@
  */
 package org.apache.camel.component.ahc;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertThat;
 
 public class AhcOperationFailedExceptionTest {
 
     @Test
     public void testUrlIsSanitized() {
-        AhcOperationFailedException ahcOperationFailedException = new AhcOperationFailedException("http://user:password@host", 500, "", "", null, "");
+        AhcOperationFailedException ahcOperationFailedException
+                = new AhcOperationFailedException("http://user:password@host", 500, "", "", null, "");
 
         assertThat(ahcOperationFailedException.getMessage(), not(containsString("password")));
         assertThat(ahcOperationFailedException.getUrl(), not(containsString("password")));

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.disruptor;
 
 import com.lmax.disruptor.EventFactory;
 
 /**
- * This class is used by the Disruptor to create new instanced of an {@link ExchangeEvent} to fill up a ringbuffer
- * with mutable object references.
+ * This class is used by the Disruptor to create new instanced of an {@link ExchangeEvent} to fill up a ringbuffer with
+ * mutable object references.
  */
 class ExchangeEventFactory implements EventFactory<ExchangeEvent> {
 

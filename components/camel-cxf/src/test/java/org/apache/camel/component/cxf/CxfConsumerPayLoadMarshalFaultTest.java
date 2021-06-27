@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,12 +30,10 @@ import org.apache.camel.wsdl_first.types.UnknownPersonFault;
 import org.apache.cxf.binding.soap.SoapFault;
 import org.apache.cxf.staxutils.StaxUtils;
 
-
-
 public class CxfConsumerPayLoadMarshalFaultTest extends CxfConsumerPayloadFaultTest {
-    
+
     protected static final String DETAILS = "<detail></detail>";
-    
+
     @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
@@ -50,11 +48,10 @@ public class CxfConsumerPayLoadMarshalFaultTest extends CxfConsumerPayloadFaultT
                         unknowPersonFault.setPersonId("");
                         context.createMarshaller().marshal(unknowPersonFault, details);
                         fault.setDetail(details);
-                        exchange.getOut().setBody(fault);
-                        exchange.getOut().setFault(true);
+                        exchange.getMessage().setBody(fault);
                     }
                 });
-                
+
             }
         };
     }

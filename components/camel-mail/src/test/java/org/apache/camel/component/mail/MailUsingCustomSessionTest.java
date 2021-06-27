@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,36 +23,34 @@ import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.Session;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class MailUsingCustomSessionTest extends CamelTestSupport {
 
-    private Session mailSession;
+    @BindToRegistry("myCustomMailSession")
+    private Session mailSession = Session.getInstance(new Properties());
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         Mailbox.clearAll();
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        mailSession = Session.getInstance(new Properties());
-        registry.bind("myCustomMailSession", mailSession);
-        return registry;
-    }
-
     @Test
     public void testEndpointConfigurationWithCustomSession() {
-        // Verify that the mail session bound to the bean registry is identical to the session tied to the endpoint configuration
+        // Verify that the mail session bound to the bean registry is identical
+        // to the session tied to the endpoint configuration
         assertSame(mailSession, getEndpointMailSession("smtp://james@localhost?session=#myCustomMailSession"));
     }
 
@@ -68,7 +66,7 @@ public class MailUsingCustomSessionTest extends CamelTestSupport {
         mockEndpoint.assertIsSatisfied();
 
         Mailbox mailbox = Mailbox.get("james@localhost");
-        assertEquals("Expected one mail for james@localhost", 1, mailbox.size());
+        assertEquals(1, mailbox.size(), "Expected one mail for james@localhost");
 
         Message message = mailbox.get(0);
         assertEquals("hello camel!", message.getContent());
@@ -85,7 +83,7 @@ public class MailUsingCustomSessionTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("pop3://james@localhost?session=#myCustomMailSession&consumer.initialDelay=100&consumer.delay=100").to("mock:result");
+                from("pop3://james@localhost?session=#myCustomMailSession&initialDelay=100&delay=100").to("mock:result");
             }
         };
     }

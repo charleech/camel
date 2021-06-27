@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,8 +43,6 @@ public class DropboxMoveProducer extends DropboxProducer {
 
         exchange.getIn().setHeader(DropboxResultHeader.MOVED_PATH.name(), result.getOldPath());
         exchange.getIn().setBody(result.getNewPath());
-
-        log.debug("Moved from {} to {}", remotePath, newRemotePath);
     }
 
 }

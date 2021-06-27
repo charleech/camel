@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import java.security.Security;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.utils.XMLUtils;
 
-
 public final class SantuarioUtil {
     private SantuarioUtil() {
         //Helper class
@@ -44,10 +43,10 @@ public final class SantuarioUtil {
                         System.setProperty(lineBreakPropName, "true");
                         return false;
                     }
-                    return true; 
+                    return true;
                 }
             });
-        } catch (Throwable t) { //NOPMD
+        } catch (Exception t) {
             //ignore
         }
         org.apache.xml.security.Init.init();
@@ -61,23 +60,24 @@ public final class SantuarioUtil {
                         return false;
                     }
                 });
-            } catch (Throwable t) { //NOPMD
+            } catch (Exception t) {
                 //ignore
             }
         }
     }
-    
+
     public static void addSantuarioJSR105Provider() {
         AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
             public Boolean run() {
                 String providerName = "ApacheXMLDSig";
                 Provider currentProvider = Security.getProvider(providerName);
-                if (currentProvider == null) {
-                    Security.addProvider(new XMLDSigRI());
+                if (currentProvider != null) {
+                    Security.removeProvider(currentProvider.getName());
                 }
+                Security.addProvider(new XMLDSigRI());
                 return true;
             }
         });
     }
-    
+
 }

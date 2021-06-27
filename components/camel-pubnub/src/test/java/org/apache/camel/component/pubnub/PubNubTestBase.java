@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,47 +16,34 @@
  */
 package org.apache.camel.component.pubnub;
 
-import java.io.IOException;
-
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.pubnub.api.PNConfiguration;
 import com.pubnub.api.PubNub;
 import com.pubnub.api.enums.PNLogVerbosity;
-
-import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static com.pubnub.api.enums.PNHeartbeatNotificationOptions.NONE;
 
 public class PubNubTestBase extends CamelTestSupport {
-    private final int port = AvailablePortFinder.getNextAvailable(3344);
 
-    private PubNub pubnub;
+    private final int port = AvailablePortFinder.getNextAvailable();
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().port(port));
+    @BindToRegistry("pubnub")
+    private PubNub pubnub = createPubNubInstance();
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        this.pubnub = createPubNubInstance();
-        registry.bind("pubnub", this.pubnub);
-        return registry;
+    private WireMockServer wireMockServer = new WireMockServer(options().port(port));
+
+    protected void setupResources() throws Exception {
+        wireMockServer.start();
+        WireMock.configureFor("localhost", wireMockServer.port());
     }
 
-
-    @Before
-    public void beforeEach() throws IOException {
-        wireMockRule.start();
-    }
-
-    @After
-    public void afterEach() {
+    protected void cleanupResources() throws Exception {
+        wireMockServer.stop();
         pubnub.destroy();
     }
 

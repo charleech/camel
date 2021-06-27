@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,16 +26,16 @@ import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.service.PullRequestService;
 
 /**
- * Producer endpoint that closes a pull request.  The endpoint requires the "GitHubPullRequest" header,
- * identifying the pull request number (integer).
+ * Producer endpoint that closes a pull request. The endpoint requires the "GitHubPullRequest" header, identifying the
+ * pull request number (integer).
  */
 public class ClosePullRequestProducer extends AbstractGitHubProducer {
-    
+
     private PullRequestService pullRequestService;
 
     public ClosePullRequestProducer(GitHubEndpoint endpoint) throws Exception {
         super(endpoint);
-        
+
         Registry registry = endpoint.getCamelContext().getRegistry();
         Object service = registry.lookupByName(GitHubConstants.GITHUB_PULL_REQUEST_SERVICE);
         if (service != null) {
@@ -46,13 +46,14 @@ public class ClosePullRequestProducer extends AbstractGitHubProducer {
         initService(pullRequestService);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         Integer pullRequestNumber = exchange.getIn().getHeader(GitHubConstants.GITHUB_PULLREQUEST, Integer.class);
         PullRequest pullRequest = pullRequestService.getPullRequest(getRepository(), pullRequestNumber);
         pullRequest.setState("closed");
         pullRequest.setClosedAt(Calendar.getInstance().getTime());
         pullRequest = pullRequestService.editPullRequest(getRepository(), pullRequest);
-        
+
         // support InOut
         if (exchange.getPattern().isOutCapable()) {
             // copy the header of in message to the out message

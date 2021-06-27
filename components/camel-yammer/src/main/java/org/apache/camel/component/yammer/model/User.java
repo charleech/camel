@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,9 @@
 package org.apache.camel.component.yammer.model;
 
 import java.util.List;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
@@ -379,12 +380,18 @@ public class User {
 
     @Override
     public String toString() {
-        return "User [previousCompanies=" + previousCompanies + ", kidsNames=" + kidsNames + ", activatedAt=" + activatedAt + ", interests=" + interests + ", admin=" + admin + ", fullName="
-                + fullName + ", name=" + name + ", lastName=" + lastName + ", mugshotUrlTemplate=" + mugshotUrlTemplate + ", type=" + type + ", mugshotUrl=" + mugshotUrl + ", birthDate=" + birthDate
-                + ", timezone=" + timezone + ", location=" + location + ", state=" + state + ", webUrl=" + webUrl + ", stats=" + stats + ", showAskForPhoto=" + showAskForPhoto + ", externalUrls="
-                + externalUrls + ", schools=" + schools + ", summary=" + summary + ", jobTitle=" + jobTitle + ", id=" + id + ", expertise=" + expertise + ", networkDomains=" + networkDomains
-                + ", networkName=" + networkName + ", hireDate=" + hireDate + ", url=" + url + ", guid=" + guid + ", significantOther=" + significantOther + ", verifiedAdmin=" + verifiedAdmin
-                + ", settings=" + settings + ", canBroadcast=" + canBroadcast + ", firstName=" + firstName + ", department=" + department + ", networkId=" + networkId + ", contact=" + contact + "]";
+        return "User [previousCompanies=" + previousCompanies + ", kidsNames=" + kidsNames + ", activatedAt=" + activatedAt
+               + ", interests=" + interests + ", admin=" + admin + ", fullName="
+               + fullName + ", name=" + name + ", lastName=" + lastName + ", mugshotUrlTemplate=" + mugshotUrlTemplate
+               + ", type=" + type + ", mugshotUrl=" + mugshotUrl + ", birthDate=" + birthDate
+               + ", timezone=" + timezone + ", location=" + location + ", state=" + state + ", webUrl=" + webUrl + ", stats="
+               + stats + ", showAskForPhoto=" + showAskForPhoto + ", externalUrls="
+               + externalUrls + ", schools=" + schools + ", summary=" + summary + ", jobTitle=" + jobTitle + ", id=" + id
+               + ", expertise=" + expertise + ", networkDomains=" + networkDomains
+               + ", networkName=" + networkName + ", hireDate=" + hireDate + ", url=" + url + ", guid=" + guid
+               + ", significantOther=" + significantOther + ", verifiedAdmin=" + verifiedAdmin
+               + ", settings=" + settings + ", canBroadcast=" + canBroadcast + ", firstName=" + firstName + ", department="
+               + department + ", networkId=" + networkId + ", contact=" + contact + "]";
     }
 
 }

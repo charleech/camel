@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.component.stream.StreamGroupLinesTest.LS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test when using custom output stream.
@@ -46,19 +49,20 @@ public class StreamHeaderTest extends CamelTestSupport {
         assertEquals("Hello", sb.toString());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("direct:in").setHeader("stream", constant(mystream)).
-                    to("stream:header");
+                from("direct:in").setHeader("stream", constant(mystream)).to("stream:header");
             }
         };
     }
 
     private class MyOutputStream extends OutputStream {
 
+        @Override
         public void write(int b) throws IOException {
-            sb.append((char)b);
+            sb.append((char) b);
         }
     }
     // END SNIPPET: e1

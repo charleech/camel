@@ -1,7 +1,20 @@
 [[hazelcast-atomicvalue-component]]
-== Hazelcast Atomic Number Component
+= Hazelcast Atomic Number Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-hazelcast/src/main/docs/hazelcast-atomicvalue-component.adoc
+:docTitle: Hazelcast Atomic Number
+:artifactId: camel-hazelcast
+:description: Increment, decrement, set, etc. Hazelcast atomic number (a grid wide number).
+:since: 2.7
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/hazelcast-atomicvalue.adoc[opts=optional]
+//Manually maintained attributes
+:group: Hazelcast
 
-*Available as of Camel version 2.7*
+*Since Camel {since}*
+
+*{component-header}*
 
 The http://www.hazelcast.com/[Hazelcast] atomic number component is one of Camel Hazelcast Components which allows you to access Hazelcast atomic number.
 An atomic number is an object that simply provides a grid wide number (long). 
@@ -9,19 +22,20 @@ An atomic number is an object that simply provides a grid wide number (long).
 *There is no consumer for this endpoint!*
 
 
-### Options
+== Options
 
 // component options: START
-The Hazelcast Atomic Number component supports 3 options, which are listed below.
+The Hazelcast Atomic Number component supports 4 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
 | *hazelcastInstance* (advanced) | The hazelcast instance reference which can be used for hazelcast endpoint. If you don't specify the instance reference, camel use the default hazelcast instance from the camel-hazelcast instance. |  | HazelcastInstance
 | *hazelcastMode* (advanced) | The hazelcast mode reference which kind of instance should be used. If you don't specify the mode, then the node mode will be the default. | node | String
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
 |===
 // component options: END
 
@@ -34,7 +48,7 @@ hazelcast-atomicvalue:cacheName
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -44,47 +58,22 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (10 parameters):
+=== Query Parameters (4 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *reliable* (common) | Define if the endpoint will use a reliable Topic struct or not. | false | boolean
-| *defaultOperation* (producer) | To specify a default operation to use, if no operation header has been provided. |  | HazelcastOperation
+| *defaultOperation* (producer) | To specify a default operation to use, if no operation header has been provided. There are 36 enums and the value can be one of: put, delete, get, update, query, getAll, clear, putIfAbsent, allAll, removeAll, retainAll, evict, evictAll, valueCount, containsKey, containsValue, keySet, removevalue, increment, decrement, setvalue, destroy, compareAndSet, getAndAdd, add, offer, peek, poll, remainingCapacity, drainTo, removeIf, take, publish, readOnceHeal, readOnceTail, capacity |  | HazelcastOperation
 | *hazelcastInstance* (producer) | The hazelcast instance reference which can be used for hazelcast endpoint. |  | HazelcastInstance
 | *hazelcastInstanceName* (producer) | The hazelcast instance reference name which can be used for hazelcast endpoint. If you don't specify the instance reference, camel use the default hazelcast instance from the camel-hazelcast instance. |  | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
-| *concurrentConsumers* (seda) | To use concurrent consumers polling from the SEDA queue. | 1 | int
-| *onErrorDelay* (seda) | Milliseconds before consumer continues polling after an error has occurred. | 1000 | int
-| *pollTimeout* (seda) | The timeout used when consuming from the SEDA queue. When a timeout occurs, the consumer can check whether it is allowed to continue running. Setting a lower value allows the consumer to react more quickly upon shutdown. | 1000 | int
-| *transacted* (seda) | If set to true then the consumer runs in transaction mode, where the messages in the seda queue will only be removed if the transaction commits, which happens when the processing is complete. | false | boolean
-| *transferExchange* (seda) | If set to true the whole Exchange will be transfered. If header or body contains not serializable objects, they will be skipped. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 6 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.hazelcast-atomicvalue.customizer.hazelcast-instance.enabled* | Enable or disable the cache-manager customizer. | true | Boolean
-| *camel.component.hazelcast-atomicvalue.customizer.hazelcast-instance.override* | Configure if the cache manager eventually set on the component should be overridden by the customizer. | false | Boolean
-| *camel.component.hazelcast-atomicvalue.enabled* | Enable hazelcast-atomicvalue component | true | Boolean
-| *camel.component.hazelcast-atomicvalue.hazelcast-instance* | The hazelcast instance reference which can be used for hazelcast endpoint. If you don't specify the instance reference, camel use the default hazelcast instance from the camel-hazelcast instance. The option is a com.hazelcast.core.HazelcastInstance type. |  | String
-| *camel.component.hazelcast-atomicvalue.hazelcast-mode* | The hazelcast mode reference which kind of instance should be used. If you don't specify the mode, then the node mode will be the default. | node | String
-| *camel.component.hazelcast-atomicvalue.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-### atomic number producer - to("hazelcast-atomicvalue:foo")
+== atomic number producer - to("hazelcast-atomicvalue:foo")
 
 The operations for this producer are:
 * setvalue (set the number with a given value)
@@ -102,7 +91,7 @@ Header Variables for the request message:
 |`CamelHazelcastOperationType` |`String` |valid values are: setvalue, get, increase, decrease, destroy 
 |=======================================================================
 
-#### Sample for *set*:
+=== Sample for *set*:
 
 Java DSL:
 
@@ -119,8 +108,7 @@ Spring DSL:
 -----------------------------------------------------------------------------------------------
 <route>
     <from uri="direct:set" />
-        <!-- If using version 2.8 and above set headerName to "CamelHazelcastOperationType" -->
-    <setHeader headerName="hazelcast.operation.type">
+    <setHeader name="hazelcast.operation.type">
         <constant>setvalue</constant>
     </setHeader>
     <to uri="hazelcast-atomicvalue:foo" />
@@ -130,7 +118,7 @@ Spring DSL:
 Provide the value to set inside the message body (here the value is 10):
 `template.sendBody("direct:set", 10);`
 
-#### Sample for *get*:
+=== Sample for *get*:
 
 Java DSL:
 
@@ -147,8 +135,7 @@ Spring DSL:
 -----------------------------------------------------------------------------------------------
 <route>
     <from uri="direct:get" />
-        <!-- If using version 2.8 and above set headerName to "CamelHazelcastOperationType" -->
-    <setHeader headerName="hazelcast.operation.type">
+    <setHeader name="hazelcast.operation.type">
         <constant>get</constant>
     </setHeader>
     <to uri="hazelcast-atomicvalue:foo" />
@@ -158,7 +145,7 @@ Spring DSL:
 You can get the number with
 `long body = template.requestBody("direct:get", null, Long.class);`.
 
-#### Sample for *increment*:
+=== Sample for *increment*:
 
 Java DSL:
 
@@ -175,8 +162,7 @@ Spring DSL:
 -----------------------------------------------------------------------------------------------
 <route>
     <from uri="direct:increment" />
-        <!-- If using version 2.8 and above set headerName to "CamelHazelcastOperationType" -->
-    <setHeader headerName="hazelcast.operation.type">
+    <setHeader name="hazelcast.operation.type">
         <constant>increment</constant>
     </setHeader>
     <to uri="hazelcast-atomicvalue:foo" />
@@ -186,7 +172,7 @@ Spring DSL:
 The actual value (after increment) will be provided inside the message
 body.
 
-#### Sample for *decrement*:
+=== Sample for *decrement*:
 
 Java DSL:
 
@@ -203,8 +189,7 @@ Spring DSL:
 -----------------------------------------------------------------------------------------------
 <route>
     <from uri="direct:decrement" />
-        <!-- If using version 2.8 and above set headerName to "CamelHazelcastOperationType" -->
-    <setHeader headerName="hazelcast.operation.type">
+    <setHeader name="hazelcast.operation.type">
         <constant>decrement</constant>
     </setHeader>
     <to uri="hazelcast-atomicvalue:foo" />
@@ -214,7 +199,7 @@ Spring DSL:
 The actual value (after decrement) will be provided inside the message
 body.
 
-#### Sample for *destroy*
+=== Sample for *destroy*
 
 Java DSL:
 
@@ -231,10 +216,11 @@ Spring DSL:
 -----------------------------------------------------------------------------------------------
 <route>
     <from uri="direct:destroy" />
-        <!-- If using version 2.8 and above set headerName to "CamelHazelcastOperationType" -->
-    <setHeader headerName="hazelcast.operation.type">
+    <setHeader name="hazelcast.operation.type">
         <constant>destroy</constant>
     </setHeader>
     <to uri="hazelcast-atomicvalue:foo" />
 </route>
 -----------------------------------------------------------------------------------------------
+
+include::{page-component-version}@camel-spring-boot::page$hazelcast-starter.adoc[]

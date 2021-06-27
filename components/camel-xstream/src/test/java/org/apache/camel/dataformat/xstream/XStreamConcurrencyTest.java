@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.body;
 
 public class XStreamConcurrencyTest extends CamelTestSupport {
 
@@ -60,16 +62,13 @@ public class XStreamConcurrencyTest extends CamelTestSupport {
         executor.shutdownNow();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("direct:start").
-                        marshal().xstream(PurchaseOrder.class).
-                        to("direct:marshalled");
+                from("direct:start").marshal().xstream(PurchaseOrder.class).to("direct:marshalled");
 
-                from("direct:marshalled").
-                        unmarshal().xstream(PurchaseOrder.class).
-                        to("mock:result");
+                from("direct:marshalled").unmarshal().xstream(PurchaseOrder.class).to("mock:result");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,8 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.util.IOHelper;
 import org.apache.camel.support.ResourceHelper;
+import org.apache.camel.util.IOHelper;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.bouncycastle.util.Arrays;
@@ -51,9 +51,9 @@ public class ResourceBasedSSHKeyVerifier implements ServerKeyVerifier {
     public ResourceBasedSSHKeyVerifier(CamelContext camelContext, String knownHostsResource) {
         this(camelContext, knownHostsResource, false);
     }
-    
+
     public ResourceBasedSSHKeyVerifier(CamelContext camelContext, String knownHostsResource,
-            boolean failOnUnknownHost) {
+                                       boolean failOnUnknownHost) {
         this.camelContext = camelContext;
         this.knownHostsResource = knownHostsResource;
         this.failOnUnknownHost = failOnUnknownHost;
@@ -61,13 +61,13 @@ public class ResourceBasedSSHKeyVerifier implements ServerKeyVerifier {
 
     @Override
     public boolean verifyServerKey(ClientSession sshClientSession, SocketAddress remoteAddress, PublicKey serverKey) {
-        log.debug("Trying to find known_hosts file %s", knownHostsResource);
+        log.debug("Trying to find known_hosts file {}", knownHostsResource);
         InputStream knownHostsInputStream = null;
         try {
             knownHostsInputStream = ResourceHelper.resolveMandatoryResourceAsInputStream(camelContext,
                     knownHostsResource);
             List<String> possibleTokens = getKnownHostsFileTokensForSocketAddress(remoteAddress);
-            log.debug("Trying to mach PublicKey against provided known_hosts file");
+            log.debug("Trying to match PublicKey against provided known_hosts file");
             PublicKey matchingKey = findKeyForServerToken(knownHostsInputStream, possibleTokens);
             if (matchingKey != null) {
                 log.debug("Found PublicKey match for server");
@@ -149,7 +149,7 @@ public class ResourceBasedSSHKeyVerifier implements ServerKeyVerifier {
      * https://tools.ietf.org/html/rfc4253#section-6.6
      * 
      */
-    private PublicKey loadKey(String key) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    PublicKey loadKey(String key) throws NoSuchAlgorithmException, InvalidKeySpecException {
         SSHPublicKeyHolder sshPublicKeyHolder = new SSHPublicKeyHolder();
 
         byte[] keyByteArray = Base64.getDecoder().decode(key);

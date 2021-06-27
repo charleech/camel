@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,15 @@
  */
 package org.apache.camel.component.web3j;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.web3j.protocol.Web3j;
@@ -32,13 +32,14 @@ import rx.Subscription;
 
 public class Web3jMockTestSupport extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     protected MockEndpoint mockResult;
 
-    @EndpointInject(uri = "mock:error")
+    @EndpointInject("mock:error")
     protected MockEndpoint mockError;
 
     @Mock
+    @BindToRegistry("mockWeb3j")
     protected Web3j mockWeb3j;
 
     @Mock
@@ -47,13 +48,6 @@ public class Web3jMockTestSupport extends CamelTestSupport {
     @Override
     public boolean isUseAdviceWith() {
         return true;
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("mockWeb3j", mockWeb3j);
-        return registry;
     }
 
     protected String getUrl() {
@@ -67,16 +61,16 @@ public class Web3jMockTestSupport extends CamelTestSupport {
         return exchange;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void startServer() throws Exception {
     }
 
-    @AfterClass
+    @AfterAll
     public static void stopServer() throws Exception {
     }
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         super.setUp();

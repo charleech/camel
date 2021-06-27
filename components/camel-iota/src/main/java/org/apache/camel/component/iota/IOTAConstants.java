@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,7 @@
  */
 package org.apache.camel.component.iota;
 
-import jota.utils.Constants;
+import org.iota.jota.utils.Constants;
 
 public final class IOTAConstants {
 
@@ -36,7 +36,6 @@ public final class IOTAConstants {
     protected static final String SEND_TRANSFER_OPERATION = "sendTransfer";
     protected static final String GET_NEW_ADDRESS_OPERATION = "getNewAddress";
     protected static final String GET_TRANSFERS_OPERATION = "getTransfers";
-    
 
     private IOTAConstants() {
     }

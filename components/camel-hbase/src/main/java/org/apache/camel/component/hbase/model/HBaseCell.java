@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,10 @@
  */
 package org.apache.camel.component.hbase.model;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
 /**
- * A simplified representation of HBase KeyValue objects, which uses the actual Objects instead of byte arrays.
- * It is used in order to abstract the conversion strategy from CellMappingStrategy.
- * It is also used as a template to specify which will be the columns returned in gets, scans etc.
+ * A simplified representation of HBase KeyValue objects, which uses the actual Objects instead of byte arrays. It is
+ * used in order to abstract the conversion strategy from CellMappingStrategy. It is also used as a template to specify
+ * which will be the columns returned in gets, scans etc.
  */
 public class HBaseCell {
 
@@ -32,11 +30,12 @@ public class HBaseCell {
     //The value type can be optionally specified for Gets and Scan, to specify how the byte[] read will be converted.
     private Class<?> valueType = String.class;
 
+    @Override
     public String toString() {
-        return "HBaseCell=[family=" + family + ", qualifier=" + qualifier + ", value=" + value + ", valueType=" + valueType.getName();
+        return "HBaseCell=[family=" + family + ", qualifier=" + qualifier + ", value=" + value + ", valueType="
+               + valueType.getName();
     }
 
-    @XmlAttribute(name = "family")
     public String getFamily() {
         return family;
     }
@@ -45,7 +44,6 @@ public class HBaseCell {
         this.family = family;
     }
 
-    @XmlAttribute(name = "qualifier")
     public String getQualifier() {
         return qualifier;
     }
@@ -62,7 +60,6 @@ public class HBaseCell {
         this.value = value;
     }
 
-    @XmlAttribute(name = "type")
     public Class<?> getValueType() {
         return valueType;
     }

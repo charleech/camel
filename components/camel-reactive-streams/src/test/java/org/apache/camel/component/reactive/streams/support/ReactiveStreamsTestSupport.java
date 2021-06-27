@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,16 @@
  */
 package org.apache.camel.component.reactive.streams.support;
 
+import org.apache.camel.component.reactive.streams.BaseReactiveTest;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsService;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
-public class ReactiveStreamsTestSupport extends CamelTestSupport {
+public class ReactiveStreamsTestSupport extends BaseReactiveTest {
 
     protected CamelReactiveStreamsService camel;
 
-    @Before
+    @BeforeEach
     public void initReactiveStreamService() {
         this.camel = CamelReactiveStreams.get(context);
     }

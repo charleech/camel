@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.apache.camel.generator.swagger;
 
 import io.swagger.models.Swagger;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.rest.RestsDefinition;
 
@@ -30,7 +29,8 @@ public final class RestDslDefinitionGenerator extends RestDslGenerator<RestDslDe
     public RestsDefinition generate(final CamelContext context) {
         final RestDefinitionEmitter emitter = new RestDefinitionEmitter(context);
 
-        final PathVisitor<RestsDefinition> restDslStatement = new PathVisitor<>(swagger.getBasePath(), emitter, filter, destinationGenerator());
+        final PathVisitor<RestsDefinition> restDslStatement
+                = new PathVisitor<>(swagger.getBasePath(), emitter, filter, destinationGenerator());
 
         swagger.getPaths().forEach(restDslStatement::visit);
 

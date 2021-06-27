@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.caffeine;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
@@ -32,12 +31,10 @@ public class CaffeineConfiguration implements Cloneable {
     private String action;
     @UriParam(label = "producer")
     private Object key;
-    @UriParam(label = "advanced", javaType = "java.lang.String", defaultValue = "java.lang.Object")
-    private Class<?> keyType = Object.class;
-    @UriParam(label = "advanced", javaType = "java.lang.String", defaultValue = "java.lang.Object")
-    private Class<?> valueType = Object.class;
-    @UriParam(label = "producer")
-    private Cache cache;
+    @UriParam(label = "advanced")
+    private String keyType;
+    @UriParam(label = "advanced")
+    private String valueType;
     @UriParam(label = "producer")
     private CacheLoader cacheLoader;
     @UriParam(label = "producer")
@@ -65,8 +62,7 @@ public class CaffeineConfiguration implements Cloneable {
     }
 
     /**
-     * Configure if a cache need to be created if it does exist or can't be
-     * pre-configured.
+     * Configure if a cache need to be created if it does exist or can't be pre-configured.
      */
     public void setCreateCacheIfNotExist(boolean createCacheIfNotExist) {
         this.createCacheIfNotExist = createCacheIfNotExist;
@@ -77,8 +73,8 @@ public class CaffeineConfiguration implements Cloneable {
     }
 
     /**
-     * To configure the default cache action. If an action is set in the message
-     * header, then the operation from the header takes precedence.
+     * To configure the default cache action. If an action is set in the message header, then the operation from the
+     * header takes precedence.
      */
     public void setAction(String action) {
         this.action = action;
@@ -89,44 +85,33 @@ public class CaffeineConfiguration implements Cloneable {
     }
 
     /**
-     * To configure the default action key. If a key is set in the message
-     * header, then the key from the header takes precedence.
+     * To configure the default action key. If a key is set in the message header, then the key from the header takes
+     * precedence.
      */
     public void setKey(Object key) {
         this.key = key;
     }
 
-    public Class<?> getKeyType() {
+    public String getKeyType() {
         return keyType;
     }
 
     /**
      * The cache key type, default "java.lang.Object"
      */
-    public void setKeyType(Class<?> keyType) {
+    public void setKeyType(String keyType) {
         this.keyType = keyType;
     }
 
-    public Class<?> getValueType() {
+    public String getValueType() {
         return valueType;
     }
 
     /**
      * The cache value type, default "java.lang.Object"
      */
-    public void setValueType(Class<?> valueType) {
+    public void setValueType(String valueType) {
         this.valueType = valueType;
-    }
-
-    public Cache getCache() {
-        return cache;
-    }
-
-    /**
-     * To configure an already instantiated cache to be used
-     */
-    public void setCache(Cache cache) {
-        this.cache = cache;
     }
 
     public CacheLoader getCacheLoader() {
@@ -189,8 +174,7 @@ public class CaffeineConfiguration implements Cloneable {
     }
 
     /**
-     * Set the expire After Access Time in case of time based Eviction (in
-     * seconds)
+     * Set the expire After Access Time in case of time based Eviction (in seconds)
      */
     public void setExpireAfterAccessTime(int expireAfterAccessTime) {
         this.expireAfterAccessTime = expireAfterAccessTime;
@@ -201,8 +185,7 @@ public class CaffeineConfiguration implements Cloneable {
     }
 
     /**
-     * Set the expire After Access Write in case of time based Eviction (in
-     * seconds)
+     * Set the expire After Access Write in case of time based Eviction (in seconds)
      */
     public void setExpireAfterWriteTime(int expireAfterWriteTime) {
         this.expireAfterWriteTime = expireAfterWriteTime;
@@ -235,7 +218,7 @@ public class CaffeineConfiguration implements Cloneable {
     // ****************************
     public CaffeineConfiguration copy() {
         try {
-            return (CaffeineConfiguration)super.clone();
+            return (CaffeineConfiguration) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RuntimeCamelException(e);
         }

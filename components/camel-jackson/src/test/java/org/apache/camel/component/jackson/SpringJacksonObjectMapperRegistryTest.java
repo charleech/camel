@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.reifier.dataformat.DataFormatReifier;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class SpringJacksonObjectMapperRegistryTest extends CamelSpringTestSupport {
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/jackson/SpringJacksonObjectMapperRegistryTest.xml");
+        return new ClassPathXmlApplicationContext(
+                "org/apache/camel/component/jackson/SpringJacksonObjectMapperRegistryTest.xml");
     }
 
     @Test
@@ -53,7 +59,7 @@ public class SpringJacksonObjectMapperRegistryTest extends CamelSpringTestSuppor
         MyJsonObjectMapper mapper = (MyJsonObjectMapper) context.getRegistry().lookupByName("myJsonObjectMapper");
         assertNotNull(mapper);
 
-        JacksonDataFormat df = (JacksonDataFormat) context.getDataFormats().get("jack").getDataFormat();
+        JacksonDataFormat df = (JacksonDataFormat) DataFormatReifier.getDataFormat(context, "jack");
         assertNotNull(df);
         assertSame(mapper, df.getObjectMapper());
     }

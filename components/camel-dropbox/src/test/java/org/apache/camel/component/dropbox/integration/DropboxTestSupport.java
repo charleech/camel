@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,17 +21,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 import com.dropbox.core.DbxDownloader;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DropboxTestSupport extends CamelTestSupport {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DropboxTestSupport.class);
 
     protected final Properties properties;
     protected String workdir;
@@ -39,13 +42,7 @@ public class DropboxTestSupport extends CamelTestSupport {
     private DbxClientV2 client;
 
     protected DropboxTestSupport() {
-        properties = new Properties();
-        try (InputStream inStream = getClass().getResourceAsStream("/test-options.properties")) {
-            properties.load(inStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new IllegalAccessError("test-options.properties could not be found");
-        }
+        properties = loadProperties();
 
         workdir = properties.getProperty("workDir");
         token = properties.getProperty("accessToken");
@@ -55,7 +52,26 @@ public class DropboxTestSupport extends CamelTestSupport {
 
     }
 
-    @Before
+    private static Properties loadProperties() {
+        final Properties properties = new Properties();
+        try (InputStream inStream = DropboxTestSupport.class.getResourceAsStream("/test-options.properties")) {
+            properties.load(inStream);
+        } catch (IOException e) {
+            LOG.error("I/O error: reading test-options.properties: {}", e.getMessage(), e);
+            throw new IllegalAccessError("test-options.properties could not be found");
+        }
+        return properties;
+    }
+
+    // Used by JUnit to automatically trigger the integration tests
+    @SuppressWarnings("unused")
+    private static boolean hasCredentials() {
+        Properties properties = loadProperties();
+
+        return !properties.getProperty("accessToken", "").isEmpty();
+    }
+
+    @BeforeEach
     public void setUpWorkingFolder() throws DbxException {
         createDir(workdir);
     }
@@ -74,11 +90,15 @@ public class DropboxTestSupport extends CamelTestSupport {
 
     protected void createFile(String fileName, String content) throws IOException {
         try {
-            client.files().uploadBuilder(workdir + "/" + fileName).uploadAndFinish(new ByteArrayInputStream(content.getBytes()));
+            client.files().uploadBuilder(workdir + "/" + fileName)
+                    .uploadAndFinish(new ByteArrayInputStream(content.getBytes()));
+            //wait some time for synchronization
+            Thread.sleep(1000);
         } catch (DbxException e) {
-            log.info("folder is already created");
+            LOG.info("folder is already created");
+        } catch (InterruptedException e) {
+            LOG.debug("Waiting for synchronization interrupted.");
         }
-
     }
 
     protected String getFileContent(String path) throws DbxException, IOException {

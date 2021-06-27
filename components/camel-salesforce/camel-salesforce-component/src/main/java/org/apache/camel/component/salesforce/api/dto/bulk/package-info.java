@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,5 +15,5 @@
  * limitations under the License.
  */
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://www.force.com/2009/06/asyncapi/dataload",
-    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+                                     elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.apache.camel.component.salesforce.api.dto.bulk;

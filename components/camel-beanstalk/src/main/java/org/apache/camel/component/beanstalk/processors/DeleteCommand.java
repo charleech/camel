@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,12 +34,12 @@ public class DeleteCommand extends DefaultCommand {
 
     @Override
     public void act(final Client client, final Exchange exchange) throws NoSuchHeaderException {
-        final Long jobId = BeanstalkExchangeHelper.getJobID(exchange);
+        final long jobId = BeanstalkExchangeHelper.getJobID(exchange);
         final boolean result = client.delete(jobId);
-        if (!result && LOG.isWarnEnabled()) {
-            LOG.warn(String.format("Failed to delete job %d", jobId));
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Job %d deleted. Result is %b", jobId, result));
+        if (!result) {
+            LOG.warn("Failed to delete job {}", jobId);
+        } else {
+            LOG.debug("Job {} deleted. Result is {}", jobId, result);
         }
 
         answerWith(exchange, Headers.RESULT, result);

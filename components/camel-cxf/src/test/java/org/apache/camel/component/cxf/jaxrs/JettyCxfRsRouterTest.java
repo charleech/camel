@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,23 +17,25 @@
 package org.apache.camel.component.cxf.jaxrs;
 
 import org.apache.camel.component.cxf.CXFTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class JettyCxfRsRouterTest extends CxfRsRouterTest {
     private static final int PORT2 = CXFTestSupport.getPort5();
+
     @Override
     protected int getPort() {
         return PORT2;
     }
 
     @Override
-    protected AbstractXmlApplicationContext createApplicationContext() {        
+    protected AbstractXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/cxf/jaxrs/JettyCxfRsSpringRouter.xml");
     }
-    
-    @Test 
+
+    @Override
+    @Test
     public void testEndpointUris() throws Exception {
         // Don't test anything here
     }

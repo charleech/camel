@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.zendesk;
 
 import java.util.Map;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -28,17 +29,18 @@ import org.apache.camel.component.zendesk.internal.ZendeskHelper;
 import org.apache.camel.component.zendesk.internal.ZendeskPropertiesHelper;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
-import org.apache.camel.util.IOHelper;
 import org.apache.camel.support.component.AbstractApiEndpoint;
 import org.apache.camel.support.component.ApiMethod;
 import org.apache.camel.support.component.ApiMethodPropertiesHelper;
+import org.apache.camel.util.IOHelper;
 import org.zendesk.client.v2.Zendesk;
 
 /**
- * Allows producing messages to manage Zendesk ticket, user, organization, etc.
+ * Manage Zendesk tickets, users, organizations, etc.
  */
 @UriEndpoint(firstVersion = "2.19.0", scheme = "zendesk", title = "Zendesk", syntax = "zendesk:methodName",
-    consumerPrefix = "consumer", label = "api,support,cloud", lenientProperties = true)
+             apiSyntax = "methodName",
+             consumerPrefix = "consumer", category = { Category.CLOUD, Category.API, Category.SUPPORT })
 public class ZendeskEndpoint extends AbstractApiEndpoint<ZendeskApiName, ZendeskConfiguration> {
 
     @UriParam
@@ -47,9 +49,9 @@ public class ZendeskEndpoint extends AbstractApiEndpoint<ZendeskApiName, Zendesk
     private Zendesk apiProxy;
 
     public ZendeskEndpoint(String uri, ZendeskComponent component, ZendeskApiName apiName, String methodName,
-                       ZendeskConfiguration endpointConfiguration) {
+                           ZendeskConfiguration endpointConfiguration) {
         super(uri, component, apiName, methodName, ZendeskApiCollection.getCollection().getHelper(apiName),
-                endpointConfiguration);
+              endpointConfiguration);
         this.configuration = endpointConfiguration;
     }
 
@@ -58,10 +60,12 @@ public class ZendeskEndpoint extends AbstractApiEndpoint<ZendeskApiName, Zendesk
         return (ZendeskComponent) super.getComponent();
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new ZendeskProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         // make sure inBody is not set for consumers
         if (inBody != null) {
@@ -88,9 +92,10 @@ public class ZendeskEndpoint extends AbstractApiEndpoint<ZendeskApiName, Zendesk
 
     @Override
     protected ApiMethodPropertiesHelper<ZendeskConfiguration> getPropertiesHelper() {
-        return ZendeskPropertiesHelper.getHelper();
+        return ZendeskPropertiesHelper.getHelper(getCamelContext());
     }
 
+    @Override
     protected String getThreadProfileName() {
         return ZendeskConstants.THREAD_PROFILE_NAME;
     }

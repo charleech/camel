@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,18 +22,21 @@ import org.apache.camel.Exchange;
 
 /**
  * Factory of {@link java.util.concurrent.BlockingQueue}
+ * 
  * @param <E> Element type, usually {@link Exchange}
  */
 public interface BlockingQueueFactory<E> {
 
     /**
      * Create a new {@link java.util.concurrent.BlockingQueue} with default capacity
+     * 
      * @return New {@link java.util.concurrent.BlockingQueue}
      */
     BlockingQueue<E> create();
 
     /**
      * Create a new {@link java.util.concurrent.BlockingQueue} with given capacity
+     * 
      * @return New {@link java.util.concurrent.BlockingQueue}
      */
     BlockingQueue<E> create(int capacity);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,7 @@ public class EtcdStatsConsumer extends AbstractEtcdPollingConsumer {
 
     @Override
     public EtcdStatsEndpoint getEndpoint() {
-        return (EtcdStatsEndpoint)super.getEndpoint();
+        return (EtcdStatsEndpoint) super.getEndpoint();
     }
 
     @Override
@@ -35,8 +35,8 @@ public class EtcdStatsConsumer extends AbstractEtcdPollingConsumer {
         Object answer = endpoint.getStats(getClient());
 
         if (answer != null) {
-            Exchange exchange = endpoint.createExchange();
-            exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, endpoint.getNamespace());
+            Exchange exchange = createExchange(true);
+            exchange.getIn().setHeader(EtcdConstants.ETCD_NAMESPACE, "stats");
             exchange.getIn().setHeader(EtcdConstants.ETCD_PATH, endpoint.getPath());
             exchange.getIn().setBody(answer);
 

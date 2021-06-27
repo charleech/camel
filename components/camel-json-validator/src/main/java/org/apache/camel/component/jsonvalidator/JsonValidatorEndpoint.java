@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
@@ -34,14 +35,17 @@ import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 
 /**
- * Validates the payload of a message using NetworkNT JSON Schema library.
+ * Validate JSON payloads using NetworkNT JSON Schema.
  */
 @ManagedResource(description = "Managed JsonValidatorEndpoint")
-@UriEndpoint(scheme = "json-validator", firstVersion = "2.20.0", title = "JSON Schema Validator", syntax = "json-validator:resourceUri",
-    producerOnly = true, label = "validation")
+@UriEndpoint(scheme = "json-validator", firstVersion = "2.20.0", title = "JSON Schema Validator",
+             syntax = "json-validator:resourceUri",
+             producerOnly = true, category = { Category.VALIDATION })
 public class JsonValidatorEndpoint extends ResourceEndpoint {
 
     private volatile JsonSchema schema;
+
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @UriParam(defaultValue = "true")
     private boolean failOnNullBody = true;
@@ -63,12 +67,12 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
         this.schema = null;
         super.clearContentCache();
     }
-    
+
     @Override
     public ExchangePattern getExchangePattern() {
         return ExchangePattern.InOut;
     }
-    
+
     @Override
     protected void onExchange(Exchange exchange) throws Exception {
         StreamCache cache = null;
@@ -106,19 +110,20 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
                 if (cache == null) {
                     cache = exchange.getContext().getTypeConverter().convertTo(StreamCache.class, exchange, content);
                 }
-                ObjectMapper mapper = new ObjectMapper();
-                InputStream is = exchange.getContext().getTypeConverter().mandatoryConvertTo(InputStream.class, exchange, cache != null ? cache : content);
-                JsonNode node = mapper.readTree(is);
-                if (node == null) {
-                    throw new NoJsonBodyValidationException(exchange);
-                }
-                Set<ValidationMessage> errors = localSchema.validate(node);
+                try (InputStream is = exchange.getContext().getTypeConverter().mandatoryConvertTo(InputStream.class, exchange,
+                        cache != null ? cache : content)) {
+                    JsonNode node = mapper.readTree(is);
+                    if (node == null) {
+                        throw new NoJsonBodyValidationException(exchange);
+                    }
+                    Set<ValidationMessage> errors = localSchema.validate(node);
 
-                if (errors.size() > 0) {
-                    this.log.debug("Validated JSon has {} errors", errors.size());
-                    this.errorHandler.handleErrors(exchange, schema, errors);
-                } else {
-                    this.log.debug("Validated JSon success");
+                    if (!errors.isEmpty()) {
+                        this.log.debug("Validated JSON has {} errors", errors.size());
+                        this.errorHandler.handleErrors(exchange, schema, errors);
+                    } else {
+                        this.log.debug("Validated JSON success");
+                    }
                 }
             }
         } catch (Exception e) {
@@ -135,7 +140,7 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
             }
         }
     }
-    
+
     private Object getContentToValidate(Exchange exchange) {
         if (shouldUseHeader()) {
             return exchange.getIn().getHeader(headerName);
@@ -147,10 +152,10 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
     private boolean shouldUseHeader() {
         return headerName != null;
     }
-    
+
     /**
      * Synchronized method to create a schema if is does not already exist.
-     * 
+     *
      * @return The currently loaded schema
      */
     private JsonSchema getOrCreateSchema() throws Exception {
@@ -166,7 +171,7 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
     protected String createEndpointUri() {
         return "json-validator:" + getResourceUri();
     }
-    
+
     public JsonValidatorErrorHandler getErrorHandler() {
         return errorHandler;
     }
@@ -179,13 +184,14 @@ public class JsonValidatorEndpoint extends ResourceEndpoint {
     public void setErrorHandler(JsonValidatorErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
-    
+
     public JsonSchemaLoader getSchemaLoader() {
         return schemaLoader;
     }
-    
+
     /**
-     * To use a custom schema loader allowing for adding custom format validation. The default implementation will create a schema loader with draft v4 support.
+     * To use a custom schema loader allowing for adding custom format validation. The default implementation will
+     * create a schema loader with draft v4 support.
      */
     public void setSchemaLoader(JsonSchemaLoader schemaLoader) {
         this.schemaLoader = schemaLoader;

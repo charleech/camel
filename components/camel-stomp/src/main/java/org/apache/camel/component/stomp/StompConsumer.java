@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ public class StompConsumer extends DefaultConsumer {
 
     public StompConsumer(Endpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        id = getEndpoint().getNextId();
     }
 
     @Override
@@ -36,11 +35,14 @@ public class StompConsumer extends DefaultConsumer {
         return (StompEndpoint) super.getEndpoint();
     }
 
+    @Override
     protected void doStart() throws Exception {
+        id = getEndpoint().getNextId();
         getEndpoint().addConsumer(this);
         super.doStart();
     }
 
+    @Override
     protected void doStop() throws Exception {
         getEndpoint().removeConsumer(this);
         super.doStop();
@@ -48,8 +50,10 @@ public class StompConsumer extends DefaultConsumer {
 
     void processExchange(Exchange exchange) {
         try {
+            exchange.getIn().getHeaders().entrySet().removeIf(e -> getEndpoint().getHeaderFilterStrategy()
+                    .applyFilterToExternalHeaders(e.getKey(), e.getValue(), exchange));
             getProcessor().process(exchange);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             exchange.setException(e);
         }
 

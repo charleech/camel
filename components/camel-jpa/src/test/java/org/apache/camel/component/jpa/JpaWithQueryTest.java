@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.apache.camel.component.jpa;
 
 import org.apache.camel.examples.MultiSteps;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class JpaWithQueryTest extends JpaWithNamedQueryTest {
 
     @Override
@@ -27,6 +29,6 @@ public class JpaWithQueryTest extends JpaWithNamedQueryTest {
 
     @Override
     protected String getEndpointUri() {
-        return "jpa://" + MultiSteps.class.getName() + "?consumer.query=select o from " + entityName + " o where o.step = 1";
+        return "jpa://" + MultiSteps.class.getName() + "?query=select o from " + entityName + " o where o.step = 1";
     }
 }

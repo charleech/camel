@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,6 @@ import org.apache.camel.support.component.AbstractApiProducer;
 public class ZendeskProducer extends AbstractApiProducer<ZendeskApiName, ZendeskConfiguration> {
 
     public ZendeskProducer(ZendeskEndpoint endpoint) {
-        super(endpoint, ZendeskPropertiesHelper.getHelper());
+        super(endpoint, ZendeskPropertiesHelper.getHelper(endpoint.getCamelContext()));
     }
 }

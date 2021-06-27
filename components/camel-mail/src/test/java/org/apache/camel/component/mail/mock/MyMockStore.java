@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,9 @@ public class MyMockStore extends MockStore {
 
     @Override
     protected boolean protocolConnect(String host, int port, String user, String password) throws MessagingException {
+        if ("wrongPassword".equals(password)) {
+            throw new MessagingException("unauthorized");
+        }
         address = user + '@' + host;
         return super.protocolConnect(host, port, user, password);
     }

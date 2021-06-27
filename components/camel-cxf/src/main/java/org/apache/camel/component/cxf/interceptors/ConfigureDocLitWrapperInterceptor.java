@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,19 +27,22 @@ import org.apache.cxf.phase.Phase;
 public class ConfigureDocLitWrapperInterceptor extends AbstractInDatabindingInterceptor {
 
     boolean unwrapParameterFlag;
-    
+
     public ConfigureDocLitWrapperInterceptor(boolean unwrapParameterFlag) {
-        super(Phase.UNMARSHAL);        
+        super(Phase.UNMARSHAL);
         addBefore("org.apache.cxf.interceptor.DocLiteralInInterceptor");
         addBefore("org.apache.cxf.wsdl.interceptors.DocLiteralInInterceptor");
         this.unwrapParameterFlag = unwrapParameterFlag;
     }
 
+    @Override
     public void handleMessage(Message message) throws Fault {
-        message.put("org.apache.cxf.interceptor.DocLiteralInInterceptor.DocLiteralInInterceptor.keep-parameters-wrapper", unwrapParameterFlag);
-        message.put("org.apache.cxf.wsdl.interceptors.DocLiteralInInterceptor.DocLiteralInInterceptor.keep-parameters-wrapper", unwrapParameterFlag);
+        message.put("org.apache.cxf.interceptor.DocLiteralInInterceptor.DocLiteralInInterceptor.keep-parameters-wrapper",
+                unwrapParameterFlag);
+        message.put("org.apache.cxf.wsdl.interceptors.DocLiteralInInterceptor.DocLiteralInInterceptor.keep-parameters-wrapper",
+                unwrapParameterFlag);
     }
-    
+
     public boolean isUnwrapParameterFlag() {
         return unwrapParameterFlag;
     }

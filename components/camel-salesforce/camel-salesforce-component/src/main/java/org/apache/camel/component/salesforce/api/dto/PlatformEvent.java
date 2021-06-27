@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,8 @@ public final class PlatformEvent implements Serializable {
     private final Map<String, String> eventData = new HashMap<>();
 
     @JsonCreator
-    public PlatformEvent(@JsonProperty("CreatedDate") final ZonedDateTime created, @JsonProperty("CreatedById") final String createdById) {
+    public PlatformEvent(@JsonProperty("CreatedDate") final ZonedDateTime created,
+                         @JsonProperty("CreatedById") final String createdById) {
         this.created = created;
         this.createdById = createdById;
     }
@@ -50,7 +51,8 @@ public final class PlatformEvent implements Serializable {
 
         final PlatformEvent other = (PlatformEvent) obj;
 
-        return Objects.equals(created, other.created) && Objects.equals(createdById, other.createdById) && Objects.equals(eventData, other.eventData);
+        return Objects.equals(created, other.created) && Objects.equals(createdById, other.createdById)
+                && Objects.equals(eventData, other.eventData);
     }
 
     public ZonedDateTime getCreated() {
@@ -77,7 +79,8 @@ public final class PlatformEvent implements Serializable {
 
     @Override
     public String toString() {
-        return new StringBuilder().append("PlatformEvent: createdById: ").append(createdById).append(", createdId: ").append(created).append(", data: ").append(eventData)
-            .toString();
+        return new StringBuilder().append("PlatformEvent: createdById: ").append(createdById).append(", createdId: ")
+                .append(created).append(", data: ").append(eventData)
+                .toString();
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,8 +121,7 @@ final class ReactorCamelProcessor implements Closeable {
 
     private void onBackPressure(Exchange exchange) {
         ReactiveStreamsHelper.invokeDispatchCallback(
-            exchange,
-            new ReactiveStreamsDiscardedException("Discarded by back pressure strategy", exchange, name)
-        );
+                exchange,
+                new ReactiveStreamsDiscardedException("Discarded by back pressure strategy", exchange, name));
     }
 }

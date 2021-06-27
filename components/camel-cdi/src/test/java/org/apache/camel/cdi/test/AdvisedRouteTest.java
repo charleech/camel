@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,12 +18,14 @@ package org.apache.camel.cdi.test;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.cdi.CdiCamelExtension;
 import org.apache.camel.cdi.Uri;
@@ -32,7 +34,6 @@ import org.apache.camel.cdi.bean.PropertyEndpointRoute;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.reifier.RouteReifier;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -74,18 +75,18 @@ public class AdvisedRouteTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test classes
-            .addClasses(ManualStartupCamelContext.class, PropertyEndpointRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test classes
+                .addClasses(ManualStartupCamelContext.class, PropertyEndpointRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     @InSequence(1)
     public void adviseCamelContext(ModelCamelContext context) throws Exception {
-        RouteReifier.adviceWith(context.getRouteDefinition("route"), context, new AdviceWithRouteBuilder() {
+        AdviceWith.adviceWith(context.getRouteDefinition("route"), context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() {
                 interceptSendToEndpoint("{{to}}").skipSendToOriginalEndpoint().to("mock:outbound");
@@ -100,7 +101,7 @@ public class AdvisedRouteTest {
         outbound.expectedMessageCount(1);
         outbound.expectedBodiesReceived("test");
         outbound.expectedHeaderReceived("header", "n/a");
-        
+
         inbound.sendBody("test");
 
         assertIsSatisfied(2L, TimeUnit.SECONDS, outbound);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.component.vm;
 import org.apache.camel.CamelContext;
 import org.apache.camel.CamelContextAware;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.seda.SedaConsumer;
 import org.apache.camel.support.ExchangeHelper;
@@ -44,14 +45,17 @@ public class VmConsumer extends SedaConsumer implements CamelContextAware {
     /**
      * Strategy to prepare exchange for being processed by this consumer
      *
-     * @param exchange the exchange
-     * @return the exchange to process by this consumer.
+     * @param  exchange the exchange
+     * @return          the exchange to process by this consumer.
      */
+    @Override
     protected Exchange prepareExchange(Exchange exchange) {
         // send a new copied exchange with the camel context from this consumer
         Exchange newExchange = ExchangeHelper.copyExchangeAndSetCamelContext(exchange, getCamelContext());
-        // set the from endpoint
-        newExchange.setFromEndpoint(getEndpoint());
+        // this consumer grabbed the exchange so mark its from this route/endpoint
+        ExtendedExchange ee = newExchange.adapt(ExtendedExchange.class);
+        ee.setFromEndpoint(getEndpoint());
+        ee.setFromRouteId(getRouteId());
         return newExchange;
     }
 

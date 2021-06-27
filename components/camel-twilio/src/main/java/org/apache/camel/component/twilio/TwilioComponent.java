@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,29 +23,22 @@ import org.apache.camel.component.twilio.internal.TwilioApiCollection;
 import org.apache.camel.component.twilio.internal.TwilioApiName;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
-import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.support.component.AbstractApiComponent;
+import org.apache.camel.util.ObjectHelper;
 
-/**
- * Represents the component that manages {@link TwilioEndpoint}.
- */
 @Component("twilio")
 public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioConfiguration, TwilioApiCollection> {
 
-    @Metadata(label = "advanced")
+    @Metadata
     private TwilioConfiguration configuration = new TwilioConfiguration();
-
-    @Metadata(label = "advanced")
-    private TwilioRestClient restClient;
-    
     @Metadata(label = "common,security", secret = true)
     private String username;
-
     @Metadata(label = "common,security", secret = true)
     private String password;
-
     @Metadata(label = "common,security", secret = true)
     private String accountSid;
+    @Metadata(label = "advanced", autowired = true)
+    private TwilioRestClient restClient;
 
     public TwilioComponent() {
         super(TwilioEndpoint.class, TwilioApiName.class, TwilioApiCollection.getCollection());
@@ -56,13 +49,14 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
     }
 
     @Override
-    protected TwilioApiName getApiName(String apiNameStr) throws IllegalArgumentException {
-        return TwilioApiName.fromValue(apiNameStr);
+    protected TwilioApiName getApiName(String apiNameStr) {
+        return getCamelContext().getTypeConverter().convertTo(TwilioApiName.class, apiNameStr);
     }
 
     @Override
-    protected Endpoint createEndpoint(String uri, String methodName, TwilioApiName apiName,
-                                      TwilioConfiguration endpointConfiguration) {
+    protected Endpoint createEndpoint(
+            String uri, String methodName, TwilioApiName apiName,
+            TwilioConfiguration endpointConfiguration) {
         endpointConfiguration.setApiName(apiName);
         endpointConfiguration.setMethodName(methodName);
         return new TwilioEndpoint(uri, this, apiName, methodName, endpointConfiguration);
@@ -76,10 +70,12 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
             if (ObjectHelper.isEmpty(username) && ObjectHelper.isEmpty(password)) {
                 throw new IllegalStateException("Unable to initialise Twilio, Twilio component configuration is missing");
             }
-
+            if (ObjectHelper.isEmpty(accountSid)) {
+                accountSid = username;
+            }
             restClient = new TwilioRestClient.Builder(username, password)
-                .accountSid(accountSid)
-                .build();
+                    .accountSid(accountSid)
+                    .build();
         }
     }
 
@@ -89,6 +85,7 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
         super.doShutdown();
     }
 
+    @Override
     public TwilioConfiguration getConfiguration() {
         return configuration;
     }
@@ -96,6 +93,7 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
     /**
      * To use the shared configuration
      */
+    @Override
     public void setConfiguration(TwilioConfiguration configuration) {
         this.configuration = configuration;
     }
@@ -110,7 +108,7 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
     public void setRestClient(TwilioRestClient restClient) {
         this.restClient = restClient;
     }
-    
+
     public String getUsername() {
         return username;
     }
@@ -134,7 +132,7 @@ public class TwilioComponent extends AbstractApiComponent<TwilioApiName, TwilioC
     }
 
     public String getAccountSid() {
-        return accountSid == null ? username : accountSid;
+        return accountSid;
     }
 
     /**

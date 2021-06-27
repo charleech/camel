@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ final class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
 
     @Override
     public LocalDateTime deserialize(final JsonParser p, final DeserializationContext ctxt)
-        throws IOException, JsonProcessingException {
+            throws IOException, JsonProcessingException {
         final ZonedDateTime zonedDateTime = ctxt.readValue(p, ZonedDateTime.class);
 
         return zonedDateTime.toLocalDateTime();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,10 @@ import org.apache.camel.dataformat.bindy.annotation.FixedLengthRecord;
 
 @FixedLengthRecord
 public class OrderFooter {
-    
+
     @DataField(pos = 1, length = 1)
     private int recordType = 9;
-    
+
     @DataField(pos = 2, length = 9, align = "R", paddingChar = '0')
     private int numberOfRecordsInTheFile;
 

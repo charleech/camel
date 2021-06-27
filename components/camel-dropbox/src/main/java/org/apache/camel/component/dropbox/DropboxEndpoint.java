@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.dropbox;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -37,9 +38,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * For uploading, downloading and managing files, folders, groups, collaborations, etc on dropbox DOT com.
+ * Upload, download and manage files, folders, groups, collaborations, etc on Dropbox.
  */
-@UriEndpoint(firstVersion = "2.14.0", scheme = "dropbox", title = "Dropbox", syntax = "dropbox:operation", label = "api,file")
+@UriEndpoint(firstVersion = "2.14.0", scheme = "dropbox", title = "Dropbox", syntax = "dropbox:operation",
+             category = { Category.CLOUD, Category.FILE, Category.API })
 public class DropboxEndpoint extends DefaultEndpoint {
 
     private static final transient Logger LOG = LoggerFactory.getLogger(DropboxEndpoint.class);
@@ -55,11 +57,17 @@ public class DropboxEndpoint extends DefaultEndpoint {
         this.configuration = configuration;
     }
 
+    public DropboxConfiguration getConfiguration() {
+        return configuration;
+    }
+
     /**
      * Create one of the camel producer available based on the configuration
-     * @return the camel producer
+     * 
+     * @return           the camel producer
      * @throws Exception
      */
+    @Override
     public Producer createProducer() throws Exception {
         LOG.trace("Resolve producer dropbox endpoint {{}}", configuration.getOperation());
         LOG.trace("Resolve producer dropbox attached client: {}", configuration.getClient());
@@ -80,10 +88,12 @@ public class DropboxEndpoint extends DefaultEndpoint {
 
     /**
      * Create one of the camel consumer available based on the configuration
-     * @param processor  the given processor
-     * @return the camel consumer
+     * 
+     * @param  processor the given processor
+     * @return           the camel consumer
      * @throws Exception
      */
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         LOG.trace("Resolve consumer dropbox endpoint {{}}", configuration.getOperation());
         LOG.trace("Resolve consumer dropbox attached client: {}", configuration.getClient());
@@ -91,17 +101,16 @@ public class DropboxEndpoint extends DefaultEndpoint {
         if (this.configuration.getOperation() == DropboxOperation.search) {
             consumer = new DropboxScheduledPollSearchConsumer(this, processor, configuration);
             consumer.setDelay(DropboxConstants.POLL_CONSUMER_DELAY);
+            configureConsumer(consumer);
             return consumer;
         } else if (this.configuration.getOperation() == DropboxOperation.get) {
             consumer = new DropboxScheduledPollGetConsumer(this, processor, configuration);
             consumer.setDelay(DropboxConstants.POLL_CONSUMER_DELAY);
+            configureConsumer(consumer);
             return consumer;
         } else {
             throw new DropboxException("Operation specified is not valid for consumer!");
         }
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
 }

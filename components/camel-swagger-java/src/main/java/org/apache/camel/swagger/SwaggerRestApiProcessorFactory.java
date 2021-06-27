@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,10 @@ import org.apache.camel.spi.RestConfiguration;
 public class SwaggerRestApiProcessorFactory implements RestApiProcessorFactory {
 
     @Override
-    public Processor createApiProcessor(CamelContext camelContext, String contextPath, String contextIdPattern, boolean contextIdListing,
-                                        RestConfiguration configuration, Map<String, Object> parameters) throws Exception {
+    public Processor createApiProcessor(
+            CamelContext camelContext, String contextPath, String contextIdPattern, boolean contextIdListing,
+            RestConfiguration configuration, Map<String, Object> parameters)
+            throws Exception {
 
         Map<String, Object> options = new HashMap<>(parameters);
         if (configuration.getApiProperties() != null) {

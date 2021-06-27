@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,19 +26,18 @@ import java.util.stream.Stream;
 
 import io.atomix.Atomix;
 import io.atomix.catalyst.transport.Address;
-import io.atomix.catalyst.transport.Transport;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import io.atomix.resource.ReadConsistency;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.util.ObjectHelper;
 
 public class AtomixConfiguration<T extends Atomix> implements Cloneable {
-    @UriParam(javaType = "io.atomix.Atomix")
-    private T atomix;
+    @UriParam
+    private Atomix atomix;
     @UriParam(javaType = "java.lang.String")
     private List<Address> nodes = Collections.emptyList();
-    @UriParam(javaType = "io.atomix.catalyst.transport.Transport", defaultValue = "io.atomix.catalyst.transport.netty.NettyTransport")
-    private Class<? extends Transport> transport = NettyTransport.class;
+    @UriParam(defaultValue = "io.atomix.catalyst.transport.netty.NettyTransport")
+    private String transportClassName = NettyTransport.class.getName();
     @UriParam
     private String configurationUri;
     @UriParam(label = "advanced")
@@ -54,7 +53,6 @@ public class AtomixConfiguration<T extends Atomix> implements Cloneable {
     @UriParam(label = "advanced", defaultValue = "false")
     private boolean ephemeral;
 
-
     protected AtomixConfiguration() {
     }
 
@@ -62,14 +60,14 @@ public class AtomixConfiguration<T extends Atomix> implements Cloneable {
     // Properties
     // *****************************************
 
-    public T getAtomix() {
+    public Atomix getAtomix() {
         return atomix;
     }
 
     /**
      * The Atomix instance to use
      */
-    public void setAtomix(T client) {
+    public void setAtomix(Atomix client) {
         this.atomix = client;
     }
 
@@ -90,15 +88,15 @@ public class AtomixConfiguration<T extends Atomix> implements Cloneable {
         }
     }
 
-    public Class<? extends Transport> getTransport() {
-        return transport;
+    public String getTransportClassName() {
+        return transportClassName;
     }
 
     /**
-     * Sets the Atomix transport.
+     * The class name (fqn) of the Atomix transport
      */
-    public void setTransport(Class<? extends Transport> transport) {
-        this.transport = transport;
+    public void setTransportClassName(String transportClassName) {
+        this.transportClassName = transportClassName;
     }
 
     public String getConfigurationUri() {
@@ -232,8 +230,7 @@ public class AtomixConfiguration<T extends Atomix> implements Cloneable {
     /**
      * Sets if the local member should join groups as PersistentMember or not.
      *
-     * If set to ephemeral the local member will receive an auto generated ID thus
-     * the local one is ignored.
+     * If set to ephemeral the local member will receive an auto generated ID thus the local one is ignored.
      */
     public void setEphemeral(boolean ephemeral) {
         this.ephemeral = ephemeral;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf;
 
 import org.apache.hello_world_soap_http.GreeterImpl;
@@ -23,7 +22,7 @@ public class GreeterImplWithSleep extends GreeterImpl {
 
     @Override
     public String greetMe(String hi) {
-        try {            
+        try {
             Thread.sleep(2000);
         } catch (Exception ignore) {
 

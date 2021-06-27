@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,7 +41,9 @@ public class TwitterSearchComponent extends AbstractTwitterComponent {
     }
 
     @Override
-    protected Endpoint doCreateEndpoint(TwitterConfiguration properties, String uri, String remaining, Map<String, Object> parameters) throws Exception {
+    protected Endpoint doCreateEndpoint(
+            TwitterConfiguration properties, String uri, String remaining, Map<String, Object> parameters)
+            throws Exception {
         return new TwitterSearchEndpoint(uri, remaining, this, properties);
     }
 }

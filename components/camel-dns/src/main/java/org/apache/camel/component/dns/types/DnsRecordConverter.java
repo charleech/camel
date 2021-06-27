@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,15 +32,15 @@ import org.xbill.DNS.Type;
 /**
  * More converters for all the DNS objects used by the DNS component.
  */
-@Converter
+@Converter(generateLoader = true)
 public final class DnsRecordConverter {
 
     private DnsRecordConverter() {
     }
 
     /**
-     * @param ip, like "192.168.1.1"
-     * @return the complete DNS record for that IP.
+     * @param  ip like "192.168.1.1"
+     * @return    the complete DNS record for that IP.
      */
     @Converter
     public static Record toRecord(String ip) throws IOException {

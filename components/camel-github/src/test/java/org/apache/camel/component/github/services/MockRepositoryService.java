@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.egit.github.core.IRepositoryIdProvider;
 import org.eclipse.egit.github.core.Repository;
 import org.eclipse.egit.github.core.RepositoryTag;
+import org.eclipse.egit.github.core.User;
 import org.eclipse.egit.github.core.service.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,10 @@ public class MockRepositoryService extends RepositoryService {
     @Override
     public Repository getRepository(final String owner, final String name) throws IOException {
         Repository repository = new Repository();
+        User user = new User();
+        user.setName(owner);
+        user.setLogin(owner);
+        repository.setOwner(user);
         repository.setName(name);
         return repository;
     }

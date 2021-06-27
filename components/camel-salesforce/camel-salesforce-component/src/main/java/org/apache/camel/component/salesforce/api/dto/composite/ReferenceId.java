@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,15 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Optional.ofNullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 import org.apache.camel.component.salesforce.api.dto.RestError;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Optional.ofNullable;
 
 @XStreamAlias("results")
 public final class ReferenceId implements Serializable {
@@ -44,7 +43,7 @@ public final class ReferenceId implements Serializable {
 
     @JsonCreator
     ReferenceId(@JsonProperty("referenceId") final String referenceId, @JsonProperty("id") final String id,
-            @JsonProperty("errors") final List<RestError> errors) {
+                @JsonProperty("errors") final List<RestError> errors) {
         this.referenceId = referenceId;
         this.id = id;
         this.errors = errors;
@@ -63,7 +62,7 @@ public final class ReferenceId implements Serializable {
         final ReferenceId other = (ReferenceId) obj;
 
         return Objects.equals(id, other.id) && Objects.equals(referenceId, other.referenceId)
-            && Objects.equals(getErrors(), other.getErrors());
+                && Objects.equals(getErrors(), other.getErrors());
     }
 
     public List<RestError> getErrors() {

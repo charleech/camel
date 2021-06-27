@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.fhir.api;
 
 import java.util.Map;
+
 import ca.uhn.fhir.rest.api.MethodOutcome;
 import ca.uhn.fhir.rest.api.PreferReturnEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
@@ -37,41 +38,49 @@ public class FhirUpdate {
         this.client = client;
     }
 
-    public MethodOutcome resource(IBaseResource resource, IIdType id, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resource(
+            IBaseResource resource, IIdType id, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
         IUpdateTyped updateTyped = client.update().resource(resource);
         IUpdateExecutable updateExecutable = withOptionalId(id, updateTyped);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);
     }
 
-    public MethodOutcome resource(String resourceAsString, IIdType id, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resource(
+            String resourceAsString, IIdType id, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
         IUpdateTyped updateTyped = client.update().resource(resourceAsString);
         IUpdateExecutable updateExecutable = withOptionalId(id, updateTyped);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);
     }
 
-    public MethodOutcome resource(IBaseResource resource, String stringId, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resource(
+            IBaseResource resource, String stringId, PreferReturnEnum preferReturn,
+            Map<ExtraParameters, Object> extraParameters) {
         IUpdateTyped updateTyped = client.update().resource(resource);
         IUpdateExecutable updateExecutable = withOptionalId(stringId, updateTyped);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);
     }
 
-    public MethodOutcome resource(String resourceAsString, String stringId, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resource(
+            String resourceAsString, String stringId, PreferReturnEnum preferReturn,
+            Map<ExtraParameters, Object> extraParameters) {
         IUpdateTyped updateTyped = client.update().resource(resourceAsString);
         IUpdateExecutable updateExecutable = withOptionalId(stringId, updateTyped);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);
     }
 
-    public MethodOutcome resourceBySearchUrl(IBaseResource resource, String url, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resourceBySearchUrl(
+            IBaseResource resource, String url, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
         IUpdateExecutable updateExecutable = client.update().resource(resource).conditionalByUrl(url);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);
     }
 
-    public MethodOutcome resourceBySearchUrl(String resourceAsString, String url, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
+    public MethodOutcome resourceBySearchUrl(
+            String resourceAsString, String url, PreferReturnEnum preferReturn, Map<ExtraParameters, Object> extraParameters) {
         IUpdateExecutable updateExecutable = client.update().resource(resourceAsString).conditionalByUrl(url);
         ExtraParameters.process(extraParameters, updateExecutable);
         return processOptionalParam(preferReturn, updateExecutable);

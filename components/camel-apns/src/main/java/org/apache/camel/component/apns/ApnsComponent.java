@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ public class ApnsComponent extends DefaultComponent {
         this.apnsService = apnsService;
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         ApnsEndpoint endpoint = new ApnsEndpoint(uri, this);
         endpoint.setName(remaining);

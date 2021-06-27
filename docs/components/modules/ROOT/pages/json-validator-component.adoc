@@ -1,10 +1,21 @@
 [[json-validator-component]]
-== JSON Schema Validator Component
+= JSON Schema Validator Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-json-validator/src/main/docs/json-validator-component.adoc
+:docTitle: JSON Schema Validator
+:artifactId: camel-json-validator
+:description: Validate JSON payloads using NetworkNT JSON Schema.
+:since: 2.20
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/json-validator.adoc[opts=optional]
 
-*Available as of Camel version 2.20*
+*Since Camel {since}*
+
+*{component-header}*
 
 The JSON Schema Validator component performs bean validation of the message body
-against JSON Schemas v4 draft using the NetworkNT JSON Schema library
+against JSON Schemas v4, v6, v7 and v2019-09 draft using the NetworkNT JSON Schema library
 (https://github.com/networknt/json-schema-validator).
 
 Maven users will need to add the following dependency to their `pom.xml`
@@ -21,7 +32,7 @@ for this component:
 ----
 
 
-=== URI format
+== URI format
 
 [source]
 ----
@@ -33,10 +44,19 @@ Where *resourceUri* is some URL to a local resource on the classpath or a
 full URL to a remote resource or resource on the file system which contains 
 the JSON Schema to validate against.
  
-=== URI Options
+== URI Options
 
 // component options: START
-The JSON Schema Validator component has no options.
+The JSON Schema Validator component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -50,7 +70,7 @@ json-validator:resourceUri
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -60,40 +80,26 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (7 parameters):
+=== Query Parameters (8 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *allowContextMapAll* (producer) | Sets whether the context map should allow access to all details. By default only the message body and headers can be accessed. This option can be enabled for full access to the current Exchange and CamelContext. Doing so impose a potential security risk as this opens access to the full power of CamelContext API. | false | boolean
 | *contentCache* (producer) | Sets whether to use resource content cache or not | false | boolean
 | *failOnNullBody* (producer) | Whether to fail if no body exists. | true | boolean
 | *failOnNullHeader* (producer) | Whether to fail if no header exists when validating against a header. | true | boolean
 | *headerName* (producer) | To validate against a header instead of the message body. |  | String
-| *errorHandler* (advanced) | To use a custom ValidatorErrorHandler. The default error handler captures the errors and throws an exception. |  | JsonValidatorError Handler
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *errorHandler* (advanced) | To use a custom ValidatorErrorHandler. The default error handler captures the errors and throws an exception. |  | JsonValidatorErrorHandler
 | *schemaLoader* (advanced) | To use a custom schema loader allowing for adding custom format validation. The default implementation will create a schema loader with draft v4 support. |  | JsonSchemaLoader
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 2 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.json-validator.enabled* | Whether to enable auto configuration of the json-validator component. This is enabled by default. |  | Boolean
-| *camel.component.json-validator.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-=== Example
+== Example
 
 Assumed we have the following JSON Schema
 
@@ -145,3 +151,5 @@ from("direct:start")
   .to("json-validator:myschema.json")
   .to("mock:end")
 ----
+
+include::{page-component-version}@camel-spring-boot::page$json-validator-starter.adoc[]

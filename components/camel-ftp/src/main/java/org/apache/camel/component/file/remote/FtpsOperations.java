@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLException;
 
+import org.apache.camel.Exchange;
 import org.apache.camel.component.file.GenericFileOperationFailedException;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.commons.net.ftp.FTPClientConfig;
@@ -35,15 +36,17 @@ public class FtpsOperations extends FtpOperations {
     }
 
     @Override
-    public boolean connect(RemoteFileConfiguration configuration) throws GenericFileOperationFailedException {
-        boolean answer = super.connect(configuration);
+    public boolean connect(RemoteFileConfiguration configuration, Exchange exchange)
+            throws GenericFileOperationFailedException {
+        boolean answer = super.connect(configuration, exchange);
 
         FtpsConfiguration config = (FtpsConfiguration) configuration;
         if (answer) {
             try {
                 String execProt = config.getExecProt();
                 Long execPbsz = config.getExecPbsz();
-                // use default values for prop and pbsz, unless told to not do so
+                // use default values for prop and pbsz, unless told to not do
+                // so
                 if (!config.isDisableSecureDataChannelDefaults()) {
                     if (ObjectHelper.isEmpty(execProt)) {
                         execProt = "P";
@@ -62,11 +65,17 @@ public class FtpsOperations extends FtpOperations {
                     getFtpClient().execPROT(execProt);
                 }
             } catch (SSLException e) {
-                throw new GenericFileOperationFailedException(client.getReplyCode(),
-                        client.getReplyString(), e.getMessage(), e);
+                throw new GenericFileOperationFailedException(
+                        client.getReplyCode(), client.getReplyString(), e.getMessage(), e);
             } catch (IOException e) {
-                throw new GenericFileOperationFailedException(client.getReplyCode(),
-                        client.getReplyString(), e.getMessage(), e);
+                throw new GenericFileOperationFailedException(
+                        client.getReplyCode(), client.getReplyString(), e.getMessage(), e);
+            } finally {
+                if (exchange != null) {
+                    // store client reply information after the operation
+                    exchange.getIn().setHeader(FtpConstants.FTP_REPLY_CODE, client.getReplyCode());
+                    exchange.getIn().setHeader(FtpConstants.FTP_REPLY_STRING, client.getReplyString());
+                }
             }
         }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,21 @@ package org.apache.camel.component.jcache;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.cache.Cache;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JCacheProducerGetTest extends JCacheComponentTestSupport {
 
@@ -51,7 +57,7 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val);
             }
         });
@@ -80,7 +86,7 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val);
             }
         });
@@ -90,14 +96,13 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         assertFalse(cache.containsKey(key));
     }
 
-
     @Test
     public void testGetAndReplace() throws Exception {
         final Map<String, Object> headers = new HashMap<>();
         final Cache<Object, Object> cache = getCacheFromEndpoint("jcache://test-cache");
 
-        final String key  = randomString();
-        final String val  = randomString();
+        final String key = randomString();
+        final String val = randomString();
         final String val2 = randomString();
 
         cache.put(key, val);
@@ -113,7 +118,7 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         mock.expectedMessagesMatches(new Predicate() {
             @Override
             public boolean matches(Exchange exchange) {
-                assertNotNull("body", exchange.getIn().getBody());
+                assertNotNull(exchange.getIn().getBody(), "body");
                 return exchange.getIn().getBody().equals(val);
             }
         });
@@ -129,7 +134,7 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         final Map<String, Object> headers = new HashMap<>();
         final Cache<Object, Object> cache = getCacheFromEndpoint("jcache://test-cache");
 
-        final String key  = randomString();
+        final String key = randomString();
         final String val2 = randomString();
 
         headers.clear();
@@ -191,19 +196,19 @@ public class JCacheProducerGetTest extends JCacheComponentTestSupport {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:get")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:get");
                 from("direct:get-and-remove")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:get-and-remove");
                 from("direct:get-and-replace")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:get-and-replace");
                 from("direct:get-and-put")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:get-and-put");
                 from("direct:get-all")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:get-all");
             }
         };

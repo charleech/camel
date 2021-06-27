@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,8 +60,8 @@ public final class AnnotationFieldKeySorter implements FieldKeySorter {
         }
 
         final String[] fieldOrder = fieldOrderAnnotation.value();
-        final TreeMap<FieldKey, Field> sorted = new TreeMap<>(
-            new AnnotationFieldOrderComparator(fieldOrder, type.getDeclaredFields()));
+        final TreeMap<FieldKey, Field> sorted
+                = new TreeMap<>(new AnnotationFieldOrderComparator(fieldOrder, type.getDeclaredFields()));
         sorted.putAll(keyedByFieldKey);
 
         return sorted;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,21 +19,22 @@ package org.apache.camel.component.redis;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisSetTest extends RedisTestSupport {
 
     @Mock
@@ -42,10 +43,10 @@ public class RedisSetTest extends RedisTestSupport {
     private SetOperations<String, String> setOperations;
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
+    protected Registry createCamelRegistry() throws Exception {
         when(redisTemplate.opsForSet()).thenReturn(setOperations);
 
-        JndiRegistry registry = super.createRegistry();
+        Registry registry = new SimpleRegistry();
         registry.bind("redisTemplate", redisTemplate);
         return registry;
     }

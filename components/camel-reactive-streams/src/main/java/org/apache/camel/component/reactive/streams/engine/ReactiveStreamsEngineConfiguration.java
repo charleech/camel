@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,7 @@ package org.apache.camel.component.reactive.streams.engine;
 /**
  * Configuration parameters for the Camel internal reactive-streams engine.
  */
-public class ReactiveStreamsEngineConfiguration implements Cloneable {
+public class ReactiveStreamsEngineConfiguration {
 
     private String threadPoolName = "CamelReactiveStreamsWorker";
     private int threadPoolMinSize;

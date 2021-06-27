@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
@@ -48,20 +49,20 @@ public final class ServiceNowHelper {
 
                 if (offset != null) {
                     switch (rel) {
-                    case ServiceNowConstants.LINK_FIRST:
-                        consumer.accept(ServiceNowConstants.OFFSET_FIRST, offset);
-                        break;
-                    case ServiceNowConstants.LINK_LAST:
-                        consumer.accept(ServiceNowConstants.OFFSET_LAST, offset);
-                        break;
-                    case ServiceNowConstants.LINK_NEXT:
-                        consumer.accept(ServiceNowConstants.OFFSET_NEXT, offset);
-                        break;
-                    case ServiceNowConstants.LINK_PREV:
-                        consumer.accept(ServiceNowConstants.OFFSET_PREV, offset);
-                        break;
-                    default:
-                        break;
+                        case ServiceNowConstants.LINK_FIRST:
+                            consumer.accept(ServiceNowConstants.OFFSET_FIRST, offset);
+                            break;
+                        case ServiceNowConstants.LINK_LAST:
+                            consumer.accept(ServiceNowConstants.OFFSET_LAST, offset);
+                            break;
+                        case ServiceNowConstants.LINK_NEXT:
+                            consumer.accept(ServiceNowConstants.OFFSET_NEXT, offset);
+                            break;
+                        case ServiceNowConstants.LINK_PREV:
+                            consumer.accept(ServiceNowConstants.OFFSET_PREV, offset);
+                            break;
+                        default:
+                            break;
                     }
                 }
             }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,6 @@ public class GangliaComponent extends DefaultComponent {
         ObjectHelper.notNull(configuration, "configuration");
         GangliaConfiguration config = configuration.copy();
         config.configure(url);
-        setProperties(config, parameters);
 
         GangliaEndpoint endpoint = new GangliaEndpoint(uri, this);
         endpoint.setConfiguration(config);

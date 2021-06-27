@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.jcr;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
@@ -31,28 +32,30 @@ import org.slf4j.LoggerFactory;
 import static org.apache.camel.RuntimeCamelException.wrapRuntimeCamelException;
 
 /**
- * A JCR {@link EventListener} which can be used to delegate processing to a
- * Camel endpoint.
+ * A JCR {@link EventListener} which can be used to delegate processing to a Camel endpoint.
  */
 public class EndpointEventListener implements EventListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(EndpointEventListener.class);
 
+    private final JcrConsumer consumer;
     private final JcrEndpoint endpoint;
     private final Processor processor;
 
-    public EndpointEventListener(JcrEndpoint endpoint, Processor processor) {
+    public EndpointEventListener(JcrConsumer consumer, JcrEndpoint endpoint, Processor processor) {
+        this.consumer = consumer;
         this.endpoint = endpoint;
         this.processor = processor;
     }
 
+    @Override
     public void onEvent(EventIterator events) {
         LOG.trace("onEvent START");
         LOG.debug("{} consumer received JCR events: {}", endpoint, events);
-        RuntimeCamelException rce = null;
+        RuntimeCamelException rce;
 
+        final Exchange exchange = createExchange(events);
         try {
-            final Exchange exchange = createExchange(events);
 
             try {
                 LOG.debug("Processor, {}, is processing exchange, {}", processor, exchange);
@@ -64,6 +67,8 @@ public class EndpointEventListener implements EventListener {
             rce = exchange.getException(RuntimeCamelException.class);
         } catch (Exception e) {
             rce = wrapRuntimeCamelException(e);
+        } finally {
+            consumer.releaseExchange(exchange, false);
         }
 
         if (rce != null) {
@@ -75,7 +80,7 @@ public class EndpointEventListener implements EventListener {
     }
 
     private Exchange createExchange(EventIterator events) {
-        Exchange exchange = endpoint.createExchange();
+        Exchange exchange = consumer.createExchange(false);
 
         List<Event> eventList = new LinkedList<>();
         if (events != null) {

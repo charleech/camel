@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.component.timer;
 import java.util.Date;
 import java.util.Timer;
 
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.MultipleConsumersSupport;
@@ -34,20 +35,21 @@ import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
 
 /**
- * The timer component is used for generating message exchanges when a timer fires.
+ * Generate messages in specified intervals using <code>java.util.Timer</code>.
  *
  * This component is similar to the scheduler component, but has much less functionality.
  */
 @ManagedResource(description = "Managed TimerEndpoint")
-@UriEndpoint(firstVersion = "1.0.0", scheme = "timer", title = "Timer", syntax = "timer:timerName", consumerOnly = true, label = "core,scheduling")
+@UriEndpoint(firstVersion = "1.0.0", scheme = "timer", title = "Timer", syntax = "timer:timerName", consumerOnly = true,
+             category = { Category.CORE, Category.SCHEDULING })
 public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersSupport {
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private String timerName;
-    @UriParam(defaultValue = "1000", description = "If greater than 0, generate periodic events every period milliseconds."
-            + " You can also specify time values using units, such as 60s (60 seconds), 5m30s (5 minutes and 30 seconds), and 1h (1 hour).")
+    @UriParam(defaultValue = "1s", description = "If greater than 0, generate periodic events every period.",
+              javaType = "java.time.Duration")
     private long period = 1000;
-    @UriParam(defaultValue = "1000", description = "Miliseconds before first event is triggered."
-            + " You can also specify time values using units, such as 60s (60 seconds), 5m30s (5 minutes and 30 seconds), and 1h (1 hour).")
+    @UriParam(defaultValue = "1s", description = "Delay before first event is triggered.", javaType = "java.time.Duration")
     private long delay = 1000;
     @UriParam(defaultValue = "0")
     private long repeatCount;
@@ -61,6 +63,11 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
     private String pattern;
     @UriParam(label = "advanced")
     private Timer timer;
+    @UriParam(defaultValue = "true")
+    private boolean includeMetadata = true;
+    @UriParam(defaultValue = "false", label = "advanced",
+              description = "Sets whether synchronous processing should be strictly used")
+    private boolean synchronous;
 
     public TimerEndpoint() {
     }
@@ -69,7 +76,7 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
         super(uri, component);
         this.timerName = timerName;
     }
-    
+
     protected TimerEndpoint(String endpointUri, Component component) {
         super(endpointUri, component);
     }
@@ -79,10 +86,12 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
         return (TimerComponent) super.getComponent();
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         throw new RuntimeCamelException("Cannot produce to a TimerEndpoint: " + getEndpointUri());
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         Consumer answer = new TimerConsumer(this, processor);
         configureConsumer(answer);
@@ -90,13 +99,8 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
     }
 
     @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    @Override
-    protected void doStart() throws Exception {
-        super.doStart();
+    protected void doInit() throws Exception {
+        super.doInit();
         if (timerName == null) {
             timerName = getEndpointUri();
         }
@@ -109,6 +113,7 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
         super.doStop();
     }
 
+    @Override
     @ManagedAttribute
     public boolean isMultipleConsumersSupported() {
         return true;
@@ -148,11 +153,10 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
     }
 
     /**
-     * The number of milliseconds to wait before the first event is generated. Should not be used in conjunction with the time option.
+     * The number of milliseconds to wait before the first event is generated. Should not be used in conjunction with
+     * the time option.
      * <p/>
      * The default value is 1000.
-     * You can also specify time values using units, such as 60s (60 seconds), 5m30s (5 minutes and 30 seconds), and 1h (1 hour).
-     * @see <a href="http://camel.apache.org/how-do-i-specify-time-period-in-a-human-friendly-syntax.html">human friendly syntax</a>
      */
     @ManagedAttribute(description = "Timer Delay")
     public void setDelay(long delay) {
@@ -181,8 +185,6 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
      * If greater than 0, generate periodic events every period milliseconds.
      * <p/>
      * The default value is 1000.
-     * You can also specify time values using units, such as 60s (60 seconds), 5m30s (5 minutes and 30 seconds), and 1h (1 hour).
-     * @see <a href="http://camel.apache.org/how-do-i-specify-time-period-in-a-human-friendly-syntax.html">human friendly syntax</a>
      */
     @ManagedAttribute(description = "Timer Period")
     public void setPeriod(long period) {
@@ -195,10 +197,8 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
     }
 
     /**
-     * Specifies a maximum limit of number of fires.
-     * So if you set it to 1, the timer will only fire once.
-     * If you set it to 5, it will only fire five times.
-     * A value of zero or negative means fire forever.
+     * Specifies a maximum limit of number of fires. So if you set it to 1, the timer will only fire once. If you set it
+     * to 5, it will only fire five times. A value of zero or negative means fire forever.
      */
     @ManagedAttribute(description = "Repeat Count")
     public void setRepeatCount(long repeatCount) {
@@ -210,7 +210,8 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
     }
 
     /**
-     * A java.util.Date the first event should be generated. If using the URI, the pattern expected is: yyyy-MM-dd HH:mm:ss or yyyy-MM-dd'T'HH:mm:ss.
+     * A java.util.Date the first event should be generated. If using the URI, the pattern expected is: yyyy-MM-dd
+     * HH:mm:ss or yyyy-MM-dd'T'HH:mm:ss.
      */
     public void setTime(Date time) {
         this.time = time;
@@ -227,6 +228,17 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
         this.pattern = pattern;
     }
 
+    public Timer getTimer() {
+        return timer;
+    }
+
+    /**
+     * To use a custom {@link Timer}
+     */
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+
     public Timer getTimer(TimerConsumer consumer) {
         if (timer != null) {
             // use custom timer
@@ -235,11 +247,26 @@ public class TimerEndpoint extends DefaultEndpoint implements MultipleConsumersS
         return getComponent().getTimer(consumer);
     }
 
+    @ManagedAttribute(description = "Include metadata")
+    public boolean isIncludeMetadata() {
+        return includeMetadata;
+    }
+
     /**
-     * To use a custom {@link Timer}
+     * Whether to include metadata in the exchange such as fired time, timer name, timer count etc. This information is
+     * default included.
      */
-    public void setTimer(Timer timer) {
-        this.timer = timer;
+    @ManagedAttribute(description = "Include metadata")
+    public void setIncludeMetadata(boolean includeMetadata) {
+        this.includeMetadata = includeMetadata;
+    }
+
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
     }
 
     public void removeTimer(TimerConsumer consumer) {

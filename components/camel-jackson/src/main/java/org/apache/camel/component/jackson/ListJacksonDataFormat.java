@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,11 +34,6 @@ public class ListJacksonDataFormat extends JacksonDataFormat {
 
     public ListJacksonDataFormat(Class<?> unmarshalType, Class<?> jsonView) {
         super(unmarshalType, jsonView);
-        useList();
-    }
-    
-    public ListJacksonDataFormat(Class<?> unmarshalType, Class<?> jsonView, boolean enableJaxbAnnotationModule) {
-        super(unmarshalType, jsonView, enableJaxbAnnotationModule);
         useList();
     }
 

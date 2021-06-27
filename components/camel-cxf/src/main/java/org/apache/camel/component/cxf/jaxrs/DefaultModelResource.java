@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.DefaultMethod;
+
 /**
- * Default JAX-RS resource that may be used 
- * to support document-only CXFRS consumers  
+ * Default JAX-RS resource that may be used to support document-only CXFRS consumers
  */
 public interface DefaultModelResource {
     @Path("{path:.*}")

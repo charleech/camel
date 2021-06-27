@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,7 +42,6 @@ import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
-import org.jdom.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +50,10 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * This data format supports two operations:
  * <ul>
- * <li>marshal = from <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> to <tt>OutputStream</tt> (can be converted to String)</li>
- * <li>unmarshal = from <tt>InputStream</tt> (such as a File) to {@link org.apache.camel.component.flatpack.DataSetList}.
+ * <li>marshal = from <tt>List&lt;Map&lt;String, Object&gt;&gt;</tt> to <tt>OutputStream</tt> (can be converted to
+ * String)</li>
+ * <li>unmarshal = from <tt>InputStream</tt> (such as a File) to
+ * {@link org.apache.camel.component.flatpack.DataSetList}.
  * </ul>
  * <b>Notice:</b> The Flatpack library does currently not support header and trailers for the marshal operation.
  */
@@ -73,6 +74,7 @@ public class FlatpackDataFormat extends ServiceSupport implements DataFormat, Da
         return "flatback";
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void marshal(Exchange exchange, Object graph, OutputStream stream) throws Exception {
         ObjectHelper.notNull(graph, "The object to marshal must be provided");
@@ -106,6 +108,7 @@ public class FlatpackDataFormat extends ServiceSupport implements DataFormat, Da
         }
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream stream) throws Exception {
         InputStreamReader reader = new InputStreamReader(stream, ExchangeHelper.getCharsetName(exchange));
         try {
@@ -224,7 +227,8 @@ public class FlatpackDataFormat extends ServiceSupport implements DataFormat, Da
             } else {
                 InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(exchange.getContext(), getDefinition());
                 InputStreamReader reader = new InputStreamReader(is, ExchangeHelper.getCharsetName(exchange));
-                Parser parser = getParserFactory().newDelimitedParser(reader, bodyReader, delimiter, textQualifier, ignoreFirstRecord);
+                Parser parser = getParserFactory().newDelimitedParser(reader, bodyReader, delimiter, textQualifier,
+                        ignoreFirstRecord);
                 if (allowShortLines) {
                     parser.setHandlingShortLines(true);
                     parser.setIgnoreParseWarnings(true);
@@ -238,7 +242,7 @@ public class FlatpackDataFormat extends ServiceSupport implements DataFormat, Da
         }
     }
 
-    private Writer createWriter(Exchange exchange, Map<String, Object> firstRow, OutputStream stream) throws JDOMException, IOException {
+    private Writer createWriter(Exchange exchange, Map<String, Object> firstRow, OutputStream stream) throws IOException {
         if (isFixed()) {
             InputStream is = ResourceHelper.resolveMandatoryResourceAsInputStream(exchange.getContext(), getDefinition());
             InputStreamReader reader = new InputStreamReader(is, ExchangeHelper.getCharsetName(exchange));

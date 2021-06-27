@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for wiki documentation (same as Mustache component)
@@ -41,18 +41,19 @@ public class ChunkLetterTest extends CamelTestSupport {
     }
 
     @Test
-    public void testChunkLetter() throws Exception {
+    void testChunkLetter() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(1);
         mock.expectedBodiesReceived("Dear Ibsen, Claus\n\nThanks for the order of Camel in Action."
-                + "\n\nRegards Camel Riders Bookstore\nPS: Next beer is on me, James\n");
+                                    + "\n\nRegards Camel Riders Bookstore\nPS: Next beer is on me, James\n");
 
         template.send("direct:a", createLetter());
 
         mock.assertIsSatisfied();
     }
 
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    @Override
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 from("direct:a")

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,8 @@ import static org.apache.camel.component.micrometer.MicrometerConstants.SERVICE_
 
 public interface MicrometerRouteEventNotifierNamingStrategy {
 
-    Predicate<Meter.Id> EVENT_NOTIFIERS = id -> MicrometerEventNotifierService.class.getSimpleName().equals(id.getTag(SERVICE_NAME));
+    Predicate<Meter.Id> EVENT_NOTIFIERS
+            = id -> MicrometerEventNotifierService.class.getSimpleName().equals(id.getTag(SERVICE_NAME));
     MicrometerRouteEventNotifierNamingStrategy DEFAULT = new MicrometerRouteEventNotifierNamingStrategy() {
         @Override
         public String getRouteAddedName() {
@@ -45,6 +46,7 @@ public interface MicrometerRouteEventNotifierNamingStrategy {
     };
 
     String getRouteAddedName();
+
     String getRouteRunningName();
 
     default Tags getTags(CamelContext camelContext) {

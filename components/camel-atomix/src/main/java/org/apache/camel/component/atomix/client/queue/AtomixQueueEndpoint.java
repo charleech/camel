@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.apache.camel.component.atomix.client.queue;
 
-
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -25,15 +24,15 @@ import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 
 /**
- * The atomix-queue component is used to access Atomix's <a href="http://atomix.io/atomix/docs/collections/#distributedqueue">distributed queue</a>.
+ * Access Atomix's <a href="http://atomix.io/atomix/docs/collections/#distributedqueue">distributed queue</a>.
  */
 @UriEndpoint(
-    firstVersion = "2.20.0",
-    scheme = "atomix-queue",
-    title = "Atomix Queue",
-    syntax = "atomix-queue:resourceName",
-    label = "clustering")
-final class AtomixQueueEndpoint extends AbstractAtomixClientEndpoint<AtomixQueueComponent, AtomixQueueConfiguration> {
+             firstVersion = "2.20.0",
+             scheme = "atomix-queue",
+             title = "Atomix Queue",
+             syntax = "atomix-queue:resourceName",
+             label = "clustering")
+public final class AtomixQueueEndpoint extends AbstractAtomixClientEndpoint<AtomixQueueComponent, AtomixQueueConfiguration> {
     @UriParam
     private AtomixQueueConfiguration configuration;
 
@@ -48,7 +47,9 @@ final class AtomixQueueEndpoint extends AbstractAtomixClientEndpoint<AtomixQueue
 
     @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new AtomixQueueConsumer(this, processor, getResourceName());
+        AtomixQueueConsumer consumer = new AtomixQueueConsumer(this, processor, getResourceName());
+        configureConsumer(consumer);
+        return consumer;
     }
 
     @Override

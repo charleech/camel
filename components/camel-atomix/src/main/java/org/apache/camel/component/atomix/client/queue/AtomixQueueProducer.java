@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,21 +19,20 @@ package org.apache.camel.component.atomix.client.queue;
 import io.atomix.collections.DistributedQueue;
 import io.atomix.resource.ReadConsistency;
 import org.apache.camel.AsyncCallback;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.atomix.client.AbstractAtomixClientProducer;
+import org.apache.camel.spi.InvokeOnHeader;
 import org.apache.camel.util.ObjectHelper;
 
-import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_ACTION;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_NAME;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_READ_CONSISTENCY;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_VALUE;
 
-final class AtomixQueueProducer extends AbstractAtomixClientProducer<AtomixQueueEndpoint, DistributedQueue> {
+public final class AtomixQueueProducer extends AbstractAtomixClientProducer<AtomixQueueEndpoint, DistributedQueue> {
     private final AtomixQueueConfiguration configuration;
 
     protected AtomixQueueProducer(AtomixQueueEndpoint endpoint) {
-        super(endpoint);
+        super(endpoint, endpoint.getConfiguration().getDefaultAction().name());
         this.configuration = endpoint.getConfiguration();
     }
 
@@ -42,149 +41,116 @@ final class AtomixQueueProducer extends AbstractAtomixClientProducer<AtomixQueue
     // *********************************
 
     @InvokeOnHeader("ADD")
-    boolean onAdd(Message message, AsyncCallback callback) throws Exception {
+    void onAdd(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         queue.add(val).thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("OFFER")
-    boolean onOffer(Message message, AsyncCallback callback) throws Exception {
+    void onOffer(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         queue.offer(val).thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("PEEK")
-    boolean onPeek(Message message, AsyncCallback callback) throws Exception {
+    void onPeek(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
 
         queue.peek().thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("POLL")
-    boolean onPoll(Message message, AsyncCallback callback) throws Exception {
+    void onPoll(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
 
         queue.poll().thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("CLEAR")
-    boolean onClear(Message message, AsyncCallback callback) throws Exception {
+    void onClear(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
 
         queue.clear().thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("CONTAINS")
-    boolean onContains(Message message, AsyncCallback callback) throws Exception {
+    void onContains(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(value, RESOURCE_VALUE);
 
         if (consistency != null) {
             queue.contains(value, consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             queue.contains(value).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("IS_EMPTY")
-    boolean onIsEmpty(Message message, AsyncCallback callback) throws Exception {
+    void onIsEmpty(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             queue.isEmpty(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             queue.isEmpty().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("REMOVE")
-    boolean onRemove(Message message, AsyncCallback callback) throws Exception {
+    void onRemove(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         if (value == null) {
             queue.remove().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             queue.remove(value).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("SIZE")
-    boolean onSize(Message message, AsyncCallback callback) throws Exception {
+    void onSize(Message message, AsyncCallback callback) throws Exception {
         final DistributedQueue<Object> queue = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             queue.size(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             queue.size().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     // *********************************
     // Implementation
     // *********************************
-
-    @Override
-    protected String getProcessorKey(Message message) {
-        return message.getHeader(RESOURCE_ACTION, configuration::getDefaultAction, String.class);
-    }
 
     @Override
     protected String getResourceName(Message message) {
@@ -194,11 +160,11 @@ final class AtomixQueueProducer extends AbstractAtomixClientProducer<AtomixQueue
     @Override
     protected DistributedQueue<Object> createResource(String resourceName) {
         return getAtomixEndpoint()
-            .getAtomix()
-            .getQueue(
-                resourceName,
-                new DistributedQueue.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedQueue.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
+                .getAtomix()
+                .getQueue(
+                        resourceName,
+                        new DistributedQueue.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedQueue.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
     }
 }

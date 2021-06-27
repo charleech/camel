@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+
 import javax.net.ssl.SSLContext;
 
 import com.github.dockerjava.core.SSLConfig;
@@ -30,7 +31,8 @@ import com.github.dockerjava.core.SSLConfig;
 public class NoImplSslConfig implements SSLConfig {
 
     @Override
-    public SSLContext getSSLContext() throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+    public SSLContext getSSLContext()
+            throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
         return null;
     }
 

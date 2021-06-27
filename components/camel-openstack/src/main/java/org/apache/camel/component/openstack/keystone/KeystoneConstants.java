@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,6 +40,7 @@ public final class KeystoneConstants extends OpenstackConstants {
     public static final String CHECK_GROUP_USER = "checkUserGroup";
     public static final String REMOVE_USER_FROM_GROUP = "removeUserFromGroup";
 
-    private KeystoneConstants() { }
+    private KeystoneConstants() {
+    }
 
 }

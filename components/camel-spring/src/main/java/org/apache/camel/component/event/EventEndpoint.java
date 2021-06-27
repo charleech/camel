@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,15 +16,16 @@
  */
 package org.apache.camel.component.event;
 
+import org.apache.camel.Category;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
-import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.processor.loadbalancer.LoadBalancer;
 import org.apache.camel.processor.loadbalancer.TopicLoadBalancer;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.DefaultEndpoint;
+import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.ObjectHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -34,9 +35,10 @@ import org.springframework.context.ApplicationEvent;
 import static org.apache.camel.RuntimeCamelException.wrapRuntimeCamelException;
 
 /**
- * The spring-event component allows to listen for Spring Application Events.
+ * Listen for Spring Application Events.
  */
-@UriEndpoint(firstVersion = "1.4.0", scheme = "spring-event", title = "Spring Event", syntax = "spring-event:name", label = "spring,eventbus")
+@UriEndpoint(firstVersion = "1.4.0", scheme = "spring-event", title = "Spring Event", syntax = "spring-event:name",
+             category = { Category.SPRING, Category.EVENTBUS })
 public class EventEndpoint extends DefaultEndpoint implements ApplicationContextAware {
     private LoadBalancer loadBalancer;
     private ApplicationContext applicationContext;
@@ -50,6 +52,7 @@ public class EventEndpoint extends DefaultEndpoint implements ApplicationContext
         this.name = name;
     }
 
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -66,10 +69,7 @@ public class EventEndpoint extends DefaultEndpoint implements ApplicationContext
         this.name = name;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-
+    @Override
     public Producer createProducer() throws Exception {
         ObjectHelper.notNull(applicationContext, "applicationContext");
         return new DefaultProducer(this) {
@@ -80,6 +80,7 @@ public class EventEndpoint extends DefaultEndpoint implements ApplicationContext
         };
     }
 
+    @Override
     public EventConsumer createConsumer(Processor processor) throws Exception {
         ObjectHelper.notNull(applicationContext, "applicationContext");
         EventConsumer answer = new EventConsumer(this, processor);

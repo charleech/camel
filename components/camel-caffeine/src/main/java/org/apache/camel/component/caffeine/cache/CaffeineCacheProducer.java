@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,19 +22,19 @@ import java.util.Set;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import org.apache.camel.CamelExchangeException;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.caffeine.CaffeineConfiguration;
 import org.apache.camel.component.caffeine.CaffeineConstants;
-import org.apache.camel.impl.HeaderSelectorProducer;
+import org.apache.camel.spi.InvokeOnHeader;
+import org.apache.camel.support.HeaderSelectorProducer;
 
 public class CaffeineCacheProducer extends HeaderSelectorProducer {
     private final CaffeineConfiguration configuration;
     private final Cache cache;
 
-    public CaffeineCacheProducer(CaffeineCacheEndpoint endpoint, String cacheName, CaffeineConfiguration configuration, Cache cache) throws Exception {
-        super(endpoint, CaffeineConstants.ACTION, () -> configuration.getAction());
-
+    public CaffeineCacheProducer(CaffeineCacheEndpoint endpoint, CaffeineConfiguration configuration,
+                                 Cache cache) {
+        super(endpoint, CaffeineConstants.ACTION, configuration::getAction);
         this.configuration = configuration;
         this.cache = cache;
     }
@@ -59,7 +59,7 @@ public class CaffeineCacheProducer extends HeaderSelectorProducer {
 
     @InvokeOnHeader(CaffeineConstants.ACTION_PUT_ALL)
     public void onPutAll(Message message) throws Exception {
-        cache.putAll((Map)getValue(message, Map.class));
+        cache.putAll((Map) getValue(message, Map.class.getName()));
 
         setResult(message, true, null, null);
     }
@@ -97,26 +97,39 @@ public class CaffeineCacheProducer extends HeaderSelectorProducer {
     // ****************************
 
     private Object getKey(final Message message) throws Exception {
-        Object value = message.getHeader(CaffeineConstants.KEY, configuration.getKeyType());
+        Object value;
+        if (configuration.getKeyType() != null) {
+            Class<?> clazz = getEndpoint().getCamelContext().getClassResolver().resolveClass(configuration.getKeyType());
+            value = message.getHeader(CaffeineConstants.KEY, clazz);
+        } else {
+            value = message.getHeader(CaffeineConstants.KEY);
+        }
         if (value == null) {
             value = configuration.getKey();
         }
 
         if (value == null) {
-            throw new CamelExchangeException("No value provided in header or as default value (" + CaffeineConstants.KEY + ")", message.getExchange());
+            throw new CamelExchangeException(
+                    "No value provided in header or as default value (" + CaffeineConstants.KEY + ")", message.getExchange());
         }
 
         return value;
     }
 
-    private Object getValue(final Message message, final Class<?> type) throws Exception {
-        Object value = message.getHeader(CaffeineConstants.VALUE, type);
+    private Object getValue(final Message message, final String type) throws Exception {
+        Object value = message.getHeader(CaffeineConstants.VALUE);
         if (value == null) {
-            value = message.getBody(type);
+            if (type != null) {
+                Class<?> clazz = getEndpoint().getCamelContext().getClassResolver().resolveClass(type);
+                value = message.getBody(clazz);
+            } else {
+                value = message.getBody();
+            }
         }
 
         if (value == null) {
-            throw new CamelExchangeException("No value provided in header or body (" + CaffeineConstants.VALUE + ")", message.getExchange());
+            throw new CamelExchangeException(
+                    "No value provided in header or body (" + CaffeineConstants.VALUE + ")", message.getExchange());
         }
 
         return value;

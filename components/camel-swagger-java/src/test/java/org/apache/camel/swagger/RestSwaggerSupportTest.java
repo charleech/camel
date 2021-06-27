@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,7 +32,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class RestSwaggerSupportTest {
 
@@ -57,8 +55,9 @@ public class RestSwaggerSupportTest {
 
     @ParameterizedTest
     @MethodSource("basePathAndPrefixVariations")
-    public void shouldAdaptWithVaryingBasePathsAndPrefixes(final String prefix, final String basePath,
-        final String expected) {
+    public void shouldAdaptWithVaryingBasePathsAndPrefixes(
+            final String prefix, final String basePath,
+            final String expected) {
         final Swagger swagger = spy(new Swagger().basePath(basePath));
 
         final Map<String, Object> headers = new HashMap<>();
@@ -76,7 +75,7 @@ public class RestSwaggerSupportTest {
         final Swagger swagger = spy(new Swagger());
 
         RestSwaggerSupport.setupXForwardedHeaders(swagger,
-            Collections.singletonMap(RestSwaggerSupport.HEADER_X_FORWARDED_PROTO, xForwardedScheme));
+                Collections.singletonMap(RestSwaggerSupport.HEADER_X_FORWARDED_PROTO, xForwardedScheme));
 
         for (final Scheme scheme : expected) {
             verify(swagger).addScheme(scheme);
@@ -91,35 +90,35 @@ public class RestSwaggerSupportTest {
 
         RestSwaggerSupport.setupXForwardedHeaders(swagger, Collections.emptyMap());
 
-        verifyZeroInteractions(swagger);
+        verifyNoMoreInteractions(swagger);
     }
 
     static Stream<Arguments> basePathAndPrefixVariations() {
         return Stream.of(//
-            arguments("/prefix", "/base", "/prefix/base"), //
-            arguments("/prefix", "/base/", "/prefix/base/"), //
-            arguments("/prefix", "base", "/prefix/base"), //
-            arguments("/prefix", "base/", "/prefix/base/"), //
-            arguments("/prefix", "", "/prefix"), //
-            arguments("/prefix", null, "/prefix"), //
-            arguments("/prefix/", "/base", "/prefix/base"), //
-            arguments("/prefix/", "/base/", "/prefix/base/"), //
-            arguments("/prefix/", "base", "/prefix/base"), //
-            arguments("/prefix/", "base/", "/prefix/base/"), //
-            arguments("/prefix/", "", "/prefix/"), //
-            arguments("/prefix/", null, "/prefix/"), //
-            arguments("prefix", "/base", "prefix/base"), //
-            arguments("prefix", "/base/", "prefix/base/"), //
-            arguments("prefix", "base", "prefix/base"), //
-            arguments("prefix", "base/", "prefix/base/"), //
-            arguments("prefix", "", "prefix"), //
-            arguments("prefix", null, "prefix"), //
-            arguments("prefix/", "/base", "prefix/base"), //
-            arguments("prefix/", "/base/", "prefix/base/"), //
-            arguments("prefix/", "base", "prefix/base"), //
-            arguments("prefix/", "base/", "prefix/base/"), //
-            arguments("prefix/", "", "prefix/"), //
-            arguments("prefix/", null, "prefix/") //
+                arguments("/prefix", "/base", "/prefix/base"), //
+                arguments("/prefix", "/base/", "/prefix/base/"), //
+                arguments("/prefix", "base", "/prefix/base"), //
+                arguments("/prefix", "base/", "/prefix/base/"), //
+                arguments("/prefix", "", "/prefix"), //
+                arguments("/prefix", null, "/prefix"), //
+                arguments("/prefix/", "/base", "/prefix/base"), //
+                arguments("/prefix/", "/base/", "/prefix/base/"), //
+                arguments("/prefix/", "base", "/prefix/base"), //
+                arguments("/prefix/", "base/", "/prefix/base/"), //
+                arguments("/prefix/", "", "/prefix/"), //
+                arguments("/prefix/", null, "/prefix/"), //
+                arguments("prefix", "/base", "prefix/base"), //
+                arguments("prefix", "/base/", "prefix/base/"), //
+                arguments("prefix", "base", "prefix/base"), //
+                arguments("prefix", "base/", "prefix/base/"), //
+                arguments("prefix", "", "prefix"), //
+                arguments("prefix", null, "prefix"), //
+                arguments("prefix/", "/base", "prefix/base"), //
+                arguments("prefix/", "/base/", "prefix/base/"), //
+                arguments("prefix/", "base", "prefix/base"), //
+                arguments("prefix/", "base/", "prefix/base/"), //
+                arguments("prefix/", "", "prefix/"), //
+                arguments("prefix/", null, "prefix/") //
         );
     }
 
@@ -127,14 +126,14 @@ public class RestSwaggerSupportTest {
         final Scheme[] none = new Scheme[0];
 
         return Stream.of(//
-            arguments(null, none), //
-            arguments("", none), //
-            arguments(",", none), //
-            arguments(" , ", none), //
-            arguments("HTTPS,http", new Scheme[] {Scheme.HTTPS, Scheme.HTTP}), //
-            arguments(" HTTPS,  http ", new Scheme[] {Scheme.HTTPS, Scheme.HTTP}), //
-            arguments(",http,", new Scheme[] {Scheme.HTTP}), //
-            arguments("hTtpS", new Scheme[] {Scheme.HTTPS})//
+                arguments(null, none), //
+                arguments("", none), //
+                arguments(",", none), //
+                arguments(" , ", none), //
+                arguments("HTTPS,http", new Scheme[] { Scheme.HTTPS, Scheme.HTTP }), //
+                arguments(" HTTPS,  http ", new Scheme[] { Scheme.HTTPS, Scheme.HTTP }), //
+                arguments(",http,", new Scheme[] { Scheme.HTTP }), //
+                arguments("hTtpS", new Scheme[] { Scheme.HTTPS })//
         );
     }
 }

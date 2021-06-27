@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,8 @@ public abstract class FeedEntryPollingConsumer extends FeedPollingConsumer {
     protected boolean throttleEntries;
     protected Object feed;
 
-    public FeedEntryPollingConsumer(FeedEndpoint endpoint, Processor processor, boolean filter, Date lastUpdate, boolean throttleEntries) {
+    public FeedEntryPollingConsumer(FeedEndpoint endpoint, Processor processor, boolean filter, Date lastUpdate,
+                                    boolean throttleEntries) {
         super(endpoint, processor);
         if (filter) {
             entryFilter = createEntryFilter(lastUpdate);
@@ -41,6 +42,7 @@ public abstract class FeedEntryPollingConsumer extends FeedPollingConsumer {
         this.throttleEntries = throttleEntries;
     }
 
+    @Override
     public int poll() throws Exception {
         if (feed == null) {
             // populate new feed
@@ -75,11 +77,11 @@ public abstract class FeedEntryPollingConsumer extends FeedPollingConsumer {
     }
 
     protected abstract EntryFilter createEntryFilter(Date lastUpdate);
-    
+
     protected abstract void resetList();
 
-    protected abstract void populateList(Object feed) throws Exception; 
-    
+    protected abstract void populateList(Object feed) throws Exception;
+
     private boolean hasNextEntry() {
         return entryIndex >= 0;
     }

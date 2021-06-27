@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,8 @@ abstract class AbstractConsulConsumer<C> extends DefaultConsumer {
     private final Function<Consul, C> clientSupplier;
     private Runnable watcher;
 
-    protected AbstractConsulConsumer(ConsulEndpoint endpoint, ConsulConfiguration configuration, Processor processor, Function<Consul, C> clientSupplier) {
+    protected AbstractConsulConsumer(ConsulEndpoint endpoint, ConsulConfiguration configuration, Processor processor,
+                                     Function<Consul, C> clientSupplier) {
         super(endpoint, processor);
 
         this.endpoint = endpoint;

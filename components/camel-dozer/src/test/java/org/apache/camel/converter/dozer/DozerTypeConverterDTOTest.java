@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.converter.dozer;
+
 import java.util.Arrays;
 
 import com.github.dozermapper.core.loader.api.BeanMappingBuilder;
@@ -22,16 +23,16 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.converter.dozer.dto.CustomerDTO;
 import org.apache.camel.converter.dozer.model.Customer;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.converter.dozer.DozerTestArtifactsFactory.createDtoCustomer;
 
 public class DozerTypeConverterDTOTest extends CamelTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -45,21 +46,22 @@ public class DozerTypeConverterDTOTest extends CamelTestSupport {
         DozerBeanMapperConfiguration config = new DozerBeanMapperConfiguration();
         config.setBeanMappingBuilders(Arrays.asList(beanMappingBuilder));
 
-        new DozerTypeConverterLoader(context, config);
+        try (DozerTypeConverterLoader dtcl = new DozerTypeConverterLoader(context, config)) {
+        }
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:service-in").bean(new CustomerProcessor()).to("mock:verify-model");
             }
         };
     }
 
     @Test
-    public void verifyCamelConversionViaDozer() throws Exception {
+    void verifyCamelConversionViaDozer() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:verify-model");
         mock.expectedMessageCount(1);
 

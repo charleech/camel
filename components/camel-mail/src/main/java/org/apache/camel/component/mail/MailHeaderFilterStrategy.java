@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,17 @@
  */
 package org.apache.camel.component.mail;
 
-import org.apache.camel.impl.DefaultHeaderFilterStrategy;
+import org.apache.camel.support.DefaultHeaderFilterStrategy;
 
 public class MailHeaderFilterStrategy extends DefaultHeaderFilterStrategy {
-    
+
     public MailHeaderFilterStrategy() {
         initialize();
     }
-    
+
     protected void initialize() {
         // filter headers begin with "Camel" or "org.apache.camel"
-        setOutFilterPattern("(?i)(Camel|org\\.apache\\.camel)[\\.|a-z|A-z|0-9]*");
+        setOutFilterStartsWith(CAMEL_FILTER_STARTS_WITH);
     }
 
 }

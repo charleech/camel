@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Signature;
-import static java.lang.String.format;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -28,6 +27,7 @@ import org.apache.camel.component.crypto.DigitalSignatureConfiguration;
 import org.apache.camel.component.crypto.DigitalSignatureConstants;
 import org.apache.commons.codec.binary.Base64;
 
+import static java.lang.String.format;
 
 public class SigningProcessor extends DigitalSignatureProcessor {
 
@@ -35,6 +35,7 @@ public class SigningProcessor extends DigitalSignatureProcessor {
         super(configuration);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         Signature service = initSignatureService(exchange);
         calculateSignature(exchange, service);
@@ -65,9 +66,10 @@ public class SigningProcessor extends DigitalSignatureProcessor {
         if (pk == null) {
             pk = exchange.getIn().getHeader(DigitalSignatureConstants.SIGNATURE_PRIVATE_KEY, PrivateKey.class);
             if (pk == null) {
-                throw new IllegalStateException(format("Cannot sign message as no Private Key has been supplied. "
-                    + "Either supply one in the route definition sign(keystore, alias) or sign(privateKey) "
-                    + "or via the message header '%s'", DigitalSignatureConstants.SIGNATURE_PRIVATE_KEY));
+                throw new IllegalStateException(
+                        format("Cannot sign message as no Private Key has been supplied. "
+                               + "Either supply one in the route definition sign(keystore, alias) or sign(privateKey) "
+                               + "or via the message header '%s'", DigitalSignatureConstants.SIGNATURE_PRIVATE_KEY));
             }
         }
         return pk;
@@ -79,7 +81,7 @@ public class SigningProcessor extends DigitalSignatureProcessor {
         if (keystore != null) {
             password = exchange.getIn().getHeader(DigitalSignatureConstants.KEYSTORE_PASSWORD, char[].class);
             if (password == null) {
-                password = config.getPassword();
+                password = config.getPassword() != null ? config.getPassword().toCharArray() : null;
             }
         }
         return password;

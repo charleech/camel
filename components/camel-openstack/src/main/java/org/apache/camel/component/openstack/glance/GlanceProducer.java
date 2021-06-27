@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,29 +45,29 @@ public class GlanceProducer extends AbstractOpenstackProducer {
         String operation = getOperation(exchange);
 
         switch (operation) {
-        case GlanceConstants.RESERVE:
-            doReserve(exchange);
-            break;
-        case OpenstackConstants.CREATE:
-            doCreate(exchange);
-            break;
-        case OpenstackConstants.UPDATE:
-            doUpdate(exchange);
-            break;
-        case GlanceConstants.UPLOAD:
-            doUpload(exchange);
-            break;
-        case OpenstackConstants.GET:
-            doGet(exchange);
-            break;
-        case OpenstackConstants.GET_ALL:
-            doGetAll(exchange);
-            break;
-        case OpenstackConstants.DELETE:
-            doDelete(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation " + operation);
+            case GlanceConstants.RESERVE:
+                doReserve(exchange);
+                break;
+            case OpenstackConstants.CREATE:
+                doCreate(exchange);
+                break;
+            case OpenstackConstants.UPDATE:
+                doUpdate(exchange);
+                break;
+            case GlanceConstants.UPLOAD:
+                doUpload(exchange);
+                break;
+            case OpenstackConstants.GET:
+                doGet(exchange);
+                break;
+            case OpenstackConstants.GET_ALL:
+                doGetAll(exchange);
+                break;
+            case OpenstackConstants.DELETE:
+                doDelete(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation " + operation);
         }
     }
 
@@ -120,7 +120,7 @@ public class GlanceProducer extends AbstractOpenstackProducer {
         final String imageId = msg.getHeader(OpenstackConstants.ID, String.class);
         StringHelper.notEmpty(imageId, "ImageID");
         final ActionResponse response = os.compute().images().delete(imageId);
-        checkFailure(response, msg, "Delete image " + imageId);
+        checkFailure(response, exchange, "Delete image " + imageId);
     }
 
     private Image messageToImage(Message message) {
@@ -144,11 +144,13 @@ public class GlanceProducer extends AbstractOpenstackProducer {
         }
 
         if (ObjectHelper.isNotEmpty(message.getHeader(GlanceConstants.DISK_FORMAT, DiskFormat.class))) {
-            imageBuilder = getImageBuilder(imageBuilder).diskFormat(message.getHeader(GlanceConstants.DISK_FORMAT, DiskFormat.class));
+            imageBuilder = getImageBuilder(imageBuilder)
+                    .diskFormat(message.getHeader(GlanceConstants.DISK_FORMAT, DiskFormat.class));
         }
 
         if (ObjectHelper.isNotEmpty(message.getHeader(GlanceConstants.CONTAINER_FORMAT, ContainerFormat.class))) {
-            imageBuilder = getImageBuilder(imageBuilder).containerFormat(message.getHeader(GlanceConstants.CONTAINER_FORMAT, ContainerFormat.class));
+            imageBuilder = getImageBuilder(imageBuilder)
+                    .containerFormat(message.getHeader(GlanceConstants.CONTAINER_FORMAT, ContainerFormat.class));
         }
 
         if (ObjectHelper.isNotEmpty(message.getHeader(GlanceConstants.SIZE, Long.class))) {
@@ -176,7 +178,8 @@ public class GlanceProducer extends AbstractOpenstackProducer {
         }
 
         if (ObjectHelper.isNotEmpty(message.getHeader(OpenstackConstants.PROPERTIES))) {
-            imageBuilder = getImageBuilder(imageBuilder).properties(message.getHeader(OpenstackConstants.PROPERTIES, Map.class));
+            imageBuilder
+                    = getImageBuilder(imageBuilder).properties(message.getHeader(OpenstackConstants.PROPERTIES, Map.class));
         }
 
         if (!required && imageBuilder == null) {

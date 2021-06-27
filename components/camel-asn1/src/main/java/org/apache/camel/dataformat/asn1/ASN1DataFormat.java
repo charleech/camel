@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import com.beanit.jasn1.ber.ReverseByteArrayOutputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
@@ -33,7 +34,6 @@ import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.openmuc.jasn1.ber.ReverseByteArrayOutputStream;
 
 @Dataformat("asn1")
 public class ASN1DataFormat extends ServiceSupport implements DataFormat, DataFormatName {
@@ -87,7 +87,8 @@ public class ASN1DataFormat extends ServiceSupport implements DataFormat, DataFo
     }
 
     private void encodeGenericTypeObject(Exchange exchange, Class<?> clazz, OutputStream stream)
-        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+            throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException, IOException {
         Class<?>[] paramOut = new Class<?>[1];
         paramOut[0] = OutputStream.class;
         ReverseByteArrayOutputStream berOut = new ReverseByteArrayOutputStream(IOHelper.DEFAULT_BUFFER_SIZE / 256, true);
@@ -96,7 +97,7 @@ public class ASN1DataFormat extends ServiceSupport implements DataFormat, DataFo
         stream.write(berOut.getArray());
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Object unmarshal(Exchange exchange, InputStream stream) throws Exception {
         if (usingIterator) {
@@ -110,7 +111,8 @@ public class ASN1DataFormat extends ServiceSupport implements DataFormat, DataFo
         } else {
             ASN1Primitive asn1Record = null;
             byte[] asn1Bytes;
-            try (ASN1InputStream ais = new ASN1InputStream(stream); ByteArrayOutputStream asn1Out = new ByteArrayOutputStream();) {
+            try (ASN1InputStream ais = new ASN1InputStream(stream);
+                 ByteArrayOutputStream asn1Out = new ByteArrayOutputStream();) {
                 while (ais.available() > 0) {
                     asn1Record = ais.readObject();
                     asn1Out.write(asn1Record.getEncoded());

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.test.stub.tcp;
 
 import java.io.ByteArrayInputStream;
@@ -53,7 +52,7 @@ public class SocketInputStreamStub extends InputStream {
                 return answer;
             } else if (element instanceof IOException) {
                 packetQueue.remove();
-                throw (IOException)element;
+                throw (IOException) element;
             }
         }
 
@@ -80,7 +79,7 @@ public class SocketInputStreamStub extends InputStream {
                 return answer;
             } else if (element instanceof IOException) {
                 packetQueue.remove();
-                throw (IOException)element;
+                throw (IOException) element;
             }
         }
 
@@ -107,7 +106,7 @@ public class SocketInputStreamStub extends InputStream {
                 return answer;
             } else if (element instanceof IOException) {
                 packetQueue.remove();
-                throw (IOException)element;
+                throw (IOException) element;
             }
         }
 

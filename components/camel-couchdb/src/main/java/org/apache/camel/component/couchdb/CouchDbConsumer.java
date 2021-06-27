@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.apache.camel.component.couchdb;
 
 import java.util.concurrent.ExecutorService;
 
+import com.google.gson.JsonObject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
 
@@ -34,12 +36,23 @@ public class CouchDbConsumer extends DefaultConsumer {
         this.endpoint = endpoint;
     }
 
+    public Exchange createExchange(String seq, String id, JsonObject obj, boolean deleted) {
+        Exchange exchange = createExchange(false);
+        exchange.getIn().setHeader(CouchDbConstants.HEADER_DATABASE, endpoint.getDatabase());
+        exchange.getIn().setHeader(CouchDbConstants.HEADER_SEQ, seq);
+        exchange.getIn().setHeader(CouchDbConstants.HEADER_DOC_ID, id);
+        exchange.getIn().setHeader(CouchDbConstants.HEADER_DOC_REV, obj.get("_rev").getAsString());
+        exchange.getIn().setHeader(CouchDbConstants.HEADER_METHOD, deleted ? "DELETE" : "UPDATE");
+        exchange.getIn().setBody(obj);
+        return exchange;
+    }
+
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        log.info("Starting CouchDB consumer");
 
-        executor = endpoint.getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, endpoint.getEndpointUri(), 1);
+        executor = endpoint.getCamelContext().getExecutorServiceManager().newFixedThreadPool(this, endpoint.getEndpointUri(),
+                1);
         task = new CouchDbChangesetTracker(endpoint, this, couchClient);
         executor.submit(task);
     }
@@ -47,7 +60,6 @@ public class CouchDbConsumer extends DefaultConsumer {
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        log.info("Stopping CouchDB consumer");
         if (task != null) {
             task.stop();
         }

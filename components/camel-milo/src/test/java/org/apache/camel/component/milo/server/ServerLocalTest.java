@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,13 +21,13 @@ import java.io.IOException;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.milo.Ports;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.AvailablePortFinder;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for milo server component without using an actual connection
@@ -38,13 +38,13 @@ public class ServerLocalTest extends CamelTestSupport {
 
     private static final String MOCK_TEST = "mock:test";
 
-    @EndpointInject(uri = MOCK_TEST)
+    @EndpointInject(MOCK_TEST)
     protected MockEndpoint testEndpoint;
 
-    @Before
+    @BeforeEach
     public void pickFreePort() throws IOException {
         final MiloServerComponent component = context().getComponent("milo-server", MiloServerComponent.class);
-        component.setBindPort(Ports.pickServerPort());
+        component.setPort(AvailablePortFinder.getNextAvailable());
     }
 
     @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,7 @@ public interface LumberjackMessageProcessor {
     /**
      * Called when a message is received. The {@code callback} must be called with the status of the processing
      *
-     * @param payload Lumberjack message payload
+     * @param payload  Lumberjack message payload
      * @param callback Callback to call when the processing is complete
      */
     void onMessageReceived(Object payload, Callback callback);

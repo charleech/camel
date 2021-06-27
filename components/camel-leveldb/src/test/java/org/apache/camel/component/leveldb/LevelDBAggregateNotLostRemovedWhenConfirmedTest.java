@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,23 +15,28 @@
  * limitations under the License.
  */
 package org.apache.camel.component.leveldb;
+
 import java.util.concurrent.TimeUnit;
 
+import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.AggregationStrategy;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.params.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import static org.apache.camel.component.leveldb.LevelDBAggregationRepository.keyBuilder;
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class LevelDBAggregateNotLostRemovedWhenConfirmedTest extends CamelTestSupport {
+@DisabledOnOs({ OS.AIX, OS.OTHER })
+public class LevelDBAggregateNotLostRemovedWhenConfirmedTest extends LevelDBTestSupport {
 
     private LevelDBAggregationRepository repo;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("target/data");
         repo = new LevelDBAggregationRepository("repo1", "target/data/leveldb.dat");
@@ -68,17 +73,18 @@ public class LevelDBAggregateNotLostRemovedWhenConfirmedTest extends CamelTestSu
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .aggregate(header("id"), new MyAggregationStrategy())
-                        .completionSize(5).aggregationRepository(repo)
-                        .log("aggregated exchange id ${exchangeId} with ${body}")
-                        .to("mock:result")
-                    .end();
+                        .aggregate(header("id"), new MyAggregationStrategy())
+                            .completionSize(5).aggregationRepository(repo)
+                            .log("aggregated exchange id ${exchangeId} with ${body}")
+                            .to("mock:result")
+                        .end();
             }
         };
     }
 
     public static class MyAggregationStrategy implements AggregationStrategy {
 
+        @Override
         public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
             if (oldExchange == null) {
                 return newExchange;

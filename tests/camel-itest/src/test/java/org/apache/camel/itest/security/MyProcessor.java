@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,21 +25,22 @@ import org.apache.camel.component.cxf.common.message.CxfConstants;
 
 public class MyProcessor implements Processor {
 
-    public void process(Exchange exchange) throws Exception {
+    @Override
+    public void process(Exchange exchange) {
         Message in = exchange.getIn();
         // Get the parameter list
         List<?> parameter = in.getBody(List.class);
         // Get the operation name
-        String operation = (String)in.getHeader(CxfConstants.OPERATION_NAME);
+        String operation = (String) in.getHeader(CxfConstants.OPERATION_NAME);
         Object result = null;
         if ("sayHi".equals(operation)) {
             result = " Hello buddy!";
-        } 
+        }
         if ("greetMe".equals(operation)) {
-            result = " Hello " +  (String)parameter.get(0);            
+            result = " Hello " + (String) parameter.get(0);
         }
         // Put the result back
-        exchange.getOut().setBody(result);        
+        exchange.getMessage().setBody(result);
     }
 
 }

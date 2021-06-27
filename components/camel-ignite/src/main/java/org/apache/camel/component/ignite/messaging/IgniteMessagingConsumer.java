@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,18 +19,21 @@ package org.apache.camel.component.ignite.messaging;
 import java.util.UUID;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.ignite.IgniteConstants;
 import org.apache.camel.support.DefaultConsumer;
 import org.apache.ignite.IgniteMessaging;
 import org.apache.ignite.lang.IgniteBiPredicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Ignite Messaging consumer.
  */
 public class IgniteMessagingConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IgniteMessagingConsumer.class);
 
     private IgniteMessagingEndpoint endpoint;
     private IgniteMessaging messaging;
@@ -40,18 +43,18 @@ public class IgniteMessagingConsumer extends DefaultConsumer {
 
         @Override
         public boolean apply(UUID uuid, Object payload) {
-            Exchange exchange = endpoint.createExchange(ExchangePattern.InOnly);
-            Message in = exchange.getIn();
-            in.setBody(payload);
-            in.setHeader(IgniteConstants.IGNITE_MESSAGING_TOPIC, endpoint.getTopic());
-            in.setHeader(IgniteConstants.IGNITE_MESSAGING_UUID, uuid);
+            Exchange exchange = createExchange(true);
             try {
-                if (log.isTraceEnabled()) {
-                    log.trace("Processing Ignite message for subscription {} with payload {}.", uuid, payload);
+                Message in = exchange.getIn();
+                in.setBody(payload);
+                in.setHeader(IgniteConstants.IGNITE_MESSAGING_TOPIC, endpoint.getTopic());
+                in.setHeader(IgniteConstants.IGNITE_MESSAGING_UUID, uuid);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Processing Ignite message for subscription {} with payload {}.", uuid, payload);
                 }
                 getProcessor().process(exchange);
             } catch (Exception e) {
-                log.error(String.format("Exception while processing Ignite Message from topic %s", endpoint.getTopic()), e);
+                LOG.error(String.format("Exception while processing Ignite Message from topic %s", endpoint.getTopic()), e);
             }
             return true;
         }
@@ -68,8 +71,8 @@ public class IgniteMessagingConsumer extends DefaultConsumer {
         super.doStart();
 
         messaging.localListen(endpoint.getTopic(), predicate);
-        
-        log.info("Started Ignite Messaging consumer for topic {}.", endpoint.getTopic());
+
+        LOG.info("Started Ignite Messaging consumer for topic {}.", endpoint.getTopic());
     }
 
     @Override
@@ -77,8 +80,8 @@ public class IgniteMessagingConsumer extends DefaultConsumer {
         super.doStop();
 
         messaging.stopLocalListen(endpoint.getTopic(), predicate);
-        
-        log.info("Stopped Ignite Messaging consumer for topic {}.", endpoint.getTopic());
+
+        LOG.info("Stopped Ignite Messaging consumer for topic {}.", endpoint.getTopic());
     }
 
 }

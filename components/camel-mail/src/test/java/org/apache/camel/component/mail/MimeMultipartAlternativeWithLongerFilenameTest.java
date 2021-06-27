@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,16 +24,22 @@ import javax.activation.FileDataSource;
 import javax.mail.internet.MimeMultipart;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.component.mail.MailConstants.MAIL_ALTERNATIVE_BODY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MimeMultipartAlternativeWithLongerFilenameTest extends CamelTestSupport {
+    private Logger log = LoggerFactory.getLogger(getClass());
     private String alternativeBody = "hello world! (plain text)";
     private String htmlBody = "<html><body><h1>Hello</h1>World<img src=\"cid:myCoolLogo.jpeg\"></body></html>";
 
@@ -47,7 +53,7 @@ public class MimeMultipartAlternativeWithLongerFilenameTest extends CamelTestSup
 
         // create the exchange with the mail message that is multipart with a file and a Hello World text/plain message.
         Exchange exchange = endpoint.createExchange();
-        Message in = exchange.getIn();
+        AttachmentMessage in = exchange.getIn(AttachmentMessage.class);
         in.setBody(htmlBody);
         in.setHeader(MAIL_ALTERNATIVE_BODY, alternativeBody);
         in.addAttachment("cid:myCoolLogo.jpeg", new DataHandler(new FileDataSource("src/test/data/logo.jpeg")));
@@ -65,20 +71,20 @@ public class MimeMultipartAlternativeWithLongerFilenameTest extends CamelTestSup
         mock.assertIsSatisfied();
 
         Exchange out = mock.assertExchangeReceived(0);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(((MailMessage)out.getIn()).getMessage().getSize());
-        ((MailMessage)out.getIn()).getMessage().writeTo(baos);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(((MailMessage) out.getIn()).getMessage().getSize());
+        ((MailMessage) out.getIn()).getMessage().writeTo(baos);
         String dumpedMessage = baos.toString();
-        assertTrue("There should have the " + expectString, dumpedMessage.indexOf(expectString) > 0);
+        assertTrue(dumpedMessage.indexOf(expectString) > 0, "There should have the " + expectString);
         log.trace("multipart alternative: \n{}", dumpedMessage);
 
         // plain text
         assertEquals(alternativeBody, out.getIn().getBody(String.class));
 
         // attachment
-        Map<String, DataHandler> attachments = out.getIn().getAttachments();
-        assertNotNull("Should not have null attachments", attachments);
+        Map<String, DataHandler> attachments = out.getIn(AttachmentMessage.class).getAttachments();
+        assertNotNull(attachments, "Should not have null attachments");
         assertEquals(1, attachments.size());
-        assertEquals("multipart body should have 2 parts", 2, out.getIn().getBody(MimeMultipart.class).getCount());
+        assertEquals(2, out.getIn().getBody(MimeMultipart.class).getCount(), "multipart body should have 2 parts");
     }
 
     @Test
@@ -93,10 +99,11 @@ public class MimeMultipartAlternativeWithLongerFilenameTest extends CamelTestSup
         verifyTheRecivedEmail("Content-Disposition: attachment; filename=myCoolLogo.jpeg");
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("pop3://ryan@mymailserver.com?password=secret&consumer.initialDelay=100&consumer.delay=100").to("mock:result");
+                from("pop3://ryan@mymailserver.com?password=secret&initialDelay=100&delay=100").to("mock:result");
             }
         };
     }

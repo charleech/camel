@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,17 +26,21 @@ import javax.mail.MessagingException;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.camel.Attachment;
 import org.apache.camel.Exchange;
+import org.apache.camel.attachment.Attachment;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class NestedMimeMessageConsumeTest extends CamelTestSupport {
 
@@ -56,14 +60,14 @@ public class NestedMimeMessageConsumeTest extends CamelTestSupport {
         assertThat(text, containsString("Test with bold face, pictures and attachments"));
         assertEquals("text/plain; charset=us-ascii", exchange.getIn().getHeader("Content-Type"));
 
-        Set<String> attachmentNames = exchange.getIn().getAttachmentNames();
-        assertNotNull("attachments got lost", attachmentNames);
+        Set<String> attachmentNames = exchange.getIn(AttachmentMessage.class).getAttachmentNames();
+        assertNotNull(attachmentNames, "attachments got lost");
         assertEquals(2, attachmentNames.size());
         for (String s : attachmentNames) {
-            Attachment att = exchange.getIn().getAttachmentObject(s);
+            Attachment att = exchange.getIn(AttachmentMessage.class).getAttachmentObject(s);
             DataHandler dh = att.getDataHandler();
             Object content = dh.getContent();
-            assertNotNull("Content should not be empty", content);
+            assertNotNull(content, "Content should not be empty");
             assertThat(dh.getName(), anyOf(equalTo("image001.png"), equalTo("test.txt")));
         }
     }
@@ -79,7 +83,7 @@ public class NestedMimeMessageConsumeTest extends CamelTestSupport {
 
         InputStream is = getClass().getResourceAsStream("/nested-multipart.elm");
         Message hurzMsg = new MimeMessage(sender.getSession(), is);
-        Message[] messages = new Message[] {hurzMsg};
+        Message[] messages = new Message[] { hurzMsg };
 
         // insert one signed message
         folder.appendMessages(messages);
@@ -90,8 +94,8 @@ public class NestedMimeMessageConsumeTest extends CamelTestSupport {
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("pop3://james3@localhost?consumer.initialDelay=100&consumer.delay=100").removeHeader("to").to("smtp://james4@localhost");
-                from("pop3://james4@localhost?consumer.initialDelay=200&consumer.delay=100").convertBodyTo(String.class).to("mock:result");
+                from("pop3://james3@localhost?initialDelay=100&delay=100").removeHeader("to").to("smtp://james4@localhost");
+                from("pop3://james4@localhost?initialDelay=200&delay=100").convertBodyTo(String.class).to("mock:result");
             }
         };
     }

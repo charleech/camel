@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ public abstract class BaseOptions<T extends BaseOptions<T>> {
     /**
      * Protocol options
      */
-    @UriParam(javaType = "ProtocolOptions")
+    @UriParam(javaType = "org.eclipse.neoscada.protocol.iec60870.ProtocolOptions")
     private ProtocolOptions.Builder protocolOptions;
 
     // dummy for doc generation

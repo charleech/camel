@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ public class BaseClass implements MessageListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(BaseClass.class);
 
+    @Override
     public void onMessage(Message message) {
         LOG.info("base called");
     }

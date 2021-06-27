@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultEndpoint;
 import org.apache.camel.util.ObjectHelper;
 
-
-public abstract class AbstractAtomixClientEndpoint<T extends AbstractAtomixClientComponent, C extends AtomixClientConfiguration> extends DefaultEndpoint {
+public abstract class AbstractAtomixClientEndpoint<T extends AbstractAtomixClientComponent, C extends AtomixClientConfiguration>
+        extends DefaultEndpoint {
     @UriPath(description = "The distributed resource name")
     @Metadata(required = true)
     private final String resourceName;
@@ -38,11 +38,6 @@ public abstract class AbstractAtomixClientEndpoint<T extends AbstractAtomixClien
         super(uri, component);
 
         this.resourceName = resourceName;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
     @Override
@@ -86,7 +81,7 @@ public abstract class AbstractAtomixClientEndpoint<T extends AbstractAtomixClien
 
     @SuppressWarnings("unchecked")
     public T getAtomixComponent() {
-        return (T)super.getComponent();
+        return (T) super.getComponent();
     }
 
     public AtomixClient getAtomix() {

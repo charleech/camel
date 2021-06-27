@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.camel.support.RestConsumerContextPathMatcher;
@@ -49,7 +50,8 @@ public class HttpServletResolveConsumerStrategy implements ServletResolveConsume
 
         List<HttpConsumer> candidates = resolveCandidates(request, method, consumers);
         // extra filter by restrict
-        candidates = candidates.stream().filter(c -> matchRestMethod(method, c.getEndpoint().getHttpMethodRestrict())).collect(Collectors.toList());
+        candidates = candidates.stream().filter(c -> matchRestMethod(method, c.getEndpoint().getHttpMethodRestrict()))
+                .collect(Collectors.toList());
         if (candidates.size() == 1) {
             answer = candidates.get(0);
         }
@@ -57,14 +59,15 @@ public class HttpServletResolveConsumerStrategy implements ServletResolveConsume
         return answer;
     }
 
-    private List<HttpConsumer> resolveCandidates(HttpServletRequest request, String method, Map<String, HttpConsumer> consumers) {
+    private List<HttpConsumer> resolveCandidates(
+            HttpServletRequest request, String method, Map<String, HttpConsumer> consumers) {
         String path = request.getPathInfo();
 
         List<HttpConsumer> candidates = new ArrayList<>();
-        for (String key : consumers.keySet()) {
+        for (Map.Entry<String, HttpConsumer> entry : consumers.entrySet()) {
             //We need to look up the consumer path here
-            String consumerPath = consumers.get(key).getPath();
-            HttpConsumer consumer = consumers.get(key);
+            String consumerPath = entry.getValue().getPath();
+            HttpConsumer consumer = entry.getValue();
             boolean matchOnUriPrefix = consumer.getEndpoint().isMatchOnUriPrefix();
             // Just make sure the we get the right consumer path first
             if (RestConsumerContextPathMatcher.matchPath(path, consumerPath, matchOnUriPrefix)) {

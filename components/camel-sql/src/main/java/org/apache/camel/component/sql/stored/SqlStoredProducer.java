@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.sql.SqlHelper;
 import org.apache.camel.support.DefaultProducer;
+import org.apache.camel.support.ResourceHelper;
 import org.springframework.dao.DataAccessException;
 
 public class SqlStoredProducer extends DefaultProducer {
@@ -38,6 +39,7 @@ public class SqlStoredProducer extends DefaultProducer {
         return (SqlStoredEndpoint) super.getEndpoint();
     }
 
+    @Override
     public void process(final Exchange exchange) throws Exception {
         StatementWrapper statementWrapper = createStatement(exchange);
         statementWrapper.call(new WrapperExecuteCallback() {
@@ -122,9 +124,22 @@ public class SqlStoredProducer extends DefaultProducer {
     }
 
     @Override
+    protected void doInit() throws Exception {
+        super.doInit();
+
+        String template = getEndpoint().getTemplate();
+        if (ResourceHelper.isClasspathUri(template)) {
+            resolvedTemplate = SqlHelper.resolveQuery(getEndpoint().getCamelContext(), template, null);
+        }
+    }
+
+    @Override
     protected void doStart() throws Exception {
         super.doStart();
 
-        resolvedTemplate = SqlHelper.resolveQuery(getEndpoint().getCamelContext(), getEndpoint().getTemplate(), null);
+        String template = getEndpoint().getTemplate();
+        if (!ResourceHelper.isClasspathUri(template)) {
+            resolvedTemplate = SqlHelper.resolveQuery(getEndpoint().getCamelContext(), template, null);
+        }
     }
 }

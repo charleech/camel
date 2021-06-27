@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.cdi.test;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
@@ -28,7 +29,7 @@ import org.apache.camel.TypeConverter;
 import org.apache.camel.cdi.CdiCamelExtension;
 import org.apache.camel.cdi.Uri;
 import org.apache.camel.cdi.bean.InjectedTypeConverterRoute;
-import org.apache.camel.cdi.converter.InjectedTypeConverter;
+import org.apache.camel.cdi.converter.InjectedTestTypeConverter;
 import org.apache.camel.cdi.pojo.TypeConverterInput;
 import org.apache.camel.cdi.pojo.TypeConverterOutput;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -43,9 +44,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class InjectedTypeConverterTest {
@@ -53,16 +54,16 @@ public class InjectedTypeConverterTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClass(InjectedTypeConverterRoute.class)
-            // Type converter
-            .addClass(InjectedTypeConverter.class)
-            // No need as Camel CDI automatically registers the type converter bean
-            //.addAsManifestResource(new StringAsset("org.apache.camel.cdi.se.converter"), ArchivePaths.create("services/org/apache/camel/TypeConverter"))
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClass(InjectedTypeConverterRoute.class)
+                // Type converter
+                .addClass(InjectedTestTypeConverter.class)
+                // No need as Camel CDI automatically registers the type converter bean
+                //.addAsManifestResource(new StringAsset("org.apache.camel.cdi.se.converter"), ArchivePaths.create("services/org/apache/camel/TypeConverter"))
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Produces
@@ -78,17 +79,20 @@ public class InjectedTypeConverterTest {
     }
 
     @Test
-    public void sendMessageToInbound(@Uri("direct:inbound") ProducerTemplate inbound,
-                                     @Uri("mock:outbound") MockEndpoint outbound) throws InterruptedException {
+    public void sendMessageToInbound(
+            @Uri("direct:inbound") ProducerTemplate inbound,
+            @Uri("mock:outbound") MockEndpoint outbound)
+            throws InterruptedException {
         outbound.expectedMessageCount(1);
 
         TypeConverterInput input = new TypeConverterInput();
         input.setProperty("property value is [{{property1}}]");
-        
+
         inbound.sendBody(input);
 
         assertIsSatisfied(2L, TimeUnit.SECONDS, outbound);
-        assertThat(outbound.getExchanges().get(0).getIn().getBody(TypeConverterOutput.class).getProperty(), is(equalTo("property value is [value 1]")));
+        assertThat(outbound.getExchanges().get(0).getIn().getBody(TypeConverterOutput.class).getProperty(),
+                is(equalTo("property value is [value 1]")));
     }
 
     @Test

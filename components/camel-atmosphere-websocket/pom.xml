@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache.camel</groupId>
         <artifactId>components</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>camel-atmosphere-websocket</artifactId>
@@ -33,11 +33,9 @@
     <description>Camel Atmosphere WebSocket Servlet</description>
 
     <properties>
-        <camel.osgi.export.pkg>
-            org.apache.camel.component.atmosphere.websocket.*;${camel.osgi.version}
-        </camel.osgi.export.pkg>
         <camel.osgi.import.pkg>
             !org.apache.camel.component.atmosphere.websocket.*,
+            javax.activation.*;version="${javax-activation-version-range}",
             javax.servlet.*;version="${servlet-version-range}",
             org.atmosphere.*;version="${atmosphere-version-range}",
             org.apache.catalina;resolution:=optional,
@@ -48,23 +46,22 @@
             ${camel.osgi.import.defaults},
             *
         </camel.osgi.import.pkg>
-        <camel.osgi.export.service>org.apache.camel.spi.ComponentResolver;component=atmosphere-websocket</camel.osgi.export.service>
     </properties>
 
     <dependencies>
         <!-- Camel -->
         <dependency>
-          <groupId>org.apache.camel</groupId>
-          <artifactId>camel-core</artifactId>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-support</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.apache.camel</groupId>
-          <artifactId>camel-servlet</artifactId>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-servlet</artifactId>
         </dependency>
         <dependency>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-          <version>${javax.servlet-api-version}</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${javax-servlet-api-version}</version>
         </dependency>
 
         <!--  atmosphere -->
@@ -73,22 +70,17 @@
             <artifactId>atmosphere-runtime</artifactId>
             <version>${atmosphere-version}</version>
         </dependency>
-        
+
 
         <!-- test dependencies -->
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <artifactId>camel-test-junit5</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -115,21 +107,9 @@
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <scope>test</scope>
         </dependency>
 
-       <!-- Jetty for testing -->
-        
     </dependencies>
 </project>

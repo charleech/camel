@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,8 @@ public class DefaultKafkaHeaderSerializer implements KafkaHeaderSerializer {
             return (byte[]) value;
         }
         LOG.debug("Cannot propagate header value of type[{}], skipping... "
-                + "Supported types: String, Integer, Long, Double, byte[].", value != null ? value.getClass() : "null");
+                  + "Supported types: String, Integer, Long, Double, byte[].",
+                value != null ? value.getClass() : "null");
         return null;
     }
 }

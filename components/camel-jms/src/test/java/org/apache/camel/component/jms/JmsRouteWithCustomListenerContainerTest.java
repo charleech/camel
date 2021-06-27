@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,17 +18,19 @@ package org.apache.camel.component.jms;
 
 import javax.jms.ConnectionFactory;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.jms.listener.AbstractMessageListenerContainer;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test inspired by user forum
@@ -36,6 +38,12 @@ import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknow
 public class JmsRouteWithCustomListenerContainerTest extends CamelTestSupport {
 
     protected String componentName = "activemq";
+
+    @BindToRegistry("orderService")
+    private MyOrderServiceBean serviceBean = new MyOrderServiceBean();
+
+    @BindToRegistry("myListenerContainerFactory")
+    private MyListenerContainerFactory containerFact = new MyListenerContainerFactory();
 
     @Test
     public void testSendOrder() throws Exception {
@@ -53,21 +61,15 @@ public class JmsRouteWithCustomListenerContainerTest extends CamelTestSupport {
         // assert MEP
         assertEquals(ExchangePattern.InOut, inbox.getReceivedExchanges().get(0).getPattern());
         assertEquals(ExchangePattern.InOnly, order.getReceivedExchanges().get(0).getPattern());
-        
-        JmsEndpoint jmsEndpoint = getMandatoryEndpoint("activemq:queue:inbox?messageListenerContainerFactory=#myListenerContainerFactory", JmsEndpoint.class);
+
+        JmsEndpoint jmsEndpoint = getMandatoryEndpoint(
+                "activemq:queue:inbox?messageListenerContainerFactory=#myListenerContainerFactory", JmsEndpoint.class);
         assertIsInstanceOf(MyListenerContainerFactory.class, jmsEndpoint.getMessageListenerContainerFactory());
-        assertEquals(ConsumerType.Custom, jmsEndpoint.getConfiguration().getConsumerType());        
+        assertEquals(ConsumerType.Custom, jmsEndpoint.getConfiguration().getConsumerType());
         assertIsInstanceOf(MyListenerContainer.class, jmsEndpoint.createMessageListenerContainer());
     }
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("orderService", new MyOrderServiceBean());
-        jndi.bind("myListenerContainerFactory", new MyListenerContainerFactory());
-        return jndi;
-    }
-
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
 
@@ -76,37 +78,33 @@ public class JmsRouteWithCustomListenerContainerTest extends CamelTestSupport {
 
         return camelContext;
     }
-    
+
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("activemq:queue:inbox?messageListenerContainerFactory=#myListenerContainerFactory")
-                    .to("mock:inbox")
-                    .inOnly("activemq:topic:order")
-                    .bean("orderService", "handleOrder");
+                from("activemq:queue:inbox?messageListenerContainerFactory=#myListenerContainerFactory").to("mock:inbox")
+                        .to(ExchangePattern.InOnly, "activemq:topic:order").bean("orderService",
+                                "handleOrder");
 
-                from("activemq:topic:order")
-                    .to("mock:topic");
+                from("activemq:topic:order").to("mock:topic");
             }
         };
     }
 
-    public static class MyListenerContainerFactory implements
-            MessageListenerContainerFactory {
+    public static class MyListenerContainerFactory implements MessageListenerContainerFactory {
 
         @Override
-        public AbstractMessageListenerContainer createMessageListenerContainer(
-                JmsEndpoint endpoint) {
+        public AbstractMessageListenerContainer createMessageListenerContainer(JmsEndpoint endpoint) {
             return new MyListenerContainer();
         }
     }
-    
+
     public static class MyListenerContainer extends DefaultMessageListenerContainer {
 
-    }    
-    
+    }
+
     public static class MyOrderServiceBean {
 
         public String handleOrder(String body) {

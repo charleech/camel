@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,16 +23,22 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Flowable;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.reactive.streams.support.ReactiveStreamsTestSupport;
-import org.apache.camel.impl.JndiRegistry;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class DirectClientAPITest extends ReactiveStreamsTestSupport {
+
+    @BindToRegistry("hello")
+    private SampleBean bean = new SampleBean();
 
     @Test
     public void testFromDirect() throws Exception {
@@ -41,10 +47,7 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<Integer> queue = new LinkedBlockingDeque<>();
 
-        Flowable.fromPublisher(data)
-                .map(i -> -i)
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.fromPublisher(data).map(i -> -i).doOnNext(queue::add).subscribe();
 
         context.start();
         template.sendBody("direct:endpoint", 1);
@@ -64,10 +67,7 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<Integer> queue = new LinkedBlockingDeque<>();
 
-        Flowable.fromPublisher(data)
-                .map(i -> -i)
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.fromPublisher(data).map(i -> -i).doOnNext(queue::add).subscribe();
 
         template.sendBody("direct:endpoint", 1);
 
@@ -82,10 +82,7 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<String> queue = new LinkedBlockingDeque<>();
 
-        Flowable.just(1, 2, 3)
-                .flatMap(camel.to("bean:hello", String.class)::apply)
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.just(1, 2, 3).flatMap(camel.to("bean:hello", String.class)::apply).doOnNext(queue::add).subscribe();
 
         check3HelloInQueue(queue);
     }
@@ -95,16 +92,14 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
-                from("direct:data")
-                        .to("mock:result");
+            public void configure() {
+                from("direct:data").to("mock:result");
             }
         }.addRoutesToCamelContext(context);
 
         context.start();
 
-        Flowable.just(1, 2, 3)
-                .subscribe(camel.subscriber("direct:data", Integer.class));
+        Flowable.just(1, 2, 3).subscribe(camel.subscriber("direct:data", Integer.class));
 
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(3);
@@ -113,7 +108,7 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
         int idx = 1;
         for (Exchange ex : mock.getExchanges()) {
             Integer num = ex.getIn().getBody(Integer.class);
-            assertEquals(new Integer(idx++), num);
+            assertEquals(Integer.valueOf(idx++), num);
         }
 
     }
@@ -124,10 +119,7 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<String> queue = new LinkedBlockingDeque<>();
 
-        Flowable.just(1, 2, 3)
-                .flatMap(e -> camel.to("bean:hello", e, String.class))
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.just(1, 2, 3).flatMap(e -> camel.to("bean:hello", e, String.class)).doOnNext(queue::add).subscribe();
 
         check3HelloInQueue(queue);
     }
@@ -138,12 +130,9 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<String> queue = new LinkedBlockingDeque<>();
 
-        Flowable.just(1, 2, 3)
-                .flatMap(camel.to("bean:hello")::apply)
-                .map(ex -> ex.getOut().getBody(String.class))
-                .doOnNext(queue::add)
-                .subscribe();
-        
+        Flowable.just(1, 2, 3).flatMap(camel.to("bean:hello")::apply).map(ex -> ex.getMessage().getBody(String.class))
+                .doOnNext(queue::add).subscribe();
+
         check3HelloInQueue(queue);
     }
 
@@ -162,11 +151,8 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         BlockingQueue<String> queue = new LinkedBlockingDeque<>();
 
-        Flowable.just(1, 2, 3)
-                .flatMap(e -> camel.to("bean:hello", e))
-                .map(ex -> ex.getOut().getBody(String.class))
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.just(1, 2, 3).flatMap(e -> camel.to("bean:hello", e)).map(ex -> ex.getMessage().getBody(String.class))
+                .doOnNext(queue::add).subscribe();
 
         check3HelloInQueue(queue);
     }
@@ -177,19 +163,14 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
-                from("direct:proxy")
-                        .to("bean:hello")
-                        .setBody().simple("proxy to ${body}");
+            public void configure() {
+                from("direct:proxy").to("bean:hello").setBody().simple("proxy to ${body}");
             }
         }.addRoutesToCamelContext(context);
 
         BlockingQueue<String> queue = new LinkedBlockingDeque<>();
 
-        Flowable.just(1, 2, 3)
-                .flatMap(camel.to("direct:proxy", String.class)::apply)
-                .doOnNext(queue::add)
-                .subscribe();
+        Flowable.just(1, 2, 3).flatMap(camel.to("direct:proxy", String.class)::apply).doOnNext(queue::add).subscribe();
 
         for (int i = 1; i <= 3; i++) {
             String res = queue.poll(1, TimeUnit.SECONDS);
@@ -203,24 +184,18 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
-                from("direct:source")
-                        .to("direct:stream")
-                        .setBody().simple("after stream: ${body}")
-                        .to("mock:dest");
+            public void configure() {
+                from("direct:source").to("direct:stream").setBody().simple("after stream: ${body}").to("mock:dest");
             }
         }.addRoutesToCamelContext(context);
 
         context.start();
 
-        camel.process("direct:stream", p ->
-                Flowable.fromPublisher(p)
-                        .map(exchange -> {
-                            int val = exchange.getIn().getBody(Integer.class);
-                            exchange.getOut().setBody(-val);
-                            return exchange;
-                        })
-        );
+        camel.process("direct:stream", p -> Flowable.fromPublisher(p).map(exchange -> {
+            int val = exchange.getIn().getBody(Integer.class);
+            exchange.getMessage().setBody(-val);
+            return exchange;
+        }));
 
         for (int i = 1; i <= 3; i++) {
             template.sendBody("direct:source", i);
@@ -236,27 +211,20 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
             assertEquals("after stream: " + (-id++), content);
         }
     }
-
 
     @Test
     public void testDirectCallFromCamelWithConversion() throws Exception {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
-                from("direct:source")
-                        .to("direct:stream")
-                        .setBody().simple("after stream: ${body}")
-                        .to("mock:dest");
+            public void configure() {
+                from("direct:source").to("direct:stream").setBody().simple("after stream: ${body}").to("mock:dest");
             }
         }.addRoutesToCamelContext(context);
 
         context.start();
 
-        camel.process("direct:stream", Integer.class, p ->
-                Flowable.fromPublisher(p)
-                        .map(i -> -i)
-        );
+        camel.process("direct:stream", Integer.class, p -> Flowable.fromPublisher(p).map(i -> -i));
 
         for (int i = 1; i <= 3; i++) {
             template.sendBody("direct:source", i);
@@ -271,13 +239,6 @@ public class DirectClientAPITest extends ReactiveStreamsTestSupport {
             String content = ex.getIn().getBody(String.class);
             assertEquals("after stream: " + (-id++), content);
         }
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("hello", new SampleBean());
-        return registry;
     }
 
     public static class SampleBean {

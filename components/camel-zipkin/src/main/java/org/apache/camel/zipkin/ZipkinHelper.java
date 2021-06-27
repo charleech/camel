@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,7 +34,7 @@ public final class ZipkinHelper {
             return null;
         }
 
-        Message message = exchange.hasOut() ? exchange.getOut() : exchange.getIn();
+        Message message = exchange.getMessage();
         // check if body is already cached
         Object body = message.getBody();
         if (body == null) {

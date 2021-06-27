@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,37 +32,46 @@ import org.apache.camel.util.FileUtil;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.util.StringHelper;
 import org.apache.camel.util.URISupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Secure FTP consumer
  */
 public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SftpConsumer.class);
+
     private String endpointPath;
 
     private transient String sftpConsumerToString;
 
-    public SftpConsumer(RemoteFileEndpoint<SftpRemoteFile> endpoint, Processor processor, RemoteFileOperations<SftpRemoteFile> operations, GenericFileProcessStrategy<SftpRemoteFile> processStrategy) {
+    public SftpConsumer(RemoteFileEndpoint<SftpRemoteFile> endpoint, Processor processor,
+                        RemoteFileOperations<SftpRemoteFile> operations,
+                        GenericFileProcessStrategy<SftpRemoteFile> processStrategy) {
         super(endpoint, processor, operations, processStrategy);
         this.endpointPath = endpoint.getConfiguration().getDirectory();
     }
 
     @Override
     protected void doStart() throws Exception {
-        // turn off scheduler first, so autoCreate is handled before scheduler starts
+        // turn off scheduler first, so autoCreate is handled before scheduler
+        // starts
         boolean startScheduler = isStartScheduler();
         setStartScheduler(false);
         try {
             super.doStart();
-            if (endpoint.isAutoCreate()) {
-                log.debug("Auto creating directory: {}", endpoint.getConfiguration().getDirectory());
+            if (endpoint.isAutoCreate() && hasStartingDirectory()) {
+                String dir = endpoint.getConfiguration().getDirectory();
+                LOG.debug("Auto creating directory: {}", dir);
                 try {
                     connectIfNecessary();
-                    operations.buildDirectory(endpoint.getConfiguration().getDirectory(), true);
+                    operations.buildDirectory(dir, true);
                 } catch (GenericFileOperationFailedException e) {
                     // log a WARN as we want to start the consumer.
-                    log.warn("Error auto creating directory: " + endpoint.getConfiguration().getDirectory()
-                            + " due " + e.getMessage() + ". This exception is ignored.", e);
+                    LOG.warn(
+                            "Error auto creating directory: " + dir + " due " + e.getMessage() + ". This exception is ignored.",
+                            e);
                 }
             }
         } finally {
@@ -77,7 +86,8 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
     protected boolean pollDirectory(String fileName, List<GenericFile<SftpRemoteFile>> fileList, int depth) {
         String currentDir = null;
         if (isStepwise()) {
-            // must remember current dir so we stay in that directory after the poll
+            // must remember current dir so we stay in that directory after the
+            // poll
             currentDir = operations.getCurrentDirectory();
         }
 
@@ -92,7 +102,8 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
         return answer;
     }
 
-    protected boolean pollSubDirectory(String absolutePath, String dirName, List<GenericFile<SftpRemoteFile>> fileList, int depth) {
+    protected boolean pollSubDirectory(
+            String absolutePath, String dirName, List<GenericFile<SftpRemoteFile>> fileList, int depth) {
         boolean answer = doSafePollSubDirectory(absolutePath, dirName, fileList, depth);
         // change back to parent directory when finished polling sub directory
         if (isStepwise()) {
@@ -101,8 +112,10 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
         return answer;
     }
 
-    protected boolean doPollDirectory(String absolutePath, String dirName, List<GenericFile<SftpRemoteFile>> fileList, int depth) {
-        log.trace("doPollDirectory from absolutePath: {}, dirName: {}", absolutePath, dirName);
+    @Override
+    protected boolean doPollDirectory(
+            String absolutePath, String dirName, List<GenericFile<SftpRemoteFile>> fileList, int depth) {
+        LOG.trace("doPollDirectory from absolutePath: {}, dirName: {}", absolutePath, dirName);
 
         depth++;
 
@@ -120,7 +133,7 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
                 dir = absolutePath;
             }
 
-            log.trace("Polling directory: {}", dir);
+            LOG.trace("Polling directory: {}", dir);
             if (isUseList()) {
                 if (isStepwise()) {
                     files = operations.listFiles();
@@ -128,18 +141,19 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
                     files = operations.listFiles(dir);
                 }
             } else {
-                // we cannot use the LIST command(s) so we can only poll a named file
-                // so created a pseudo file with that name
-                fileExpressionResult = evaluateFileExpression();
-                if (fileExpressionResult != null) {
-                    SftpRemoteFile file = new SftpRemoteFileSingle(fileExpressionResult);
+                // we cannot use the LIST command(s) so we can only poll a named
+                // file so created a pseudo file with that name
+                Exchange dummy = endpoint.createExchange();
+                String name = evaluateFileExpression(dummy);
+                if (name != null) {
+                    SftpRemoteFile file = new SftpRemoteFileSingle(name);
                     files = new ArrayList<>(1);
                     files.add(file);
                 }
             }
         } catch (GenericFileOperationFailedException e) {
             if (ignoreCannotRetrieveFile(null, null, e)) {
-                log.debug("Cannot list files in directory {} due directory does not exists or file permission error.", dir);
+                LOG.debug("Cannot list files in directory {} due directory does not exists or file permission error.", dir);
             } else {
                 throw e;
             }
@@ -147,21 +161,22 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
 
         if (files == null || files.isEmpty()) {
             // no files in this directory to poll
-            log.trace("No files found in directory: {}", dir);
+            LOG.trace("No files found in directory: {}", dir);
             return true;
         } else {
             // we found some files
-            log.trace("Found {} in directory: {}", files.size(), dir);
+            LOG.trace("Found {} in directory: {}", files.size(), dir);
         }
-        
+
         if (getEndpoint().isPreSort()) {
             Collections.sort(files, (a, b) -> a.getFilename().compareTo(b.getFilename()));
         }
 
         for (SftpRemoteFile file : files) {
 
-            if (log.isTraceEnabled()) {
-                log.trace("SftpFile[fileName={}, longName={}, dir={}]", file.getFilename(), file.getLongname(), file.isDirectory());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("SftpFile[fileName={}, longName={}, dir={}]", file.getFilename(), file.getLongname(),
+                        file.isDirectory());
             }
 
             // check if we can continue polling in files
@@ -174,13 +189,14 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
                 if (endpoint.isRecursive() && depth < endpoint.getMaxDepth() && isValidFile(remote, true, files)) {
                     // recursive scan and add the sub files and folders
                     String subDirectory = file.getFilename();
-                    String path = absolutePath + "/" + subDirectory;
+                    String path = ObjectHelper.isNotEmpty(absolutePath) ? absolutePath + "/" + subDirectory : subDirectory;
                     boolean canPollMore = pollSubDirectory(path, subDirectory, fileList, depth);
                     if (!canPollMore) {
                         return false;
                     }
                 }
-                // we cannot use file.getAttrs().isLink on Windows, so we dont invoke the method
+                // we cannot use file.getAttrs().isLink on Windows, so we dont
+                // invoke the method
                 // just assuming its a file we should poll
             } else {
                 RemoteFile<SftpRemoteFile> remote = asRemoteFile(absolutePath, file, getEndpoint().getCharset());
@@ -204,7 +220,7 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
             }
         }
 
-        log.trace("Done file: {} does not exist", doneFileName);
+        LOG.trace("Done file: {} does not exist", doneFileName);
         return false;
     }
 
@@ -238,7 +254,8 @@ public class SftpConsumer extends RemoteFileConsumer<SftpRemoteFile> {
         // create a pseudo absolute name
         String dir = FileUtil.stripTrailingSeparator(absolutePath);
         String absoluteFileName = FileUtil.stripLeadingSeparator(dir + "/" + file.getFilename());
-        // if absolute start with a leading separator otherwise let it be relative
+        // if absolute start with a leading separator otherwise let it be
+        // relative
         if (absolute) {
             absoluteFileName = "/" + absoluteFileName;
         }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,17 +17,21 @@
 package org.apache.camel.component.ahc;
 
 import org.apache.camel.Endpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AhcComponentClientConfigWithClientConfigUriParametersTest extends AhcComponentClientConfigTest {
 
+    @Override
     @Test
     public void testAhcComponentClientConfig() throws Exception {
         super.testAhcComponentClientConfig();
-        
+
         Endpoint ahcEndpoint = context.getEndpoint(getAhcEndpointUri());
         assertTrue(ahcEndpoint instanceof AhcEndpoint);
-        
+
         assertEquals(1, ((AhcEndpoint) ahcEndpoint).getClientConfig().getMaxConnections());
         assertEquals(3, ((AhcEndpoint) ahcEndpoint).getClientConfig().getMaxRequestRetry());
         assertEquals(true, ((AhcEndpoint) ahcEndpoint).getClientConfig().isFollowRedirect());

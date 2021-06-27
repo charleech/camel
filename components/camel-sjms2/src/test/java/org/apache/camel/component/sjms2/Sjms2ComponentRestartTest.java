@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,36 +16,25 @@
  */
 package org.apache.camel.component.sjms2;
 
-import javax.jms.ConnectionFactory;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class Sjms2ComponentRestartTest extends CamelTestSupport {
+
+    @BindToRegistry("activemqCF")
+    private ActiveMQConnectionFactory connectionFactory
+            = new ActiveMQConnectionFactory("vm://broker?broker.persistent=false&broker.useJmx=false");
 
     @Override
     public boolean isUseRouteBuilder() {
         return false;
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("vm://broker?broker.persistent=false&broker.useJmx=false");
-
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("activemqCF", connectionFactory);
-        return jndi;
-    }
-
     @Test
     public void testRestartWithStopStart() throws Exception {
-        Sjms2Component sjms2Component = new Sjms2Component();
-        sjms2Component.setConnectionFactory((ConnectionFactory) context.getRegistry().lookupByName("activemqCF"));
-        context.addComponent("sjms2", sjms2Component);
-
         RouteBuilder routeBuilder = new RouteBuilder(context) {
             @Override
             public void configure() throws Exception {
@@ -63,8 +52,10 @@ public class Sjms2ComponentRestartTest extends CamelTestSupport {
         // restart
         context.stop();
 
-        // must add our custom component back again
-        context.addComponent("sjms2", sjms2Component);
+        resetMocks();
+
+        // rebind as the registry is cleared on stop
+        context.getRegistry().bind("activemqCF", connectionFactory);
 
         context.start();
 
@@ -80,10 +71,6 @@ public class Sjms2ComponentRestartTest extends CamelTestSupport {
 
     @Test
     public void testRestartWithSuspendResume() throws Exception {
-        Sjms2Component sjms2Component = new Sjms2Component();
-        sjms2Component.setConnectionFactory((ConnectionFactory) context.getRegistry().lookupByName("activemqCF"));
-        context.addComponent("sjms2", sjms2Component);
-
         RouteBuilder routeBuilder = new RouteBuilder(context) {
             @Override
             public void configure() throws Exception {
@@ -100,6 +87,7 @@ public class Sjms2ComponentRestartTest extends CamelTestSupport {
 
         // restart
         context.suspend();
+        resetMocks();
         context.resume();
 
         getMockEndpoint("mock:test").expectedMessageCount(1);

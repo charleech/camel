@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.apache.camel.component.atmos.AtmosConfiguration;
 import org.apache.camel.component.atmos.util.AtmosException;
 import org.apache.camel.component.atmos.util.AtmosOperation;
+
 import static org.apache.camel.component.atmos.util.AtmosConstants.ATMOS_FILE_SEPARATOR;
 
 public final class AtmosConfigurationValidator {
@@ -37,7 +38,7 @@ public final class AtmosConfigurationValidator {
     /**
      * Validate the parameters passed in the incoming url.
      *
-     * @param configuration object containing the parameters.
+     * @param  configuration  object containing the parameters.
      * @throws AtmosException
      */
     public static void validate(AtmosConfiguration configuration) throws AtmosException {

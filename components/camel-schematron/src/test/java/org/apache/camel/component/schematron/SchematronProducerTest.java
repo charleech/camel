@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,21 +22,23 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import net.sf.saxon.TransformerFactoryImpl;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.component.schematron.constant.Constants;
 import org.apache.camel.component.schematron.processor.ClassPathURIResolver;
 import org.apache.camel.component.schematron.processor.TemplatesFactory;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Schematron Producer Unit Test.
@@ -45,12 +47,13 @@ public class SchematronProducerTest extends CamelTestSupport {
 
     private static SchematronProducer producer;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUP() {
         SchematronEndpoint endpoint = new SchematronEndpoint();
         TransformerFactory fac = new TransformerFactoryImpl();
         fac.setURIResolver(new ClassPathURIResolver(Constants.SCHEMATRON_TEMPLATES_ROOT_DIR, endpoint.getUriResolver()));
-        Templates templates = TemplatesFactory.newInstance().getTemplates(ClassLoader.getSystemResourceAsStream("sch/schematron-1.sch"), fac);
+        Templates templates = TemplatesFactory.newInstance()
+                .getTemplates(ClassLoader.getSystemResourceAsStream("sch/schematron-1.sch"), fac);
         endpoint.setRules(templates);
         producer = new SchematronProducer(endpoint);
     }
@@ -64,7 +67,7 @@ public class SchematronProducerTest extends CamelTestSupport {
         producer.process(exc);
 
         // assert
-        assertTrue(exc.getOut().getHeader(Constants.VALIDATION_STATUS).equals(Constants.SUCCESS));
+        assertEquals(Constants.SUCCESS, exc.getMessage().getHeader(Constants.VALIDATION_STATUS));
     }
 
     @Test
@@ -76,32 +79,34 @@ public class SchematronProducerTest extends CamelTestSupport {
         producer.process(exc);
 
         // assert
-        assertTrue(exc.getOut().getHeader(Constants.VALIDATION_STATUS).equals(Constants.FAILED));
+        assertEquals(Constants.FAILED, exc.getMessage().getHeader(Constants.VALIDATION_STATUS));
 
     }
 
     @Test
     public void testProcessValidXMLAsSource() throws Exception {
         Exchange exc = new DefaultExchange(context, ExchangePattern.InOut);
-        exc.getIn().setBody(new SAXSource(getXMLReader(), new InputSource(ClassLoader.getSystemResourceAsStream("xml/article-1.xml"))));
+        exc.getIn().setBody(
+                new SAXSource(getXMLReader(), new InputSource(ClassLoader.getSystemResourceAsStream("xml/article-1.xml"))));
 
         // process xml payload
         producer.process(exc);
 
         // assert
-        assertTrue(exc.getOut().getHeader(Constants.VALIDATION_STATUS).equals(Constants.SUCCESS));
+        assertEquals(Constants.SUCCESS, exc.getMessage().getHeader(Constants.VALIDATION_STATUS));
     }
 
     @Test
     public void testProcessInValidXMLAsSource() throws Exception {
         Exchange exc = new DefaultExchange(context, ExchangePattern.InOut);
-        exc.getIn().setBody(new SAXSource(getXMLReader(), new InputSource(ClassLoader.getSystemResourceAsStream("xml/article-2.xml"))));
+        exc.getIn().setBody(
+                new SAXSource(getXMLReader(), new InputSource(ClassLoader.getSystemResourceAsStream("xml/article-2.xml"))));
 
         // process xml payload
         producer.process(exc);
 
         // assert
-        assertTrue(exc.getOut().getHeader(Constants.VALIDATION_STATUS).equals(Constants.FAILED));
+        assertEquals(Constants.FAILED, exc.getMessage().getHeader(Constants.VALIDATION_STATUS));
 
     }
 

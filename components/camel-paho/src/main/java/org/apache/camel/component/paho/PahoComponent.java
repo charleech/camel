@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,83 +20,66 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
+import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.apache.camel.spi.Metadata;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttClient;
 
 /**
- * Component to integrate with the Eclispe Paho MQTT library.
+ * Component to integrate with the Eclipse Paho MQTT library.
  */
 @Component("paho")
 public class PahoComponent extends DefaultComponent {
 
-    private String brokerUrl;
-    private String clientId;
+    @Metadata
+    private PahoConfiguration configuration = new PahoConfiguration();
+
     @Metadata(label = "advanced")
-    private MqttConnectOptions connectOptions;
-    
+    private MqttClient client;
+
     public PahoComponent() {
         this(null);
     }
-    
+
     public PahoComponent(CamelContext context) {
         super(context);
-        
+
         registerExtension(new PahoComponentVerifierExtension());
     }
 
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-        PahoEndpoint answer = new PahoEndpoint(uri, remaining, this);
+        // Each endpoint can have its own configuration so make
+        // a copy of the configuration
+        PahoConfiguration configuration = getConfiguration().copy();
 
-        if (brokerUrl != null) {
-            answer.setBrokerUrl(brokerUrl);
-        }
-        if (clientId != null) {
-            answer.setClientId(clientId);
-        }
-        if (connectOptions != null) {
-            answer.setConnectOptions(connectOptions);
-        }
+        PahoEndpoint answer = new PahoEndpoint(uri, remaining, this, configuration);
+        answer.setClient(client);
 
         setProperties(answer, parameters);
         return answer;
     }
 
-    // Getters and setters
-
-    public String getBrokerUrl() {
-        return brokerUrl;
+    public PahoConfiguration getConfiguration() {
+        return configuration;
     }
 
     /**
-     * The URL of the MQTT broker.
+     * To use the shared Paho configuration
      */
-    public void setBrokerUrl(String brokerUrl) {
-        this.brokerUrl = brokerUrl;
+    public void setConfiguration(PahoConfiguration configuration) {
+        this.configuration = configuration;
     }
 
-    public String getClientId() {
-        return clientId;
+    public MqttClient getClient() {
+        return client;
     }
 
     /**
-     * MQTT client identifier.
+     * To use a shared Paho client
      */
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setClient(MqttClient client) {
+        this.client = client;
     }
 
-    public MqttConnectOptions getConnectOptions() {
-        return connectOptions;
-    }
-
-    /**
-     * Client connection options
-     */
-    public void setConnectOptions(MqttConnectOptions connectOptions) {
-        this.connectOptions = connectOptions;
-    }
-    
 }

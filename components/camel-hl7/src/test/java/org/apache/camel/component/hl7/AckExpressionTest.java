@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.hl7;
+
 import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.ErrorCode;
 import ca.uhn.hl7v2.HL7Exception;
@@ -22,11 +23,12 @@ import ca.uhn.hl7v2.model.v24.message.ACK;
 import ca.uhn.hl7v2.model.v24.message.ADT_A01;
 import ca.uhn.hl7v2.model.v24.segment.PID;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.hl7.HL7.ack;
-import static org.apache.camel.component.hl7.HL7.terser;
+import static org.apache.camel.component.hl7.HL7.hl7terser;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AckExpressionTest extends CamelTestSupport {
 
@@ -36,7 +38,7 @@ public class AckExpressionTest extends CamelTestSupport {
         ACK ack = template.requestBody("direct:test1", a01, ACK.class);
         assertEquals("AA", ack.getMSA().getAcknowledgementCode().getValue());
         assertEquals(a01.getMSH().getMessageControlID().getValue(), ack.getMSA().getMessageControlID()
-            .getValue());
+                .getValue());
     }
 
     @Test
@@ -45,7 +47,7 @@ public class AckExpressionTest extends CamelTestSupport {
         ACK ack = template.requestBody("direct:test2", a01, ACK.class);
         assertEquals("CA", ack.getMSA().getAcknowledgementCode().getValue());
         assertEquals(a01.getMSH().getMessageControlID().getValue(), ack.getMSA().getMessageControlID()
-            .getValue());
+                .getValue());
     }
 
     @Test
@@ -54,9 +56,9 @@ public class AckExpressionTest extends CamelTestSupport {
         ACK ack = template.requestBody("direct:test3", a01, ACK.class);
         assertEquals("AE", ack.getMSA().getAcknowledgementCode().getValue());
         assertEquals(a01.getMSH().getMessageControlID().getValue(), ack.getMSA().getMessageControlID()
-            .getValue());
+                .getValue());
         assertEquals(String.valueOf(ErrorCode.APPLICATION_INTERNAL_ERROR.getCode()), ack.getERR()
-            .getErrorCodeAndLocation(0).getCodeIdentifyingError().getIdentifier().getValue());
+                .getErrorCodeAndLocation(0).getCodeIdentifyingError().getIdentifier().getValue());
     }
 
     @Test
@@ -65,11 +67,11 @@ public class AckExpressionTest extends CamelTestSupport {
         ACK ack = template.requestBody("direct:test4", a01, ACK.class);
         assertEquals("AR", ack.getMSA().getAcknowledgementCode().getValue());
         assertEquals(a01.getMSH().getMessageControlID().getValue(), ack.getMSA().getMessageControlID()
-            .getValue());
+                .getValue());
         assertEquals(String.valueOf(ErrorCode.APPLICATION_INTERNAL_ERROR.getCode()), ack.getERR()
-            .getErrorCodeAndLocation(0).getCodeIdentifyingError().getIdentifier().getValue());
+                .getErrorCodeAndLocation(0).getCodeIdentifyingError().getIdentifier().getValue());
         assertEquals("Problem!", ack.getERR().getErrorCodeAndLocation(0).getCodeIdentifyingError()
-            .getAlternateText().getValue());
+                .getAlternateText().getValue());
     }
 
     @Test
@@ -78,11 +80,11 @@ public class AckExpressionTest extends CamelTestSupport {
         ACK ack = template.requestBody("direct:test5", a01, ACK.class);
         assertEquals("AR", ack.getMSA().getAcknowledgementCode().getValue());
         assertEquals(a01.getMSH().getMessageControlID().getValue(), ack.getMSA().getMessageControlID()
-            .getValue());
+                .getValue());
         assertEquals(String.valueOf(ErrorCode.DATA_TYPE_ERROR.getCode()), ack.getERR().getErrorCodeAndLocation(0)
-            .getCodeIdentifyingError().getIdentifier().getValue());
+                .getCodeIdentifyingError().getIdentifier().getValue());
         assertEquals("Problem!", ack.getERR().getErrorCodeAndLocation(0).getCodeIdentifyingError()
-            .getAlternateText().getValue());
+                .getAlternateText().getValue());
     }
 
     @Override
@@ -93,10 +95,10 @@ public class AckExpressionTest extends CamelTestSupport {
                 from("direct:test1").transform(ack());
                 from("direct:test2").transform(ack(AcknowledgmentCode.CA));
                 from("direct:test3").onException(HL7Exception.class).handled(true).transform(ack()).end()
-                    .transform(terser("/.BLORG"));
+                        .transform(hl7terser("/.BLORG"));
                 from("direct:test4").onException(HL7Exception.class).handled(true)
-                    .transform(ack(AcknowledgmentCode.AR, "Problem!", ErrorCode.APPLICATION_INTERNAL_ERROR)).end()
-                    .transform(terser("/.BLORG"));
+                        .transform(ack(AcknowledgmentCode.AR, "Problem!", ErrorCode.APPLICATION_INTERNAL_ERROR)).end()
+                        .transform(hl7terser("/.BLORG"));
                 from("direct:test5").transform(ack(AcknowledgmentCode.AR, "Problem!", ErrorCode.DATA_TYPE_ERROR));
             }
         };

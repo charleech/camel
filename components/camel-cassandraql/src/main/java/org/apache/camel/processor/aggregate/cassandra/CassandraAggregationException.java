@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,8 @@ import org.apache.camel.Exchange;
  * Error occurred in Cassandra Aggregation repository
  */
 public class CassandraAggregationException extends CamelExecutionException {
+
+    private static final long serialVersionUID = 3847101273513627461L;
 
     public CassandraAggregationException(String message, Exchange exchange, Throwable cause) {
         super(message, exchange, cause);

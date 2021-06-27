@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.apache.camel.component.gora;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -26,9 +27,10 @@ import org.apache.gora.persistency.Persistent;
 import org.apache.gora.store.DataStore;
 
 /**
- * The gora component allows you to work with NoSQL databases using the Apache Gora framework.
+ * Access NoSQL databases using the Apache Gora framework.
  */
-@UriEndpoint(firstVersion = "2.14.0", scheme = "gora", title = "Gora", syntax = "gora:name", label = "database,hadoop,nosql")
+@UriEndpoint(firstVersion = "2.14.0", scheme = "gora", title = "Gora", syntax = "gora:name",
+             category = { Category.DATABASE, Category.NOSQL, Category.BIGDATA })
 public class GoraEndpoint extends DefaultEndpoint {
 
     /**
@@ -65,17 +67,13 @@ public class GoraEndpoint extends DefaultEndpoint {
         return new GoraProducer(this, this.configuration, this.dataStore);
     }
 
+    @Override
     public Consumer createConsumer(final Processor processor) throws Exception {
         return new GoraConsumer(this, processor, this.configuration, this.dataStore);
     }
 
     public GoraConfiguration getConfiguration() {
         return configuration;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
 }

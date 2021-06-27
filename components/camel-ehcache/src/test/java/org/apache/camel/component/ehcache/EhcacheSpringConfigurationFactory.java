@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,11 +51,11 @@ public class EhcacheSpringConfigurationFactory extends AbstractFactoryBean<Cache
     @Override
     protected CacheConfiguration createInstance() throws Exception {
         return CacheConfigurationBuilder.newCacheConfigurationBuilder(
-            keyType,
-            valueType,
-            ResourcePoolsBuilder.newResourcePoolsBuilder()
-                .heap(100, EntryUnit.ENTRIES)
-                .offheap(1, MemoryUnit.MB))
-            .build();
+                keyType,
+                valueType,
+                ResourcePoolsBuilder.newResourcePoolsBuilder()
+                        .heap(100, EntryUnit.ENTRIES)
+                        .offheap(1, MemoryUnit.MB))
+                .build();
     }
 }

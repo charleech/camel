@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,37 +21,40 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Handler;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.spring.SpringRouteBuilder;
-import org.junit.Test;
+import org.apache.camel.spring.spi.TransactionErrorHandlerBuilder;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class JMXTXUseOriginalBodyWithTXErrorHandlerTest extends JMXTXUseOriginalBodyTest {
 
-    @EndpointInject(uri = "mock:end")
+    @EndpointInject("mock:end")
     protected MockEndpoint endpoint;
 
-    @EndpointInject(uri = "mock:error")
+    @EndpointInject("mock:error")
     protected MockEndpoint error;
 
-    @EndpointInject(uri = "mock:checkpoint1")
+    @EndpointInject("mock:checkpoint1")
     protected MockEndpoint checkpoint1;
 
-    @EndpointInject(uri = "mock:checkpoint2")
+    @EndpointInject("mock:checkpoint2")
     protected MockEndpoint checkpoint2;
 
-    @Produce(uri = "activemq:start")
+    @Produce("activemq:start")
     protected ProducerTemplate start;
 
-    @Produce(uri = "activemq:broken")
+    @Produce("activemq:broken")
     protected ProducerTemplate broken;
 
     @Override
     protected AbstractXmlApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/org/apache/camel/component/jms/tx/JMXTXUseOriginalBodyWithTXErrorHandlerTest.xml");
+        return new ClassPathXmlApplicationContext(
+                "/org/apache/camel/component/jms/tx/JMXTXUseOriginalBodyWithTXErrorHandlerTest.xml");
     }
 
+    @Override
     @Test
     public void testWithConstant() throws InterruptedException {
         endpoint.expectedMessageCount(0);
@@ -64,6 +67,7 @@ public class JMXTXUseOriginalBodyWithTXErrorHandlerTest extends JMXTXUseOriginal
         assertMockEndpointsSatisfied();
     }
 
+    @Override
     @Test
     public void testWithBean() throws InterruptedException {
         endpoint.expectedMessageCount(0);
@@ -83,12 +87,11 @@ public class JMXTXUseOriginalBodyWithTXErrorHandlerTest extends JMXTXUseOriginal
         }
     }
 
-
-    public static class TestRoutes extends SpringRouteBuilder {
+    public static class TestRoutes extends RouteBuilder {
 
         @Override
         public void configure() throws Exception {
-            errorHandler(transactionErrorHandler());
+            errorHandler(new TransactionErrorHandlerBuilder());
 
             onException(Exception.class)
                     .handled(true)

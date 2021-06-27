@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ public final class Constants {
     public static final String SCHEMATRON_TEMPLATES_ROOT_DIR = "iso-schematron-xslt2";
     public static final String SAXON_TRANSFORMER_FACTORY_CLASS_NAME = "net.sf.saxon.TransformerFactoryImpl";
     public static final String LINE_NUMBERING = "http://saxon.sf.net/feature/linenumbering";
-
 
     private Constants() {
         throw new IllegalStateException("Utility class should not be instantiated");

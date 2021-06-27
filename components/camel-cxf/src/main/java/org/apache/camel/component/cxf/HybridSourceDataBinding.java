@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,20 +34,20 @@ import org.apache.cxf.databinding.source.XMLStreamDataWriter;
 import org.apache.cxf.jaxb.JAXBDataBinding;
 import org.apache.cxf.service.model.MessagePartInfo;
 
-
 /**
- * This is a hybrid DataBinding of {@link JAXBDataBinding} and {@link org.apache.cxf.databinding.source.SourceDataBinding}.
- * Like the SourceDataBinding, this DataBinding de/serializes parameters as DOMSource objects.  And like the JAXBDataBinding, the 
- * {@link #initialize(org.apache.cxf.service.Service)}
- * method can initialize the service model's message part schema based on the service class in the message part info.  
- * Hence, this DataBinding supports DOMSource object de/serialization without requiring users to provide a WSDL.
+ * This is a hybrid DataBinding of {@link JAXBDataBinding} and
+ * {@link org.apache.cxf.databinding.source.SourceDataBinding}. Like the SourceDataBinding, this DataBinding
+ * de/serializes parameters as DOMSource objects. And like the JAXBDataBinding, the
+ * {@link #initialize(org.apache.cxf.service.Service)} method can initialize the service model's message part schema
+ * based on the service class in the message part info. Hence, this DataBinding supports DOMSource object
+ * de/serialization without requiring users to provide a WSDL.
  */
 public class HybridSourceDataBinding extends JAXBDataBinding {
     private static final Logger LOG = LogUtils.getL7dLogger(SourceDataBinding.class);
-    
+
     public HybridSourceDataBinding() {
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> DataReader<T> createReader(Class<T> cls) {
@@ -62,9 +62,9 @@ public class HybridSourceDataBinding extends JAXBDataBinding {
 
     @Override
     public Class<?>[] getSupportedReaderFormats() {
-        return new Class[] {XMLStreamReader.class, Node.class};
+        return new Class[] { XMLStreamReader.class, Node.class };
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> DataWriter<T> createWriter(Class<T> cls) {
@@ -77,7 +77,7 @@ public class HybridSourceDataBinding extends JAXBDataBinding {
                     }
                     super.write(obj, part, output);
                 }
-                
+
             };
         } else if (cls == Node.class) {
             return (DataWriter<T>) new NodeDataWriter();
@@ -85,10 +85,10 @@ public class HybridSourceDataBinding extends JAXBDataBinding {
             throw new UnsupportedOperationException("The type " + cls.getName() + " is not supported.");
         }
     }
-    
+
     @Override
     public Class<?>[] getSupportedWriterFormats() {
-        return new Class[] {XMLStreamWriter.class, Node.class};
+        return new Class[] { XMLStreamWriter.class, Node.class };
     }
 
 }

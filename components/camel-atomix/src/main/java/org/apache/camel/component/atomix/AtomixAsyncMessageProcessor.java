@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,11 +21,7 @@ import org.apache.camel.Message;
 
 @FunctionalInterface
 public interface AtomixAsyncMessageProcessor {
-    /**
-     * @param message
-     * @param callback
-     * @return
-     * @throws Exception
-     */
+
     boolean process(Message message, AsyncCallback callback) throws Exception;
+
 }

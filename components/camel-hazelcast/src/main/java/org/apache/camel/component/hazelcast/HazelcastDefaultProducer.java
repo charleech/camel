@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.hazelcast;
 
 import org.apache.camel.Exchange;
@@ -27,7 +26,7 @@ public abstract class HazelcastDefaultProducer extends DefaultProducer {
 
     @Override
     public HazelcastDefaultEndpoint getEndpoint() {
-        return (HazelcastDefaultEndpoint)super.getEndpoint();
+        return (HazelcastDefaultEndpoint) super.getEndpoint();
     }
 
     protected HazelcastOperation lookupOperation(Exchange exchange) {

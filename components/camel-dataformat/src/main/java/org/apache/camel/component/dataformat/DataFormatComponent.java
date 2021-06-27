@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,12 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
-import org.apache.camel.support.EndpointHelper;
+import org.apache.camel.support.PropertyBindingSupport;
 import org.apache.camel.util.StringHelper;
 
 /**
- * The <a href="http://camel.apache.org/dataformat-component.html">Data Format Component</a> enables using <a href="https://camel.apache.org/data-format.html">Data Format</a> as a component.
+ * The <a href="http://camel.apache.org/dataformat-component.html">Data Format Component</a> enables using
+ * <a href="https://camel.apache.org/data-format.html">Data Format</a> as a component.
  */
 @Component("dataformat")
 public class DataFormatComponent extends DefaultComponent {
@@ -36,26 +37,22 @@ public class DataFormatComponent extends DefaultComponent {
 
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-        String name = StringHelper.before(remaining, ":");
-
-        // try to lookup data format in the registry or create it from resource
-        DataFormat df = getCamelContext().resolveDataFormat(name);
-        if (df == null) {
-            // if not, try to find a factory in the registry
-            df = getCamelContext().createDataFormat(name);
-        }
-        if (df == null) {
-            throw new IllegalArgumentException("Cannot find data format with name: " + name);
-        }
-
         String operation = StringHelper.after(remaining, ":");
         if (!"marshal".equals(operation) && !"unmarshal".equals(operation)) {
             throw new IllegalArgumentException("Operation must be either marshal or unmarshal, was: " + operation);
         }
 
-        // set reference properties first as they use # syntax that fools the regular properties setter
-        EndpointHelper.setReferenceProperties(getCamelContext(), df, parameters);
-        EndpointHelper.setProperties(getCamelContext(), df, parameters);
+        // create new data format as it is configured from the given parameters
+        String name = StringHelper.before(remaining, ":");
+        DataFormat df = getCamelContext().createDataFormat(name);
+        if (df == null) {
+            // if not, try to lookup existing data format
+            df = getCamelContext().resolveDataFormat(name);
+        }
+        if (df == null) {
+            throw new IllegalArgumentException("Cannot find data format with name: " + name);
+        }
+        PropertyBindingSupport.bindProperties(getCamelContext(), df, parameters);
 
         DataFormatEndpoint endpoint = new DataFormatEndpoint(uri, this, df);
         endpoint.setOperation(operation);

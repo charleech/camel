@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,30 +29,28 @@ public class PersonProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(PersonProcessor.class);
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         LOG.info("processing exchange in camel");
 
-        BindingOperationInfo boi = (BindingOperationInfo)exchange.getProperty(BindingOperationInfo.class.getName());
+        BindingOperationInfo boi = (BindingOperationInfo) exchange.getProperty(BindingOperationInfo.class.getName());
         if (boi != null) {
             LOG.info("boi.isUnwrapped" + boi.isUnwrapped());
         }
 
-        GetPerson person =  exchange.getIn().getBody(GetPerson.class);
+        GetPerson person = exchange.getIn().getBody(GetPerson.class);
         String personId = person.getPersonId();
         GetPersonResponse response = new GetPersonResponse();
 
         if (personId == null || personId.length() == 0) {
             LOG.info("person id 123, so throwing exception");
             // Try to throw out the soap fault message
-            org.apache.camel.non_wrapper.types.UnknownPersonFault personFault =
-                new org.apache.camel.non_wrapper.types.UnknownPersonFault();
+            org.apache.camel.non_wrapper.types.UnknownPersonFault personFault
+                    = new org.apache.camel.non_wrapper.types.UnknownPersonFault();
             personFault.setPersonId("");
-            org.apache.camel.non_wrapper.UnknownPersonFault fault =
-                new org.apache.camel.non_wrapper.UnknownPersonFault("Get the null value of person name", personFault);
-            // Since camel has its own exception handler framework, we can't throw the exception to trigger it
-            // We just set the fault message in the exchange for camel-cxf component handling and return
-            exchange.getOut().setFault(true);
-            exchange.getOut().setBody(fault);
+            org.apache.camel.non_wrapper.UnknownPersonFault fault
+                    = new org.apache.camel.non_wrapper.UnknownPersonFault("Get the null value of person name", personFault);
+            exchange.getMessage().setBody(fault);
             return;
         }
         response.setPersonId(personId);
@@ -61,7 +59,7 @@ public class PersonProcessor implements Processor {
         LOG.info("setting Bonjour as the response");
         // Set the response message, first element is the return value of the operation,
         // the others are the holders of method parameters
-        exchange.getOut().setBody(new Object[] {response});
+        exchange.getMessage().setBody(new Object[] { response });
     }
 
 }

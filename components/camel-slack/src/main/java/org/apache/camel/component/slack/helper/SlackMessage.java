@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ public class SlackMessage {
     private String text;
     private String channel;
     private String username;
+    private String user;
     private String iconUrl;
     private String iconEmoji;
     private List<Attachment> attachments;
@@ -51,6 +52,14 @@ public class SlackMessage {
         this.username = username;
     }
 
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
     public String getIconUrl() {
         return iconUrl;
     }
@@ -75,7 +84,7 @@ public class SlackMessage {
         this.attachments = attachments;
     }
 
-    public class Attachment {
+    public static class Attachment {
 
         private String fallback;
         private String color;
@@ -213,7 +222,7 @@ public class SlackMessage {
             this.fields = fields;
         }
 
-        public class Field {
+        public static class Field {
 
             private String title;
             private String value;
@@ -222,18 +231,23 @@ public class SlackMessage {
             public String getTitle() {
                 return title;
             }
+
             public void setTitle(String title) {
                 this.title = title;
             }
+
             public String getValue() {
                 return value;
             }
+
             public void setValue(String value) {
                 this.value = value;
             }
+
             public Boolean isShortValue() {
                 return shortValue;
             }
+
             public void setShortValue(Boolean shortValue) {
                 this.shortValue = shortValue;
             }
@@ -241,4 +255,3 @@ public class SlackMessage {
     }
 
 }
-

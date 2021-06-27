@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -102,13 +102,13 @@ abstract class EtcdServiceDiscovery extends DefaultServiceDiscovery {
 
                 if (Objects.nonNull(response.node) && !response.node.nodes.isEmpty()) {
                     servers = response.node.nodes.stream()
-                        .map(node -> node.value)
-                        .filter(ObjectHelper::isNotEmpty)
-                        .map(this::nodeFromString)
-                        .filter(Objects::nonNull)
-                        .filter(filter)
-                        .sorted(EtcdServiceDefinition.COMPARATOR)
-                        .collect(Collectors.toList());
+                            .map(node -> node.value)
+                            .filter(ObjectHelper::isNotEmpty)
+                            .map(this::nodeFromString)
+                            .filter(Objects::nonNull)
+                            .filter(filter)
+                            .sorted(EtcdServiceDefinition.COMPARATOR)
+                            .collect(Collectors.toList());
                 }
             } catch (Exception e) {
                 throw new RuntimeCamelException(e);

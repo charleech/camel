@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apache.camel.tests.bundles</groupId>
         <artifactId>bundles-pom</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.10.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.apache.camel.tests</groupId>
@@ -43,14 +43,15 @@
             org.jvnet.mock_javamail*
         </camel.osgi.export.pkg>
         <camel.osgi.import.pkg>
-              *
+            *
         </camel.osgi.import.pkg>
         <camel.osgi.private.pkg>
             META-INF;-split-package:=merge-first,
             META-INF.services;-split-package:=merge-first
             META-INF.maven.org.apache.camel.tests*;-split-package:=merge-first
         </camel.osgi.private.pkg>
-        <camel.osgi.export>${camel.osgi.export.pkg}*;version=${pkgVersion};-split-package:=merge-first</camel.osgi.export>
+        <camel.osgi.export>${camel.osgi.export.pkg}*;version=${pkgVersion};-split-package:=merge-first
+        </camel.osgi.export>
     </properties>
 
     <dependencies>
@@ -60,16 +61,16 @@
             <artifactId>${pkgArtifactId}</artifactId>
             <version>${pkgVersion}</version>
             <exclusions>
-                 <exclusion>
-                     <groupId>javax.mail</groupId>
-                     <artifactId>mail</artifactId>
-                 </exclusion>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mail</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-            <version>${javax-mail-version}</version>
+            <artifactId>jakarta.mail</artifactId>
+            <version>${jakarta-mail-version}</version>
         </dependency>
     </dependencies>
 
@@ -108,21 +109,21 @@
         </plugins>
     </build>
 
-   <profiles>
-    <profile>
-      <id>apache-release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-                <failOnError>false</failOnError>
-            </configuration>
-         </plugin>
-       </plugins>
-     </build>
-    </profile>
-   </profiles>
+    <profiles>
+        <profile>
+            <id>apache-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

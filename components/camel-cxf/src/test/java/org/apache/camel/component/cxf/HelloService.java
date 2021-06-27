@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ public interface HelloService {
     String echo(String text) throws Exception;
 
     Boolean echoBoolean(Boolean bool);
-    
+
     String complexParameters(List<String> par1, List<String> par2);
-    
+
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.spi.HeaderFilterStrategy;
 
 /**
- * Jetty specific binding to parse the response when using {@link org.apache.camel.component.jetty.JettyHttpProducer}
+ * Jetty specific binding to parse the request/response from Jetty and Camel.
  */
 public interface JettyHttpBinding {
 
     /**
      * Parses the response from the Jetty client.
      *
-     * @param exchange     the Exchange which to populate with the response
-     * @param httpExchange the response from the Jetty client
-     * @throws Exception is thrown if error parsing response
+     * @param  exchange     the Exchange which to populate with the response
+     * @param  httpExchange the response from the Jetty client
+     * @throws Exception    is thrown if error parsing response
      */
     void populateResponse(Exchange exchange, JettyContentExchange httpExchange) throws Exception;
 
@@ -50,38 +50,36 @@ public interface JettyHttpBinding {
     void setHeaderFilterStrategy(HeaderFilterStrategy headerFilterStrategy);
 
     /**
-     * Whether to throw {@link org.apache.camel.http.common.HttpOperationFailedException}
-     * in case of response code != 200.
+     * Whether to throw {@link org.apache.camel.http.common.HttpOperationFailedException} in case of response code !=
+     * 200.
      *
      * @param throwExceptionOnFailure <tt>true</tt> to throw exception
      */
     void setThrowExceptionOnFailure(boolean throwExceptionOnFailure);
 
     /**
-     * Whether to throw {@link org.apache.camel.http.common.HttpOperationFailedException}
-     * in case of response code != 200.
+     * Whether to throw {@link org.apache.camel.http.common.HttpOperationFailedException} in case of response code !=
+     * 200.
      *
      * @return <tt>true</tt> to throw exception
      */
     boolean isThrowExceptionOnFailure();
 
     /**
-     * Whether to transfer exception back as a serialized java object
-     * if processing failed due to an exception
+     * Whether to transfer exception back as a serialized java object if processing failed due to an exception
      * <p/>
-     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming
-     * data from the request to Java and that can be a potential security risk.
+     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming data from
+     * the request to Java and that can be a potential security risk.
      *
      * @param transferException <tt>true</tt> to transfer exception
      */
     void setTransferException(boolean transferException);
 
     /**
-     * Whether to transfer exception back as a serialized java object
-     * if processing failed due to an exception
+     * Whether to transfer exception back as a serialized java object if processing failed due to an exception
      * <p/>
-     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming
-     * data from the request to Java and that can be a potential security risk.
+     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming data from
+     * the request to Java and that can be a potential security risk.
      *
      * @return <tt>true</tt> to transfer exception
      */
@@ -90,8 +88,8 @@ public interface JettyHttpBinding {
     /**
      * Whether to allow java serialization when a request uses context-type=application/x-java-serialized-object
      * <p/>
-     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming
-     * data from the request to Java and that can be a potential security risk.
+     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming data from
+     * the request to Java and that can be a potential security risk.
      *
      * @param allowJavaSerializedObject <tt>true</tt> to allow serializing java objects
      */
@@ -100,8 +98,8 @@ public interface JettyHttpBinding {
     /**
      * Whether to allow java serialization when a request uses context-type=application/x-java-serialized-object
      * <p/>
-     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming
-     * data from the request to Java and that can be a potential security risk.
+     * This is by default turned off. If you enable this then be aware that Java will deserialize the incoming data from
+     * the request to Java and that can be a potential security risk.
      */
     boolean isAllowJavaSerializedObject();
 

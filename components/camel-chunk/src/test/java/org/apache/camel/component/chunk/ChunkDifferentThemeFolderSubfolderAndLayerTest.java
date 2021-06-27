@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,25 +22,25 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for {@link ChunkComponent} and {@link ChunkEndpoint}
  */
 public class ChunkDifferentThemeFolderSubfolderAndLayerTest extends CamelTestSupport {
 
-    @EndpointInject(uri = "mock:endSimple")
+    @EndpointInject("mock:endSimple")
     protected MockEndpoint endSimpleMock;
 
-    @Produce(uri = "direct:startSimple")
+    @Produce("direct:startSimple")
     protected ProducerTemplate startSimpleProducerTemplate;
 
     /**
      * Test using themeFolder, themeSubfolder and themeLayer parameters
      */
     @Test
-    public void testChunkSubfolder() throws Exception {
+    void testChunkSubfolder() throws Exception {
         // Prepare
         Exchange exchange = createExchangeWithBody("The Body");
         exchange.getIn().setHeader("name", "Andrew");
@@ -53,7 +53,7 @@ public class ChunkDifferentThemeFolderSubfolderAndLayerTest extends CamelTestSup
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
             public void configure() {
@@ -64,4 +64,3 @@ public class ChunkDifferentThemeFolderSubfolderAndLayerTest extends CamelTestSup
         };
     }
 }
-

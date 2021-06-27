@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,9 +28,9 @@ import org.apache.camel.Expression;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.WrappedFile;
+import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.ObjectHelper;
-import org.apache.camel.support.ResourceHelper;
 import org.beanio.BeanReader;
 import org.beanio.BeanReaderErrorHandler;
 import org.beanio.StreamFactory;
@@ -38,8 +38,8 @@ import org.beanio.StreamFactory;
 import static org.apache.camel.dataformat.beanio.BeanIOHelper.getOrCreateBeanReaderErrorHandler;
 
 /**
- * You can use {@link BeanIOSplitter} with the Camel Splitter EIP to split big payloads
- * using a stream mode to avoid reading the entire content into memory.
+ * You can use {@link BeanIOSplitter} with the Camel Splitter EIP to split big payloads using a stream mode to avoid
+ * reading the entire content into memory.
  */
 public class BeanIOSplitter implements Expression {
 

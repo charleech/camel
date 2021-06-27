@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,7 @@ import javax.xml.crypto.dsig.Reference;
 import org.apache.camel.component.xmlsecurity.api.DefaultValidationFailedHandler;
 
 /**
- * Validation failed handler which ignores manifest reference validation
- * failures.
+ * Validation failed handler which ignores manifest reference validation failures.
  */
 public class ValidationFailedHandlerIgnoreManifestFailures extends DefaultValidationFailedHandler {
 

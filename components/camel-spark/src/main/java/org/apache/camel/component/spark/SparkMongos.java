@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,8 @@ public final class SparkMongos {
     private SparkMongos() {
     }
 
-    public static JavaPairRDD<Object, BSONObject> mongoRdd(JavaSparkContext sparkContext, String mongoHost, long mongoPort, String db, String collection) {
+    public static JavaPairRDD<Object, BSONObject> mongoRdd(
+            JavaSparkContext sparkContext, String mongoHost, long mongoPort, String db, String collection) {
         Configuration mongodbConfig = new Configuration();
         mongodbConfig.set("mongo.job.input.format", "com.mongodb.hadoop.MongoInputFormat");
         mongodbConfig.set("mongo.input.uri", String.format("mongodb://%s:%d/%s.%s", mongoHost, mongoPort, db, collection));

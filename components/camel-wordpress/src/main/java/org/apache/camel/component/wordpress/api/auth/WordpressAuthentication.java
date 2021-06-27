@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,8 @@ package org.apache.camel.component.wordpress.api.auth;
 /**
  * Wordpress Authentication Mecanism needed to perform privileged actions like create, update or delete a post.
  * 
- * @see <a href= "https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/">Wordpress API Authentication</a>
+ * @see   <a href= "https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/">Wordpress API
+ *        Authentication</a>
  * @since 0.1
  */
 public interface WordpressAuthentication {

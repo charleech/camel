@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.bonita.api;
 
 import java.io.Serializable;
@@ -25,15 +24,13 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
-import static javax.ws.rs.client.Entity.entity;
-
 import org.apache.camel.component.bonita.api.model.CaseCreationResponse;
 import org.apache.camel.component.bonita.api.model.ProcessDefinitionResponse;
 import org.apache.camel.component.bonita.api.util.BonitaAPIConfig;
 import org.apache.camel.component.bonita.api.util.BonitaAPIUtil;
 import org.apache.camel.util.ObjectHelper;
 
-
+import static javax.ws.rs.client.Entity.entity;
 
 public class BonitaAPI {
 
@@ -41,7 +38,6 @@ public class BonitaAPI {
     private WebTarget webTarget;
 
     protected BonitaAPI(BonitaAPIConfig bonitaApiConfig, WebTarget webTarget) {
-        super();
         this.bonitaApiConfig = bonitaApiConfig;
         this.webTarget = webTarget;
 
@@ -56,11 +52,10 @@ public class BonitaAPI {
             throw new IllegalArgumentException("processName is empty.");
         }
         WebTarget resource = getBaseResource().path("process").queryParam("s", processName);
-        List<ProcessDefinitionResponse> listProcess =
-                resource.request().accept(MediaType.APPLICATION_JSON)
-                        .get(new GenericType<List<ProcessDefinitionResponse>>() {
-                        });
-        if (listProcess.size() > 0) {
+        List<ProcessDefinitionResponse> listProcess = resource.request().accept(MediaType.APPLICATION_JSON)
+                .get(new GenericType<List<ProcessDefinitionResponse>>() {
+                });
+        if (!listProcess.isEmpty()) {
             return listProcess.get(0);
         } else {
             throw new RuntimeException(
@@ -68,8 +63,10 @@ public class BonitaAPI {
         }
     }
 
-    public CaseCreationResponse startCase(ProcessDefinitionResponse processDefinition,
-            Map<String, Serializable> rawInputs) throws Exception {
+    public CaseCreationResponse startCase(
+            ProcessDefinitionResponse processDefinition,
+            Map<String, Serializable> rawInputs)
+            throws Exception {
         if (processDefinition == null) {
             throw new IllegalArgumentException("ProcessDefinition is null");
         }

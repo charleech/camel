@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,18 +18,18 @@ package org.apache.camel.component.atmos.dto;
 
 import org.apache.camel.Exchange;
 
-
 public abstract class AtmosResult {
 
     protected Object resultEntries;
 
     /**
      * Populate the camel exchange with the results from atmos method invocations.
+     * 
      * @param exchange
      */
     public abstract void populateExchange(Exchange exchange);
 
-    public Object getResultEntries()  {
+    public Object getResultEntries() {
         return resultEntries;
     }
 

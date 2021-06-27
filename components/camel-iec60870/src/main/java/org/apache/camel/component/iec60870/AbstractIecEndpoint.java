@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,6 @@ package org.apache.camel.component.iec60870;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Objects.requireNonNull;
-
 import org.apache.camel.component.iec60870.AbstractConnectionMultiplexor.Handle;
 import org.apache.camel.component.iec60870.client.ClientOptions;
 import org.apache.camel.spi.Metadata;
@@ -29,6 +27,8 @@ import org.apache.camel.support.DefaultComponent;
 import org.apache.camel.support.DefaultEndpoint;
 import org.eclipse.neoscada.protocol.iec60870.ProtocolOptions;
 import org.eclipse.neoscada.protocol.iec60870.client.data.DataModuleOptions;
+
+import static java.util.Objects.requireNonNull;
 
 public abstract class AbstractIecEndpoint<T extends AbstractConnectionMultiplexor> extends DefaultEndpoint {
 
@@ -71,11 +71,32 @@ public abstract class AbstractIecEndpoint<T extends AbstractConnectionMultiplexo
 
     private final AtomicReference<Handle> connectionHandle = new AtomicReference<>();
 
-    public AbstractIecEndpoint(final String uri, final DefaultComponent component, final T connection, final ObjectAddress address) {
+    public AbstractIecEndpoint(final String uri, final DefaultComponent component, final T connection,
+                               final ObjectAddress address) {
         super(uri, component);
 
         this.connection = requireNonNull(connection);
         this.address = requireNonNull(address);
+    }
+
+    public ClientOptions getConnectionOptions() {
+        return connectionOptions;
+    }
+
+    public ProtocolOptions getProtocolOptions() {
+        return protocolOptions;
+    }
+
+    public DataModuleOptions getDataModuleOptions() {
+        return dataModuleOptions;
+    }
+
+    public String getConnectionId() {
+        return connectionId;
+    }
+
+    public void setConnectionId(String connectionId) {
+        this.connectionId = connectionId;
     }
 
     public ObjectAddress getAddress() {
@@ -99,11 +120,6 @@ public abstract class AbstractIecEndpoint<T extends AbstractConnectionMultiplexo
 
     protected T getConnection() {
         return this.connection;
-    }
-
-    @Override
-    public boolean isSingleton() {
-        return true;
     }
 
 }

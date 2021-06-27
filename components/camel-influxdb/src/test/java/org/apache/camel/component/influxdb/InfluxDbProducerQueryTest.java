@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,15 +24,15 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class InfluxDbProducerQueryTest extends AbstractInfluxDbTest {
 
-    @EndpointInject(uri = "mock:test")
+    @EndpointInject("mock:test")
     MockEndpoint successEndpoint;
 
-    @EndpointInject(uri = "mock:error")
+    @EndpointInject("mock:error")
     MockEndpoint errorEndpoint;
 
     @Override
@@ -58,7 +58,7 @@ public class InfluxDbProducerQueryTest extends AbstractInfluxDbTest {
         };
     }
 
-    @Before
+    @BeforeEach
     public void resetEndpoints() {
         errorEndpoint.reset();
         successEndpoint.reset();

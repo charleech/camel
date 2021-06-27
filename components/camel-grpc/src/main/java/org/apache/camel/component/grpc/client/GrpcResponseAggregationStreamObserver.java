@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ public class GrpcResponseAggregationStreamObserver implements StreamObserver<Obj
     private final Exchange exchange;
     private final AsyncCallback callback;
     private List<Object> responseCollection = new LinkedList<>();
-    
+
     public GrpcResponseAggregationStreamObserver(Exchange exchange, AsyncCallback callback) {
         this.exchange = exchange;
         this.callback = callback;
@@ -50,8 +50,8 @@ public class GrpcResponseAggregationStreamObserver implements StreamObserver<Obj
 
     @Override
     public void onCompleted() {
-        exchange.getOut().setHeaders(exchange.getIn().getHeaders());
-        exchange.getOut().setBody(responseCollection);
+        exchange.getMessage().setHeaders(exchange.getIn().getHeaders());
+        exchange.getMessage().setBody(responseCollection);
         callback.done(false);
     }
 

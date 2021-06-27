@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.helpers.CastUtils;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
-
 
 public class CxfEndpointBeanDefinitionParser extends AbstractCxfBeanDefinitionParser {
 
@@ -61,10 +60,10 @@ public class CxfEndpointBeanDefinitionParser extends AbstractCxfBeanDefinitionPa
         if ("endpointName".equals(name) || "serviceName".equals(name)) {
             if (isSpringPlaceHolder(val)) {
                 // set the property with the String value directly
-                mapToProperty(bean, name + "String", val);
+                mapToProperty(bean, name, val);
             } else {
                 QName q = parseQName(e, val);
-                bean.addPropertyValue(name, q);
+                bean.addPropertyValue(name + "AsQName", q);
             }
         } else {
             mapToProperty(bean, name, val);
@@ -83,9 +82,9 @@ public class CxfEndpointBeanDefinitionParser extends AbstractCxfBeanDefinitionPa
         } else if ("binding".equals(name)) {
             setFirstChildAsProperty(el, ctx, bean, "bindingConfig");
         } else if ("inInterceptors".equals(name) || "inFaultInterceptors".equals(name)
-            || "outInterceptors".equals(name) || "outFaultInterceptors".equals(name)
-            || "features".equals(name) || "schemaLocations".equals(name)
-            || "handlers".equals(name)) {
+                || "outInterceptors".equals(name) || "outFaultInterceptors".equals(name)
+                || "features".equals(name) || "schemaLocations".equals(name)
+                || "handlers".equals(name)) {
             List<?> list = ctx.getDelegate().parseListElement(el, bean.getBeanDefinition());
             bean.addPropertyValue(name, list);
         } else {

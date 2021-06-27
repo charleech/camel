@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,19 +26,20 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore("Not yet migrated to work with Jetty 9")
+@Disabled("Not yet migrated to work with Jetty 9")
 public class WssProducerTest extends WsProducerTestBase {
     protected static final String PW = "changeit";
-    
+
     @Override
     protected Connector getConnector() throws Exception {
 
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setSslContext(defineSSLContextServerParameters().createSSLContext(camelContext));
 
-        ServerConnector https = new ServerConnector(server,
+        ServerConnector https = new ServerConnector(
+                server,
                 new SslConnectionFactory(sslContextFactory, null));
         return https;
     }
@@ -57,7 +58,7 @@ public class WssProducerTest extends WsProducerTestBase {
     private static SSLContextParameters defineSSLContextServerParameters() {
 
         KeyStoreParameters ksp = new KeyStoreParameters();
-        ksp.setResource("jsse/localhost.ks");
+        ksp.setResource("jsse/localhost.p12");
         ksp.setPassword(PW);
 
         KeyManagersParameters kmp = new KeyManagersParameters();
@@ -82,7 +83,7 @@ public class WssProducerTest extends WsProducerTestBase {
 
     private static SSLContextParameters defineSSLContextClientParameters() {
         KeyStoreParameters ksp = new KeyStoreParameters();
-        ksp.setResource("jsse/localhost.ks");
+        ksp.setResource("jsse/localhost.p12");
         ksp.setPassword(PW);
 
         TrustManagersParameters tmp = new TrustManagersParameters();

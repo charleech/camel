@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,27 +22,36 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 public class SqlProducerAlwaysPopulateStatementFalseTest extends CamelTestSupport {
 
     private EmbeddedDatabase db;
+
+    @BindToRegistry("myStrategy")
     private SqlPrepareStatementStrategy strategy;
     private volatile boolean invoked;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         db = new EmbeddedDatabaseBuilder()
-            .setType(EmbeddedDatabaseType.DERBY).addScript("sql/createAndPopulateDatabase.sql").build();
+                .setName(getClass().getSimpleName())
+                .setType(EmbeddedDatabaseType.DERBY)
+                .addScript("sql/createAndPopulateDatabase.sql").build();
 
         strategy = new DefaultSqlPrepareStatementStrategy() {
             @Override
@@ -51,21 +60,15 @@ public class SqlProducerAlwaysPopulateStatementFalseTest extends CamelTestSuppor
                 super.populateStatement(ps, iterator, expectedParams);
             }
         };
-        
+
         super.setUp();
     }
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("myStrategy", strategy);
-        return jndi;
-    }
-
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         db.shutdown();
     }
 
@@ -86,7 +89,7 @@ public class SqlProducerAlwaysPopulateStatementFalseTest extends CamelTestSuppor
         row = assertIsInstanceOf(Map.class, received.get(1));
         assertEquals("AMQ", row.get("PROJECT"));
 
-        assertFalse("Should not populate", invoked);
+        assertFalse(invoked, "Should not populate");
     }
 
     @Override
@@ -96,8 +99,8 @@ public class SqlProducerAlwaysPopulateStatementFalseTest extends CamelTestSuppor
                 getContext().getComponent("sql", SqlComponent.class).setDataSource(db);
 
                 from("direct:start")
-                    .to("sql:select * from projects where license = 'ASF' order by id?alwaysPopulateStatement=false&prepareStatementStrategy=#myStrategy&consumer.initialDelay=0&consumer.delay=50")
-                    .to("mock:result");
+                        .to("sql:select * from projects where license = 'ASF' order by id?alwaysPopulateStatement=false&prepareStatementStrategy=#myStrategy&initialDelay=0&delay=50")
+                        .to("mock:result");
             }
         };
     }

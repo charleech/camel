@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,7 +33,8 @@ public class TemporaryQueueReplyHandler implements ReplyHandler {
     protected final ReplyManager replyManager;
     protected final Exchange exchange;
     protected final AsyncCallback callback;
-    // remember the original correlation id, in case the server returns back a reply with a messed up correlation id
+    // remember the original correlation id, in case the server returns back a
+    // reply with a messed up correlation id
     protected final String originalCorrelationId;
     protected final String correlationId;
     protected final long timeout;
@@ -48,6 +49,7 @@ public class TemporaryQueueReplyHandler implements ReplyHandler {
         this.timeout = timeout;
     }
 
+    @Override
     public void onReply(String correlationId, AMQP.BasicProperties properties, byte[] reply) {
         // create holder object with the reply
         log.debug("onReply with correlationId: {}", correlationId);
@@ -56,6 +58,7 @@ public class TemporaryQueueReplyHandler implements ReplyHandler {
         replyManager.processReply(holder);
     }
 
+    @Override
     public void onTimeout(String correlationId) {
         // create holder object without the reply which means a timeout occurred
         log.debug("onTimeout with correlationId: {}", correlationId);

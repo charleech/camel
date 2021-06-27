@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,35 +23,37 @@ import org.apache.camel.non_wrapper.types.GetPerson;
 import org.apache.camel.non_wrapper.types.GetPersonResponse;
 import org.apache.cxf.message.MessageContentsList;
 
-
 public class RouteBuilderCxfTracer extends RouteBuilder {
     @Override
-    public void configure() throws Exception {        
-        from("cxf:http://localhost:9000/PersonService/" 
-            + "?serviceClass=org.apache.camel.non_wrapper.Person"
-            + "&serviceName={http://camel.apache.org/non-wrapper}PersonService"
-            + "&portName={http://camel.apache.org/non-wrapper}soap"
-            + "&dataFormat=POJO")
-            .process(new BeforeProcessor()).to("direct:something").process(new AfterProcessor());
+    public void configure() throws Exception {
+        from("cxf:http://localhost:9000/PersonService/"
+             + "?serviceClass=org.apache.camel.non_wrapper.Person"
+             + "&serviceName={http://camel.apache.org/non-wrapper}PersonService"
+             + "&portName={http://camel.apache.org/non-wrapper}soap"
+             + "&dataFormat=POJO")
+                     .process(new BeforeProcessor()).to("direct:something").process(new AfterProcessor());
 
         from("direct:something")
-            .process(new DoSomethingProcessor())
-            .process(new DoNothingProcessor());
+                .process(new DoSomethingProcessor())
+                .process(new DoNothingProcessor());
     }
-    
+
     private static class DoSomethingProcessor implements Processor {
+        @Override
         public void process(Exchange exchange) throws Exception {
-            exchange.getOut().setBody(exchange.getIn().getBody() + " world!");        
+            exchange.getMessage().setBody(exchange.getIn().getBody() + " world!");
         }
     }
-    
+
     private static class DoNothingProcessor implements Processor {
+        @Override
         public void process(Exchange exchange) throws Exception {
-            exchange.getOut().setBody(exchange.getIn().getBody());        
+            exchange.getMessage().setBody(exchange.getIn().getBody());
         }
     }
-     
+
     private static class BeforeProcessor implements Processor {
+        @Override
         public void process(Exchange e) throws Exception {
             MessageContentsList mclIn = e.getIn().getBody(MessageContentsList.class);
             e.getIn().setBody(((GetPerson) mclIn.get(0)).getPersonId(), String.class);
@@ -59,6 +61,7 @@ public class RouteBuilderCxfTracer extends RouteBuilder {
     }
 
     private static class AfterProcessor implements Processor {
+        @Override
         public void process(Exchange e) throws Exception {
             GetPersonResponse gpr = new GetPersonResponse();
             gpr.setName("Bill");
@@ -67,7 +70,7 @@ public class RouteBuilderCxfTracer extends RouteBuilder {
 
             MessageContentsList mclOut = new MessageContentsList();
             mclOut.set(0, gpr);
-            e.getOut().setBody(mclOut, MessageContentsList.class);
+            e.getMessage().setBody(mclOut, MessageContentsList.class);
         }
     }
 }

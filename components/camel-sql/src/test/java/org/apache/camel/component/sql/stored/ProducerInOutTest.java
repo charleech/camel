@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,26 +22,33 @@ import java.util.Map;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ProducerInOutTest extends CamelTestSupport {
 
     EmbeddedDatabase db;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         db = new EmbeddedDatabaseBuilder()
-                .setType(EmbeddedDatabaseType.DERBY).addScript("sql/storedProcedureTest.sql").build();
+                .setName(getClass().getSimpleName())
+                .setType(EmbeddedDatabaseType.DERBY)
+                .addScript("sql/storedProcedureTest.sql").build();
         super.setUp();
     }
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         db.shutdown();
@@ -76,8 +83,8 @@ public class ProducerInOutTest extends CamelTestSupport {
                 getContext().getComponent("sql-stored", SqlStoredComponent.class).setDataSource(db);
 
                 from("direct:query")
-                    .to("sql-stored:INOUTDEMO(INTEGER ${headers.in1},INOUT INTEGER ${headers.in2} out1,OUT INTEGER out2)")
-                    .to("mock:query");
+                        .to("sql-stored:INOUTDEMO(INTEGER ${headers.in1},INOUT INTEGER ${headers.in2} out1,OUT INTEGER out2)")
+                        .to("mock:query");
             }
         };
     }

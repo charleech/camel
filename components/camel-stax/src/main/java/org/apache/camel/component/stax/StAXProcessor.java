@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
+import com.ctc.wstx.sr.ValidatingStreamReader;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.support.ExchangeHelper;
@@ -29,9 +29,8 @@ import org.apache.camel.support.ExchangeHelper;
 /**
  * It uses SAX content handler to handle events.
  * <p/>
- * The {@link Exchange} is expected to contain a message body, that is
- * convertable to both a {@link InputSource} and a {@link XMLStreamReader}
- * to support StAX streaming.
+ * The {@link Exchange} is expected to contain a message body, that is convertable to both a {@link InputSource} and a
+ * {@link XMLStreamReader} to support StAX streaming.
  */
 public class StAXProcessor implements Processor {
     private final Class<ContentHandler> contentHandlerClass;
@@ -49,25 +48,34 @@ public class StAXProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        InputSource is = exchange.getIn().getMandatoryBody(InputSource.class);
-        XMLStreamReader stream = exchange.getIn().getMandatoryBody(XMLStreamReader.class);
-        XMLReader reader = new StaxStreamXMLReader(stream);
+        XMLStreamReader stream = null;
+        try {
+            stream = exchange.getIn().getMandatoryBody(XMLStreamReader.class);
+            StaxStreamXMLReader reader = new StaxStreamXMLReader(stream);
+            ContentHandler handler;
+            if (this.contentHandlerClass != null) {
+                handler = this.contentHandlerClass.newInstance();
+            } else {
+                handler = this.contentHandler;
+            }
 
-        ContentHandler handler;
-        if (contentHandlerClass != null) {
-            handler = contentHandlerClass.newInstance();
-        } else {
-            handler = contentHandler;
-        }
-        reader.setContentHandler(handler);
-        reader.parse(is);
-
-        if (ExchangeHelper.isOutCapable(exchange)) {
-            // preserve headers
-            exchange.getOut().setHeaders(exchange.getIn().getHeaders());
-            exchange.getOut().setBody(handler);
-        } else {
-            exchange.getIn().setBody(handler);
+            reader.setContentHandler(handler);
+            // InputSource is ignored anyway
+            reader.parse((InputSource) null);
+            if (ExchangeHelper.isOutCapable(exchange)) {
+                exchange.getOut().setHeaders(exchange.getIn().getHeaders());
+                exchange.getOut().setBody(handler);
+            } else {
+                exchange.getIn().setBody(handler);
+            }
+        } finally {
+            if (stream != null) {
+                stream.close();
+                if (stream instanceof ValidatingStreamReader) {
+                    // didn't find any method without using the woodstox package
+                    ((ValidatingStreamReader) stream).closeCompletely();
+                }
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,6 @@ import java.net.Socket;
 import java.util.Map;
 
 import com.splunk.Service;
-
 import org.apache.camel.CamelContext;
 
 public final class Helper {

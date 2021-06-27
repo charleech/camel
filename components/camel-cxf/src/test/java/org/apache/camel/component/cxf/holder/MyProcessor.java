@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,27 +26,28 @@ import org.apache.camel.Processor;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 
 public class MyProcessor implements Processor {
+    @Override
     @SuppressWarnings("unchecked")
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
         if (in.getHeader(CxfConstants.OPERATION_NAME).equals("myOrder")) {
             List<Object> parameters = in.getBody(List.class);
             int amount = (Integer) parameters.remove(1);
-            Holder<String> customer = (Holder<String>)parameters.get(1);
+            Holder<String> customer = (Holder<String>) parameters.get(1);
             if (customer.value.length() == 0) {
                 customer.value = "newCustomer";
             }
             parameters.add(0, "Ordered ammount " + amount);
             //reuse the MessageContentList at this time to test CAMEL-4113
-            exchange.getOut().setBody(parameters);
+            exchange.getMessage().setBody(parameters);
         } else {
             List<Object> parameters = in.getBody(List.class);
             int amount = (Integer) parameters.remove(0);
-            Holder<String> securityOrder = (Holder<String>)parameters.get(0);
+            Holder<String> securityOrder = (Holder<String>) parameters.get(0);
             securityOrder.value = "secureParts";
             parameters.add(0, "Ordered ammount " + amount);
             //reuse the MessageContentList at this time to test CAMEL-4113
-            exchange.getOut().setBody(parameters);
+            exchange.getMessage().setBody(parameters);
         }
     }
 }

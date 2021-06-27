@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,29 +23,32 @@ import org.apache.camel.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.processor.MarshalProcessor;
-import org.apache.camel.support.processor.UnmarshalProcessor;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriPath;
 import org.apache.camel.support.DefaultAsyncProducer;
 import org.apache.camel.support.DefaultEndpoint;
+import org.apache.camel.support.processor.MarshalProcessor;
+import org.apache.camel.support.processor.UnmarshalProcessor;
 import org.apache.camel.support.service.ServiceHelper;
 
 /**
- * The dataformat component is used for working with Data Formats as if it was a regular Component supporting Endpoints and URIs.
+ * Use a Camel Data Format as a regular Camel Component.
  */
-@UriEndpoint(firstVersion = "2.12.0", scheme = "dataformat", title = "Data Format", syntax = "dataformat:name:operation", producerOnly = true,
-        label = "core,transformation", lenientProperties = true)
+@UriEndpoint(firstVersion = "2.12.0", scheme = "dataformat", title = "Data Format", syntax = "dataformat:name:operation",
+             producerOnly = true,
+             label = "core,transformation", lenientProperties = true)
 public class DataFormatEndpoint extends DefaultEndpoint {
 
     private AsyncProcessor processor;
     private DataFormat dataFormat;
 
-    @UriPath(description = "Name of data format") @Metadata(required = true)
+    @UriPath(description = "Name of data format")
+    @Metadata(required = true)
     private String name;
-    @UriPath(enums = "marshal,unmarshal") @Metadata(required = true)
+    @UriPath(enums = "marshal,unmarshal")
+    @Metadata(required = true)
     private String operation;
 
     public DataFormatEndpoint() {
@@ -104,17 +107,13 @@ public class DataFormatEndpoint extends DefaultEndpoint {
     }
 
     @Override
-    public boolean isSingleton() {
-        return true;
-    }
-
-    @Override
     public boolean isLenientProperties() {
         return true;
     }
 
     @Override
-    protected void doStart() throws Exception {
+    protected void doInit() throws Exception {
+        super.doInit();
         if (dataFormat == null && name != null) {
             dataFormat = getCamelContext().resolveDataFormat(name);
         }
@@ -129,7 +128,10 @@ public class DataFormatEndpoint extends DefaultEndpoint {
 
             processor = unmarshal;
         }
+    }
 
+    @Override
+    protected void doStart() throws Exception {
         ServiceHelper.startService(dataFormat, processor);
         super.doStart();
     }

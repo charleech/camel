@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,9 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
-
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,30 +29,39 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.test.AvailablePortFinder;
 import org.apache.camel.test.junit.rule.mllp.MllpJUnitResourceException;
 import org.apache.camel.test.junit.rule.mllp.MllpServerResource;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.camel.test.mllp.Hl7TestMessageGenerator;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MllpTcpClientProducerIdleConnectionTimeoutTest extends CamelTestSupport {
+
     static final int CONNECT_TIMEOUT = 500;
     static final int RECEIVE_TIMEOUT = 1000;
     static final int READ_TIMEOUT = 500;
     static final int IDLE_TIMEOUT = RECEIVE_TIMEOUT * 3;
 
-    @Rule
-    public MllpServerResource mllpServer = new MllpServerResource("localhost", AvailablePortFinder.getNextAvailable());
+    Logger log = LoggerFactory.getLogger(MllpTcpClientProducerIdleConnectionTimeoutTest.class);
 
-    @EndpointInject(uri = "direct://source")
+    @RegisterExtension
+    MllpServerResource mllpServer = new MllpServerResource("localhost", AvailablePortFinder.getNextAvailable());
+
+    @EndpointInject("direct://source")
     ProducerTemplate source;
 
-    @EndpointInject(uri = "mock://complete")
+    @EndpointInject("mock://complete")
     MockEndpoint complete;
 
-    @EndpointInject(uri = "mock://write-ex")
+    @EndpointInject("mock://write-ex")
     MockEndpoint writeEx;
 
-    @EndpointInject(uri = "mock://receive-ex")
+    @EndpointInject("mock://receive-ex")
     MockEndpoint receiveEx;
 
     @Override
@@ -67,7 +74,6 @@ public class MllpTcpClientProducerIdleConnectionTimeoutTest extends CamelTestSup
         return context;
     }
 
-
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
@@ -75,28 +81,29 @@ public class MllpTcpClientProducerIdleConnectionTimeoutTest extends CamelTestSup
 
             public void configure() {
                 onException(MllpWriteException.class)
-                    .handled(true)
-                    .to(writeEx)
-                    .log(LoggingLevel.ERROR, routeId, "Write Error")
-                    .stop();
+                        .handled(true)
+                        .to(writeEx)
+                        .log(LoggingLevel.ERROR, routeId, "Write Error")
+                        .stop();
 
                 onException(MllpAcknowledgementReceiveException.class)
-                    .handled(true)
-                    .to(receiveEx)
-                    .log(LoggingLevel.ERROR, routeId, "Receive Error")
-                    .stop();
+                        .handled(true)
+                        .to(receiveEx)
+                        .log(LoggingLevel.ERROR, routeId, "Receive Error")
+                        .stop();
 
                 from(source.getDefaultEndpoint()).routeId(routeId)
-                    .log(LoggingLevel.INFO, routeId, "Sending Message")
-                    .toF("mllp://%s:%d?connectTimeout=%d&receiveTimeout=%d&readTimeout=%d&idleTimeout=%s", mllpServer.getListenHost(), mllpServer.getListenPort(),
-                        CONNECT_TIMEOUT, RECEIVE_TIMEOUT, READ_TIMEOUT, IDLE_TIMEOUT)
-                    .log(LoggingLevel.INFO, routeId, "Received Acknowledgement")
-                    .to(complete);
+                        .log(LoggingLevel.INFO, routeId, "Sending Message")
+                        .toF("mllp://%s:%d?connectTimeout=%d&receiveTimeout=%d&readTimeout=%d&idleTimeout=%s",
+                                mllpServer.getListenHost(), mllpServer.getListenPort(),
+                                CONNECT_TIMEOUT, RECEIVE_TIMEOUT, READ_TIMEOUT, IDLE_TIMEOUT)
+                        .log(LoggingLevel.INFO, routeId, "Received Acknowledgement")
+                        .to(complete);
             }
         };
     }
 
-    @Test(expected = MllpJUnitResourceException.class)
+    @Test
     public void testIdleConnectionTimeout() throws Exception {
         complete.expectedMessageCount(2);
         writeEx.expectedMessageCount(0);
@@ -110,13 +117,14 @@ public class MllpTcpClientProducerIdleConnectionTimeoutTest extends CamelTestSup
         Thread.sleep(IDLE_TIMEOUT / 2);
         source.sendBody(Hl7TestMessageGenerator.generateMessage());
 
-        assertTrue("Should have completed two exchanges", done.matches(5, TimeUnit.SECONDS));
+        assertTrue(done.matches(5, TimeUnit.SECONDS), "Should have completed two exchanges");
 
         assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
 
         Thread.sleep((long) (IDLE_TIMEOUT * 1.1));
 
-        mllpServer.checkClientConnections();
+        assertThrows(MllpJUnitResourceException.class,
+                () -> mllpServer.checkClientConnections());
     }
 
     @Test
@@ -133,7 +141,7 @@ public class MllpTcpClientProducerIdleConnectionTimeoutTest extends CamelTestSup
         Thread.sleep(IDLE_TIMEOUT / 2);
         source.sendBody(Hl7TestMessageGenerator.generateMessage());
 
-        assertTrue("Should have completed two exchanges", done.matches(5, TimeUnit.SECONDS));
+        assertTrue(done.matches(5, TimeUnit.SECONDS), "Should have completed two exchanges");
 
         Thread.sleep((long) (IDLE_TIMEOUT * 1.1));
 

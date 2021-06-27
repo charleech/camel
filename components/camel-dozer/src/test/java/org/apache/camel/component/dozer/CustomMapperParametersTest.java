@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,32 +16,34 @@
  */
 package org.apache.camel.component.dozer;
 
-import org.apache.camel.impl.DefaultClassResolver;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.impl.engine.DefaultClassResolver;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CustomMapperParametersTest {
 
     private CustomMapper customMapper;
 
-    @Before
+    @BeforeEach
     public void setup() {
         customMapper = new CustomMapper(new DefaultClassResolver());
     }
 
     @Test
-    public void shouldExecuteCustomFunctionWithArguments() throws Exception {
-        customMapper.setParameter(MapperWithMultiParmMethod.class.getName() + ",test,java.lang.Integer=12,java.lang.Integer=20");
+    void shouldExecuteCustomFunctionWithArguments() {
+        customMapper
+                .setParameter(MapperWithMultiParmMethod.class.getName() + ",test,java.lang.Integer=12,java.lang.Integer=20");
         Object result = customMapper.mapCustom("JeremiahWasABullfrog", String.class);
-        Assert.assertEquals("Bullfrog", result);
+        assertEquals("Bullfrog", result);
     }
 
     @Test
-    public void shouldExecuteCustomFunctionWithVariableArguments() throws Exception {
+    void shouldExecuteCustomFunctionWithVariableArguments() {
         customMapper.setParameter(MapperWithMultiParmMethod.class.getName() + ",add,java.lang.Integer=12,java.lang.Integer=20");
         Object result = customMapper.mapCustom("JeremiahWasABullfrog", String.class);
-        Assert.assertEquals(32L, result);
+        assertEquals(32L, result);
     }
 }
 
@@ -59,4 +61,3 @@ class MapperWithMultiParmMethod {
         return source.substring(beginindex.intValue(), endindex.intValue());
     }
 }
-

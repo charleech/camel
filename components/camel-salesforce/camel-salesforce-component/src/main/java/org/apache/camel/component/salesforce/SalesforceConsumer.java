@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.io.StringReader;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -32,10 +31,12 @@ import org.apache.camel.component.salesforce.internal.client.RestClient;
 import org.apache.camel.component.salesforce.internal.streaming.PushTopicHelper;
 import org.apache.camel.component.salesforce.internal.streaming.SubscriptionHelper;
 import org.apache.camel.support.DefaultConsumer;
-import org.apache.camel.util.ObjectHelper;
 import org.apache.camel.support.service.ServiceHelper;
+import org.apache.camel.util.ObjectHelper;
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Salesforce consumer.
@@ -43,22 +44,30 @@ import org.cometd.bayeux.client.ClientSessionChannel;
 public class SalesforceConsumer extends DefaultConsumer {
 
     private enum MessageKind {
-        PLATFORM_EVENT, PUSH_TOPIC;
+        CHANGE_EVENT,
+        PLATFORM_EVENT,
+        PUSH_TOPIC;
 
         public static MessageKind fromTopicName(final String topicName) {
             if (topicName.startsWith("event/") || topicName.startsWith("/event/")) {
                 return MessageKind.PLATFORM_EVENT;
+            } else if (topicName.startsWith("data/") || topicName.startsWith("/data/")) {
+                return MessageKind.CHANGE_EVENT;
             }
 
             return PUSH_TOPIC;
         }
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(SalesforceConsumer.class);
+
     private static final String CREATED_DATE_PROPERTY = "createdDate";
     private static final String EVENT_PROPERTY = "event";
     private static final double MINIMUM_VERSION = 24.0;
     private static final ObjectMapper OBJECT_MAPPER = JsonUtils.createObjectMapper();
+    private static final String PAYLOAD_PROPERTY = "payload";
     private static final String REPLAY_ID_PROPERTY = "replayId";
+    private static final String SCHEMA_PROPERTY = "schema";
     private static final String SOBJECT_PROPERTY = "sobject";
     private static final String TYPE_PROPERTY = "type";
 
@@ -92,28 +101,31 @@ public class SalesforceConsumer extends DefaultConsumer {
 
         messageKind = MessageKind.fromTopicName(topicName);
 
-        rawPayload = endpoint.getConfiguration().getRawPayload();
+        rawPayload = endpoint.getConfiguration().isRawPayload();
 
         // get sObjectClass to convert to
-        final String sObjectName = endpoint.getConfiguration().getSObjectName();
-        if (sObjectName != null) {
-            sObjectClass = endpoint.getComponent().getClassMap().get(sObjectName);
-            if (sObjectClass == null) {
-                throw new IllegalArgumentException(String.format("SObject Class not found for %s", sObjectName));
-            }
-        } else {
-            final String className = endpoint.getConfiguration().getSObjectClass();
-            if (className != null) {
-                sObjectClass = endpoint.getComponent().getCamelContext().getClassResolver().resolveClass(className);
+        if (!rawPayload) {
+            final String sObjectName = endpoint.getConfiguration().getSObjectName();
+            if (sObjectName != null) {
+                sObjectClass = endpoint.getComponent().getClassMap().get(sObjectName);
                 if (sObjectClass == null) {
-                    throw new IllegalArgumentException(String.format("SObject Class not found %s", className));
+                    throw new IllegalArgumentException(String.format("SObject Class not found for %s", sObjectName));
                 }
             } else {
-                log.warn("Property sObjectName or sObjectClass NOT set, messages will be of type java.lang.Map");
-                sObjectClass = null;
+                final String className = endpoint.getConfiguration().getSObjectClass();
+                if (className != null) {
+                    sObjectClass = endpoint.getComponent().getCamelContext().getClassResolver().resolveClass(className);
+                    if (sObjectClass == null) {
+                        throw new IllegalArgumentException(String.format("SObject Class not found %s", className));
+                    }
+                } else {
+                    LOG.warn("Property sObjectName or sObjectClass NOT set, messages will be of type java.lang.Map");
+                    sObjectClass = null;
+                }
             }
+        } else {
+            sObjectClass = null;
         }
-
     }
 
     public String getTopicName() {
@@ -126,44 +138,65 @@ public class SalesforceConsumer extends DefaultConsumer {
     }
 
     public void processMessage(final ClientSessionChannel channel, final Message message) {
-        if (log.isDebugEnabled()) {
-            log.debug("Received event {} on channel {}", channel.getId(), channel.getChannelId());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Received event {} on channel {}", channel.getId(), channel.getChannelId());
         }
 
-        final Exchange exchange = endpoint.createExchange();
+        final Exchange exchange = createExchange(true);
         final org.apache.camel.Message in = exchange.getIn();
 
         switch (messageKind) {
-        case PUSH_TOPIC:
-            createPushTopicMessage(message, in);
-            break;
-        case PLATFORM_EVENT:
-            createPlatformEventMessage(message, in);
-            break;
-        default:
-            throw new IllegalStateException("Unknown message kind: " + messageKind);
+            case PUSH_TOPIC:
+                createPushTopicMessage(message, in);
+                break;
+            case PLATFORM_EVENT:
+                createPlatformEventMessage(message, in);
+                break;
+            case CHANGE_EVENT:
+                createChangeEventMessage(message, in);
+                break;
+            default:
+                throw new IllegalStateException("Unknown message kind: " + messageKind);
         }
 
-        try {
-            getAsyncProcessor().process(exchange, new AsyncCallback() {
-                @Override
-                public void done(boolean doneSync) {
-                    // noop
-                    if (log.isTraceEnabled()) {
-                        log.trace("Done processing event: {} {}", channel.getId(),
-                                doneSync ? "synchronously" : "asynchronously");
-                    }
-                }
-            });
-        } catch (final Exception e) {
-            final String msg = String.format("Error processing %s: %s", exchange, e);
-            handleException(msg, new SalesforceException(msg, e));
-        } finally {
-            final Exception ex = exchange.getException();
-            if (ex != null) {
-                final String msg = String.format("Unhandled exception: %s", ex.getMessage());
-                handleException(msg, new SalesforceException(msg, ex));
-            }
+        // use default consumer callback
+        AsyncCallback cb = defaultConsumerCallback(exchange, true);
+        getAsyncProcessor().process(exchange, cb);
+    }
+
+    @SuppressWarnings("unchecked")
+    void createChangeEventMessage(final Message message, final org.apache.camel.Message in) {
+        setHeaders(in, message);
+
+        final Map<String, Object> data = message.getDataAsMap();
+
+        final Map<String, Object> event = (Map<String, Object>) data.get(EVENT_PROPERTY);
+        final Object replayId = event.get(REPLAY_ID_PROPERTY);
+        if (replayId != null) {
+            in.setHeader("CamelSalesforceReplayId", replayId);
+        }
+
+        in.setHeader("CamelSalesforceChangeEventSchema", data.get(SCHEMA_PROPERTY));
+        in.setHeader("CamelSalesforceEventType", topicName.substring(topicName.lastIndexOf('/') + 1));
+
+        final Map<String, Object> payload = (Map<String, Object>) data.get(PAYLOAD_PROPERTY);
+        final Map<String, Object> changeEventHeader = (Map<String, Object>) payload.get("ChangeEventHeader");
+        in.setHeader("CamelSalesforceChangeType", changeEventHeader.get("changeType"));
+        in.setHeader("CamelSalesforceChangeOrigin", changeEventHeader.get("changeOrigin"));
+        in.setHeader("CamelSalesforceTransactionKey", changeEventHeader.get("transactionKey"));
+        in.setHeader("CamelSalesforceSequenceNumber", changeEventHeader.get("sequenceNumber"));
+        in.setHeader("CamelSalesforceIsTransactionEnd", changeEventHeader.get("isTransactionEnd"));
+        in.setHeader("CamelSalesforceCommitTimestamp", changeEventHeader.get("commitTimestamp"));
+        in.setHeader("CamelSalesforceCommitUser", changeEventHeader.get("commitUser"));
+        in.setHeader("CamelSalesforceCommitNumber", changeEventHeader.get("commitNumber"));
+        in.setHeader("CamelSalesforceEntityName", changeEventHeader.get("entityName"));
+        in.setHeader("CamelSalesforceRecordIds", changeEventHeader.get("recordIds"));
+
+        if (rawPayload) {
+            in.setBody(message);
+        } else {
+            payload.remove("ChangeEventHeader");
+            in.setBody(payload);
         }
     }
 
@@ -173,17 +206,17 @@ public class SalesforceConsumer extends DefaultConsumer {
         final Map<String, Object> data = message.getDataAsMap();
 
         @SuppressWarnings("unchecked")
-        final Map<String, Object> event = (Map<String, Object>) data.get("event");
+        final Map<String, Object> event = (Map<String, Object>) data.get(EVENT_PROPERTY);
 
         final Object replayId = event.get(REPLAY_ID_PROPERTY);
         if (replayId != null) {
             in.setHeader("CamelSalesforceReplayId", replayId);
         }
 
-        in.setHeader("CamelSalesforcePlatformEventSchema", data.get("schema"));
+        in.setHeader("CamelSalesforcePlatformEventSchema", data.get(SCHEMA_PROPERTY));
         in.setHeader("CamelSalesforceEventType", topicName.substring(topicName.lastIndexOf('/') + 1));
 
-        final Object payload = data.get("payload");
+        final Object payload = data.get(PAYLOAD_PROPERTY);
 
         final PlatformEvent platformEvent = objectMapper.convertValue(payload, PlatformEvent.class);
         in.setHeader("CamelSalesforceCreatedDate", platformEvent.getCreated());
@@ -220,7 +253,7 @@ public class SalesforceConsumer extends DefaultConsumer {
         try {
 
             final String sObjectString = objectMapper.writeValueAsString(sObject);
-            log.debug("Received SObject: {}", sObjectString);
+            LOG.debug("Received SObject: {}", sObjectString);
 
             if (rawPayload) {
                 // return sobject string as exchange body
@@ -233,7 +266,8 @@ public class SalesforceConsumer extends DefaultConsumer {
                 in.setBody(objectMapper.readValue(new StringReader(sObjectString), sObjectClass));
             }
         } catch (final IOException e) {
-            final String msg = String.format("Error parsing message [%s] from Topic %s: %s", message, topicName, e.getMessage());
+            final String msg
+                    = String.format("Error parsing message [%s] from Topic %s: %s", message, topicName, e.getMessage());
             handleException(msg, new SalesforceException(msg, e));
         }
     }
@@ -272,6 +306,7 @@ public class SalesforceConsumer extends DefaultConsumer {
         }
 
         // subscribe to topic
+        ServiceHelper.startService(subscriptionHelper);
         subscriptionHelper.subscribe(topicName, this);
         subscribed = true;
     }

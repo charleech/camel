@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.mapper.CachingMapper;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
-
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -40,7 +39,9 @@ import org.apache.camel.component.salesforce.api.dto.GlobalObjects;
 import org.apache.camel.component.salesforce.api.dto.RestResources;
 import org.apache.camel.component.salesforce.api.dto.SObjectBasicInfo;
 import org.apache.camel.component.salesforce.api.dto.SObjectDescription;
+import org.apache.camel.component.salesforce.api.dto.SearchResult2;
 import org.apache.camel.component.salesforce.api.dto.SearchResults;
+import org.apache.camel.component.salesforce.api.dto.UpsertSObjectResult;
 import org.apache.camel.component.salesforce.api.dto.Versions;
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalResult;
 import org.apache.camel.component.salesforce.api.utils.XStreamUtils;
@@ -50,107 +51,120 @@ import static org.apache.camel.component.salesforce.SalesforceEndpointConfig.SOB
 
 public class XmlRestProcessor extends AbstractRestProcessor {
 
-    // although XStream is generally thread safe, because of the way we use aliases
+    // although XStream is generally thread safe, because of the way we use
+    // aliases
     // for GET_BASIC_INFO and GET_DESCRIPTION, we need to use a ThreadLocal
-    // not very efficient when both JSON and XML are used together with a single Thread pool
+    // not very efficient when both JSON and XML are used together with a single
+    // Thread pool
     // but this will do for now
-    private static ThreadLocal<XStream> xStream =
-        new ThreadLocal<XStream>() {
-            @Override
-            protected XStream initialValue() {
-                return XStreamUtils.createXStream();
-            }
-        };
+    private static ThreadLocal<XStream> xStream = new ThreadLocal<XStream>() {
+        @Override
+        protected XStream initialValue() {
+            return XStreamUtils.createXStream();
+        }
+    };
 
     private static final String RESPONSE_ALIAS = XmlRestProcessor.class.getName() + ".responseAlias";
 
     public XmlRestProcessor(SalesforceEndpoint endpoint) throws SalesforceException {
         super(endpoint);
-
     }
 
     @Override
     protected void processRequest(Exchange exchange) throws SalesforceException {
-
         switch (operationName) {
-        case GET_VERSIONS:
-            exchange.setProperty(RESPONSE_CLASS, Versions.class);
-            break;
+            case GET_VERSIONS:
+                exchange.setProperty(RESPONSE_CLASS, Versions.class);
+                break;
 
-        case GET_RESOURCES:
-            exchange.setProperty(RESPONSE_CLASS, RestResources.class);
-            break;
+            case GET_RESOURCES:
+                exchange.setProperty(RESPONSE_CLASS, RestResources.class);
+                break;
 
-        case GET_GLOBAL_OBJECTS:
-            // handle in built response types
-            exchange.setProperty(RESPONSE_CLASS, GlobalObjects.class);
-            break;
+            case GET_GLOBAL_OBJECTS:
+                // handle in built response types
+                exchange.setProperty(RESPONSE_CLASS, GlobalObjects.class);
+                break;
 
-        case GET_BASIC_INFO:
-            // handle in built response types
-            exchange.setProperty(RESPONSE_CLASS, SObjectBasicInfo.class);
+            case GET_BASIC_INFO:
+                // handle in built response types
+                exchange.setProperty(RESPONSE_CLASS, SObjectBasicInfo.class);
 
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, USE_BODY, NOT_OPTIONAL));
-            break;
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, USE_BODY, NOT_OPTIONAL));
+                break;
 
-        case GET_DESCRIPTION:
-            // handle in built response types
-            exchange.setProperty(RESPONSE_CLASS, SObjectDescription.class);
+            case GET_DESCRIPTION:
+                // handle in built response types
+                exchange.setProperty(RESPONSE_CLASS, SObjectDescription.class);
 
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, USE_BODY, NOT_OPTIONAL));
-            break;
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, USE_BODY, NOT_OPTIONAL));
+                break;
 
-        case GET_SOBJECT:
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, IGNORE_BODY, NOT_OPTIONAL));
-            break;
+            case GET_SOBJECT:
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, IGNORE_BODY, NOT_OPTIONAL));
+                break;
 
-        case CREATE_SOBJECT:
-            // handle known response type
-            exchange.setProperty(RESPONSE_CLASS, CreateSObjectResult.class);
-            break;
+            case CREATE_SOBJECT:
+                // handle known response type
+                exchange.setProperty(RESPONSE_CLASS, CreateSObjectResult.class);
+                break;
 
-        case GET_SOBJECT_WITH_ID:
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, IGNORE_BODY, NOT_OPTIONAL));
-            break;
+            case GET_SOBJECT_WITH_ID:
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, getParameter(SOBJECT_NAME, exchange, IGNORE_BODY, NOT_OPTIONAL));
+                break;
 
-        case UPSERT_SOBJECT:
-            // handle known response type
-            exchange.setProperty(RESPONSE_CLASS, CreateSObjectResult.class);
-            break;
+            case UPSERT_SOBJECT:
+                // handle known response type
+                exchange.setProperty(RESPONSE_CLASS, UpsertSObjectResult.class);
+                break;
 
-        case QUERY:
-        case QUERY_ALL:
-        case QUERY_MORE:
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, "QueryResult");
-            break;
+            case QUERY:
+            case QUERY_ALL:
+            case QUERY_MORE:
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, "QueryResult");
+                break;
 
-        case SEARCH:
-            // handle known response type
-            exchange.setProperty(RESPONSE_CLASS, SearchResults.class);
-            break;
+            case SEARCH:
+                // handle known response type
+                if (Double.parseDouble(endpoint.getConfiguration().getApiVersion()) >= 37.0) {
+                    exchange.setProperty(RESPONSE_CLASS, SearchResult2.class);
+                } else {
+                    exchange.setProperty(RESPONSE_CLASS, SearchResults.class);
+                }
+                break;
 
-        case APEX_CALL:
-            // need to add alias for Salesforce XML that uses SObject name as root element
-            exchange.setProperty(RESPONSE_ALIAS, "response");
-            break;
+            case APEX_CALL:
+                // need to add alias for Salesforce XML that uses SObject name as
+                // root element
+                exchange.setProperty(RESPONSE_ALIAS, "response");
+                break;
 
-        case APPROVAL:
-            exchange.setProperty(RESPONSE_CLASS, ApprovalResult.class);
-            break;
-        case APPROVALS:
-            throw new SalesforceException("Fetching of approvals (as of 18.11.2016) with XML format results in HTTP status 500."
-                + " To fetch approvals please use JSON format.", 0);
+            case APPROVAL:
+                exchange.setProperty(RESPONSE_CLASS, ApprovalResult.class);
+                break;
+            case APPROVALS:
+                throw new SalesforceException(
+                        "Fetching of approvals (as of 18.11.2016) with XML format results in HTTP status 500."
+                                              + " To fetch approvals please use JSON format.",
+                        0);
 
-        default:
-            // ignore, some operations do not require alias or class exchange properties
+            default:
+                // ignore, some operations do not require alias or class exchange
+                // properties
         }
     }
 
+    @Override
     protected InputStream getRequestStream(Exchange exchange) throws SalesforceException {
         try {
             // get request stream from In message
@@ -165,8 +179,8 @@ public class XmlRestProcessor extends AbstractRestProcessor {
                     // if all else fails, get body as String
                     final String body = in.getBody(String.class);
                     if (null == body) {
-                        String msg = "Unsupported request message body "
-                            + (in.getBody() == null ? null : in.getBody().getClass());
+                        String msg
+                                = "Unsupported request message body " + (in.getBody() == null ? null : in.getBody().getClass());
                         throw new SalesforceException(msg, null);
                     } else {
                         request = new ByteArrayInputStream(body.getBytes(StringUtil.__UTF8));
@@ -202,8 +216,10 @@ public class XmlRestProcessor extends AbstractRestProcessor {
     }
 
     @Override
-    protected void processResponse(final Exchange exchange, final InputStream responseEntity,
-        final Map<String, String> headers, final SalesforceException exception, final AsyncCallback callback) {
+    protected void processResponse(
+            final Exchange exchange, final InputStream responseEntity, final Map<String, String> headers,
+            final SalesforceException exception,
+            final AsyncCallback callback) {
         final XStream localXStream = xStream.get();
         try {
             final Message out = exchange.getOut();
@@ -220,18 +236,21 @@ public class XmlRestProcessor extends AbstractRestProcessor {
                 final Class<?> responseClass = exchange.getProperty(RESPONSE_CLASS, Class.class);
                 Object response;
                 if (!rawPayload && responseClass != null) {
-                    // its ok to call this multiple times, as xstream ignores duplicate calls
+                    // its ok to call this multiple times, as xstream ignores
+                    // duplicate calls
                     localXStream.processAnnotations(responseClass);
                     final String responseAlias = exchange.getProperty(RESPONSE_ALIAS, String.class);
                     if (responseAlias != null) {
-                        // extremely dirty, need to flush entire cache if its holding on to an old alias!!!
+                        // extremely dirty, need to flush entire cache if its
+                        // holding on to an old alias!!!
                         final CachingMapper mapper = (CachingMapper) localXStream.getMapper();
                         try {
                             if (mapper.realClass(responseAlias) != responseClass) {
                                 mapper.flushCache();
                             }
                         } catch (CannotResolveClassException ignore) {
-                            // recent XStream versions add a ClassNotFoundException to cache
+                            // recent XStream versions add a
+                            // ClassNotFoundException to cache
                             mapper.flushCache();
                         }
                         localXStream.alias(responseAlias, responseClass);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,10 @@ package org.apache.camel.dataformat.bindy.format.factories;
 import java.math.BigDecimal;
 
 import org.apache.camel.dataformat.bindy.FormattingOptions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 public class BigDecimalFormatFactoryTest {
 

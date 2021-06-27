@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,11 @@
  */
 package org.apache.camel.component.grape;
 
-public class GrapeConstants {
+public final class GrapeConstants {
 
     public static final String GRAPE_COMMAND = "CamelGrapeCommand";
+
+    private GrapeConstants() {
+    }
 
 }

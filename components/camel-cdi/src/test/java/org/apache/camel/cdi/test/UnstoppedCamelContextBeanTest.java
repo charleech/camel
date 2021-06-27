@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.cdi.test;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.camel.ProducerTemplate;
@@ -37,9 +38,9 @@ import org.junit.rules.Verifier;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class UnstoppedCamelContextBeanTest {
@@ -55,16 +56,17 @@ public class UnstoppedCamelContextBeanTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClasses(UnstoppedCamelContext.class, SimpleCamelRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClasses(UnstoppedCamelContext.class, SimpleCamelRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
-    public void sendMessageToInbound(@Uri("direct:start") ProducerTemplate inbound, @Uri("mock:result") MockEndpoint outbound) throws InterruptedException {
+    public void sendMessageToInbound(@Uri("direct:start") ProducerTemplate inbound, @Uri("mock:result") MockEndpoint outbound)
+            throws InterruptedException {
         outbound.expectedMessageCount(1);
         outbound.expectedBodiesReceived("test");
 
@@ -80,7 +82,7 @@ class UnstoppedCamelContext extends DefaultCamelContext {
     static boolean isStopCalled;
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         super.stop();
         isStopCalled = true;
     }

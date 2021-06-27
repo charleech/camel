@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,13 +27,13 @@ import org.apache.camel.component.master.MasterConsumer;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.jgroups.JChannel;
 import org.jgroups.raft.RaftHandle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JGroupsRaftMasterTest extends JGroupsRaftClusterAbastractTest {
+public class JGroupsRaftMasterTest extends JGroupsRaftClusterAbstractTest {
     private static final Logger LOG = LoggerFactory.getLogger(JGroupsRaftMasterTest.class);
 
     private ArrayList<CamelContext> lcc = new ArrayList<>();
@@ -96,7 +96,7 @@ public class JGroupsRaftMasterTest extends JGroupsRaftClusterAbastractTest {
         context.addRoutes(new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("master:jgr:timer:master?delay=1s&period=1s")
+                from("master:jgr:timer:master?delay=1000&period=1000")
                         .routeId("route-" + id)
                         .log("From ${routeId}");
             }
@@ -105,10 +105,12 @@ public class JGroupsRaftMasterTest extends JGroupsRaftClusterAbastractTest {
         return context;
     }
 
-    private int countActiveFromEndpoints(ArrayList<CamelContext> lcc, ArrayList<String> rn) throws NoSuchFieldException, IllegalAccessException {
+    private int countActiveFromEndpoints(ArrayList<CamelContext> lcc, ArrayList<String> rn)
+            throws NoSuchFieldException, IllegalAccessException {
         int result = 0;
         if (lcc.size() != rn.size()) {
-            throw new UnsupportedOperationException("CamelContext list and Route ids list must have the same number of elements!");
+            throw new UnsupportedOperationException(
+                    "CamelContext list and Route ids list must have the same number of elements!");
         }
         for (int i = 0; i < lcc.size(); i++) {
             Route route = lcc.get(i).getRoute(rn.get(i));

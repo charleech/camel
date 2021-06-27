@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,23 +27,27 @@ import org.apache.camel.non_wrapper.PersonService;
 import org.apache.camel.non_wrapper.UnknownPersonFault;
 import org.apache.camel.non_wrapper.types.GetPerson;
 import org.apache.camel.non_wrapper.types.GetPersonResponse;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class CxfNonWrapperTest extends CamelSpringTestSupport {
-    int port1 = CXFTestSupport.getPort1(); 
-    @Override
-    public boolean isCreateCamelContextPerClass() {
-        return true;
-    }
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class CxfNonWrapperTest extends CamelSpringTestSupport {
+    int port1 = CXFTestSupport.getPort1();
+
+    @Override
     protected ClassPathXmlApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/cxf/nonWrapperProcessor.xml");
     }
 
+    @Override
     protected void assertValidContext(CamelContext context) {
-        assertNotNull("No context found!", context);
+        assertNotNull(context, "No context found!");
     }
 
     @Test
@@ -52,15 +56,15 @@ public class CxfNonWrapperTest extends CamelSpringTestSupport {
         URL wsdlURL = getClass().getClassLoader().getResource("person-non-wrapper.wsdl");
         PersonService ss = new PersonService(wsdlURL, new QName("http://camel.apache.org/non-wrapper", "PersonService"));
         Person client = ss.getSoap();
-        ((BindingProvider)client).getRequestContext()
-            .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-                 "http://localhost:" + port1 + "/CxfNonWrapperTest/PersonService/");
-        
+        ((BindingProvider) client).getRequestContext()
+                .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+                        "http://localhost:" + port1 + "/CxfNonWrapperTest/PersonService/");
+
         GetPerson request = new GetPerson();
         request.setPersonId("hello");
         GetPersonResponse response = client.getPerson(request);
 
-        assertEquals("we should get the right answer from router", "Bonjour", response.getName());
+        assertEquals("Bonjour", response.getName(), "we should get the right answer from router");
 
         request.setPersonId("");
         try {
@@ -70,7 +74,5 @@ public class CxfNonWrapperTest extends CamelSpringTestSupport {
             // We expect to get fault here
         }
     }
-
-
 
 }

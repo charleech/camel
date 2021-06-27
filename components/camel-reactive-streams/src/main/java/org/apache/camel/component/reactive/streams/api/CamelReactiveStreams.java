@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,8 @@ public final class CamelReactiveStreams {
     }
 
     public static CamelReactiveStreamsService get(CamelContext context) {
-        ReactiveStreamsComponent component = context.getComponent(ReactiveStreamsConstants.SCHEME, ReactiveStreamsComponent.class);
+        ReactiveStreamsComponent component
+                = context.getComponent(ReactiveStreamsConstants.SCHEME, ReactiveStreamsComponent.class);
 
         return ObjectHelper.notNull(component.getReactiveStreamsService(), "ReactiveStreamsService");
     }

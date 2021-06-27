@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,7 +38,7 @@ public class SmppQuerySmCommand extends AbstractSmppCommand {
             log.debug("Querying for a short message for exchange id '{}' and message id '{}'...",
                     exchange.getExchangeId(), querySm.getMessageId());
         }
-        
+
         QuerySmResult querySmResult;
         try {
             querySmResult = session.queryShortMessage(

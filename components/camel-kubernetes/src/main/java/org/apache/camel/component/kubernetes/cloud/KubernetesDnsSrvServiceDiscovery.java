@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.kubernetes.cloud;
 
 import java.util.Collections;
@@ -23,6 +22,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
@@ -44,7 +44,7 @@ public class KubernetesDnsSrvServiceDiscovery extends KubernetesServiceDiscovery
 
     static {
         LOGGER = LoggerFactory.getLogger(KubernetesDnsSrvServiceDiscovery.class);
-        ATTRIBUTE_IDS = new String[] {"SRV"};
+        ATTRIBUTE_IDS = new String[] { "SRV" };
 
         ENV = new Hashtable<>();
         ENV.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
@@ -60,7 +60,8 @@ public class KubernetesDnsSrvServiceDiscovery extends KubernetesServiceDiscovery
     public KubernetesDnsSrvServiceDiscovery(KubernetesConfiguration configuration) {
         super(configuration);
 
-        this.namespace = configuration.getNamespace() != null ? configuration.getNamespace() : System.getenv("KUBERNETES_NAMESPACE");
+        this.namespace
+                = configuration.getNamespace() != null ? configuration.getNamespace() : System.getenv("KUBERNETES_NAMESPACE");
         this.portName = configuration.getPortName();
         this.portProtocol = configuration.getPortProtocol();
         this.zone = configuration.getDnsDomain();
@@ -76,22 +77,15 @@ public class KubernetesDnsSrvServiceDiscovery extends KubernetesServiceDiscovery
 
     /**
      * Compute the query string to lookup SRV records.
-     *
      * https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#supported-dns-schema
      * https://github.com/kubernetes/dns/blob/master/docs/specification.md
      *
-     * @param serviceName the service name
-     * @return the query
+     * @param  serviceName the service name
+     * @return             the query
      */
     protected String computeQueryString(String serviceName) {
         // _<port_name>._<port_proto>.<serviceName>.<namespace>.svc.<zone>.
-        return String.format("_%s._%s.%s.%s.svc.%s",
-            this.portName,
-            this.portProtocol,
-            serviceName,
-            this.namespace,
-            this.zone
-        );
+        return String.format("_%s._%s.%s.%s.svc.%s", this.portName, this.portProtocol, serviceName, this.namespace, this.zone);
     }
 
     @Override
@@ -105,7 +99,7 @@ public class KubernetesDnsSrvServiceDiscovery extends KubernetesServiceDiscovery
                 List<ServiceDefinition> servers = new LinkedList<>();
 
                 while (resolved.hasMore()) {
-                    String record = (String)resolved.next();
+                    String record = (String) resolved.next();
                     String[] items = record.split(" ", -1);
                     String host = items[3].trim();
                     String port = items[2].trim();
@@ -136,11 +130,8 @@ public class KubernetesDnsSrvServiceDiscovery extends KubernetesServiceDiscovery
 
     @Override
     public String toString() {
-        return "KubernetesDnsSrvServiceDiscovery{"
-            + "namespace='" + namespace + '\''
-            + ", portName='" + portName + '\''
-            + ", portProtocol='" + portProtocol + '\''
-            + ", zone='" + zone + '\''
-            + '}';
+        return "KubernetesDnsSrvServiceDiscovery{" + "namespace='" + namespace + '\'' + ", portName='" + portName + '\''
+               + ", portProtocol='" + portProtocol + '\'' + ", zone='"
+               + zone + '\'' + '}';
     }
 }

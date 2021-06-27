@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation to mark a method to be invoked <b>before</b> an entity bean is processed and routed; so
- * that it can be updated in such a way that the results are available to later nodes in the route.
+ * An annotation to mark a method to be invoked <b>before</b> an entity bean is processed and routed; so that it can be
+ * updated in such a way that the results are available to later nodes in the route.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

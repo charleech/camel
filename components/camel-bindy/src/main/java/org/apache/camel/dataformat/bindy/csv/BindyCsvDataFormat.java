@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 package org.apache.camel.dataformat.bindy.csv;
-
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,17 +40,15 @@ import org.apache.camel.dataformat.bindy.BindyCsvFactory;
 import org.apache.camel.dataformat.bindy.FormatFactory;
 import org.apache.camel.dataformat.bindy.WrappedException;
 import org.apache.camel.dataformat.bindy.util.ConverterUtils;
-import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.annotations.Dataformat;
 import org.apache.camel.support.ExchangeHelper;
-import org.apache.camel.util.IOHelper;
 import org.apache.camel.support.ObjectHelper;
+import org.apache.camel.util.IOHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A <a href="http://camel.apache.org/data-format.html">data format</a> (
- * {@link DataFormat}) using Bindy to marshal to and from CSV files
+ * Marshal and unmarshal between POJOs and Comma separated values (CSV) format using Camel Bindy
  */
 @Dataformat("bindy-csv")
 public class BindyCsvDataFormat extends BindyAbstractDataFormat {
@@ -69,10 +66,11 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
         return "bindy-csv";
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void marshal(Exchange exchange, Object body, OutputStream outputStream) throws Exception {
 
-        BindyCsvFactory factory = (BindyCsvFactory)getFactory();
+        BindyCsvFactory factory = (BindyCsvFactory) getFactory();
         org.apache.camel.util.ObjectHelper.notNull(factory, "not instantiated");
 
         // Get CRLF
@@ -94,7 +92,7 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
         // bit here and create one for us
         for (Object model : ObjectHelper.createIterable(body)) {
             if (model instanceof Map) {
-                models.add((Map<String, Object>)model);
+                models.add((Map<String, Object>) model);
             } else {
                 String name = model.getClass().getName();
                 Map<String, Object> row = new HashMap<>(1);
@@ -119,8 +117,8 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
     }
 
     /**
-     * check emptyStream and if CVSRecord is allow to process emptyStreams avoid
-     * IllegalArgumentException and return empty list when unmarshalling
+     * check emptyStream and if CVSRecord is allow to process emptyStreams avoid IllegalArgumentException and return
+     * empty list when unmarshalling
      */
     private boolean checkEmptyStream(BindyCsvFactory factory, InputStream inputStream) throws IOException {
         boolean allowEmptyStream = factory.isAllowEmptyStream();
@@ -138,8 +136,9 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
         return canReturnEmptyListOfModels;
     }
 
+    @Override
     public Object unmarshal(Exchange exchange, InputStream inputStream) throws Exception {
-        BindyCsvFactory factory = (BindyCsvFactory)getFactory();
+        BindyCsvFactory factory = (BindyCsvFactory) getFactory();
         org.apache.camel.util.ObjectHelper.notNull(factory, "not instantiated");
 
         // List of Pojos
@@ -156,9 +155,10 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
             // Retrieve the separator defined to split the record
             String separator = factory.getSeparator();
             String quote = factory.getQuote();
-            org.apache.camel.util.ObjectHelper.notNull(separator, "The separator has not been defined in the annotation @CsvRecord or not instantiated during initModel.");
+            org.apache.camel.util.ObjectHelper.notNull(separator,
+                    "The separator has not been defined in the annotation @CsvRecord or not instantiated during initModel.");
             Boolean removeQuotes = factory.getRemoveQuotes();
-            AtomicInteger count = new AtomicInteger(0);
+            AtomicInteger count = new AtomicInteger();
 
             // Use a Stream to stream a file across.
             try (Stream<String> lines = new BufferedReader(in).lines()) {
@@ -181,7 +181,7 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
 
                 // BigIntegerFormatFactory if models list is empty or not
                 // If this is the case (correspond to an empty stream, ...)
-                if (models.size() == 0) {
+                if (models.isEmpty() && !isAllowEmptyStream()) {
                     throw new java.lang.IllegalArgumentException("No records have been defined in the CSV");
                 } else {
                     return extractUnmarshalResult(models);
@@ -195,12 +195,22 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
 
     }
 
-    private Consumer<String> consumeFile(BindyCsvFactory factory, List<Map<String, Object>> models,
-                                         String separator, Boolean removeQuotes, String quote, AtomicInteger count) {
+    private Consumer<String> consumeFile(
+            BindyCsvFactory factory, List<Map<String, Object>> models,
+            String separator, Boolean removeQuotes, String quote, AtomicInteger count) {
         return line -> {
             try {
                 // Trim the line coming in to remove any trailing whitespace
-                String trimmedLine = line.trim();
+                String trimmedLine;
+
+                // if separator is a tab, don't trim any leading whitespaces (could be empty values separated by tabs)
+                if (separator.equals("\t")) {
+                    // trim only trailing whitespaces (remove new lines etc but keep tab character)
+                    trimmedLine = line.replaceAll("[ \\n\\x0B\\f\\r]+$", "");
+                } else {
+                    trimmedLine = line.trim();
+                }
+
                 // Increment counter
                 count.incrementAndGet();
                 Map<String, Object> model;
@@ -258,9 +268,8 @@ public class BindyCsvDataFormat extends BindyAbstractDataFormat {
     }
 
     /**
-     * Unquote the tokens, by removing leading and trailing quote chars, as will
-     * handling fixing broken tokens which may have been split by a separator
-     * inside a quote.
+     * Unquote the tokens, by removing leading and trailing quote chars, as will handling fixing broken tokens which may
+     * have been split by a separator inside a quote.
      */
     private List<String> unquoteTokens(List<String> result, List<String> separators, String quote) {
         // a current quoted token which we assemble from the broken pieces

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,10 @@ package org.apache.camel.component.salesforce;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.salesforce.api.dto.Limits;
 import org.apache.camel.component.salesforce.api.dto.Limits.Usage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class LimitsIntegrationTest extends AbstractSalesforceTestBase {
 
@@ -29,7 +32,7 @@ public class LimitsIntegrationTest extends AbstractSalesforceTestBase {
     public void shouldFetchLimitsForOrganization() {
         final Limits limits = template.requestBody("direct:test-limits", NOT_USED, Limits.class);
 
-        assertNotNull("Should fetch limits from Salesforce REST API", limits);
+        assertNotNull(limits, "Should fetch limits from Salesforce REST API");
 
         assertLimitIsFetched("ConcurrentAsyncGetReportInstances", limits.getConcurrentAsyncGetReportInstances());
 
@@ -41,8 +44,7 @@ public class LimitsIntegrationTest extends AbstractSalesforceTestBase {
 
         assertLimitIsFetched("DailyBulkApiRequests", limits.getDailyBulkApiRequests());
 
-        assertLimitIsFetched("DailyDurableGenericStreamingApiEvents",
-                limits.getDailyDurableGenericStreamingApiEvents());
+        assertLimitIsFetched("DailyDurableGenericStreamingApiEvents", limits.getDailyDurableGenericStreamingApiEvents());
 
         assertLimitIsFetched("DailyDurableStreamingApiEvents", limits.getDailyDurableStreamingApiEvents());
 
@@ -80,9 +82,9 @@ public class LimitsIntegrationTest extends AbstractSalesforceTestBase {
     }
 
     private static void assertLimitIsFetched(String property, Usage usage) {
-        assertNotNull("Usage for `" + property + "` should be defined", usage);
-        assertNotEquals("Max usage for `" + property + "` should be defined", 0, usage.getMax());
-        assertNotEquals("Remaining usage for `" + property + "` should be defined", 0, usage.getRemaining());
+        assertNotNull(usage, "Usage for `" + property + "` should be defined");
+        assertNotEquals(0, usage.getMax(), "Max usage for `" + property + "` should be defined");
+        assertNotEquals(0, usage.getRemaining(), "Remaining usage for `" + property + "` should be defined");
     }
 
     @Override

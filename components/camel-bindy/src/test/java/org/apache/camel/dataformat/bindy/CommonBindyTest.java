@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,12 @@ import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-public abstract class CommonBindyTest extends AbstractJUnit4SpringContextTests {
+@CamelSpringTest
+public abstract class CommonBindyTest {
 
     public static final String URI_MOCK_RESULT = "mock:result";
     public static final String URI_MOCK_ERROR = "mock:error";
@@ -35,13 +36,13 @@ public abstract class CommonBindyTest extends AbstractJUnit4SpringContextTests {
 
     protected static final Logger LOG = LoggerFactory.getLogger(CommonBindyTest.class);
 
-    @Produce(uri = URI_DIRECT_START)
+    @Produce(URI_DIRECT_START)
     public ProducerTemplate template;
 
-    @EndpointInject(uri = URI_MOCK_RESULT)
+    @EndpointInject(URI_MOCK_RESULT)
     public MockEndpoint result;
 
-    @EndpointInject(uri = URI_MOCK_ERROR)
+    @EndpointInject(URI_MOCK_ERROR)
     public MockEndpoint error;
 
 }

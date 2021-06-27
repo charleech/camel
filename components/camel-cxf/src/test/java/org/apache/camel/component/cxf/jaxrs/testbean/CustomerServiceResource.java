@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-
 // START SNIPPET: example
 @Path("/customerservice/")
 public interface CustomerServiceResource {
@@ -36,14 +35,17 @@ public interface CustomerServiceResource {
     @PUT
     @Path("/customers/")
     Response updateCustomer(Customer customer);
-    
+
     @Path("/{id}")
     @PUT()
-    @Consumes({ "application/xml", "text/plain",
-                    "application/json" })
-    @Produces({ "application/xml", "text/plain",
-                    "application/json" })
-    Object invoke(@PathParam("id") String id,
-                    String payload);
+    @Consumes({
+            "application/xml", "text/plain",
+            "application/json" })
+    @Produces({
+            "application/xml", "text/plain",
+            "application/json" })
+    Object invoke(
+            @PathParam("id") String id,
+            String payload);
 }
 // END SNIPPET: example

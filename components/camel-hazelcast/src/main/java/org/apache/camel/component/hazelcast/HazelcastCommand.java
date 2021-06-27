@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,16 @@ package org.apache.camel.component.hazelcast;
 
 public enum HazelcastCommand {
 
-    map, multimap, queue, topic, seda, set, atomicvalue, instance, list, replicatedmap, ringbuffer
+    map,
+    multimap,
+    queue,
+    topic,
+    seda,
+    set,
+    atomicvalue,
+    instance,
+    list,
+    replicatedmap,
+    ringbuffer
 
 }

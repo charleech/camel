@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,8 @@ import org.apache.camel.util.ObjectHelper;
 import org.apache.olingo.odata2.api.edm.Edm;
 
 /**
- * Holder class for {@link org.apache.camel.component.olingo2.api.Olingo2App}
- * and its lazily read {@link org.apache.olingo.odata2.api.edm.Edm}.
+ * Holder class for {@link org.apache.camel.component.olingo2.api.Olingo2App} and its lazily read
+ * {@link org.apache.olingo.odata2.api.edm.Edm}.
  */
 public class Olingo2AppWrapper {
 
@@ -48,7 +48,7 @@ public class Olingo2AppWrapper {
     }
 
     // double checked locking based singleton Edm reader
-    public Edm getEdm() throws RuntimeCamelException {
+    public Edm getEdm(Map<String, String> endpointHttpHeaders) throws RuntimeCamelException {
         Edm localEdm = edm;
         if (localEdm == null) {
 
@@ -59,7 +59,7 @@ public class Olingo2AppWrapper {
 
                     final CountDownLatch latch = new CountDownLatch(1);
                     final Exception[] error = new Exception[1];
-                    olingo2App.read(null, "$metadata", null, null, new Olingo2ResponseHandler<Edm>() {
+                    olingo2App.read(null, "$metadata", null, endpointHttpHeaders, new Olingo2ResponseHandler<Edm>() {
 
                         @Override
                         public void onResponse(Edm response, Map<String, String> responseHeaders) {
@@ -89,8 +89,7 @@ public class Olingo2AppWrapper {
                             if (ex instanceof RuntimeCamelException) {
                                 throw (RuntimeCamelException) ex;
                             } else {
-                                final String message = ex.getMessage() != null
-                                    ? ex.getMessage() : ex.getClass().getName();
+                                final String message = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName();
                                 throw new RuntimeCamelException("Error reading EDM: " + message, ex);
                             }
                         }

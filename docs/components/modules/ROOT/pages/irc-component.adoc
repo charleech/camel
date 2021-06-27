@@ -1,9 +1,20 @@
 [[irc-component]]
-== IRC Component
+= IRC Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-irc/src/main/docs/irc-component.adoc
+:docTitle: IRC
+:artifactId: camel-irc
+:description: Send and receive messages to/from and IRC chat.
+:since: 1.1
+:supportLevel: Stable
+:component-header: Both producer and consumer are supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/irc.adoc[opts=optional]
 
-*Available as of Camel version 1.1*
+*Since Camel {since}*
 
-The *irc* component implements an
+*{component-header}*
+
+The IRC component implements an
 http://en.wikipedia.org/wiki/Internet_Relay_Chat[IRC] (Internet Relay
 Chat) transport.
 
@@ -20,30 +31,21 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
-
-[source,java]
----------------------------------------------------------------------
-irc:nick@host[:port]/#room[?options]
-irc:nick@host[:port]?channels=#channel1,#channel2,#channel3[?options]
----------------------------------------------------------------------
-
-You can append query options to the URI in the following format,
-`?option=value&option=value&...`
-
-### Options
+== Options
 
 
 // component options: START
-The IRC component supports 2 options, which are listed below.
+The IRC component supports 4 options, which are listed below.
 
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *useGlobalSslContext Parameters* (security) | Enable usage of global SSL context parameters. | false | boolean
-| *resolveProperty Placeholders* (advanced) | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | boolean
+| *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+| *useGlobalSslContextParameters* (security) | Enable usage of global SSL context parameters. | false | boolean
 |===
 // component options: END
 
@@ -62,7 +64,7 @@ irc:hostname:port
 
 with the following path and query parameters:
 
-==== Path Parameters (2 parameters):
+=== Path Parameters (2 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -73,23 +75,25 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (25 parameters):
+=== Query Parameters (27 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
 | *autoRejoin* (common) | Whether to auto re-join when being kicked | true | boolean
+| *channels* (common) | Comma separated list of IRC channels. |  | String
 | *commandTimeout* (common) | Delay in milliseconds before sending commands after the connection is established. | 5000 | long
+| *keys* (common) | Comma separated list of keys for channels. |  | String
 | *namesOnJoin* (common) | Sends NAMES command to channel after joining it. onReply has to be true in order to process the result which will have the header value irc.num = '353'. | false | boolean
 | *nickname* (common) | The nickname used in chat. |  | String
 | *persistent* (common) | *Deprecated* Use persistent messages. | true | boolean
 | *realname* (common) | The IRC user's actual name. |  | String
 | *bridgeErrorHandler* (consumer) | Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the consumer is trying to pickup incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler. By default the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions, that will be logged at WARN or ERROR level and ignored. | false | boolean
 | *exceptionHandler* (consumer) | To let the consumer use a custom ExceptionHandler. Notice if the option bridgeErrorHandler is enabled then this option is not in use. By default the consumer will deal with exceptions, that will be logged at WARN or ERROR level and ignored. |  | ExceptionHandler
-| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. |  | ExchangePattern
+| *exchangePattern* (consumer) | Sets the exchange pattern when the consumer creates an exchange. There are 3 enums and the value can be one of: InOnly, InOut, InOptionalOut |  | ExchangePattern
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *colors* (advanced) | Whether or not the server supports color codes. | true | boolean
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 | *onJoin* (filter) | Handle user join events. | true | boolean
 | *onKick* (filter) | Handle kick events. | true | boolean
 | *onMode* (filter) | Handle mode change events. | true | boolean
@@ -106,22 +110,6 @@ with the following path and query parameters:
 | *username* (security) | The IRC server user name. |  | String
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 3 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.irc.enabled* | Enable irc component | true | Boolean
-| *camel.component.irc.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-| *camel.component.irc.use-global-ssl-context-parameters* | Enable usage of global SSL context parameters. | false | Boolean
-|===
-// spring-boot-auto-configure options: END
 
 
 
@@ -129,15 +117,15 @@ The component supports 3 options, which are listed below.
 
 
 
-### SSL Support
+== SSL Support
 
-#### Using the JSSE Configuration Utility
+=== Using the JSSE Configuration Utility
 
-As of Camel 2.9, the IRC component supports SSL/TLS configuration
-through the link:camel-configuration-utilities.html[Camel JSSE
-Configuration Utility].  This utility greatly decreases the amount of
+The IRC component supports SSL/TLS configuration
+through the xref:manual::camel-configuration-utilities.adoc[Camel JSSE
+Configuration Utility].  This utility greatly decreases the amount of
 component specific code you need to write and is configurable at the
-endpoint and component levels.  The following examples demonstrate how
+endpoint and component levels.  The following examples demonstrate how
 to use the utility with the IRC component.
 
 [[IRC-Programmaticconfigurationoftheendpoint]]
@@ -182,7 +170,7 @@ Spring DSL based configuration of endpoint
   <to uri="ircs://camel-prd-user@server:6669/#camel-test?nickname=camel-prd&password=password&sslContextParameters=#sslContextParameters"/>...
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-#### Using the legacy basic configuration options
+=== Using the legacy basic configuration options
 
 You can also connect to an SSL enabled IRC server, as follows:
 
@@ -201,9 +189,9 @@ If you need to provide your own custom trust manager, use the
 ircs:host[:port]/#room?username=user&password=pass&trustManager=#referenceToMyTrustManagerBean
 ----------------------------------------------------------------------------------------------
 
-### Using keys
+== Using keys
 
-*Available as of Camel 2.2*
+*Since Camel 2.2*
 
 Some irc rooms requires you to provide a key to be able to join that
 channel. The key is just a secret word.
@@ -215,7 +203,7 @@ For example we join 3 channels where as only channel 1 and 3 uses a key.
 irc:nick@irc.server.org?channels=#chan1,#chan2,#chan3&keys=chan1Key,,chan3key
 -----------------------------------------------------------------------------
 
-### Getting a list of users of the channel
+== Getting a list of users of the channel
 
 Using the `namesOnJoin` option one can invoke the IRC-`NAMES` command after the component has joined a channel. 
 The server will reply with `irc.num = 353`. So in order to process the result the property `onReply` has to be `true`.
@@ -232,9 +220,16 @@ from("ircs:nick@myserver:1234/#mychannelname?namesOnJoin=true&onReply=true")
 			.to("mock:result").stop();
 -----------------------------------------------------------------------------
 
-### See Also
+== Sending to different channel or a person
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+If you need to send messages to a different channel (or a person) which is not defined on IRC endpoint, you can specify a different destination in a message header.
+
+You can specify the destination in the following header:
+
+[width="100%",cols="10%,10%,80%",options="header",]
+|=====================================================================
+|Header |Type |Description
+|`irc.sendTo` |`String` |The channel (or the person) name.
+|=====================================================================
+
+include::{page-component-version}@camel-spring-boot::page$irc-starter.adoc[]

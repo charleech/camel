@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,10 +32,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 
 /**
- * A Spring based {@link ScheduledPollConsumerScheduler} which uses a {@link CronTrigger} to define when the
- * poll should be triggered.
+ * A Spring based {@link ScheduledPollConsumerScheduler} which uses a {@link CronTrigger} to define when the poll should
+ * be triggered.
  */
-public class SpringScheduledPollConsumerScheduler extends ServiceSupport implements ScheduledPollConsumerScheduler, NonManagedService {
+public class SpringScheduledPollConsumerScheduler extends ServiceSupport
+        implements ScheduledPollConsumerScheduler, NonManagedService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringScheduledPollConsumerScheduler.class);
     private CamelContext camelContext;
@@ -113,11 +114,14 @@ public class SpringScheduledPollConsumerScheduler extends ServiceSupport impleme
     @Override
     protected void doStart() throws Exception {
         StringHelper.notEmpty(cron, "cron", this);
+        // special for cron where we replace + as space
+        cron = cron.replace('+', ' ');
 
         trigger = new CronTrigger(getCron(), getTimeZone());
 
         if (taskScheduler == null) {
-            taskScheduler = new CamelThreadPoolTaskScheduler(getCamelContext(), consumer, consumer.getEndpoint().getEndpointUri());
+            taskScheduler
+                    = new CamelThreadPoolTaskScheduler(getCamelContext(), consumer, consumer.getEndpoint().getEndpointUri());
             taskScheduler.afterPropertiesSet();
             destroyTaskScheduler = true;
         }

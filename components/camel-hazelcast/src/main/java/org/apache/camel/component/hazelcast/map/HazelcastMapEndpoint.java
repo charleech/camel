@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.hazelcast.map;
 
 import com.hazelcast.core.HazelcastInstance;
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
@@ -26,22 +27,26 @@ import org.apache.camel.component.hazelcast.HazelcastDefaultEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 
 /**
- * The hazelcast-map component is used to access <a href="http://www.hazelcast.com/">Hazelcast</a> distributed map.
+ * Perform operations on <a href="http://www.hazelcast.com/">Hazelcast</a> distributed map.
  */
-@UriEndpoint(firstVersion = "2.7.0", scheme = "hazelcast-map", title = "Hazelcast Map", syntax = "hazelcast-map:cacheName", label = "cache,datagrid")
+@UriEndpoint(firstVersion = "2.7.0", scheme = "hazelcast-map", title = "Hazelcast Map", syntax = "hazelcast-map:cacheName",
+             category = { Category.CACHE, Category.DATAGRID })
 public class HazelcastMapEndpoint extends HazelcastDefaultEndpoint {
 
-    public HazelcastMapEndpoint(HazelcastInstance hazelcastInstance, String uri, String cacheName, HazelcastDefaultComponent component) {
+    public HazelcastMapEndpoint(HazelcastInstance hazelcastInstance, String uri, String cacheName,
+                                HazelcastDefaultComponent component) {
         super(hazelcastInstance, uri, component, cacheName);
         setCommand(HazelcastCommand.map);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         HazelcastMapConsumer answer = new HazelcastMapConsumer(hazelcastInstance, this, processor, cacheName);
         configureConsumer(answer);
         return answer;
     }
 
+    @Override
     public Producer createProducer() throws Exception {
         return new HazelcastMapProducer(hazelcastInstance, this, cacheName);
     }

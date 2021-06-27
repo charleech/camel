@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 package org.apache.camel.component.jclouds;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.RoutesBuilder;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 
 /**
  * There is a jclouds fallback type-converter that may cause issue when stream caching is enabled.
@@ -28,7 +31,7 @@ import org.junit.Test;
 public class JcloudsFileConsumerStreamCachingIssueTest extends CamelTestSupport {
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("target/foo");
         super.setUp();
@@ -49,7 +52,7 @@ public class JcloudsFileConsumerStreamCachingIssueTest extends CamelTestSupport 
             @Override
             public void configure() throws Exception {
                 from("file:target/foo").streamCaching()
-                    .to("mock:foo");
+                        .to("mock:foo");
             }
         };
     }

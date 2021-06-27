@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,9 +41,8 @@ public enum AsteriskAction implements Function<Exchange, ManagerAction> {
         @Override
         public ManagerAction apply(Exchange exchange) {
             return new ExtensionStateAction(
-                exchange.getIn().getHeader(AsteriskConstants.EXTENSION, String.class),
-                exchange.getIn().getHeader(AsteriskConstants.CONTEXT, String.class)
-            );
+                    exchange.getIn().getHeader(AsteriskConstants.EXTENSION, String.class),
+                    exchange.getIn().getHeader(AsteriskConstants.CONTEXT, String.class));
         }
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,6 @@ package org.apache.camel.component.undertow;
 import org.apache.camel.spi.annotations.SendDynamic;
 
 @SendDynamic("undertow")
-public class HttpSendDynamicAware extends org.apache.camel.http.common.HttpSendDynamicAware {
+public class HttpSendDynamicAware extends org.apache.camel.http.base.HttpSendDynamicAware {
 
 }

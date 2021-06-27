@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,21 @@ package org.apache.camel.component.fhir;
 
 import java.util.List;
 import java.util.Set;
+
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.FhirVersionEnum;
 import ca.uhn.fhir.context.ParserOptions;
 import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.parser.IParserErrorHandler;
 import org.apache.camel.spi.DataFormat;
+import org.apache.camel.spi.DataFormatContentTypeHeader;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.ObjectHelper;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.instance.model.api.IIdType;
 
-public abstract class FhirDataFormat extends ServiceSupport implements DataFormat, DataFormatName {
+public abstract class FhirDataFormat extends ServiceSupport implements DataFormat, DataFormatName, DataFormatContentTypeHeader {
 
     private FhirContext fhirContext;
     private String fhirVersion;
@@ -42,7 +44,6 @@ public abstract class FhirDataFormat extends ServiceSupport implements DataForma
     private List<Class<? extends IBaseResource>> preferTypes;
     private boolean omitResourceId;
     private IIdType forceResourceId;
-    private Set<String> encodeElementsAppliesToResourceTypes;
     private boolean encodeElementsAppliesToChildResourcesOnly;
     private Set<String> encodeElements;
     private Set<String> dontEncodeElements;
@@ -132,14 +133,6 @@ public abstract class FhirDataFormat extends ServiceSupport implements DataForma
         this.forceResourceId = forceResourceId;
     }
 
-    public Set<String> getEncodeElementsAppliesToResourceTypes() {
-        return encodeElementsAppliesToResourceTypes;
-    }
-
-    public void setEncodeElementsAppliesToResourceTypes(Set<String> encodeElementsAppliesToResourceTypes) {
-        this.encodeElementsAppliesToResourceTypes = encodeElementsAppliesToResourceTypes;
-    }
-
     public boolean isEncodeElementsAppliesToChildResourcesOnly() {
         return encodeElementsAppliesToChildResourcesOnly;
     }
@@ -216,9 +209,6 @@ public abstract class FhirDataFormat extends ServiceSupport implements DataForma
         }
         if (ObjectHelper.isNotEmpty(getEncodeElements())) {
             parser.setEncodeElements(getEncodeElements());
-        }
-        if (ObjectHelper.isNotEmpty(getEncodeElementsAppliesToResourceTypes())) {
-            parser.setEncodeElementsAppliesToResourceTypes(getEncodeElementsAppliesToResourceTypes());
         }
         if (ObjectHelper.isNotEmpty(getForceResourceId())) {
             parser.setEncodeForceResourceId(getForceResourceId());

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,18 +16,31 @@
  */
 package org.apache.camel.component.servlet;
 
-import org.junit.Before;
+import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.DeploymentInfo;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.web.context.ContextLoaderListener;
 
 public class HttpClientRouteSpringTest extends HttpClientRouteTest {
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         startCamelContext = false;
         super.setUp();
     }
-   
-    protected String getConfiguration() {
-        return "/org/apache/camel/component/servlet/web-spring.xml";
+
+    @Override
+    protected DeploymentInfo getDeploymentInfo() {
+        return Servlets.deployment()
+                .setClassLoader(getClass().getClassLoader())
+                .setContextPath(CONTEXT)
+                .setDeploymentName(getClass().getName())
+                .addInitParameter("contextConfigLocation", "classpath:org/apache/camel/component/servlet/camelContext.xml")
+                .addListener(Servlets.listener(ContextLoaderListener.class))
+                .addServlet(Servlets.servlet("CamelServlet", CamelHttpTransportServlet.class)
+                        .addInitParam("matchOnUriPrefix", "true")
+                        .addMapping("/services/*"));
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.processor.jpa;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.persistence.OptimisticLockException;
 
 import org.apache.camel.AggregationStrategy;
@@ -25,14 +26,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.examples.Customer;
-import org.apache.camel.spring.SpringRouteBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class JpaPollingConsumerLockEntityTest extends AbstractJpaTest {
     protected static final String SELECT_ALL_STRING = "select x from " + Customer.class.getName() + " x";
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -53,9 +53,8 @@ public class JpaPollingConsumerLockEntityTest extends AbstractJpaTest {
 
         MockEndpoint mock = getMockEndpoint("mock:locked");
         mock.expectedBodiesReceived(
-            "orders: 1",
-            "orders: 2"
-        );
+                "orders: 1",
+                "orders: 2");
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("name", "Donald%");
@@ -87,7 +86,7 @@ public class JpaPollingConsumerLockEntityTest extends AbstractJpaTest {
 
     @Override
     protected RouteBuilder createRouteBuilder() {
-        return new SpringRouteBuilder() {
+        return new RouteBuilder() {
             public void configure() {
 
                 AggregationStrategy enrichStrategy = new AggregationStrategy() {
@@ -101,27 +100,31 @@ public class JpaPollingConsumerLockEntityTest extends AbstractJpaTest {
                 };
 
                 onException(Exception.class)
-                    .setBody().simple("${exception}")
-                    .to("mock:error")
-                    .handled(true);
+                        .setBody().simple("${exception}")
+                        .to("mock:error")
+                        .handled(true);
 
                 from("direct:locked")
-                    .onException(OptimisticLockException.class)
+                        .onException(OptimisticLockException.class)
                         .redeliveryDelay(60)
                         .maximumRedeliveries(2)
-                    .end()
-                    .pollEnrich().simple("jpa://" + Customer.class.getName() + "?lockModeType=OPTIMISTIC_FORCE_INCREMENT&query=select c from Customer c where c.name like '${header.name}'")
-                    .aggregationStrategy(enrichStrategy)
-                    .to("jpa://" + Customer.class.getName())
-                    .setBody().simple("orders: ${body.orderCount}")
-                    .to("mock:locked");
+                        .end()
+                        .pollEnrich()
+                        .simple("jpa://" + Customer.class.getName()
+                                + "?lockModeType=OPTIMISTIC_FORCE_INCREMENT&query=select c from Customer c where c.name like '${header.name}'")
+                        .aggregationStrategy(enrichStrategy)
+                        .to("jpa://" + Customer.class.getName())
+                        .setBody().simple("orders: ${body.orderCount}")
+                        .to("mock:locked");
 
                 from("direct:not-locked")
-                    .pollEnrich().simple("jpa://" + Customer.class.getName() + "?query=select c from Customer c where c.name like '${header.name}'")
-                    .aggregationStrategy(enrichStrategy)
-                    .to("jpa://" + Customer.class.getName())
-                    .setBody().simple("orders: ${body.orderCount}")
-                    .to("mock:not-locked");
+                        .pollEnrich()
+                        .simple("jpa://" + Customer.class.getName()
+                                + "?query=select c from Customer c where c.name like '${header.name}'")
+                        .aggregationStrategy(enrichStrategy)
+                        .to("jpa://" + Customer.class.getName())
+                        .setBody().simple("orders: ${body.orderCount}")
+                        .to("mock:not-locked");
             }
         };
     }

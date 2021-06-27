@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,12 +24,16 @@ import com.googlecode.jsendnsca.NonBlockingNagiosPassiveCheckSender;
 import com.googlecode.jsendnsca.PassiveCheckSender;
 import org.apache.camel.Exchange;
 import org.apache.camel.support.DefaultProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.camel.component.nagios.NagiosConstants.HOST_NAME;
 import static org.apache.camel.component.nagios.NagiosConstants.LEVEL;
 import static org.apache.camel.component.nagios.NagiosConstants.SERVICE_NAME;
 
 public class NagiosProducer extends DefaultProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NagiosProducer.class);
 
     private final PassiveCheckSender sender;
 
@@ -38,6 +42,7 @@ public class NagiosProducer extends DefaultProducer {
         this.sender = sender;
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         String message = exchange.getIn().getBody(String.class);
 
@@ -51,11 +56,11 @@ public class NagiosProducer extends DefaultProducer {
 
         MessagePayload payload = new MessagePayload(hostName, level, serviceName, message);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending notification to Nagios: {}", payload.getMessage());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Sending notification to Nagios: {}", payload.getMessage());
         }
         sender.send(payload);
-        log.trace("Sending notification done");
+        LOG.trace("Sending notification done");
     }
 
     @Override

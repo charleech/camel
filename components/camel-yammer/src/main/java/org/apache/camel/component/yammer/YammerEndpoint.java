@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,17 +16,19 @@
  */
 package org.apache.camel.component.yammer;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.ScheduledPollEndpoint;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.ScheduledPollEndpoint;
 
 /**
- * The yammer component allows you to interact with the Yammer enterprise social network.
+ * Interact with the Yammer enterprise social network.
  */
-@UriEndpoint(firstVersion = "2.12.0", scheme = "yammer", title = "Yammer", syntax = "yammer:function", label = "social")
+@UriEndpoint(firstVersion = "2.12.0", scheme = "yammer", title = "Yammer", syntax = "yammer:function",
+             category = { Category.SOCIAL, Category.CLOUD, Category.API })
 public class YammerEndpoint extends ScheduledPollEndpoint {
 
     @UriParam
@@ -40,36 +42,42 @@ public class YammerEndpoint extends ScheduledPollEndpoint {
     }
 
     public YammerEndpoint(String uri, YammerComponent yammerComponent, YammerConfiguration config) {
+        super(uri, yammerComponent);
         this.setConfig(config);
     }
 
+    @Override
+    public YammerComponent getComponent() {
+        return (YammerComponent) super.getComponent();
+    }
+
+    @Override
     public Producer createProducer() throws Exception {
         return new YammerMessageProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        switch (config.getFunctionType()) {
-        case MESSAGES:
-        case ALGO:
-        case FOLLOWING:
-        case MY_FEED:
-        case PRIVATE:
-        case SENT:
-        case RECEIVED:
-            return new YammerMessagePollingConsumer(this, processor);
-        case USERS:
-        case CURRENT:
-            return new YammerUserPollingConsumer(this, processor);
-        case RELATIONSHIPS:
-            return new YammerRelationshipPollingConsumer(this, processor);
-        default:
-            throw new Exception(String.format("%s is not a valid Yammer function type.", config.getFunction()));
-        }  
+        switch (config.getFunction()) {
+            case MESSAGES:
+            case ALGO:
+            case FOLLOWING:
+            case MY_FEED:
+            case PRIVATE:
+            case SENT:
+            case RECEIVED:
+                YammerMessagePollingConsumer answer = new YammerMessagePollingConsumer(this, processor);
+                configureConsumer(answer);
+                return answer;
+            case USERS:
+            case CURRENT:
+                YammerUserPollingConsumer answer2 = new YammerUserPollingConsumer(this, processor);
+                configureConsumer(answer2);
+                return answer2;
+            default:
+                throw new Exception(String.format("%s is not a valid Yammer function type.", config.getFunction()));
+        }
 
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     public YammerConfiguration getConfig() {
@@ -82,7 +90,8 @@ public class YammerEndpoint extends ScheduledPollEndpoint {
 
     @Override
     protected String createEndpointUri() {
-        return String.format("yammer://%s?consumerKey=%s&consumerSecret=%s&accessToken=%s", config.getFunction(), config.getConsumerKey(), config.getConsumerSecret(), config.getAccessToken());
+        return String.format("yammer://%s?consumerKey=%s&consumerSecret=%s&accessToken=%s", config.getFunction(),
+                config.getConsumerKey(), config.getConsumerSecret(), config.getAccessToken());
     }
 
 }

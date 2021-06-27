@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.micrometer.json;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -126,10 +127,12 @@ public class AbstractMicrometerService extends ServiceSupport {
         }
 
         // json mapper
-        this.mapper = new ObjectMapper().registerModule(new MicrometerModule(getDurationUnit(), getMatchingNames(), getMatchingTags()));
+        this.mapper = new ObjectMapper()
+                .registerModule(new MicrometerModule(getDurationUnit(), getMatchingNames(), getMatchingTags()));
         this.secondsMapper = getDurationUnit() == TimeUnit.SECONDS
                 ? this.mapper
-                : new ObjectMapper().registerModule(new MicrometerModule(TimeUnit.SECONDS, getMatchingNames(), getMatchingTags()));
+                : new ObjectMapper()
+                        .registerModule(new MicrometerModule(TimeUnit.SECONDS, getMatchingNames(), getMatchingTags()));
     }
 
     @Override

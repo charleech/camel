@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,11 +29,11 @@ import org.apache.camel.util.ObjectHelper;
 import org.eclipse.jetty.util.resource.Resource;
 
 /**
- * A Jetty {@link Resource} to load from the classpath using Camels {@link ClassResolver}
- * which ensures loading resources works in OSGi and other containers.
+ * A Jetty {@link Resource} to load from the classpath using Camels {@link ClassResolver} which ensures loading
+ * resources works in OSGi and other containers.
  */
 public class JettyClassPathResource extends Resource {
-    
+
     private final ClassResolver resolver;
     private final String path;
 

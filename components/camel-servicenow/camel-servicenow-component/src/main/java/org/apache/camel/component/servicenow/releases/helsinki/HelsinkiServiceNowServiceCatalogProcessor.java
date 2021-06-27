@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.servicenow.releases.helsinki;
 
 import javax.ws.rs.HttpMethod;
@@ -58,27 +57,27 @@ class HelsinkiServiceNowServiceCatalogProcessor extends AbstractServiceNowProces
         final String apiVersion = getApiVersion(in);
 
         Response response = ObjectHelper.isEmpty(sysId)
-            ? client.reset()
-                .types(MediaType.APPLICATION_JSON_TYPE)
-                .path("sn_sc")
-                .path(apiVersion)
-                .path("servicecatalog")
-                .path("catalogs")
-                .query(ServiceNowParams.SYSPARM_LIMIT, in)
-                .query(ServiceNowParams.SYSPARM_QUERY, in)
-                .query(ServiceNowParams.SYSPARM_VIEW, in)
-                .query(responseModel)
-                .invoke(HttpMethod.GET)
-            : client.reset()
-                .types(MediaType.APPLICATION_JSON_TYPE)
-                .path("sn_sc")
-                .path(apiVersion)
-                .path("servicecatalog")
-                .path("catalogs")
-                .path(sysId)
-                .query(ServiceNowParams.SYSPARM_VIEW, in)
-                .query(responseModel)
-                .invoke(HttpMethod.GET);
+                ? client.reset()
+                        .types(MediaType.APPLICATION_JSON_TYPE)
+                        .path("sn_sc")
+                        .path(apiVersion)
+                        .path("servicecatalog")
+                        .path("catalogs")
+                        .query(ServiceNowParams.SYSPARM_LIMIT, in)
+                        .query(ServiceNowParams.SYSPARM_QUERY, in)
+                        .query(ServiceNowParams.SYSPARM_VIEW, in)
+                        .query(responseModel)
+                        .invoke(HttpMethod.GET)
+                : client.reset()
+                        .types(MediaType.APPLICATION_JSON_TYPE)
+                        .path("sn_sc")
+                        .path(apiVersion)
+                        .path("servicecatalog")
+                        .path("catalogs")
+                        .path(sysId)
+                        .query(ServiceNowParams.SYSPARM_VIEW, in)
+                        .query(responseModel)
+                        .invoke(HttpMethod.GET);
 
         setBodyAndHeaders(in, responseModel, response);
     }
@@ -99,19 +98,19 @@ class HelsinkiServiceNowServiceCatalogProcessor extends AbstractServiceNowProces
         final String apiVersion = getApiVersion(in);
 
         Response response = client.reset()
-            .types(MediaType.APPLICATION_JSON_TYPE)
-            .path("sn_sc")
-            .path(apiVersion)
-            .path("servicecatalog")
-            .path("catalogs")
-            .path(ObjectHelper.notNull(sysId, "sysId"))
-            .path("categories")
-            .query(ServiceNowParams.SYSPARM_TOP_LEVEL_ONLY, in)
-            .query(ServiceNowParams.SYSPARM_LIMIT, in)
-            .query(ServiceNowParams.SYSPARM_VIEW, in)
-            .query(ServiceNowParams.SYSPARM_OFFSET, in)
-            .query(responseModel)
-            .invoke(HttpMethod.GET);
+                .types(MediaType.APPLICATION_JSON_TYPE)
+                .path("sn_sc")
+                .path(apiVersion)
+                .path("servicecatalog")
+                .path("catalogs")
+                .path(ObjectHelper.notNull(sysId, "sysId"))
+                .path("categories")
+                .query(ServiceNowParams.SYSPARM_TOP_LEVEL_ONLY, in)
+                .query(ServiceNowParams.SYSPARM_LIMIT, in)
+                .query(ServiceNowParams.SYSPARM_VIEW, in)
+                .query(ServiceNowParams.SYSPARM_OFFSET, in)
+                .query(responseModel)
+                .invoke(HttpMethod.GET);
 
         setBodyAndHeaders(in, responseModel, response);
     }

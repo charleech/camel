@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,12 @@ package org.apache.camel.dataformat.xstream;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.dataformat.JsonLibrary;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MarshalDomainObjectJSONTest extends MarshalDomainObjectTest {
-    
+
     @Test
     public void testMarshalAndUnmarshalWithPrettyPrint() throws Exception {
         PurchaseOrder order = new PurchaseOrder();
@@ -39,9 +41,9 @@ public class MarshalDomainObjectJSONTest extends MarshalDomainObjectTest {
         String marshalledAsString = context.getTypeConverter().convertTo(String.class, marshalled);
         // the line-separator used by JsonWriter is "\n", even on windows
         String expected = "{\"org.apache.camel.dataformat.xstream.PurchaseOrder\": {\n"
-                          + "  \"name\": \"pretty printed Camel\",\n" 
+                          + "  \"name\": \"pretty printed Camel\",\n"
                           + "  \"price\": 7.91,\n"
-                          + "  \"amount\": 1.0\n" 
+                          + "  \"amount\": 1.0\n"
                           + "}}";
         assertEquals(expected, marshalledAsString);
 
@@ -50,17 +52,18 @@ public class MarshalDomainObjectJSONTest extends MarshalDomainObjectTest {
         mock.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("direct:in").marshal().json().to("mock:result");
+                from("direct:in").marshal().json(JsonLibrary.XStream).to("mock:result");
 
                 // just used for helping to marshal
-                from("direct:marshal").marshal().json();
+                from("direct:marshal").marshal().json(JsonLibrary.XStream);
 
                 from("direct:reverse").unmarshal().json(JsonLibrary.XStream, PurchaseOrder.class).to("mock:reverse");
 
-                from("direct:inPretty").marshal().json(true);
+                from("direct:inPretty").marshal().json(JsonLibrary.XStream, true);
                 from("direct:backPretty").unmarshal().json(JsonLibrary.XStream, PurchaseOrder.class, true).to("mock:reverse");
             }
         };

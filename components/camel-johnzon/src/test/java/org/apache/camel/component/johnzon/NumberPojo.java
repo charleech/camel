@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -129,6 +129,6 @@ public class NumberPojo {
     @Override
     public String toString() {
         return "NumberPojo [bg=" + bg + ", intNumber=" + intNumber + ", longNumber=" + longNumber + ", doubleNumber="
-            + doubleNumber + ", floatNumber=" + floatNumber + ", bool=" + bool + "]";
+               + doubleNumber + ", floatNumber=" + floatNumber + ", bool=" + bool + "]";
     }
 }

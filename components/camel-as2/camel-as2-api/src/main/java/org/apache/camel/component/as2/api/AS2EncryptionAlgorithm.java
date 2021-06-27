@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,21 +42,22 @@ public enum AS2EncryptionAlgorithm {
     RC4(PKCSObjectIdentifiers.rc4),
     SEED_CBC(CMSAlgorithm.SEED_CBC);
 
-    
     private ASN1ObjectIdentifier algorithmOID;
-    
+
     private AS2EncryptionAlgorithm(ASN1ObjectIdentifier algorithmOID) {
         this.algorithmOID = algorithmOID;
     }
+
     public String getAlgorithmName() {
         return this.name();
     }
+
     public ASN1ObjectIdentifier getAlgorithmOID() {
         return algorithmOID;
     }
-    
+
     public static AS2EncryptionAlgorithm getAS2Algorithm(String algorithmName) {
         return AS2EncryptionAlgorithm.valueOf(algorithmName);
     }
-    
+
 }

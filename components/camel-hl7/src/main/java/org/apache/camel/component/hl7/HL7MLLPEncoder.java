@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,12 +41,13 @@ class HL7MLLPEncoder implements ProtocolEncoder {
     public void dispose(IoSession session) throws Exception {
     }
 
+    @Override
     public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
         if (message == null) {
             throw new IllegalArgumentException("Message to be encoded is null");
         } else if (message instanceof Exception) {
             // we cannot handle exceptions
-            throw (Exception)message;
+            throw (Exception) message;
         }
 
         byte[] body;
@@ -55,18 +56,19 @@ class HL7MLLPEncoder implements ProtocolEncoder {
         } else if (message instanceof String) {
             body = ((String) message).getBytes(config.getCharset());
         } else if (message instanceof byte[]) {
-            body = (byte[])message;
+            body = (byte[]) message;
         } else {
-            throw new IllegalArgumentException("The message to encode is not a supported type: "
+            throw new IllegalArgumentException(
+                    "The message to encode is not a supported type: "
                                                + message.getClass().getCanonicalName());
         }
 
         // put the data into the byte buffer
         IoBuffer buf = IoBuffer.allocate(body.length + 3).setAutoExpand(true);
-        buf.put((byte)config.getStartByte());
+        buf.put((byte) config.getStartByte());
         buf.put(body);
-        buf.put((byte)config.getEndByte1());
-        buf.put((byte)config.getEndByte2());
+        buf.put((byte) config.getEndByte1());
+        buf.put((byte) config.getEndByte2());
 
         // flip the buffer so we can use it to write to the out stream
         buf.flip();

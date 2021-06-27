@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,47 +22,51 @@ import java.io.InputStreamReader;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.MDM_T02;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.util.IOHelper;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test for the HL7MLLP Codec.
  */
 public class HL7MLLPNettyCodecLongTest extends HL7TestSupport {
 
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
+    @BindToRegistry("hl7decoder")
+    public HL7MLLPNettyDecoderFactory addDecoder() throws Exception {
 
-        // START SNIPPET: e1
         HL7MLLPNettyDecoderFactory decoder = new HL7MLLPNettyDecoderFactory();
         decoder.setCharset("iso-8859-1");
-        jndi.bind("hl7decoder", decoder);
-
-        HL7MLLPNettyEncoderFactory encoder = new HL7MLLPNettyEncoderFactory();
-        decoder.setCharset("iso-8859-1");
-        jndi.bind("hl7encoder", encoder);
-        // END SNIPPET: e1
-
-        return jndi;
+        return decoder;
     }
 
+    @BindToRegistry("hl7encoder")
+    public HL7MLLPNettyEncoderFactory addEncoder() throws Exception {
+
+        HL7MLLPNettyEncoderFactory encoder = new HL7MLLPNettyEncoderFactory();
+        encoder.setCharset("iso-8859-1");
+        return encoder;
+    }
+
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
-                from("netty4:tcp://127.0.0.1:" + getPort() + "?sync=true&encoder=#hl7encoder&decoder=#hl7decoder").process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        assertEquals(70010, exchange.getIn().getBody(byte[].class).length);
-                        MDM_T02 input = (MDM_T02)exchange.getIn().getBody(Message.class);
-                        assertEquals("2.5", input.getVersion());
-                        MSH msh = input.getMSH();
-                        assertEquals("20071129144629", msh.getDateTimeOfMessage().getTime().getValue());
-                        exchange.getOut().setBody("some response");
-                    }
-                }).to("mock:result");
+                from("netty:tcp://127.0.0.1:" + getPort() + "?sync=true&encoders=#hl7encoder&decoders=#hl7decoder")
+                        .process(new Processor() {
+                            public void process(Exchange exchange) throws Exception {
+                                assertEquals(70010, exchange.getIn().getBody(byte[].class).length);
+                                MDM_T02 input = (MDM_T02) exchange.getIn().getBody(Message.class);
+                                assertEquals("2.5", input.getVersion());
+                                MSH msh = input.getMSH();
+                                assertEquals("20071129144629", msh.getDateTimeOfMessage().getTime().getValue());
+                                exchange.getMessage().setBody("some response");
+                            }
+                        }).to("mock:result");
             }
         };
     }
@@ -80,7 +84,9 @@ public class HL7MLLPNettyCodecLongTest extends HL7TestSupport {
         }
         message = message.substring(0, message.length() - 1);
         assertEquals(70010, message.length());
-        String out = template.requestBody("netty4:tcp://127.0.0.1:" + getPort() + "?sync=true&encoder=#hl7encoder&decoder=#hl7decoder", message, String.class);
+        String out = template.requestBody(
+                "netty:tcp://127.0.0.1:" + getPort() + "?sync=true&encoders=#hl7encoder&decoders=#hl7decoder", message,
+                String.class);
         assertEquals("some response", out);
         // END SNIPPET: e2
     }

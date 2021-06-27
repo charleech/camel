@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,9 +36,10 @@ public class AtmosConfiguration {
 
     @UriPath
     private String name;
-    @UriPath @Metadata(required = true)
+    @UriPath
+    @Metadata(required = true)
     private AtmosOperation operation;
-    @UriParam
+    @UriParam(label = "security", secret = true)
     private String secretKey;
     @UriParam
     private String localPath;
@@ -48,17 +49,17 @@ public class AtmosConfiguration {
     private String newRemotePath;
     @UriParam
     private String query;
-    @UriParam
+    @UriParam(label = "security", secret = true)
     private String fullTokenId;
-    @UriParam
+    @UriParam(label = "advanced")
     private String uri;
-    @UriParam
-    private boolean enableSslValidation;
+    @UriParam(label = "security")
+    private boolean sslValidation;
 
     public void setClient(AtmosApi client) {
         this.client = client;
     }
-    
+
     public AtmosApi getClient() {
         return client;
     }
@@ -75,12 +76,12 @@ public class AtmosConfiguration {
         } catch (URISyntaxException use) {
             throw new AtmosException("wrong syntax for Atmos URI!", use);
         }
-        
-        if (!enableSslValidation) {
+
+        if (!sslValidation) {
             config.setDisableSslValidation(true);
         }
         AtmosApi atmosclient = new AtmosApiClient(config);
-        
+
         this.client = atmosclient;
     }
 
@@ -100,12 +101,12 @@ public class AtmosConfiguration {
     }
 
     /**
-     * Atmos shared secret
+     * The secret key to pass to the Atmos client (should be base64 encoded)
      */
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
     }
-    
+
     public String getLocalPath() {
         return localPath;
     }
@@ -116,7 +117,7 @@ public class AtmosConfiguration {
     public void setLocalPath(String localPath) {
         this.localPath = localPath;
     }
-    
+
     public String getRemotePath() {
         return remotePath;
     }
@@ -127,7 +128,7 @@ public class AtmosConfiguration {
     public void setRemotePath(String remotePath) {
         this.remotePath = remotePath;
     }
-    
+
     public String getNewRemotePath() {
         return newRemotePath;
     }
@@ -138,7 +139,7 @@ public class AtmosConfiguration {
     public void setNewRemotePath(String newRemotePath) {
         this.newRemotePath = newRemotePath;
     }
-    
+
     public String getQuery() {
         return query;
     }
@@ -149,7 +150,7 @@ public class AtmosConfiguration {
     public void setQuery(String query) {
         this.query = query;
     }
-    
+
     public String getFullTokenId() {
         return fullTokenId;
     }
@@ -160,7 +161,7 @@ public class AtmosConfiguration {
     public void setFullTokenId(String fullTokenId) {
         this.fullTokenId = fullTokenId;
     }
-    
+
     public AtmosOperation getOperation() {
         return operation;
     }
@@ -178,20 +179,20 @@ public class AtmosConfiguration {
     public void setUri(String uri) {
         this.uri = uri;
     }
-    
+
     public String getUri() {
         return uri;
     }
-    
-    public boolean isEnableSslValidation() {
-        return enableSslValidation;
+
+    public boolean isSslValidation() {
+        return sslValidation;
     }
 
     /**
      * Atmos SSL validation
      */
-    public void setEnableSslValidation(boolean enableSslValidation) {
-        this.enableSslValidation = enableSslValidation;
+    public void setSslValidation(boolean sslValidation) {
+        this.sslValidation = sslValidation;
     }
-    
+
 }

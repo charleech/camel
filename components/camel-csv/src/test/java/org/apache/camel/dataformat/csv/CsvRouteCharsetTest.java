@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,14 +21,16 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CsvRouteCharsetTest extends CamelTestSupport {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testUnMarshal() throws Exception {
+    void testUnMarshal() throws Exception {
         MockEndpoint endpoint = getMockEndpoint("mock:daltons");
         endpoint.expectedMessageCount(1);
         endpoint.assertIsSatisfied();
@@ -40,12 +42,11 @@ public class CsvRouteCharsetTest extends CamelTestSupport {
         assertEquals("Lücky Luke", data.get(2).get(0));
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                from("file:src/test/resources/?fileName=daltons-utf-8.csv&noop=true").
-                        unmarshal().csv().
-                        to("mock:daltons");
+                from("file:src/test/resources/?fileName=daltons-utf-8.csv&noop=true").unmarshal().csv().to("mock:daltons");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,19 +22,18 @@ import java.util.Map;
 import info.ganglia.gmetric4j.Publisher;
 import info.ganglia.gmetric4j.gmetric.GMetricSlope;
 import info.ganglia.gmetric4j.gmetric.GMetricType;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class GangliaProducerTest {
 
     private static final String BODY = "2.0";
@@ -62,7 +61,7 @@ public class GangliaProducerTest {
     private GangliaEndpoint mockEndpoint;
     @Mock
     private Exchange mockExchange;
-    @Mock
+    @Mock(lenient = true)
     private Message mockMessage;
     @Mock
     private GangliaConfiguration mockConf;
@@ -70,11 +69,10 @@ public class GangliaProducerTest {
 
     private GangliaProducer gangliaProducer;
 
-    @Before
+    @BeforeEach
     public void setup() {
         when(mockEndpoint.getConfiguration()).thenReturn(mockConf);
 
-        when(mockConf.getPrefix()).thenReturn(null);
         when(mockConf.getGroupName()).thenReturn(CONF_GROUP_NAME);
         when(mockConf.getMetricName()).thenReturn(CONF_METRIC_NAME);
         when(mockConf.getType()).thenReturn(CONF_TYPE);

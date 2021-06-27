@@ -19,7 +19,6 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:broker="http://activemq.apache.org/schema/core"
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
@@ -50,7 +49,8 @@
     </bean>
 
     <!-- define the activemq Camel component so we can integrate with the AMQ broker below -->
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent" depends-on="my-broker">
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent" depends-on="my-broker">
+        <property name="brokerURL" value="tcp://localhost:${ITestSupport.port3}"/>
         <!-- must indicate that we use transacted acknowledge mode -->
         <property name="transacted" value="true"/>
         <!-- refer to the transaction manager -->

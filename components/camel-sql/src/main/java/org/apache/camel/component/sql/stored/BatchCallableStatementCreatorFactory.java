@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.springframework.jdbc.core.CallableStatementCreatorFactory;
 import org.springframework.jdbc.core.SqlParameter;
 import org.springframework.jdbc.core.StatementCreatorUtils;
 
-
 public class BatchCallableStatementCreatorFactory {
 
     final CallableStatementCreatorFactory callableStatementCreatorFactory;
@@ -37,7 +36,6 @@ public class BatchCallableStatementCreatorFactory {
     final List<SqlParameter> sqlParameterList;
 
     final Template template;
-
 
     public BatchCallableStatementCreatorFactory(Template template) {
         this.template = template;
@@ -55,7 +53,8 @@ public class BatchCallableStatementCreatorFactory {
 
     private String formatSql() {
         return "{call " + this.template.getProcedureName() + "(" + repeatParameter(this.template.getParameterList()
-                .size()) + ")}";
+                .size())
+               + ")}";
     }
 
     private String repeatParameter(int size) {
@@ -78,9 +77,11 @@ public class BatchCallableStatementCreatorFactory {
 
                 SqlParameter sqlParameter;
                 if (inputParameter.getScale() != null) {
-                    sqlParameter = new SqlParameter(inputParameter.getName(), inputParameter.getSqlType(), inputParameter.getScale());
+                    sqlParameter = new SqlParameter(
+                            inputParameter.getName(), inputParameter.getSqlType(), inputParameter.getScale());
                 } else if (inputParameter.getTypeName() != null) {
-                    sqlParameter = new SqlParameter(inputParameter.getName(), inputParameter.getSqlType(), inputParameter.getTypeName());
+                    sqlParameter = new SqlParameter(
+                            inputParameter.getName(), inputParameter.getSqlType(), inputParameter.getTypeName());
                 } else {
                     sqlParameter = new SqlParameter(inputParameter.getName(), inputParameter.getSqlType());
                 }
@@ -91,7 +92,6 @@ public class BatchCallableStatementCreatorFactory {
                 throw new UnsupportedOperationException("Only IN parameters supported by batch!");
             }
         }
-
 
         return params;
     }

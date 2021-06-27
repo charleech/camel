@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,12 +21,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class VelocityValuesInPropertiesTest extends CamelTestSupport {
-    
-    @EndpointInject(uri = "mock:result")
+
+    @EndpointInject("mock:result")
     private MockEndpoint mock;
 
     @Test
@@ -36,7 +36,8 @@ public class VelocityValuesInPropertiesTest extends CamelTestSupport {
         template.send("direct:a", new Processor() {
             @Override
             public void process(Exchange exchange) throws Exception {
-                exchange.getIn().setHeader(VelocityConstants.VELOCITY_TEMPLATE, "Dear ${exchange.properties.name}. You ordered item ${exchange.properties.item}.");
+                exchange.getIn().setHeader(VelocityConstants.VELOCITY_TEMPLATE,
+                        "Dear ${exchange.properties.name}. You ordered item ${exchange.properties.item}.");
                 exchange.setProperty("name", "Christian");
                 exchange.setProperty("item", "7");
             }
@@ -45,12 +46,13 @@ public class VelocityValuesInPropertiesTest extends CamelTestSupport {
         mock.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 from("direct:a")
-                    .to("velocity:dummy")
-                    .to("mock:result");
+                        .to("velocity:dummy?allowTemplateFromHeader=true&allowContextMapAll=true")
+                        .to("mock:result");
             }
         };
     }

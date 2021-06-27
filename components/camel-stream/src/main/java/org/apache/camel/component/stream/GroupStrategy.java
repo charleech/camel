@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import java.util.List;
  * Strategy to control how lines should be grouped together.
  */
 public interface GroupStrategy {
-    
+
     Object groupLines(List<String> lines);
 
 }

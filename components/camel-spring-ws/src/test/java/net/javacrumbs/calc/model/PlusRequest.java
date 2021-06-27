@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@
 // Generated on: 2017.02.12 at 12:58:35 AM EET 
 //
 
-
 package net.javacrumbs.calc.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -30,11 +29,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
  * Java class for anonymous complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType>
@@ -52,9 +51,9 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "a",
-    "b"
-    })
+        "a",
+        "b"
+})
 @XmlRootElement(name = "plusRequest")
 public class PlusRequest {
 
@@ -68,7 +67,7 @@ public class PlusRequest {
     public int getA() {
         return a;
     }
-    
+
     /**
      * Sets the value of the a property.
      * 
@@ -76,7 +75,7 @@ public class PlusRequest {
     public void setA(int value) {
         this.a = value;
     }
-    
+
     /**
      * Gets the value of the b property.
      * 
@@ -84,7 +83,7 @@ public class PlusRequest {
     public int getB() {
         return b;
     }
-    
+
     /**
      * Sets the value of the b property.
      * 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,36 +23,26 @@ import org.apache.camel.component.influxdb.CamelInfluxDbException;
 import org.apache.camel.component.influxdb.InfluxDbConstants;
 import org.influxdb.dto.Point;
 
-@Converter
+@Converter(generateLoader = true)
 public final class CamelInfluxDbConverters {
 
     private CamelInfluxDbConverters() {
-
     }
 
     @Converter
     public static Point fromMapToPoint(Map<String, Object> map) {
-
-        Object measurenmentName = map.get(InfluxDbConstants.MEASUREMENT_NAME);
-
-        if (measurenmentName == null) {
-            String format = String.format("Unable to find the header for the measurement in:" + map.keySet().toString());
+        Object measurementName = map.get(InfluxDbConstants.MEASUREMENT_NAME);
+        if (measurementName == null) {
+            String format = String.format("Unable to find the header for the measurement in: %s", map.keySet().toString());
             throw new CamelInfluxDbException(format);
         }
 
-
-        String measurenmentNameString = measurenmentName.toString();
+        String measurenmentNameString = measurementName.toString();
         Point.Builder pointBuilder = Point.measurement(measurenmentNameString);
-
         map.remove(InfluxDbConstants.MEASUREMENT_NAME);
-
         pointBuilder.fields(map);
-        map.put(InfluxDbConstants.MEASUREMENT_NAME, measurenmentName);
-
-
+        map.put(InfluxDbConstants.MEASUREMENT_NAME, measurementName);
         return pointBuilder.build();
-
     }
-
 
 }

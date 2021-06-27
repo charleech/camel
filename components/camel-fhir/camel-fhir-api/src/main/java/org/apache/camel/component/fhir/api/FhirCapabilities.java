@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.fhir.api;
 
 import java.util.Map;
+
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.gclient.IFetchConformanceTyped;
 import org.hl7.fhir.instance.model.api.IBaseConformance;
@@ -34,10 +35,11 @@ public class FhirCapabilities {
 
     /**
      * Retrieve the conformance statement using the given model type
-     * @param type the model type
-     * @param extraParameters see {@link ExtraParameters} for a full list of parameters that can be passed, may be NULL
-     * @param <T> extends {@link IBaseConformance}
-     * @return the conformance statement
+     * 
+     * @param  type            the model type
+     * @param  extraParameters see {@link ExtraParameters} for a full list of parameters that can be passed, may be NULL
+     * @param  <T>             extends {@link IBaseConformance}
+     * @return                 the conformance statement
      */
     public <T extends IBaseConformance> T ofType(Class<T> type, Map<ExtraParameters, Object> extraParameters) {
         IFetchConformanceTyped<T> fetchConformanceTyped = client.capabilities().ofType(type);

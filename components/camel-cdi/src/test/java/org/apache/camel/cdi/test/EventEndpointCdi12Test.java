@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.cdi.test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -46,8 +47,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class EventEndpointCdi12Test {
@@ -115,12 +116,12 @@ public class EventEndpointCdi12Test {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test classes
-            .addClasses(EventConsumingRoute.class, EventProducingRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test classes
+                .addClasses(EventConsumingRoute.class, EventProducingRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Before
@@ -137,7 +138,8 @@ public class EventEndpointCdi12Test {
     @Test
     public void sendEventsToConsumers() throws InterruptedException {
         consumeObject.expectedMessageCount(8);
-        consumeObject.expectedBodiesReceived(1234, new EventPayload<>("foo"), new EventPayload<>("bar"), "test", new EventPayload<>(1), new EventPayload<>(2), 123L, 987L);
+        consumeObject.expectedBodiesReceived(1234, new EventPayload<>("foo"), new EventPayload<>("bar"), "test",
+                new EventPayload<>(1), new EventPayload<>(2), 123L, 987L);
 
         consumeString.expectedMessageCount(1);
         consumeString.expectedBodiesReceived("test");
@@ -164,7 +166,8 @@ public class EventEndpointCdi12Test {
         objectEvent.select(Long.class, new FooQualifier.Literal()).fire(123L);
         objectEvent.select(Long.class, new BarQualifier.Literal()).fire(987L);
 
-        assertIsSatisfied(2L, TimeUnit.SECONDS, consumeObject, consumeString, consumeStringPayload, consumeIntegerPayload, consumeFooQualifier, consumeBarQualifier);
+        assertIsSatisfied(2L, TimeUnit.SECONDS, consumeObject, consumeString, consumeStringPayload, consumeIntegerPayload,
+                consumeFooQualifier, consumeBarQualifier);
     }
 
     @Test

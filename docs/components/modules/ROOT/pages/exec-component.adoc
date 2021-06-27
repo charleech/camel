@@ -1,11 +1,22 @@
 [[exec-component]]
-== Exec Component
+= Exec Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-exec/src/main/docs/exec-component.adoc
+:docTitle: Exec
+:artifactId: camel-exec
+:description: Execute commands on the underlying operating system.
+:since: 2.3
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/exec.adoc[opts=optional]
 
-*Available as of Camel version 2.3*
+*Since Camel {since}*
 
-The `exec` component can be used to execute system commands.
+*{component-header}*
 
-### Dependencies
+The Exec component can be used to execute system commands.
+
+== Dependencies
 
 Maven users need to add the following dependency to their `pom.xml`
 
@@ -18,10 +29,9 @@ Maven users need to add the following dependency to their `pom.xml`
 </dependency>
 -------------------------------------
 
-where `${camel-version`} must be replaced by the actual version of Camel
-(2.3.0 or higher).
+where `${camel-version`} must be replaced by the actual version of Camel.
 
-### URI format
+== URI format
 
 [source,xml]
 ---------------------------
@@ -32,10 +42,19 @@ where `executable` is the name, or file path, of the system command that
 will be executed. If executable name is used (e.g. `exec:java`), the
 executable must in the system path.
 
-### URI options
+== URI options
 
 // component options: START
-The Exec component has no options.
+The Exec component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 // endpoint options: START
@@ -47,7 +66,7 @@ exec:executable
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -57,7 +76,7 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (8 parameters):
+=== Query Parameters (9 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -66,31 +85,17 @@ with the following path and query parameters:
 | *args* (producer) | The arguments may be one or many whitespace-separated tokens. |  | String
 | *binding* (producer) | A reference to a org.apache.commons.exec.ExecBinding in the Registry. |  | ExecBinding
 | *commandExecutor* (producer) | A reference to a org.apache.commons.exec.ExecCommandExecutor in the Registry that customizes the command execution. The default command executor utilizes the commons-exec library, which adds a shutdown hook for every executed command. |  | ExecCommandExecutor
+| *commandLogLevel* (producer) | Logging level to be used for commands during execution. The default value is DEBUG. Possible values are TRACE, DEBUG, INFO, WARN, ERROR or OFF. (Values of ExecCommandLogLevelType enum). There are 6 enums and the value can be one of: TRACE, DEBUG, INFO, WARN, ERROR, OFF | DEBUG | LoggingLevel
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 | *outFile* (producer) | The name of a file, created by the executable, that should be considered as its output. If no outFile is set, the standard output (stdout) of the executable will be used instead. |  | String
 | *timeout* (producer) | The timeout, in milliseconds, after which the executable should be terminated. If execution has not completed within the timeout, the component will send a termination request. |  | long
 | *useStderrOnEmptyStdout* (producer) | A boolean indicating that when stdout is empty, this component will populate the Camel Message Body with stderr. This behavior is disabled (false) by default. | false | boolean
 | *workingDir* (producer) | The directory in which the command should be executed. If null, the working directory of the current process will be used. |  | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
 
 
-The component supports 2 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.exec.enabled* | Enable exec component | true | Boolean
-| *camel.component.exec.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-### Message headers
+== Message headers
 
 The supported headers are defined in
 `org.apache.camel.component.exec.ExecBinding`.
@@ -106,7 +111,7 @@ The supported headers are defined in
 are used literally - no quoting is applied. Overrides any existing
 `args` in the URI.
 
-|`ExecBinding.EXEC_COMMAND_ARGS` |`String`| `in` |*Camel 2.5:* The arguments of the executable as a Single string where
+|`ExecBinding.EXEC_COMMAND_ARGS` |`String`| `in` |The arguments of the executable as a Single string where
 each argument is whitespace separated (see `args` in URI option). The
 arguments are used literally, no quoting is applied. Overrides any
 existing `args` in the URI.
@@ -130,9 +135,12 @@ the executable. If no stderr is written, the value is `null`.
 |`ExecBinding.EXEC_USE_STDERR_ON_EMPTY_STDOUT` |`boolean` |`in` |Indicates that when `stdout` is empty, this component will populate the
 Camel Message Body with `stderr`. This behavior is disabled (`false`) by
 default.
+
+|`ExecBinding.EXEC_COMMANDS_LOG_LEVEL` |`String` |`in` |Logging level to be used for commands during execution. The default value is DEBUG.
+Possible values are TRACE, DEBUG, INFO, WARN, ERROR or OFF (Values of LoggingLevel enum)
 |=======================================================================
 
-### Message body
+== Message body
 
 If the `Exec` component receives an `in` message body that is
 convertible to `java.io.InputStream`, it is used to feed input to the
@@ -161,11 +169,11 @@ If an out file is specified (in the endpoint via `outFile` or the
 message headers via `ExecBinding.EXEC_COMMAND_OUT_FILE`), converters
 will return the content of the out file. If no out file is used, then
 this component will convert the stdout of the process to the target
-type. For more details, please refer to the <<exec-component,usage examples>> below.
+type. For more details, please refer to the xref:exec-component.adoc[usage examples] below.
 
-### Usage examples
+== Usage examples
 
-#### Executing word count (Linux)
+=== Executing word count (Linux)
 
 The example below executes `wc` (word count, Linux) to count the words
 in file `/usr/share/dict/words`. The word count (output) is written to
@@ -187,7 +195,7 @@ from("direct:exec")
 });
 --------------------------------------------------------------------------------------
 
-#### Executing `java`
+=== Executing `java`
 
 The example below executes `java` with 2 arguments: `-server` and
 `-version`, provided that `java` is in the system path.
@@ -207,7 +215,7 @@ from("direct:exec")
 .to("exec:c:/program files/jdk/bin/java?args=-server -version -Duser.name=Camel&workingDir=c:/temp")
 ----------------------------------------------------------------------------------------------------
 
-#### Executing Ant scripts
+=== Executing Ant scripts
 
 The following example executes http://ant.apache.org/[Apache Ant]
 (Windows only) with the build file `CamelExecBuildFile.xml`, provided
@@ -239,7 +247,7 @@ from("direct:exec")
   });
 -------------------------------------------------------------------------------------------------------
 
-#### Executing `echo` (Windows)
+=== Executing `echo` (Windows)
 
 Commands such as `echo` and `dir` can be executed only with the command
 interpreter of the operating system. This example shows how to execute
@@ -250,9 +258,5 @@ such a command - `echo` - in Windows.
 from("direct:exec").to("exec:cmd?args=/C echo echoString")
 ----------------------------------------------------------
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$exec-starter.adoc[]

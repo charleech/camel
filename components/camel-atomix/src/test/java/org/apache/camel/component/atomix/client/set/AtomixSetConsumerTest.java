@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.atomix.client.set;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -27,8 +28,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.apache.camel.component.atomix.client.AtomixClientTestSupport;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class AtomixSetConsumerTest extends AtomixClientTestSupport {
     private static final String SET_NAME = UUID.randomUUID().toString();
@@ -54,9 +55,11 @@ public class AtomixSetConsumerTest extends AtomixClientTestSupport {
     }
 
     @Override
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
-        set.close();
+        if (set != null) {
+            set.close();
+        }
 
         super.tearDown();
     }
@@ -66,7 +69,7 @@ public class AtomixSetConsumerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Test
-    public void testEvents() throws Exception {
+    void testEvents() throws Exception {
         String val1 = context().getUuidGenerator().generateUuid();
         String val2 = context().getUuidGenerator().generateUuid();
 
@@ -98,11 +101,11 @@ public class AtomixSetConsumerTest extends AtomixClientTestSupport {
     // ************************************
 
     @Override
-    protected RoutesBuilder createRouteBuilder() throws Exception {
+    protected RoutesBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 fromF("atomix-set:%s", SET_NAME)
-                    .to("mock:result");
+                        .to("mock:result");
             }
         };
     }

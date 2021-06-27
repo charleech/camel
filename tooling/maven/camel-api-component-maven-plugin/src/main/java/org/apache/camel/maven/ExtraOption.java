@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,16 @@ package org.apache.camel.maven;
 public class ExtraOption {
 
     private String type;
-
     private String name;
+    private String description;
 
     public ExtraOption() {
     }
 
-    public ExtraOption(String type, String name) {
+    public ExtraOption(String type, String name, String description) {
         this.type = type;
         this.name = name;
+        this.description = description;
     }
 
     public String getType() {
@@ -47,5 +48,13 @@ public class ExtraOption {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,8 @@ public class MyErrorHandler extends BeanIOErrorHandler {
     @Override
     public void invalidRecord(InvalidRecordException ex) throws Exception {
         String id = getExchange().getExchangeId();
-        String line = "ExchangeId: " + id + " Invalid record: " + ex.getMessage() + ": " + ex.getRecordContext().getRecordText();
+        String line
+                = "ExchangeId: " + id + " Invalid record: " + ex.getMessage() + ": " + ex.getRecordContext().getRecordText();
         LOG.warn(line);
 
         // lets handle the error and store to the results a dummy error DTO

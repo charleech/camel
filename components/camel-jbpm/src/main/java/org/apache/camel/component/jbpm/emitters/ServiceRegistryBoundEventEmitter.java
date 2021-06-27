@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.emitters;
 
 import java.util.Collection;
@@ -25,9 +24,9 @@ import org.jbpm.persistence.api.integration.InstanceView;
 import org.jbpm.services.api.service.ServiceRegistry;
 
 public class ServiceRegistryBoundEventEmitter implements EventEmitter {
-    
+
     private EventEmitter delegate;
-    
+
     public ServiceRegistryBoundEventEmitter() {
         this.delegate = (EventEmitter) ServiceRegistry.get().service("CamelEventEmitter");
     }
@@ -35,7 +34,7 @@ public class ServiceRegistryBoundEventEmitter implements EventEmitter {
     @Override
     public void deliver(Collection<InstanceView<?>> data) {
         delegate.deliver(data);
-        
+
     }
 
     @Override
@@ -46,7 +45,7 @@ public class ServiceRegistryBoundEventEmitter implements EventEmitter {
     @Override
     public void drop(Collection<InstanceView<?>> data) {
         delegate.drop(data);
-        
+
     }
 
     @Override
@@ -56,7 +55,7 @@ public class ServiceRegistryBoundEventEmitter implements EventEmitter {
 
     @Override
     public void close() {
- 
+
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,10 +27,10 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.converter.stream.OutputStreamBuilder;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.spi.annotations.Dataformat;
+import org.apache.camel.support.builder.OutputStreamBuilder;
 import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.IOHelper;
 import org.apache.camel.util.StringHelper;
@@ -38,18 +38,22 @@ import org.apache.camel.util.StringHelper;
 import static org.apache.camel.Exchange.FILE_NAME;
 
 /**
- * Zip file data format.
- * See {@link org.apache.camel.model.dataformat.ZipDataFormat} for "deflate" compression.
+ * Zip file data format. See {@link org.apache.camel.model.dataformat.ZipDataFormat} for "deflate" compression.
  */
 @Dataformat("zipfile")
 public class ZipFileDataFormat extends ServiceSupport implements DataFormat, DataFormatName {
+    /**
+     * The default maximum decompressed size (in bytes), which corresponds to 1G.
+     */
+    private static final long DEFAULT_MAXIMUM_DECOMPRESSED_SIZE = 1073741824;
     private boolean usingIterator;
     private boolean allowEmptyDirectory;
     private boolean preservePathElements;
+    private long maxDecompressedSize = DEFAULT_MAXIMUM_DECOMPRESSED_SIZE;
 
     @Override
     public String getDataFormatName() {
-        return "zipFile";
+        return "zipfile";
     }
 
     @Override
@@ -80,7 +84,7 @@ public class ZipFileDataFormat extends ServiceSupport implements DataFormat, Dat
         }
 
         String newFilename = filename + ".zip";
-        exchange.getOut().setHeader(FILE_NAME, newFilename);
+        exchange.getMessage().setHeader(FILE_NAME, newFilename);
     }
 
     @Override
@@ -96,8 +100,10 @@ public class ZipFileDataFormat extends ServiceSupport implements DataFormat, Dat
             try {
                 ZipEntry entry = zis.getNextEntry();
                 if (entry != null) {
-                    exchange.getOut().setHeader(FILE_NAME, entry.getName());
-                    IOHelper.copy(zis, osb);
+                    exchange.getMessage().setHeader(FILE_NAME, entry.getName());
+                    IOHelper.copy(zis, osb, IOHelper.DEFAULT_BUFFER_SIZE, false, maxDecompressedSize);
+                } else {
+                    throw new IllegalStateException("Unable to unzip the file, it may be corrupted.");
                 }
 
                 entry = zis.getNextEntry();
@@ -155,6 +161,14 @@ public class ZipFileDataFormat extends ServiceSupport implements DataFormat, Dat
 
     public void setPreservePathElements(boolean preservePathElements) {
         this.preservePathElements = preservePathElements;
+    }
+
+    public long getMaxDecompressedSize() {
+        return maxDecompressedSize;
+    }
+
+    public void setMaxDecompressedSize(long maxDecompressedSize) {
+        this.maxDecompressedSize = maxDecompressedSize;
     }
 
     @Override

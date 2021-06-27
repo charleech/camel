@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,25 +16,24 @@
  */
 package org.apache.camel.component.velocity;
 
-
 /**
  * This class loader is used to help us load the CamelVelocityClasspathResourceLoader in OSGi
  */
 public class CamelVelocityDelegateClassLoader extends ClassLoader {
-    private static final String CAMLE_VELOCITY_CLASSPATH_RESOURCE_LOADER 
-        = CamelVelocityClasspathResourceLoader.class.getName();
-      
+    private static final String CAMLE_VELOCITY_CLASSPATH_RESOURCE_LOADER
+            = CamelVelocityClasspathResourceLoader.class.getName();
+
     CamelVelocityDelegateClassLoader(ClassLoader parent) {
         super(parent);
     }
-   
-    protected Class< ? > findClass(String name) throws ClassNotFoundException {
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         if (CAMLE_VELOCITY_CLASSPATH_RESOURCE_LOADER.equals(name)) {
             return CamelVelocityClasspathResourceLoader.class;
-        } 
+        }
         return super.findClass(name);
-        
+
     }
-    
 
 }

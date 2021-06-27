@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,9 @@
  */
 package org.apache.camel.component.milo.client;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import static java.lang.Boolean.TRUE;
+import java.util.stream.Collectors;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
@@ -26,23 +26,45 @@ import org.apache.camel.Message;
 import org.apache.camel.support.DefaultAsyncProducer;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExpandedNodeId;
 
+import static java.lang.Boolean.TRUE;
+
 public class MiloClientProducer extends DefaultAsyncProducer {
 
-    private final MiloClientConnection connection;
+    private static final String HEADER_NODE_IDS = "CamelMiloNodeIds";
+
+    private MiloClientConnection connection;
 
     private final ExpandedNodeId nodeId;
     private final ExpandedNodeId methodId;
 
     private final boolean defaultAwaitWrites;
 
-    public MiloClientProducer(final MiloClientEndpoint endpoint, final MiloClientConnection connection, final boolean defaultAwaitWrites) {
+    public MiloClientProducer(final MiloClientEndpoint endpoint,
+                              final boolean defaultAwaitWrites) {
         super(endpoint);
 
-        this.connection = connection;
         this.defaultAwaitWrites = defaultAwaitWrites;
-
         this.nodeId = endpoint.getNodeId();
         this.methodId = endpoint.getMethodId();
+    }
+
+    @Override
+    public MiloClientEndpoint getEndpoint() {
+        return (MiloClientEndpoint) super.getEndpoint();
+    }
+
+    @Override
+    protected void doStart() throws Exception {
+        super.doStart();
+        this.connection = getEndpoint().createConnection();
+    }
+
+    @Override
+    protected void doStop() throws Exception {
+        if (null != this.connection) {
+            getEndpoint().releaseConnection(connection);
+        }
+        super.doStop();
     }
 
     @Override
@@ -50,11 +72,17 @@ public class MiloClientProducer extends DefaultAsyncProducer {
         final Message msg = exchange.getIn();
         final Object value = msg.getBody();
 
-        log.debug("Processing message: {}", value);
-
         final CompletableFuture<?> future;
 
-        if (this.methodId == null) {
+        if (msg.getHeaders().containsKey(HEADER_NODE_IDS)) {
+            final List<String> nodeIds = msg.getHeader(HEADER_NODE_IDS, List.class);
+            final List<ExpandedNodeId> expandedNodeIds
+                    = nodeIds.stream().map(String.class::cast).map(ExpandedNodeId::parse).collect(Collectors.toList());
+            future = this.connection.readValues(expandedNodeIds).thenApply(nodes -> {
+                exchange.getIn().setBody(nodes);
+                return nodes;
+            });
+        } else if (this.methodId == null) {
             future = this.connection.writeValue(this.nodeId, value);
         } else {
             future = this.connection.call(this.nodeId, this.methodId, value);

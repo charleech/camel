@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,8 +31,8 @@ public final class TestHelper {
      * <p/>
      * Uses <tt>os.name</tt> from the system properties to determine the OS.
      *
-     * @param platform such as Windows
-     * @return <tt>true</tt> if its that platform.
+     * @param  platform such as Windows
+     * @return          <tt>true</tt> if its that platform.
      */
     public static boolean isPlatform(String platform) {
         String osName = System.getProperty("os.name").toLowerCase(Locale.US);

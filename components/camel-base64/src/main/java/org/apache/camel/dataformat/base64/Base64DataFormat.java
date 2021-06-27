@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.spi.DataFormat;
 import org.apache.camel.spi.DataFormatName;
 import org.apache.camel.spi.annotations.Dataformat;
-import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.support.ExchangeHelper;
+import org.apache.camel.support.service.ServiceSupport;
 import org.apache.camel.util.IOHelper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -34,7 +34,7 @@ import org.apache.commons.codec.binary.Base64OutputStream;
 public class Base64DataFormat extends ServiceSupport implements DataFormat, DataFormatName {
 
     private int lineLength = Base64.MIME_CHUNK_SIZE;
-    private byte[] lineSeparator = {'\r', '\n'};
+    private byte[] lineSeparator = { '\r', '\n' };
     private boolean urlSafe;
 
     @Override

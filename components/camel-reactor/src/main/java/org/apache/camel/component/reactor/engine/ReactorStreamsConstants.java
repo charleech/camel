@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,7 @@ import org.apache.camel.AsyncCallback;
  * Useful constants used in the Camel Reactive Streams component.
  */
 public final class ReactorStreamsConstants {
-    public static final String SERVICE_NAME =  "reactor";
+    public static final String SERVICE_NAME = "reactor";
 
     /**
      * An implementation of the {@link AsyncCallback} that does nothing.

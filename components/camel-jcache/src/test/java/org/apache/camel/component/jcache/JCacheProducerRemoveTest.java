@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,15 @@ package org.apache.camel.component.jcache;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.cache.Cache;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JCacheProducerRemoveTest extends JCacheComponentTestSupport {
 
@@ -147,18 +151,18 @@ public class JCacheProducerRemoveTest extends JCacheComponentTestSupport {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:remove")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:remove");
                 from("direct:remove-if")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:remove-if");
                 from("direct:remove-if-failure")
-                    .to("jcache://test-cache")
+                        .to("jcache://test-cache")
                         .to("mock:remove-if-failure");
                 from("direct:remove-all")
-                    .to("jcache://test-cache");
+                        .to("jcache://test-cache");
                 from("direct:remove-subset")
-                    .to("jcache://test-cache");
+                        .to("jcache://test-cache");
             }
         };
     }

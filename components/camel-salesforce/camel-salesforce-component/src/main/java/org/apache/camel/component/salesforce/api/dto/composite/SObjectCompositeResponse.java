@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
- * The response of the composite request it contains individual results of each
- * request submitted in a request at the same index.
+ * The response of the composite request it contains individual results of each request submitted in a request at the
+ * same index.
  */
 @XStreamAlias("compositeResults")
 public final class SObjectCompositeResponse implements Serializable {

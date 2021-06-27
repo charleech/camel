@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,16 +16,20 @@
  */
 package org.apache.camel.builder.saxon;
 
-import javax.naming.Context;
 import javax.xml.xpath.XPathFactory;
 
 import net.sf.saxon.lib.NamespaceConstant;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.language.XPath;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.support.jndi.JndiContext;
-import org.junit.Test;
+import org.apache.camel.language.xpath.XPath;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ResourceLock(Resources.SYSTEM_PROPERTIES)
 public class XPathAnnotationResultTypeTest extends CamelTestSupport {
     protected MyBean myBean = new MyBean();
 
@@ -34,22 +38,22 @@ public class XPathAnnotationResultTypeTest extends CamelTestSupport {
 
         String response = (String) template.requestBody("direct:in1", "<a><b>hello</b></a>");
         assertEquals("HELLO", response);
-        
+
         response = (String) template.requestBody("direct:in2", "<a><b>hello</b></a>");
         assertEquals("HELLO", response);
     }
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        JndiContext answer = new JndiContext();
-        answer.bind("myBean", myBean);
-        return answer;
+    protected void bindToRegistry(Registry registry) throws Exception {
+        registry.bind("myBean", myBean);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
-                System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME + ":" + NamespaceConstant.OBJECT_MODEL_SAXON, "net.sf.saxon.xpath.XPathFactoryImpl");
+                System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME + ":" + NamespaceConstant.OBJECT_MODEL_SAXON,
+                        "net.sf.saxon.xpath.XPathFactoryImpl");
                 from("direct:in1").bean("myBean", "readImplicit");
                 from("direct:in2").bean("myBean", "readExplicit");
             }

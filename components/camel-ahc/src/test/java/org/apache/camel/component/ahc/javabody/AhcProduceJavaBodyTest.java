@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,13 @@ import org.apache.camel.component.ahc.AhcConstants;
 import org.apache.camel.component.ahc.BaseAhcTest;
 import org.apache.camel.component.jetty.JettyHttpComponent;
 import org.apache.camel.http.common.HttpCommonComponent;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -57,8 +63,8 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                                 assertEquals("Camel", cool.getName());
 
                                 // we send back plain test
-                                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
-                                exchange.getOut().setBody("OK");
+                                exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+                                exchange.getMessage().setBody("OK");
                             }
                         });
             }
@@ -94,8 +100,9 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                                 assertEquals("Camel", cool.getName());
 
                                 MyCoolBean reply = new MyCoolBean(456, "Camel rocks");
-                                exchange.getOut().setBody(reply);
-                                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
+                                exchange.getMessage().setBody(reply);
+                                exchange.getMessage().setHeader(Exchange.CONTENT_TYPE,
+                                        AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
                             }
                         });
             }
@@ -130,8 +137,9 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                                 assertEquals("Hello World", body);
 
                                 MyCoolBean reply = new MyCoolBean(456, "Camel rocks");
-                                exchange.getOut().setBody(reply);
-                                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
+                                exchange.getMessage().setBody(reply);
+                                exchange.getMessage().setHeader(Exchange.CONTENT_TYPE,
+                                        AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
                             }
                         });
             }
@@ -163,8 +171,9 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                                 assertEquals("Hello World", body);
 
                                 MyCoolBean reply = new MyCoolBean(456, "Camel rocks");
-                                exchange.getOut().setBody(reply);
-                                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
+                                exchange.getMessage().setBody(reply);
+                                exchange.getMessage().setHeader(Exchange.CONTENT_TYPE,
+                                        AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
                             }
                         });
             }
@@ -195,8 +204,9 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                                 assertEquals("Hello World", body);
 
                                 MyCoolBean reply = new MyCoolBean(456, "Camel rocks");
-                                exchange.getOut().setBody(reply);
-                                exchange.getOut().setHeader(Exchange.CONTENT_TYPE, AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
+                                exchange.getMessage().setBody(reply);
+                                exchange.getMessage().setHeader(Exchange.CONTENT_TYPE,
+                                        AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT);
                             }
                         });
             }
@@ -210,7 +220,8 @@ public class AhcProduceJavaBodyTest extends BaseAhcTest {
                     Exchange.CONTENT_TYPE, AhcConstants.CONTENT_TYPE_JAVA_SERIALIZED_OBJECT, MyCoolBean.class);
             fail("Should fail");
         } catch (Exception e) {
-            assertTrue(e.getCause().getMessage().startsWith("Content-type application/x-java-serialized-object is not allowed"));
+            assertTrue(
+                    e.getCause().getMessage().startsWith("Content-type application/x-java-serialized-object is not allowed"));
         }
     }
 

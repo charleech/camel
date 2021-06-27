@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,8 @@ public class MeterProducer extends AbstractMetricsProducer {
     }
 
     @Override
-    protected void doProcess(Exchange exchange, MetricsEndpoint endpoint, MetricRegistry registry, String metricsName) throws Exception {
+    protected void doProcess(Exchange exchange, MetricsEndpoint endpoint, MetricRegistry registry, String metricsName)
+            throws Exception {
         Message in = exchange.getIn();
         Meter meter = registry.meter(metricsName);
         Long mark = endpoint.getMark();

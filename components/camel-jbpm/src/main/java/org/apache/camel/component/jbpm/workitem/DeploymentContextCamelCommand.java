@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.jbpm.workitem;
 
 import java.util.Map;
@@ -29,7 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * CamelCommand that uses the {@link CamelContext} registered on the {@link ServiceRegistry} for this specific deployment.
+ * CamelCommand that uses the {@link CamelContext} registered on the {@link ServiceRegistry} for this specific
+ * deployment.
  */
 public class DeploymentContextCamelCommand extends AbstractCamelCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeploymentContextCamelCommand.class);

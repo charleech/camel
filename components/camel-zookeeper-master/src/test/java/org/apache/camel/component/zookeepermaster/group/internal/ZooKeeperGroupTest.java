@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,24 +18,24 @@ package org.apache.camel.component.zookeepermaster.group.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.component.zookeepermaster.group.NodeState;
+import org.apache.camel.test.AvailablePortFinder;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
 import org.apache.zookeeper.data.Stat;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ZooKeeperGroupTest {
 
@@ -45,26 +45,23 @@ public class ZooKeeperGroupTest {
     private ZooKeeperGroup<NodeState> group;
 
     private int findFreePort() throws Exception {
-        ServerSocket ss = new ServerSocket(0);
-        int port = ss.getLocalPort();
-        ss.close();
-        return port;
+        return AvailablePortFinder.getNextAvailable();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         int port = findFreePort();
         curator = CuratorFrameworkFactory.builder()
-            .connectString("localhost:" + port)
-            .retryPolicy(new RetryOneTime(1))
-            .build();
+                .connectString("localhost:" + port)
+                .retryPolicy(new RetryOneTime(1))
+                .build();
         //curator.start();
         group = new ZooKeeperGroup<>(curator, PATH, NodeState.class);
         //group.start();
         // Starting curator and group is not necessary for the current tests.
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         group.close();
         curator.close();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,31 +24,36 @@ import javax.persistence.EntityManagerFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.examples.SendEmail;
 import org.apache.camel.spring.SpringCamelContext;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import static org.apache.camel.test.junit5.TestSupport.assertIsInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public abstract class AbstractJpaTest extends CamelTestSupport {
     protected ApplicationContext applicationContext;
     protected TransactionTemplate transactionTemplate;
     protected EntityManager entityManager;
 
-    @Before
+    @Override
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         EntityManagerFactory entityManagerFactory = applicationContext.getBean("entityManagerFactory",
-                                                                               EntityManagerFactory.class);
+                EntityManagerFactory.class);
         transactionTemplate = applicationContext.getBean("transactionTemplate", TransactionTemplate.class);
         entityManager = entityManagerFactory.createEntityManager();
         cleanupRepository();
     }
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         if (entityManager != null) {
@@ -97,8 +102,8 @@ public abstract class AbstractJpaTest extends CamelTestSupport {
             }
         });
     }
-    
+
     protected abstract String routeXml();
-    
+
     protected abstract String selectAllString();
 }

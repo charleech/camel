@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,13 @@
  */
 package org.apache.camel.component.yammer;
 
-
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.yammer.model.User;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class YammerUserRouteTest extends YammerComponentTestSupport {
 
@@ -30,11 +31,11 @@ public class YammerUserRouteTest extends YammerComponentTestSupport {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMinimumMessageCount(1);
         assertMockEndpointsSatisfied();
-        
+
         Exchange exchange = mock.getExchanges().get(0);
         User user = exchange.getIn().getBody(User.class);
 
-        assertEquals("Joe Camel", user.getFullName());        
+        assertEquals("Joe Camel", user.getFullName());
         assertEquals("jcamel@redhat.com", user.getContact().getEmailAddresses().get(0).getAddress());
     }
 
@@ -42,13 +43,14 @@ public class YammerUserRouteTest extends YammerComponentTestSupport {
     protected String jsonFile() {
         return "/user.json";
     }
-       
+
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() {
                 // using dummy keys here since we are mocking out calls to yammer.com with static json; in a real app, please use your own keys!
-                from("yammer:current?consumerKey=aConsumerKey&consumerSecret=aConsumerSecretKey&accessToken=aAccessToken").to("mock:result");
+                from("yammer:current?consumerKey=aConsumerKey&consumerSecret=aConsumerSecretKey&accessToken=aAccessToken")
+                        .to("mock:result");
             }
         };
     }

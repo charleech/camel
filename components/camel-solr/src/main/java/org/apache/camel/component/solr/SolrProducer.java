@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.activation.MimetypesFileTypeMap;
 
@@ -28,6 +29,7 @@ import org.apache.camel.WrappedFile;
 import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.util.ObjectHelper;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.request.AbstractUpdateRequest.ACTION;
 import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
 import org.apache.solr.client.solrj.request.DirectXmlRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
@@ -43,7 +45,7 @@ public class SolrProducer extends DefaultProducer {
     private SolrClient cloudSolrServer;
 
     public SolrProducer(SolrEndpoint endpoint, SolrClient solrServer, SolrClient concSolrServer,
-            SolrClient cloudSolrServer) {
+                        SolrClient cloudSolrServer) {
         super(endpoint);
         this.httpServer = solrServer;
         this.concSolrServer = concSolrServer;
@@ -76,19 +78,38 @@ public class SolrProducer extends DefaultProducer {
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_INSERT_STREAMING)) {
             insert(exchange, serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_DELETE_BY_ID)) {
-            serverToUse.deleteById(exchange.getIn().getBody(String.class));
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.deleteById(exchange.getIn().getBody(String.class));
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_DELETE_BY_QUERY)) {
-            serverToUse.deleteByQuery(exchange.getIn().getBody(String.class));
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.deleteByQuery(exchange.getIn().getBody(String.class));
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_ADD_BEAN)) {
-            serverToUse.addBean(exchange.getIn().getBody());
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.add(serverToUse.getBinder().toSolrInputDocument(exchange.getIn().getBody()));
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_ADD_BEANS)) {
-            serverToUse.addBeans(exchange.getIn().getBody(Collection.class));
+            UpdateRequest updateRequest = createUpdateRequest();
+            Collection<Object> body = exchange.getIn().getBody(Collection.class);
+            updateRequest.add(body.stream().map(serverToUse.getBinder()::toSolrInputDocument).collect(Collectors.toList()));
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_COMMIT)) {
-            serverToUse.commit();
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.setAction(ACTION.COMMIT, true, true);
+            updateRequest.process(serverToUse);
+        } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_SOFT_COMMIT)) {
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.setAction(ACTION.COMMIT, true, true, true);
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_ROLLBACK)) {
-            serverToUse.rollback();
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.rollback();
+            updateRequest.process(serverToUse);
         } else if (operation.equalsIgnoreCase(SolrConstants.OPERATION_OPTIMIZE)) {
-            serverToUse.optimize();
+            UpdateRequest updateRequest = createUpdateRequest();
+            updateRequest.setAction(ACTION.OPTIMIZE, true, true, 1);
+            updateRequest.process(serverToUse);
         } else {
             throw new IllegalArgumentException(
                     SolrConstants.OPERATION + " header value '" + operation + "' is not supported");
@@ -105,6 +126,7 @@ public class SolrProducer extends DefaultProducer {
         if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(Exchange.CONTENT_TYPE, String.class))) {
             String mimeType = exchange.getIn().getHeader(Exchange.CONTENT_TYPE, String.class);
             ContentStreamUpdateRequest updateRequest = new ContentStreamUpdateRequest(getRequestHandler());
+            updateRequest.setBasicAuthCredentials(getEndpoint().getUsername(), getEndpoint().getPassword());
             updateRequest.addFile((File) body, mimeType);
 
             for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
@@ -121,6 +143,7 @@ public class SolrProducer extends DefaultProducer {
                 MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
                 String mimeType = mimeTypesMap.getContentType((File) body);
                 ContentStreamUpdateRequest updateRequest = new ContentStreamUpdateRequest(getRequestHandler());
+                updateRequest.setBasicAuthCredentials(getEndpoint().getUsername(), getEndpoint().getPassword());
                 updateRequest.addFile((File) body, mimeType);
 
                 for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
@@ -134,7 +157,7 @@ public class SolrProducer extends DefaultProducer {
 
             } else if (body instanceof SolrInputDocument) {
 
-                UpdateRequest updateRequest = new UpdateRequest(getRequestHandler());
+                UpdateRequest updateRequest = createUpdateRequest();
                 updateRequest.add((SolrInputDocument) body);
 
                 for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
@@ -150,7 +173,7 @@ public class SolrProducer extends DefaultProducer {
                 List<?> list = (List<?>) body;
 
                 if (list.size() > 0 && list.get(0) instanceof SolrInputDocument) {
-                    UpdateRequest updateRequest = new UpdateRequest(getRequestHandler());
+                    UpdateRequest updateRequest = createUpdateRequest();
                     updateRequest.add((List<SolrInputDocument>) list);
 
                     for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
@@ -177,7 +200,7 @@ public class SolrProducer extends DefaultProducer {
 
                 if (hasSolrHeaders) {
 
-                    UpdateRequest updateRequest = new UpdateRequest(getRequestHandler());
+                    UpdateRequest updateRequest = createUpdateRequest();
 
                     SolrInputDocument doc = new SolrInputDocument();
                     for (Map.Entry<String, Object> entry : exchange.getIn().getHeaders().entrySet()) {
@@ -198,6 +221,7 @@ public class SolrProducer extends DefaultProducer {
                     }
 
                     DirectXmlRequest xmlRequest = new DirectXmlRequest(getRequestHandler(), bodyAsString);
+                    xmlRequest.setBasicAuthCredentials(getEndpoint().getUsername(), getEndpoint().getPassword());
 
                     solrServer.request(xmlRequest);
                 } else {
@@ -207,7 +231,8 @@ public class SolrProducer extends DefaultProducer {
         }
 
         if (invalid) {
-            throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
+            throw new SolrException(
+                    SolrException.ErrorCode.BAD_REQUEST,
                     "unable to find data in Exchange to update Solr");
         }
     }
@@ -215,6 +240,12 @@ public class SolrProducer extends DefaultProducer {
     private String getRequestHandler() {
         String requestHandler = getEndpoint().getRequestHandler();
         return (requestHandler == null) ? "/update" : requestHandler;
+    }
+
+    private UpdateRequest createUpdateRequest() {
+        UpdateRequest updateRequest = new UpdateRequest(getRequestHandler());
+        updateRequest.setBasicAuthCredentials(getEndpoint().getUsername(), getEndpoint().getPassword());
+        return updateRequest;
     }
 
     @Override

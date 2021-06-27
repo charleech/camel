@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
 import java.nio.charset.Charset;
@@ -42,9 +41,6 @@ public class MllpConfiguration implements Cloneable {
 
     @UriParam(label = "consumer,advanced", defaultValue = "InOut")
     ExchangePattern exchangePattern = ExchangePattern.InOut;
-
-    @UriParam(label = "advanced", defaultValue = "true")
-    boolean synchronous = true;
 
     // camel-mllp specific URI parameters
     @UriParam(label = "advanced,consumer,tcp", defaultValue = "5")
@@ -127,13 +123,14 @@ public class MllpConfiguration implements Cloneable {
 
     public static void copy(MllpConfiguration source, MllpConfiguration target) {
         if (source == null) {
-            LOG.warn("Values were not copied by MllpConfiguration.copy(MllpConfiguration source, MllpConfiguration target) - source argument is null");
+            LOG.warn(
+                    "Values were not copied by MllpConfiguration.copy(MllpConfiguration source, MllpConfiguration target) - source argument is null");
         } else if (target == null) {
-            LOG.warn("Values were not copied by MllpConfiguration.copy(MllpConfiguration source, MllpConfiguration target) - target argument is null");
+            LOG.warn(
+                    "Values were not copied by MllpConfiguration.copy(MllpConfiguration source, MllpConfiguration target) - target argument is null");
         } else {
             target.bridgeErrorHandler = source.bridgeErrorHandler;
             target.exchangePattern = source.exchangePattern;
-            target.synchronous = source.synchronous;
 
             target.backlog = source.backlog;
             target.bindTimeout = source.bindTimeout;
@@ -155,6 +152,7 @@ public class MllpConfiguration implements Cloneable {
             target.stringPayload = source.stringPayload;
             target.validatePayload = source.validatePayload;
             target.charsetName = source.charsetName;
+            target.maxConcurrentConsumers = source.maxConcurrentConsumers;
         }
     }
 
@@ -175,10 +173,12 @@ public class MllpConfiguration implements Cloneable {
     }
 
     /**
-     * Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while
-     * the consumer is trying to receive incoming messages, or the likes, will now be processed as a message and handled by the routing Error Handler.
+     * Allows for bridging the consumer to the Camel routing Error Handler, which mean any exceptions occurred while the
+     * consumer is trying to receive incoming messages, or the likes, will now be processed as a message and handled by
+     * the routing Error Handler.
      *
-     * If disabled, the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions by logging them at WARN or ERROR level and ignored.
+     * If disabled, the consumer will use the org.apache.camel.spi.ExceptionHandler to deal with exceptions by logging
+     * them at WARN or ERROR level and ignored.
      *
      * @param bridgeErrorHandler
      */
@@ -199,18 +199,6 @@ public class MllpConfiguration implements Cloneable {
         this.exchangePattern = exchangePattern;
     }
 
-    public boolean isSynchronous() {
-        return synchronous;
-    }
-
-    /**
-     * Sets whether synchronous processing should be strictly used (this component only supports synchronous operations).
-     *
-     * @param synchronous
-     */
-    public void setSynchronous(boolean synchronous) {
-    }
-
     public boolean hasCharsetName() {
         return charsetName != null && !charsetName.isEmpty();
     }
@@ -221,11 +209,13 @@ public class MllpConfiguration implements Cloneable {
                 if (Charset.isSupported(charsetName)) {
                     return charsetName;
                 }
-                LOG.warn("Unsupported character set name '{}' configured for the MLLP Endpoint  - returning default charset name {}",
-                    charsetName, MllpComponent.getDefaultCharset());
+                LOG.warn(
+                        "Unsupported character set name '{}' configured for the MLLP Endpoint  - returning default charset name {}",
+                        charsetName, MllpComponent.getDefaultCharset());
             } catch (Exception charsetEx) {
-                LOG.warn("Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - returning default charset name {}",
-                    charsetName, MllpComponent.getDefaultCharset(), charsetEx);
+                LOG.warn(
+                        "Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - returning default charset name {}",
+                        charsetName, MllpComponent.getDefaultCharset(), charsetEx);
             }
         }
 
@@ -238,10 +228,12 @@ public class MllpConfiguration implements Cloneable {
                 if (Charset.isSupported(charsetName)) {
                     return Charset.forName(charsetName);
                 }
-                LOG.warn("Unsupported character set name '{}' configured for the MLLP Endpoint - returning default charset {}", charsetName, MllpComponent.getDefaultCharset());
+                LOG.warn("Unsupported character set name '{}' configured for the MLLP Endpoint - returning default charset {}",
+                        charsetName, MllpComponent.getDefaultCharset());
             } catch (Exception charsetEx) {
-                LOG.warn("Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - returning default charset {}",
-                    charsetName, MllpComponent.getDefaultCharset(), charsetEx);
+                LOG.warn(
+                        "Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - returning default charset {}",
+                        charsetName, MllpComponent.getDefaultCharset(), charsetEx);
             }
         }
 
@@ -255,9 +247,13 @@ public class MllpConfiguration implements Cloneable {
                 if (Charset.isSupported(exchangeCharsetName)) {
                     return Charset.forName(exchangeCharsetName);
                 }
-                LOG.warn("Unsupported character set name '{}' specified in the Exchange - checking for configured character set", exchangeCharsetName);
+                LOG.warn(
+                        "Unsupported character set name '{}' specified in the Exchange - checking for configured character set",
+                        exchangeCharsetName);
             } catch (Exception charsetEx) {
-                LOG.warn("Ignoring exception determining character set for name '{}' specified in the Exchange - checking for configured character set", exchangeCharsetName, charsetEx);
+                LOG.warn(
+                        "Ignoring exception determining character set for name '{}' specified in the Exchange - checking for configured character set",
+                        exchangeCharsetName, charsetEx);
             }
         }
 
@@ -271,9 +267,13 @@ public class MllpConfiguration implements Cloneable {
                 if (Charset.isSupported(exchangeCharsetName)) {
                     return Charset.forName(exchangeCharsetName);
                 }
-                LOG.warn("Unsupported character set name '{}' specified in the Exchange - checking for configured character set", exchangeCharsetName);
+                LOG.warn(
+                        "Unsupported character set name '{}' specified in the Exchange - checking for configured character set",
+                        exchangeCharsetName);
             } catch (Exception charsetEx) {
-                LOG.warn("Ignoring exception determining character set for name '{}' specified in the Exchange - checking for configured character set", exchangeCharsetName, charsetEx);
+                LOG.warn(
+                        "Ignoring exception determining character set for name '{}' specified in the Exchange - checking for configured character set",
+                        exchangeCharsetName, charsetEx);
             }
         }
 
@@ -282,14 +282,18 @@ public class MllpConfiguration implements Cloneable {
                 if (Charset.isSupported(charsetName)) {
                     return Charset.forName(charsetName);
                 }
-                LOG.warn("Unsupported character set name '{}' configured for the MLLP Endpoint - checking for character set in payload", charsetName);
+                LOG.warn(
+                        "Unsupported character set name '{}' configured for the MLLP Endpoint - checking for character set in payload",
+                        charsetName);
             } catch (Exception charsetEx) {
-                LOG.warn("Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - checking for character set in payload", charsetName, charsetEx);
+                LOG.warn(
+                        "Ignoring exception determining character set for name '{}' configured for the MLLP Endpoint - checking for character set in payload",
+                        charsetName, charsetEx);
             }
         }
 
         String msh18 = Hl7Util.findMsh18(hl7Bytes);
-        if (msh18 != null  && !msh18.isEmpty()) {
+        if (msh18 != null && !msh18.isEmpty()) {
             if (MllpProtocolConstants.MSH18_VALUES.containsKey(msh18)) {
                 return MllpProtocolConstants.MSH18_VALUES.get(msh18);
             }
@@ -298,10 +302,11 @@ public class MllpConfiguration implements Cloneable {
                     return Charset.forName(msh18);
                 }
                 LOG.info("Unsupported character set name '{}' found in MSH-18 - using default character set {}",
-                    msh18, MllpComponent.getDefaultCharset());
+                        msh18, MllpComponent.getDefaultCharset());
             } catch (Exception charsetEx) {
-                LOG.info("Ignoring exception encountered determining character set for for name '{}' found in MSH-18 - using default character set {}",
-                    msh18, MllpComponent.getDefaultCharset(), charsetEx);
+                LOG.info(
+                        "Ignoring exception encountered determining character set for for name '{}' found in MSH-18 - using default character set {}",
+                        msh18, MllpComponent.getDefaultCharset(), charsetEx);
             }
         }
 
@@ -326,8 +331,8 @@ public class MllpConfiguration implements Cloneable {
     }
 
     /**
-     * The maximum queue length for incoming connection indications (a request to connect) is set to the backlog parameter. If a connection indication arrives when the queue is full, the connection is
-     * refused.
+     * The maximum queue length for incoming connection indications (a request to connect) is set to the backlog
+     * parameter. If a connection indication arrives when the queue is full, the connection is refused.
      */
     public void setBacklog(Integer backlog) {
         this.backlog = backlog;
@@ -366,10 +371,10 @@ public class MllpConfiguration implements Cloneable {
     /**
      * TCP Server Only - Allow the endpoint to start before the TCP ServerSocket is bound.
      *
-     * In some environments, it may be desirable to allow the endpoint to start before the TCP ServerSocket
-     * is bound.
+     * In some environments, it may be desirable to allow the endpoint to start before the TCP ServerSocket is bound.
      *
-     * @param lenientBind if true, the ServerSocket will be bound asynchronously; otherwise the ServerSocket will be bound synchronously.
+     * @param lenientBind if true, the ServerSocket will be bound asynchronously; otherwise the ServerSocket will be
+     *                    bound synchronously.
      */
     public void setLenientBind(boolean lenientBind) {
         this.lenientBind = lenientBind;
@@ -419,8 +424,8 @@ public class MllpConfiguration implements Cloneable {
     }
 
     /**
-     * The maximum number of concurrent MLLP Consumer connections that will be allowed.  If a new
-     * connection is received and the maximum is number are already established, the new connection will be reset immediately.
+     * The maximum number of concurrent MLLP Consumer connections that will be allowed. If a new connection is received
+     * and the maximum is number are already established, the new connection will be reset immediately.
      *
      * @param maxConcurrentConsumers the maximum number of concurrent consumer connections allowed
      */
@@ -431,7 +436,7 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Determine if the maxReceiveTimeouts URI parameter has been set
      *
-     * @return true if the parameter has been set; false otherwise
+     * @return     true if the parameter has been set; false otherwise
      *
      * @deprecated Use the idleTimeout URI parameter
      */
@@ -443,7 +448,7 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Retrieve the value of the maxReceiveTimeouts URI parameter.
      *
-     * @return the maximum number of receive timeouts before the TCP Socket is reset
+     * @return     the maximum number of receive timeouts before the TCP Socket is reset
      *
      * @deprecated Use the idleTimeout URI parameter
      */
@@ -455,10 +460,11 @@ public class MllpConfiguration implements Cloneable {
     /**
      * The maximum number of timeouts (specified by receiveTimeout) allowed before the TCP Connection will be reset.
      *
-     * @param maxReceiveTimeouts maximum number of receiveTimeouts
+     * @param      maxReceiveTimeouts maximum number of receiveTimeouts
      *
-     * @deprecated Use the idleTimeout URI parameter.  For backward compibility, setting this parameter will result in an
-     * idle timeout of maxReceiveTimeouts * receiveTimeout.  If idleTimeout is also specified, this parameter will be ignored.
+     * @deprecated                    Use the idleTimeout URI parameter. For backward compibility, setting this
+     *                                parameter will result in an idle timeout of maxReceiveTimeouts * receiveTimeout.
+     *                                If idleTimeout is also specified, this parameter will be ignored.
      */
     @Deprecated
     public void setMaxReceiveTimeouts(Integer maxReceiveTimeouts) {
@@ -559,7 +565,7 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Sets the SO_RCVBUF option to the specified value (in bytes)
      *
-     * @param receiveBufferSize the SO_RCVBUF option value.  If null, the system default is used
+     * @param receiveBufferSize the SO_RCVBUF option value. If null, the system default is used
      */
     public void setReceiveBufferSize(Integer receiveBufferSize) {
         this.receiveBufferSize = receiveBufferSize;
@@ -576,7 +582,7 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Sets the SO_SNDBUF option to the specified value (in bytes)
      *
-     * @param sendBufferSize the SO_SNDBUF option value.  If null, the system default is used
+     * @param sendBufferSize the SO_SNDBUF option value. If null, the system default is used
      */
     public void setSendBufferSize(Integer sendBufferSize) {
         this.sendBufferSize = sendBufferSize;
@@ -623,8 +629,9 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Enable/Disable strict compliance to the MLLP standard.
      *
-     * The MLLP standard specifies [START_OF_BLOCK]hl7 payload[END_OF_BLOCK][END_OF_DATA], however, some systems do not send
-     * the final END_OF_DATA byte.  This setting controls whether or not the final END_OF_DATA byte is required or optional.
+     * The MLLP standard specifies [START_OF_BLOCK]hl7 payload[END_OF_BLOCK][END_OF_DATA], however, some systems do not
+     * send the final END_OF_DATA byte. This setting controls whether or not the final END_OF_DATA byte is required or
+     * optional.
      *
      * @param requireEndOfData the trailing END_OF_DATA byte is required if true; optional otherwise
      */
@@ -641,9 +648,9 @@ public class MllpConfiguration implements Cloneable {
      *
      * If enabled, HL7 Payloads received from external systems will be validated converted to a String.
      *
-     * If the charsetName property is set, that character set will be used for the conversion.  If the charsetName property is
-     * not set, the value of MSH-18 will be used to determine th appropriate character set.  If MSH-18 is not set, then
-     * the default ISO-8859-1 character set will be use.
+     * If the charsetName property is set, that character set will be used for the conversion. If the charsetName
+     * property is not set, the value of MSH-18 will be used to determine th appropriate character set. If MSH-18 is not
+     * set, then the default ISO-8859-1 character set will be use.
      *
      * @param stringPayload enabled if true, otherwise disabled
      */
@@ -658,9 +665,9 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Enable/Disable the validation of HL7 Payloads
      *
-     * If enabled, HL7 Payloads received from external systems will be validated (see Hl7Util.generateInvalidPayloadExceptionMessage
-     * for details on the validation). If and invalid payload is detected, a MllpInvalidMessageException (for consumers) or
-     * a MllpInvalidAcknowledgementException will be thrown.
+     * If enabled, HL7 Payloads received from external systems will be validated (see
+     * Hl7Util.generateInvalidPayloadExceptionMessage for details on the validation). If and invalid payload is
+     * detected, a MllpInvalidMessageException (for consumers) or a MllpInvalidAcknowledgementException will be thrown.
      *
      * @param validatePayload enabled if true, otherwise disabled
      */
@@ -675,9 +682,9 @@ public class MllpConfiguration implements Cloneable {
     /**
      * Enable/Disable the buffering of HL7 payloads before writing to the socket.
      *
-     * @deprecated the parameter will be ignored
+     * @deprecated              the parameter will be ignored
      *
-     * @param bufferWrites enabled if true, otherwise disabled
+     * @param      bufferWrites enabled if true, otherwise disabled
      */
     @Deprecated
     public void setBufferWrites(boolean bufferWrites) {
@@ -687,30 +694,29 @@ public class MllpConfiguration implements Cloneable {
     @Override
     public int hashCode() {
         return Objects.hash(bridgeErrorHandler,
-            exchangePattern,
-            synchronous,
-            backlog,
-            bindTimeout,
-            bindRetryInterval,
-            acceptTimeout,
-            connectTimeout,
-            receiveTimeout,
-            maxConcurrentConsumers,
-            maxReceiveTimeouts,
-            idleTimeout,
-            readTimeout,
-            keepAlive,
-            tcpNoDelay,
-            reuseAddress,
-            receiveBufferSize,
-            sendBufferSize,
-            autoAck,
-            hl7Headers,
-            bufferWrites,
-            requireEndOfData,
-            stringPayload,
-            validatePayload,
-            charsetName);
+                exchangePattern,
+                backlog,
+                bindTimeout,
+                bindRetryInterval,
+                acceptTimeout,
+                connectTimeout,
+                receiveTimeout,
+                maxConcurrentConsumers,
+                maxReceiveTimeouts,
+                idleTimeout,
+                readTimeout,
+                keepAlive,
+                tcpNoDelay,
+                reuseAddress,
+                receiveBufferSize,
+                sendBufferSize,
+                autoAck,
+                hl7Headers,
+                bufferWrites,
+                requireEndOfData,
+                stringPayload,
+                validatePayload,
+                charsetName);
     }
 
     @Override
@@ -726,60 +732,58 @@ public class MllpConfiguration implements Cloneable {
         MllpConfiguration rhs = (MllpConfiguration) o;
 
         return bridgeErrorHandler == rhs.bridgeErrorHandler
-            && exchangePattern == rhs.exchangePattern
-            && synchronous == rhs.synchronous
-            && bindTimeout == rhs.bindTimeout
-            && bindRetryInterval == rhs.bindRetryInterval
-            && acceptTimeout == rhs.acceptTimeout
-            && connectTimeout == rhs.connectTimeout
-            && receiveTimeout == rhs.receiveTimeout
-            && readTimeout == rhs.readTimeout
-            && autoAck == rhs.autoAck
-            && hl7Headers == rhs.hl7Headers
-            && bufferWrites == rhs.bufferWrites
-            && requireEndOfData == rhs.requireEndOfData
-            && stringPayload == rhs.stringPayload
-            && validatePayload == rhs.validatePayload
-            && Objects.equals(backlog, rhs.backlog)
-            && Objects.equals(maxConcurrentConsumers, rhs.maxConcurrentConsumers)
-            && Objects.equals(maxReceiveTimeouts, rhs.maxReceiveTimeouts)
-            && Objects.equals(idleTimeout, rhs.idleTimeout)
-            && Objects.equals(keepAlive, rhs.keepAlive)
-            && Objects.equals(tcpNoDelay, rhs.tcpNoDelay)
-            && Objects.equals(reuseAddress, rhs.reuseAddress)
-            && Objects.equals(receiveBufferSize, rhs.receiveBufferSize)
-            && Objects.equals(sendBufferSize, rhs.sendBufferSize)
-            && Objects.equals(charsetName, rhs.charsetName);
+                && exchangePattern == rhs.exchangePattern
+                && bindTimeout == rhs.bindTimeout
+                && bindRetryInterval == rhs.bindRetryInterval
+                && acceptTimeout == rhs.acceptTimeout
+                && connectTimeout == rhs.connectTimeout
+                && receiveTimeout == rhs.receiveTimeout
+                && readTimeout == rhs.readTimeout
+                && autoAck == rhs.autoAck
+                && hl7Headers == rhs.hl7Headers
+                && bufferWrites == rhs.bufferWrites
+                && requireEndOfData == rhs.requireEndOfData
+                && stringPayload == rhs.stringPayload
+                && validatePayload == rhs.validatePayload
+                && Objects.equals(backlog, rhs.backlog)
+                && Objects.equals(maxConcurrentConsumers, rhs.maxConcurrentConsumers)
+                && Objects.equals(maxReceiveTimeouts, rhs.maxReceiveTimeouts)
+                && Objects.equals(idleTimeout, rhs.idleTimeout)
+                && Objects.equals(keepAlive, rhs.keepAlive)
+                && Objects.equals(tcpNoDelay, rhs.tcpNoDelay)
+                && Objects.equals(reuseAddress, rhs.reuseAddress)
+                && Objects.equals(receiveBufferSize, rhs.receiveBufferSize)
+                && Objects.equals(sendBufferSize, rhs.sendBufferSize)
+                && Objects.equals(charsetName, rhs.charsetName);
     }
 
     @Override
     public String toString() {
         return "MllpConfiguration{"
-            + "bridgeErrorHandler=" + bridgeErrorHandler
-            + ", exchangePattern=" + exchangePattern
-            + ", synchronous=" + synchronous
-            + ", backlog=" + backlog
-            + ", bindTimeout=" + bindTimeout
-            + ", bindRetryInterval=" + bindRetryInterval
-            + ", acceptTimeout=" + acceptTimeout
-            + ", connectTimeout=" + connectTimeout
-            + ", receiveTimeout=" + receiveTimeout
-            + ", maxConcurrentConsumers=" + maxConcurrentConsumers
-            + ", maxReceiveTimeouts=" + maxReceiveTimeouts
-            + ", idleTimeout=" + idleTimeout
-            + ", readTimeout=" + readTimeout
-            + ", keepAlive=" + keepAlive
-            + ", tcpNoDelay=" + tcpNoDelay
-            + ", reuseAddress=" + reuseAddress
-            + ", receiveBufferSize=" + receiveBufferSize
-            + ", sendBufferSize=" + sendBufferSize
-            + ", autoAck=" + autoAck
-            + ", hl7Headers=" + hl7Headers
-            + ", bufferWrites=" + bufferWrites
-            + ", requireEndOfData=" + requireEndOfData
-            + ", stringPayload=" + stringPayload
-            + ", validatePayload=" + validatePayload
-            + ", charsetName='" + charsetName + '\''
-            + '}';
+               + "bridgeErrorHandler=" + bridgeErrorHandler
+               + ", exchangePattern=" + exchangePattern
+               + ", backlog=" + backlog
+               + ", bindTimeout=" + bindTimeout
+               + ", bindRetryInterval=" + bindRetryInterval
+               + ", acceptTimeout=" + acceptTimeout
+               + ", connectTimeout=" + connectTimeout
+               + ", receiveTimeout=" + receiveTimeout
+               + ", maxConcurrentConsumers=" + maxConcurrentConsumers
+               + ", maxReceiveTimeouts=" + maxReceiveTimeouts
+               + ", idleTimeout=" + idleTimeout
+               + ", readTimeout=" + readTimeout
+               + ", keepAlive=" + keepAlive
+               + ", tcpNoDelay=" + tcpNoDelay
+               + ", reuseAddress=" + reuseAddress
+               + ", receiveBufferSize=" + receiveBufferSize
+               + ", sendBufferSize=" + sendBufferSize
+               + ", autoAck=" + autoAck
+               + ", hl7Headers=" + hl7Headers
+               + ", bufferWrites=" + bufferWrites
+               + ", requireEndOfData=" + requireEndOfData
+               + ", stringPayload=" + stringPayload
+               + ", validatePayload=" + validatePayload
+               + ", charsetName='" + charsetName + '\''
+               + '}';
     }
 }

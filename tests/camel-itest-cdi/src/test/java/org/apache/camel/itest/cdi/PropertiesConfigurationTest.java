@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.itest.cdi;
 
 import java.util.Properties;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -59,10 +60,10 @@ public class PropertiesConfigurationTest {
     @Deployment
     public static JavaArchive createDeployment() {
         return Maven.configureResolver().workOffline()
-            .loadPomFromFile("pom.xml")
-            .resolve("org.apache.camel:camel-cdi")
-            .withoutTransitivity()
-            .asSingle(JavaArchive.class);
+                .loadPomFromFile("pom.xml")
+                .resolve("org.apache.camel:camel-cdi")
+                .withoutTransitivity()
+                .asSingle(JavaArchive.class);
     }
 
     @Test

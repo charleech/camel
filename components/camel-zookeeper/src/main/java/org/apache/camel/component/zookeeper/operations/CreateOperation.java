@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,17 +18,16 @@ package org.apache.camel.component.zookeeper.operations;
 
 import java.util.List;
 
-import static java.lang.String.format;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
+import static java.lang.String.format;
+
 /**
- * <code>CreateOperation</code> is a basic Zookeeper operation used to create
- * and set the data contained in a given node
+ * <code>CreateOperation</code> is a basic Zookeeper operation used to create and set the data contained in a given node
  */
 public class CreateOperation extends ZooKeeperOperation<String> {
 

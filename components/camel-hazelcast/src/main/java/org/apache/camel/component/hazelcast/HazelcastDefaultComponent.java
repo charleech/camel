@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.Endpoint;
 import org.apache.camel.spi.Metadata;
@@ -53,7 +52,6 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
     private String hazelcastMode = HazelcastConstants.HAZELCAST_NODE_MODE;
 
     public HazelcastDefaultComponent() {
-        super();
         this.customHazelcastInstances = new LinkedHashSet<>();
     }
 
@@ -73,7 +71,8 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
             hzInstance = getOrCreateHzClientInstance(getCamelContext(), parameters);
         }
 
-        String defaultOperation = getAndRemoveOrResolveReferenceParameter(parameters, HazelcastConstants.OPERATION_PARAM, String.class);
+        String defaultOperation
+                = getAndRemoveOrResolveReferenceParameter(parameters, HazelcastConstants.OPERATION_PARAM, String.class);
         if (defaultOperation == null) {
             defaultOperation = getAndRemoveOrResolveReferenceParameter(parameters, "defaultOperation", String.class);
         }
@@ -83,10 +82,14 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
             endpoint.setDefaultOperation(HazelcastOperation.getHazelcastOperation(defaultOperation));
         }
 
+        setProperties(endpoint, parameters);
+
         return endpoint;
     }
 
-    protected abstract HazelcastDefaultEndpoint doCreateEndpoint(String uri, String remaining, Map<String, Object> parameters, HazelcastInstance hzInstance) throws Exception;
+    protected abstract HazelcastDefaultEndpoint doCreateEndpoint(
+            String uri, String remaining, Map<String, Object> parameters, HazelcastInstance hzInstance)
+            throws Exception;
 
     @Override
     public void doStart() throws Exception {
@@ -109,8 +112,8 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
     }
 
     /**
-     * The hazelcast instance reference which can be used for hazelcast endpoint.
-     * If you don't specify the instance reference, camel use the default hazelcast instance from the camel-hazelcast instance.
+     * The hazelcast instance reference which can be used for hazelcast endpoint. If you don't specify the instance
+     * reference, camel use the default hazelcast instance from the camel-hazelcast instance.
      */
     public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
         this.hazelcastInstance = hazelcastInstance;
@@ -121,8 +124,8 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
     }
 
     /**
-     * The hazelcast mode reference which kind of instance should be used.
-     * If you don't specify the mode, then the node mode will be the default. 
+     * The hazelcast mode reference which kind of instance should be used. If you don't specify the mode, then the node
+     * mode will be the default.
      */
     public void setHazelcastMode(String hazelcastMode) {
         this.hazelcastMode = hazelcastMode;
@@ -180,7 +183,8 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
         return hzInstance == null ? hazelcastInstance : hzInstance;
     }
 
-    protected HazelcastInstance getOrCreateHzClientInstance(CamelContext context, Map<String, Object> parameters) throws Exception {
+    protected HazelcastInstance getOrCreateHzClientInstance(CamelContext context, Map<String, Object> parameters)
+            throws Exception {
         HazelcastInstance hzInstance = null;
         ClientConfig config = null;
 
@@ -189,7 +193,7 @@ public abstract class HazelcastDefaultComponent extends DefaultComponent {
 
         // Check if an already created instance is given then just get instance by its name.
         if (hzInstance == null && parameters.get(HAZELCAST_INSTANCE_NAME_PARAM) != null) {
-            hzInstance = Hazelcast.getHazelcastInstanceByName((String) parameters.get(HAZELCAST_INSTANCE_NAME_PARAM));
+            hzInstance = HazelcastClient.getHazelcastClientByName((String) parameters.get(HAZELCAST_INSTANCE_NAME_PARAM));
         }
 
         // If instance neither supplied nor found by name, try to lookup its config

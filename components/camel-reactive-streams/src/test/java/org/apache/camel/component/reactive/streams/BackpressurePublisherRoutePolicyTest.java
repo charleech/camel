@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,11 +27,13 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.support.TestSubscriber;
 import org.apache.camel.throttling.ThrottlingInflightRoutePolicy;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
-public class BackpressurePublisherRoutePolicyTest extends CamelTestSupport {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class BackpressurePublisherRoutePolicyTest extends BaseReactiveTest {
 
     @Test
     public void testThatBackpressureCausesTemporaryRouteStop() throws Exception {
@@ -40,7 +42,7 @@ public class BackpressurePublisherRoutePolicyTest extends CamelTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 ThrottlingInflightRoutePolicy policy = new ThrottlingInflightRoutePolicy();
                 policy.setMaxInflightExchanges(10);
                 policy.setScope(ThrottlingInflightRoutePolicy.ThrottlingScope.Route);
@@ -99,7 +101,7 @@ public class BackpressurePublisherRoutePolicyTest extends CamelTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 ThrottlingInflightRoutePolicy policy = new ThrottlingInflightRoutePolicy();
                 policy.setMaxInflightExchanges(10);
                 policy.setScope(ThrottlingInflightRoutePolicy.ThrottlingScope.Route);

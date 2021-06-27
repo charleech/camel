@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.cdi.test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
@@ -50,8 +51,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Arquillian.class)
 public class CamelEventNotifierTest {
@@ -91,21 +92,21 @@ public class CamelEventNotifierTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClass(SimpleCamelRoute.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClass(SimpleCamelRoute.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     @InSequence(1)
     public void startedCamelContext(List<Class> events) {
         assertThat("Events fired are incorrect!", events,
-            contains(
-                CamelContextStartingEvent.class,
-                CamelContextStartedEvent.class));
+                contains(
+                        CamelContextStartingEvent.class,
+                        CamelContextStartedEvent.class));
     }
 
     @Test
@@ -119,15 +120,15 @@ public class CamelEventNotifierTest {
         assertIsSatisfied(2L, TimeUnit.SECONDS, outbound);
 
         assertThat("Events fired are incorrect!", events,
-            contains(
-                CamelContextStartingEvent.class,
-                CamelContextStartedEvent.class,
-                ExchangeSendingEvent.class,
-                ExchangeCreatedEvent.class,
-                ExchangeSendingEvent.class,
-                ExchangeSentEvent.class,
-                ExchangeCompletedEvent.class,
-                ExchangeSentEvent.class));
+                contains(
+                        CamelContextStartingEvent.class,
+                        CamelContextStartedEvent.class,
+                        ExchangeSendingEvent.class,
+                        ExchangeCreatedEvent.class,
+                        ExchangeSendingEvent.class,
+                        ExchangeSentEvent.class,
+                        ExchangeCompletedEvent.class,
+                        ExchangeSentEvent.class));
     }
 
     @Test
@@ -136,16 +137,16 @@ public class CamelEventNotifierTest {
         context.stop();
 
         assertThat("Events fired are incorrect!", events,
-            contains(
-                CamelContextStartingEvent.class,
-                CamelContextStartedEvent.class,
-                ExchangeSendingEvent.class,
-                ExchangeCreatedEvent.class,
-                ExchangeSendingEvent.class,
-                ExchangeSentEvent.class,
-                ExchangeCompletedEvent.class,
-                ExchangeSentEvent.class,
-                CamelContextStoppingEvent.class,
-                CamelContextStoppedEvent.class));
+                contains(
+                        CamelContextStartingEvent.class,
+                        CamelContextStartedEvent.class,
+                        ExchangeSendingEvent.class,
+                        ExchangeCreatedEvent.class,
+                        ExchangeSendingEvent.class,
+                        ExchangeSentEvent.class,
+                        ExchangeCompletedEvent.class,
+                        ExchangeSentEvent.class,
+                        CamelContextStoppingEvent.class,
+                        CamelContextStoppedEvent.class));
     }
 }

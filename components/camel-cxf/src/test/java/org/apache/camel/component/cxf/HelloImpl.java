@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf;
 
-import java.awt.Image;
+import java.awt.*;
 
 import javax.xml.ws.BindingType;
 import javax.xml.ws.Holder;
@@ -29,7 +28,7 @@ public class HelloImpl implements Hello {
     public void detail(Holder<byte[]> photo, Holder<Image> image) {
         // echo through Holder
     }
-      
+
     public void echoData(Holder<byte[]> data) {
         // echo through Holder
     }

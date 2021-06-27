@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,9 +35,10 @@ public class StockQuoteResponseProcessor implements Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(StockQuoteResponseProcessor.class);
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         LOG.info("Crafting standard response in StockQuoteResponseProcessor");
-        InputStream is = getClass().getResourceAsStream("/stockquote-response.xml");
+        InputStream is = getClass().getResourceAsStream("/stockquote-response.txt");
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(is);

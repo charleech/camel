@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,10 @@ import org.apache.camel.Endpoint;
 import org.apache.camel.support.DefaultComponent;
 
 /**
- * The <a href="http://camel.apache.org/ref.html">Ref Component</a> is for lookup of existing endpoints bound in the {@link org.apache.camel.spi.Registry}.
+ * The <a href="http://camel.apache.org/ref.html">Ref Component</a> is for lookup of existing endpoints bound in the
+ * {@link org.apache.camel.spi.Registry}.
  * <p/>
- * This component uses the <tt>ref:</tt> notation instead of the mostly common <tt>uri:</tt> notation. 
+ * This component uses the <tt>ref:</tt> notation instead of the mostly common <tt>uri:</tt> notation.
  */
 @org.apache.camel.spi.annotations.Component("ref")
 public class RefComponent extends DefaultComponent {
@@ -32,6 +33,7 @@ public class RefComponent extends DefaultComponent {
     public RefComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         // first remove the scheme from the URI
         int index = uri.indexOf(':');

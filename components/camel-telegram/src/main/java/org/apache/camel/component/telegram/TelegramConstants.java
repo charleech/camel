@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,8 @@ public final class TelegramConstants {
     public static final String TELEGRAM_MEDIA_TYPE = "CamelTelegramMediaType";
 
     public static final String TELEGRAM_MEDIA_TITLE_CAPTION = "CamelTelegramMediaTitleCaption";
+
+    public static final String TELEGRAM_MEDIA_MARKUP = "CamelTelegramMediaMarkup";
 
     public static final String TELEGRAM_PARSE_MODE = "CamelTelegramParseMode";
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,16 +25,14 @@ import org.apache.camel.support.DefaultProducer;
  */
 public abstract class AbstractEtcdProducer extends DefaultProducer {
     private final EtcdConfiguration configuration;
-    private final EtcdNamespace namespace;
     private final String path;
 
     private EtcdClient client;
 
-    protected AbstractEtcdProducer(Endpoint endpoint, EtcdConfiguration configuration, EtcdNamespace namespace, String path) {
+    protected AbstractEtcdProducer(Endpoint endpoint, EtcdConfiguration configuration, String path) {
         super(endpoint);
 
         this.configuration = configuration;
-        this.namespace = namespace;
         this.path = path;
         this.client = null;
     }
@@ -50,7 +48,7 @@ public abstract class AbstractEtcdProducer extends DefaultProducer {
 
     protected EtcdClient getClient() throws Exception {
         if (client == null) {
-            client = ((EtcdEndpoint)getEndpoint()).createClient();
+            client = ((EtcdEndpoint) getEndpoint()).createClient();
         }
 
         return client;
@@ -58,10 +56,6 @@ public abstract class AbstractEtcdProducer extends DefaultProducer {
 
     protected EtcdConfiguration getConfiguration() {
         return configuration;
-    }
-
-    protected EtcdNamespace getNamespace() {
-        return namespace;
     }
 
     protected String getPath() {

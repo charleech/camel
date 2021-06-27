@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
 /**
@@ -51,16 +50,18 @@ public class MllpAcknowledgementTimeoutException extends MllpAcknowledgementExce
         super(message, hl7Message, cause);
     }
 
-    public MllpAcknowledgementTimeoutException(String message, byte[] hl7Message, byte[] partialHl7Acknowledgement, Throwable cause) {
+    public MllpAcknowledgementTimeoutException(String message, byte[] hl7Message, byte[] partialHl7Acknowledgement,
+                                               Throwable cause) {
         super(message, hl7Message, partialHl7Acknowledgement, cause);
     }
 
     /**
      * Get the HL7 acknowledgement payload associated with this exception, if any.
      *
-     * @return If the timeout occurred while attempting to receive an HL7 Message, this will be null.  If the timeout occurred while attempting to receive an HL7 Acknowledgement, this will be the HL7
-     * Message.  If the timeout occurred while attempting to complete the read of an HL7 message (i.e. part of the message has already been read), this will be the partial acknowledgement payload that
-     * was read before the timeout.
+     * @return If the timeout occurred while attempting to receive an HL7 Message, this will be null. If the timeout
+     *         occurred while attempting to receive an HL7 Acknowledgement, this will be the HL7 Message. If the timeout
+     *         occurred while attempting to complete the read of an HL7 message (i.e. part of the message has already
+     *         been read), this will be the partial acknowledgement payload that was read before the timeout.
      */
     public byte[] getHl7Acknowledgement() {
         return super.getHl7AcknowledgementBytes();

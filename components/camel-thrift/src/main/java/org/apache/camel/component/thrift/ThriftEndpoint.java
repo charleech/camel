@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,35 +16,44 @@
  */
 package org.apache.camel.component.thrift;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
-import org.apache.camel.support.DefaultEndpoint;
-import org.apache.camel.impl.SynchronousDelegateProducer;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
+import org.apache.camel.support.DefaultEndpoint;
+import org.apache.camel.support.SynchronousDelegateProducer;
 
 /**
- * The Thrift component allows to call and expose remote procedures (RPC) with
- * Apache Thrift data format and serialization mechanism
+ * Call and expose remote procedures (RPC) with Apache Thrift data format and serialization mechanism.
  */
-@UriEndpoint(firstVersion = "2.20.0", scheme = "thrift", title = "Thrift", syntax = "thrift:host:port/service", label = "rpc")
+@UriEndpoint(firstVersion = "2.20.0", scheme = "thrift", title = "Thrift", syntax = "thrift:host:port/service",
+             category = { Category.RPC, Category.TRANSFORMATION })
 public class ThriftEndpoint extends DefaultEndpoint {
     @UriParam
     private ThriftConfiguration configuration;
-    
+    @UriParam(defaultValue = "false", label = "advanced",
+              description = "Sets whether synchronous processing should be strictly used")
+    private boolean synchronous;
+
     private String serviceName;
     private String servicePackage;
 
     public ThriftEndpoint(String uri, ThriftComponent component, ThriftConfiguration config) throws Exception {
         super(uri, component);
         this.configuration = config;
-        
+
         // Extract service and package names from the full service name
         serviceName = ThriftUtils.extractServiceName(configuration.getService());
         servicePackage = ThriftUtils.extractServicePackage(configuration.getService());
     }
 
+    public ThriftConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    @Override
     public Producer createProducer() throws Exception {
         ThriftProducer producer = new ThriftProducer(this, configuration);
         if (isSynchronous()) {
@@ -54,19 +63,26 @@ public class ThriftEndpoint extends DefaultEndpoint {
         }
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
-        return new ThriftConsumer(this, processor, configuration);
+        ThriftConsumer consumer = new ThriftConsumer(this, processor, configuration);
+        configureConsumer(consumer);
+        return consumer;
     }
 
-    public boolean isSingleton() {
-        return true;
-    }
-    
     public String getServiceName() {
         return serviceName;
     }
 
     public String getServicePackage() {
         return servicePackage;
+    }
+
+    public boolean isSynchronous() {
+        return synchronous;
+    }
+
+    public void setSynchronous(boolean synchronous) {
+        this.synchronous = synchronous;
     }
 }

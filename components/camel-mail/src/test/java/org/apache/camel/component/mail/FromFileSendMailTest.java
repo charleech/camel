@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,11 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.file.GenericFile;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FromFileSendMailTest extends CamelTestSupport {
 
@@ -40,7 +42,7 @@ public class FromFileSendMailTest extends CamelTestSupport {
 
         Mailbox mailbox = Mailbox.get("james@localhost");
         assertEquals(1, mailbox.size());
-        Object body = mailbox.get(0).getContent(); 
+        Object body = mailbox.get(0).getContent();
         assertEquals("Hi how are you", body);
         Object subject = mailbox.get(0).getSubject();
         assertEquals("Hello World", subject);
@@ -51,11 +53,11 @@ public class FromFileSendMailTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("file://target/mailtext?consumer.initialDelay=100&consumer.delay=100")
-                    .setHeader("Subject", constant("Hello World"))
-                    .setHeader("To", constant("james@localhost"))
-                    .setHeader("From", constant("claus@localhost"))
-                    .to("smtp://localhost?password=secret&username=claus&consumer.initialDelay=100&consumer.delay=100", "mock:result");
+                from("file://target/mailtext?initialDelay=100&delay=100")
+                        .setHeader("Subject", constant("Hello World"))
+                        .setHeader("To", constant("james@localhost"))
+                        .setHeader("From", constant("claus@localhost"))
+                        .to("smtp://localhost?password=secret&username=claus&initialDelay=100&delay=100", "mock:result");
             }
         };
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import twitter4j.Paging;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
-
 public abstract class AbstractTwitterConsumerHandler {
 
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -47,9 +46,8 @@ public abstract class AbstractTwitterConsumerHandler {
     }
 
     /**
-     * Called by polling consumers during each poll.  It needs to be separate
-     * from directConsume() since, as an example, streaming API polling allows
-     * tweets to build up between polls.
+     * Called by polling consumers during each poll. It needs to be separate from directConsume() since, as an example,
+     * to allow tweets to build up between polls.
      */
     public abstract List<Exchange> pollConsume() throws TwitterException;
 
@@ -59,8 +57,8 @@ public abstract class AbstractTwitterConsumerHandler {
     public abstract List<Exchange> directConsume() throws TwitterException;
 
     /**
-     * Can't assume that the end of the list will be the most recent ID.
-     * The Twitter API sometimes returns them slightly out of order.
+     * Can't assume that the end of the list will be the most recent ID. The Twitter API sometimes returns them slightly
+     * out of order.
      */
     protected void setLastIdIfGreater(long newId) {
         if (newId > lastId) {

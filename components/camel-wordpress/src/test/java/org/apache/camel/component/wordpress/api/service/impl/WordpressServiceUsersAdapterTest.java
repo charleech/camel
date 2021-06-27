@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.wordpress.api.service.impl;
+
 import java.util.List;
 
 import org.apache.camel.component.wordpress.api.auth.WordpressBasicAuthentication;
@@ -23,24 +24,25 @@ import org.apache.camel.component.wordpress.api.model.UserSearchCriteria;
 import org.apache.camel.component.wordpress.api.service.WordpressServiceUsers;
 import org.apache.camel.component.wordpress.api.test.WordpressMockServerTestSupport;
 import org.apache.camel.component.wordpress.api.test.WordpressServerHttpRequestHandler;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertThat;
 
 public class WordpressServiceUsersAdapterTest extends WordpressMockServerTestSupport {
 
     private static WordpressServiceUsers serviceUsers;
 
-    @BeforeClass
+    @BeforeAll
     public static void before() {
         serviceUsers = serviceProvider.getService(WordpressServiceUsers.class);
-        serviceUsers.setWordpressAuthentication(new WordpressBasicAuthentication(WordpressServerHttpRequestHandler.USERNAME, WordpressServerHttpRequestHandler.PASSWORD));
+        serviceUsers.setWordpressAuthentication(new WordpressBasicAuthentication(
+                WordpressServerHttpRequestHandler.USERNAME, WordpressServerHttpRequestHandler.PASSWORD));
     }
 
     @Test

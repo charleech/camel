@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,5 +20,11 @@ package org.apache.camel.component.wordpress.api.model;
  * Sort collection by object attribute.
  */
 public enum PageOrderBy {
-    date, relevance, id, include, title, slug, menu_order;
+    date,
+    relevance,
+    id,
+    include,
+    title,
+    slug,
+    menu_order;
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,16 +24,16 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.BindToRegistry;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.data.redis.connection.DataType;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.query.SortQuery;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -41,18 +41,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@MockitoSettings
 public class RedisKeyTest extends RedisTestSupport {
 
     @Mock
+    @BindToRegistry("redisTemplate")
     private RedisTemplate<String, Integer> redisTemplate;
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("redisTemplate", redisTemplate);
-        return registry;
-    }
 
     @Test
     public void shouldExecuteDEL() throws Exception {
@@ -212,13 +206,13 @@ public class RedisKeyTest extends RedisTestSupport {
     public void shouldExecuteSORT() throws Exception {
         List<Integer> list = new ArrayList<>();
         list.add(5);
-        when(redisTemplate.sort(ArgumentMatchers.<SortQuery<String>>any())).thenReturn(list);
+        when(redisTemplate.sort(ArgumentMatchers.<SortQuery<String>> any())).thenReturn(list);
 
         Object result = sendHeaders(
                 RedisConstants.COMMAND, "SORT",
                 RedisConstants.KEY, "key");
 
-        verify(redisTemplate).sort(ArgumentMatchers.<SortQuery<String>>any());
+        verify(redisTemplate).sort(ArgumentMatchers.<SortQuery<String>> any());
         assertEquals(list, result);
     }
 

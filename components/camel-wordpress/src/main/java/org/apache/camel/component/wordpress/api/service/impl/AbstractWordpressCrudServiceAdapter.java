@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,12 +30,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @param <A>
  * @param <T>
  */
-abstract class AbstractWordpressCrudServiceAdapter<A, T, S extends SearchCriteria> extends AbstractWordpressServiceAdapter<A> implements WordpressCrudService<T, S> {
+abstract class AbstractWordpressCrudServiceAdapter<A, T, S extends SearchCriteria> extends AbstractWordpressServiceAdapter<A>
+        implements WordpressCrudService<T, S> {
 
     AbstractWordpressCrudServiceAdapter(final String wordpressUrl, final String apiVersion) {
         super(wordpressUrl, apiVersion);
     }
 
+    @Override
     public final T create(T object) {
         checkNotNull(object, "Please define an object to create");
         return this.doCreate(object);
@@ -43,11 +45,13 @@ abstract class AbstractWordpressCrudServiceAdapter<A, T, S extends SearchCriteri
 
     protected abstract T doCreate(T object);
 
+    @Override
     public final T delete(Integer id) {
         checkArgument(id > 0, "The id is mandatory");
         return this.doDelete(id);
     }
 
+    @Override
     public final DeletedModel<T> forceDelete(Integer id) {
         checkArgument(id > 0, "The id is mandatory");
         return this.doForceDelete(id);
@@ -64,6 +68,7 @@ abstract class AbstractWordpressCrudServiceAdapter<A, T, S extends SearchCriteri
         return deletedModel;
     }
 
+    @Override
     public final T update(Integer id, T object) {
         checkNotNull(object, "Please define an object to update");
         checkArgument(id > 0, "The id is mandatory");

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,21 +17,25 @@
 package org.apache.camel.component.ignite.events;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
-import org.apache.camel.ExchangePattern;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.support.DefaultConsumer;
 import org.apache.ignite.IgniteEvents;
 import org.apache.ignite.events.Event;
 import org.apache.ignite.lang.IgnitePredicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Ignite Events consumer.
  */
 public class IgniteEventsConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IgniteEventsConsumer.class);
 
     private IgniteEventsEndpoint endpoint;
     private IgniteEvents events;
@@ -42,21 +46,18 @@ public class IgniteEventsConsumer extends DefaultConsumer {
 
         @Override
         public boolean apply(Event event) {
-            Exchange exchange = endpoint.createExchange(ExchangePattern.InOnly);
+            Exchange exchange = createExchange(true);
             Message in = exchange.getIn();
             in.setBody(event);
             try {
-                if (log.isTraceEnabled()) {
-                    log.trace("Processing Ignite Event: {}.", event);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Processing Ignite Event: {}.", event);
                 }
-                getAsyncProcessor().process(exchange, new AsyncCallback() {
-                    @Override
-                    public void done(boolean doneSync) {
-                        // do nothing
-                    }
-                });
+                // use default consumer callback
+                AsyncCallback cb = defaultConsumerCallback(exchange, true);
+                getAsyncProcessor().process(exchange, cb);
             } catch (Exception e) {
-                log.error(String.format("Exception while processing Ignite Event: %s.", event), e);
+                LOG.error(String.format("Exception while processing Ignite Event: %s.", event), e);
             }
             return true;
         }
@@ -72,17 +73,16 @@ public class IgniteEventsConsumer extends DefaultConsumer {
     protected void doStart() throws Exception {
         super.doStart();
 
-        if (endpoint.getEvents() != null && endpoint.getEvents().size() > 0) {
-            eventTypes = new int[endpoint.getEvents().size()];
-            int counter = 0;
-            for (Integer i : endpoint.getEvents()) {
-                eventTypes[counter++] = i;
-            }
+        List<Integer> ids = endpoint.getEventsAsIds();
+        eventTypes = new int[ids.size()];
+        int counter = 0;
+        for (Integer i : ids) {
+            eventTypes[counter++] = i;
         }
 
         events.localListen(predicate, eventTypes);
-        
-        log.info("Started local Ignite Events consumer for events: {}.", Arrays.asList(eventTypes));
+
+        LOG.info("Started local Ignite Events consumer for events: {}.", Arrays.asList(eventTypes));
     }
 
     @Override
@@ -90,8 +90,8 @@ public class IgniteEventsConsumer extends DefaultConsumer {
         super.doStop();
 
         events.stopLocalListen(predicate, eventTypes);
-        
-        log.info("Stopped local Ignite Events consumer for events: {}.", Arrays.asList(eventTypes));
+
+        LOG.info("Stopped local Ignite Events consumer for events: {}.", Arrays.asList(eventTypes));
     }
 
 }

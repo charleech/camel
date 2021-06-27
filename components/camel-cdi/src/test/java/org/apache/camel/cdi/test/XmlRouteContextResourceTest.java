@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,8 +39,8 @@ import static org.apache.camel.component.mock.MockEndpoint.assertIsSatisfied;
 
 @RunWith(Arquillian.class)
 @ImportResource({
-    "imported-context.xml",
-    "imported-route-context.xml"
+        "imported-context.xml",
+        "imported-route-context.xml"
 })
 public class XmlRouteContextResourceTest {
 
@@ -55,17 +55,17 @@ public class XmlRouteContextResourceTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test Camel XML
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-routeContextRef.xml").toFile(),
-                "imported-context.xml")
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-routeContext.xml").toFile(),
-                "imported-route-context.xml")
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test Camel XML
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-routeContextRef.xml").toFile(),
+                        "imported-context.xml")
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-routeContext.xml").toFile(),
+                        "imported-route-context.xml")
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test

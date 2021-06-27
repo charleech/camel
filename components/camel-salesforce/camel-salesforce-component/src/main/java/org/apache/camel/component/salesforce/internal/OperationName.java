@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,15 +23,18 @@ public enum OperationName {
     GET_RESOURCES("getResources"),
     GET_GLOBAL_OBJECTS("getGlobalObjects"),
     GET_BASIC_INFO("getBasicInfo"),
-    GET_DESCRIPTION("getDescription"),
+    GET_DESCRIPTION(
+                    "getDescription"),
     GET_SOBJECT("getSObject"),
     CREATE_SOBJECT("createSObject"),
     UPDATE_SOBJECT("updateSObject"),
     DELETE_SOBJECT("deleteSObject"),
-    GET_SOBJECT_WITH_ID("getSObjectWithId"),
+    GET_SOBJECT_WITH_ID(
+                        "getSObjectWithId"),
     UPSERT_SOBJECT("upsertSObject"),
     DELETE_SOBJECT_WITH_ID("deleteSObjectWithId"),
-    GET_BLOB_FIELD("getBlobField"),
+    GET_BLOB_FIELD(
+                   "getBlobField"),
     QUERY("query"),
     QUERY_MORE("queryMore"),
     QUERY_ALL("queryAll"),
@@ -46,18 +49,39 @@ public enum OperationName {
     ABORT_JOB("abortJob"),
     CREATE_BATCH("createBatch"),
     GET_BATCH("getBatch"),
-    GET_ALL_BATCHES("getAllBatches"),
-    GET_REQUEST("getRequest"),
+    GET_ALL_BATCHES(
+                    "getAllBatches"),
+    GET_REQUEST(
+                "getRequest"),
     GET_RESULTS("getResults"),
     CREATE_BATCH_QUERY("createBatchQuery"),
     GET_QUERY_RESULT_IDS("getQueryResultIds"),
     GET_QUERY_RESULT("getQueryResult"),
-    
+
+    // Bulk API 2.0
+    BULK2_CREATE_JOB("bulk2CreateJob"),
+    BULK2_GET_JOB("bulk2GetJob"),
+    BULK2_CREATE_BATCH("bulk2CreateBatch"),
+    BULK2_CLOSE_JOB("bulk2CloseJob"),
+    BULK2_ABORT_JOB("bulk2AbortJob"),
+    BULK2_DELETE_JOB("bulk2DeleteJob"),
+    BULK2_GET_SUCCESSFUL_RESULTS("bulk2GetSuccessfulResults"),
+    BULK2_GET_FAILED_RESULTS("bulk2GetFailedResults"),
+    BULK2_GET_UNPROCESSED_RECORDS("bulk2GetUnprocessedRecords"),
+    BULK2_GET_ALL_JOBS("bulk2GetAllJobs"),
+    BULK2_CREATE_QUERY_JOB("bulk2CreateQueryJob"),
+    BULK2_GET_QUERY_JOB("bulk2GetQueryJob"),
+    BULK2_GET_ALL_QUERY_JOBS("bulk2GetAllQueryJobs"),
+    BULK2_GET_QUERY_JOB_RESULTS("bulk2GetQueryJobResults"),
+    BULK2_ABORT_QUERY_JOB("bulk2AbortQueryJob"),
+    BULK2_DELETE_QUERY_JOB("bulk2DeleteQueryJob"),
+
     // analytics API
     GET_RECENT_REPORTS("getRecentReports"),
     GET_REPORT_DESCRIPTION("getReportDescription"),
     EXECUTE_SYNCREPORT("executeSyncReport"),
-    EXECUTE_ASYNCREPORT("executeAsyncReport"),
+    EXECUTE_ASYNCREPORT(
+                        "executeAsyncReport"),
     GET_REPORT_INSTANCES("getReportInstances"),
     GET_REPORT_RESULTS("getReportResults"),
 
@@ -69,9 +93,16 @@ public enum OperationName {
     APPROVALS("approvals"),
 
     // Composite API
-    COMPOSITE_TREE("composite-tree"),
+    COMPOSITE("composite"),
     COMPOSITE_BATCH("composite-batch"),
-    COMPOSITE("composite");
+    COMPOSITE_TREE("composite-tree"),
+
+    // Composite sObject Collections API
+    COMPOSITE_CREATE_SOBJECT_COLLECTIONS("compositeCreateSObjectCollections"),
+    COMPOSITE_UPDATE_SOBJECT_COLLECTIONS("compositeUpdateSObjectCollections"),
+    COMPOSITE_UPSERT_SOBJECT_COLLECTIONS("compositeUpsertSObjectCollections"),
+    COMPOSITE_RETRIEVE_SOBJECT_COLLECTIONS("compositeRetrieveSObjectCollections"),
+    COMPOSITE_DELETE_SOBJECT_COLLECTIONS("compositeDeleteSObjectCollections");
 
     private final String value;
 

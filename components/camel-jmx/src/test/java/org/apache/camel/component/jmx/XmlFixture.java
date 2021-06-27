@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.jmx;
 
 import java.io.File;
+
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -30,7 +31,7 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public final class XmlFixture {
 
@@ -50,14 +51,15 @@ public final class XmlFixture {
                 .ignoreComments().ignoreWhitespace()
                 .checkForSimilar().build();
         try {
-            assertFalse(aMessage + ":\n" + diff.toString(), diff.hasDifferences());
+            assertFalse(diff.hasDifferences(), aMessage + ":\n" + diff.toString());
         } catch (Throwable t) {
             dump(aActual);
             throw t;
         }
     }
 
-    public static void dump(Source aActual) throws TransformerConfigurationException,
+    public static void dump(Source aActual)
+            throws TransformerConfigurationException,
             TransformerException {
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();

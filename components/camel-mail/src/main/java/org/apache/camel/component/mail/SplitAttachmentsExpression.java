@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,35 +22,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.camel.Attachment;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.attachment.Attachment;
+import org.apache.camel.attachment.AttachmentMessage;
 import org.apache.camel.support.DefaultMessage;
 import org.apache.camel.support.ExpressionAdapter;
 import org.apache.camel.util.IOHelper;
 
 /**
- * A {@link org.apache.camel.Expression} which can be used to split a {@link MailMessage}
- * per attachment. For example if a mail message has 5 attachments, then this
- * expression will return a <tt>List&lt;Message&gt;</tt> that contains 5 {@link Message}.
- * The message can be split 2 ways:
+ * A {@link org.apache.camel.Expression} which can be used to split a {@link MailMessage} per attachment. For example if
+ * a mail message has 5 attachments, then this expression will return a <tt>List&lt;Message&gt;</tt> that contains 5
+ * {@link Message}. The message is split:
  * <table>
- *   <tr>
- *     <td>As an attachment</td>
- *     <td>
- *       The message is split into cloned messages, each has only one attachment.  The mail attachment in each message
- *       remains unprocessed.
- *     </td>
- *   </tr>
- *   <tr>
- *     <td>As a byte[] or String</td>
- *     <td>
- *       The attachments are split into new messages as the body. This allows the split messages to be easily used by
- *       other processors / routes, as many other camel components can work on the byte[] or String, e.g. it can be written to disk
- *       using camel-file.
- *     </td>
- *   </tr>
+ * <tr>
+ * <td>As a byte[] or String</td>
+ * <td>The attachments are split into new messages as the body. This allows the split messages to be easily used by
+ * other processors / routes, as many other camel components can work on the byte[] or String, e.g. it can be written to
+ * disk using camel-file.</td>
+ * </tr>
  * </table>
  *
  * In both cases the attachment name is written to a the camel header &quot;CamelSplitAttachmentId&quot;
@@ -59,37 +51,28 @@ public class SplitAttachmentsExpression extends ExpressionAdapter {
 
     public static final String HEADER_NAME = "CamelSplitAttachmentId";
 
-    private boolean extractAttachments;
-
     public SplitAttachmentsExpression() {
-    }
-
-    public SplitAttachmentsExpression(boolean extractAttachments) {
-        this.extractAttachments = extractAttachments;
     }
 
     @Override
     public Object evaluate(Exchange exchange) {
         // must use getAttachments to ensure attachments is initial populated
-        if (exchange.getIn().getAttachments().isEmpty()) {
+        if (!exchange.getIn(AttachmentMessage.class).hasAttachments()) {
             return null;
         }
 
         try {
             List<Message> answer = new ArrayList<>();
-            Message inMessage = exchange.getIn();
+            AttachmentMessage inMessage = exchange.getIn(AttachmentMessage.class);
             for (Map.Entry<String, Attachment> entry : inMessage.getAttachmentObjects().entrySet()) {
-                Message attachmentMessage;
-                if (extractAttachments) {
-                    attachmentMessage = extractAttachment(inMessage, entry.getKey());
-                } else {
-                    attachmentMessage = splitAttachment(inMessage, entry.getKey(), entry.getValue());
-                }
-
+                Message attachmentMessage = extractAttachment(entry.getValue(), entry.getKey(), exchange.getContext());
                 if (attachmentMessage != null) {
                     answer.add(attachmentMessage);
                 }
             }
+
+            // clear attachments on original message after we have split them
+            inMessage.getAttachmentObjects().clear();
 
             return answer;
         } catch (Exception e) {
@@ -97,30 +80,21 @@ public class SplitAttachmentsExpression extends ExpressionAdapter {
         }
     }
 
-    private Message splitAttachment(Message inMessage, String attachmentName, Attachment attachmentHandler) {
-        final Message copy = inMessage.copy();
-        Map<String, Attachment> attachments = copy.getAttachmentObjects();
-        attachments.clear();
-        attachments.put(attachmentName, attachmentHandler);
-        copy.setHeader(HEADER_NAME, attachmentName);
-        return copy;
-    }
-
-    private Message extractAttachment(Message inMessage, String attachmentName) throws Exception {
-        final Message outMessage = new DefaultMessage(inMessage.getExchange().getContext());
+    private Message extractAttachment(Attachment attachment, String attachmentName, CamelContext camelContext)
+            throws Exception {
+        final Message outMessage = new DefaultMessage(camelContext);
         outMessage.setHeader(HEADER_NAME, attachmentName);
-        Object attachment = inMessage.getAttachment(attachmentName).getContent();
-        if (attachment instanceof InputStream) {
-            outMessage.setBody(readMimePart((InputStream) attachment));
+        Object obj = attachment.getDataHandler().getContent();
+        if (obj instanceof InputStream) {
+            outMessage.setBody(readMimePart((InputStream) obj));
             return outMessage;
-        } else if (attachment instanceof String || attachment instanceof byte[]) {
-            outMessage.setBody(attachment);
+        } else if (obj instanceof String || obj instanceof byte[]) {
+            outMessage.setBody(obj);
             return outMessage;
         } else {
             return null;
         }
     }
-
 
     private byte[] readMimePart(InputStream mimePartStream) throws Exception {
         // mimePartStream could be base64 encoded, or not, but we don't need to worry about it as
@@ -130,12 +104,4 @@ public class SplitAttachmentsExpression extends ExpressionAdapter {
         return bos.toByteArray();
     }
 
-
-    public boolean isExtractAttachments() {
-        return extractAttachments;
-    }
-
-    public void setExtractAttachments(boolean extractAttachments) {
-        this.extractAttachments = extractAttachments;
-    }
 }

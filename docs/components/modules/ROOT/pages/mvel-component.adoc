@@ -1,10 +1,21 @@
 [[mvel-component]]
-== MVEL Component
+= MVEL Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-mvel/src/main/docs/mvel-component.adoc
+:docTitle: MVEL
+:artifactId: camel-mvel
+:description: Transform messages using an MVEL template.
+:since: 2.12
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/mvel.adoc[opts=optional]
 
-*Available as of Camel version 2.12*
+*Since Camel {since}*
 
-The *mvel:* component allows you to process a message using an
-http://mvel.codehaus.org/[MVEL] template. This can be ideal when using
+*{component-header}*
+
+The MVEL component allows you to process a message using an
+http://mvel.documentnode.com/[MVEL] template. This can be ideal when using
 Templating to generate responses for requests.
 
 Maven users will need to add the following dependency to their `pom.xml`
@@ -20,7 +31,7 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 ---------------------------
@@ -29,16 +40,27 @@ mvel:templateName[?options]
 
 Where *templateName* is the classpath-local URI of the template to
 invoke; or the complete URL of the remote template (eg:
-file://folder/myfile.mvel[file://folder/myfile.mvel]).
+\file://folder/myfile.mvel).
 
 You can append query options to the URI in the following format,
 `?option=value&option=value&...`
 
-### Options
+== Options
 
 
 // component options: START
-The MVEL component has no options.
+The MVEL component supports 4 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *allowContextMapAll* (producer) | Sets whether the context map should allow access to all details. By default only the message body and headers can be accessed. This option can be enabled for full access to the current Exchange and CamelContext. Doing so impose a potential security risk as this opens access to the full power of CamelContext API. | false | boolean
+| *allowTemplateFromHeader* (producer) | Whether to allow to use resource template from header or not (default false). Enabling this allows to specify dynamic templates via message header. However this can be seen as a potential security vulnerability if the header is coming from a malicious user, so use this with care. | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -53,7 +75,7 @@ mvel:resourceUri
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -63,39 +85,24 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (3 parameters):
+=== Query Parameters (5 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
+| *allowContextMapAll* (producer) | Sets whether the context map should allow access to all details. By default only the message body and headers can be accessed. This option can be enabled for full access to the current Exchange and CamelContext. Doing so impose a potential security risk as this opens access to the full power of CamelContext API. | false | boolean
+| *allowTemplateFromHeader* (producer) | Whether to allow to use resource template from header or not (default false). Enabling this allows to specify dynamic templates via message header. However this can be seen as a potential security vulnerability if the header is coming from a malicious user, so use this with care. | false | boolean
 | *contentCache* (producer) | Sets whether to use resource content cache or not | false | boolean
 | *encoding* (producer) | Character encoding of the resource content. |  | String
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 4 options, which are listed below.
-
-
-
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.mvel.enabled* | Enable mvel component | true | Boolean
-| *camel.component.mvel.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-| *camel.language.mvel.enabled* | Enable mvel language | true | Boolean
-| *camel.language.mvel.trim* | Whether to trim the value to remove leading and trailing whitespaces and line breaks | true | Boolean
-|===
-// spring-boot-auto-configure options: END
 
 
 
 
-### Message Headers
+== Message Headers
 
 The mvel component sets a couple headers on the message.
 
@@ -106,7 +113,7 @@ The mvel component sets a couple headers on the message.
 |`CamelMvelResourceUri` |The *templateName* as a `String` object.
 |=======================================================================
 
-### MVEL Context
+== MVEL Context
 
 Camel will provide exchange information in the MVEL context (just a
 `Map`). The `Exchange` is transfered as:
@@ -134,7 +141,7 @@ Camel will provide exchange information in the MVEL context (just a
 |`response` |The Out message (only for InOut message exchange pattern).
 |=======================================================================
 
-### Hot reloading
+== Hot reloading
 
 The mvel template resource is, by default, hot reloadable for both file
 and classpath resources (expanded jar). If you set `contentCache=true`,
@@ -142,7 +149,7 @@ Camel will only load the resource once, and thus hot reloading is not
 possible. This scenario can be used in production, when the resource
 never changes.
 
-### Dynamic templates
+== Dynamic templates
 
 Camel provides two headers by which you can define a different resource
 location for a template or the template content itself. If any of these
@@ -159,7 +166,7 @@ configured.
 |CamelMvelTemplate |String |The template to use instead of the endpoint configured.
 |=======================================================================
 
-### Samples
+== Samples
 
 For example you could use something like
 
@@ -179,7 +186,7 @@ header, so for example:
 -------------------------------------------------------------------------
 from("direct:in").
   setHeader("CamelMvelResourceUri").constant("path/to/my/template.mvel").
-  to("mvel:dummy");
+  to("mvel:dummy?allowTemplateFromHeader=true");
 -------------------------------------------------------------------------
 
 To specify a template directly as a header the component should use
@@ -189,12 +196,8 @@ dynamically via a header, so for example:
 ------------------------------------------------------------------------------------------
 from("direct:in").
   setHeader("CamelMvelTemplate").constant("@{\"The result is \" + request.body * 3}\" }").
-  to("velocity:dummy");
+  to("velocity:dummy?allowTemplateFromHeader=true");
 ------------------------------------------------------------------------------------------
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$mvel-starter.adoc[]

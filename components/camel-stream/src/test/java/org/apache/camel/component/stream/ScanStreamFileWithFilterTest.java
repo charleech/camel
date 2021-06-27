@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,9 +21,12 @@ import java.io.FileOutputStream;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.camel.test.junit5.TestSupport.createDirectory;
+import static org.apache.camel.test.junit5.TestSupport.deleteDirectory;
 
 /**
  * Unit test for scan stream file
@@ -33,7 +36,7 @@ public class ScanStreamFileWithFilterTest extends CamelTestSupport {
     private File file;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         deleteDirectory("target/stream");
         createDirectory("target/stream");
@@ -71,12 +74,13 @@ public class ScanStreamFileWithFilterTest extends CamelTestSupport {
         fos.close();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("stream:file?fileName=target/stream/scanstreamfile.txt&scanStream=true&scanStreamDelay=100")
-                    .filter(body().contains("Hello Boy"))
-                    .to("mock:result");
+                        .filter(body().contains("Hello Boy"))
+                        .to("mock:result");
             }
         };
     }

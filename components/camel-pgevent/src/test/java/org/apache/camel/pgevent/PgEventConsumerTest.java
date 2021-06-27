@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,22 +20,24 @@ import java.sql.PreparedStatement;
 
 import com.impossibl.postgres.api.jdbc.PGConnection;
 import com.impossibl.postgres.jdbc.PGDataSource;
-
-import org.apache.camel.Exchange;
+import org.apache.camel.ExtendedCamelContext;
+import org.apache.camel.ExtendedExchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.pgevent.PgEventConsumer;
 import org.apache.camel.component.pgevent.PgEventEndpoint;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.apache.camel.spi.ExchangeFactory;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PgEventConsumerTest {
 
     @Test
@@ -45,7 +47,13 @@ public class PgEventConsumerTest {
         PreparedStatement statement = mock(PreparedStatement.class);
         PgEventEndpoint endpoint = mock(PgEventEndpoint.class);
         Processor processor = mock(Processor.class);
+        ExtendedCamelContext ecc = mock(ExtendedCamelContext.class);
+        ExchangeFactory ef = mock(ExchangeFactory.class);
 
+        when(endpoint.getCamelContext()).thenReturn(ecc);
+        when(ecc.adapt(ExtendedCamelContext.class)).thenReturn(ecc);
+        when(ecc.getExchangeFactory()).thenReturn(ef);
+        when(ef.newExchangeFactory(any())).thenReturn(ef);
         when(endpoint.getDatasource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement("LISTEN camel")).thenReturn(statement);
@@ -65,7 +73,13 @@ public class PgEventConsumerTest {
         PreparedStatement statement = mock(PreparedStatement.class);
         PgEventEndpoint endpoint = mock(PgEventEndpoint.class);
         Processor processor = mock(Processor.class);
+        ExtendedCamelContext ecc = mock(ExtendedCamelContext.class);
+        ExchangeFactory ef = mock(ExchangeFactory.class);
 
+        when(endpoint.getCamelContext()).thenReturn(ecc);
+        when(ecc.adapt(ExtendedCamelContext.class)).thenReturn(ecc);
+        when(ecc.getExchangeFactory()).thenReturn(ef);
+        when(ef.newExchangeFactory(any())).thenReturn(ef);
         when(endpoint.getDatasource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement("LISTEN camel")).thenReturn(statement);
@@ -85,10 +99,17 @@ public class PgEventConsumerTest {
     public void testPgEventNotification() throws Exception {
         PgEventEndpoint endpoint = mock(PgEventEndpoint.class);
         Processor processor = mock(Processor.class);
-        Exchange exchange = mock(Exchange.class);
+        ExtendedExchange exchange = mock(ExtendedExchange.class);
         Message message = mock(Message.class);
+        ExtendedCamelContext ecc = mock(ExtendedCamelContext.class);
+        ExchangeFactory ef = mock(ExchangeFactory.class);
 
-        when(endpoint.createExchange()).thenReturn(exchange);
+        when(endpoint.getCamelContext()).thenReturn(ecc);
+        when(ecc.adapt(ExtendedCamelContext.class)).thenReturn(ecc);
+        when(ecc.getExchangeFactory()).thenReturn(ef);
+        when(ef.newExchangeFactory(any())).thenReturn(ef);
+        when(ef.create(endpoint, false)).thenReturn(exchange);
+        when(exchange.adapt(ExtendedExchange.class)).thenReturn(exchange);
         when(exchange.getIn()).thenReturn(message);
 
         PgEventConsumer consumer = new PgEventConsumer(endpoint, processor);

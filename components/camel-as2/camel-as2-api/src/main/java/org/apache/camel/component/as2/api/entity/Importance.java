@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,12 +41,12 @@ public enum Importance {
         }
 
         switch (importance.toLowerCase()) {
-        case "required":
-            return REQUIRED;
-        case "optional":
-            return OPTIONAL;
-        default:
-            return null;
+            case "required":
+                return REQUIRED;
+            case "optional":
+                return OPTIONAL;
+            default:
+                return null;
         }
     }
 

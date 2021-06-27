@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.dataformat.bindy;
 
 /**
- * A {@link RuntimeException} which wraps a checked exception. This is necessary when dealing with streams,
- * since the API does not allow catching or propagating a checked exception.
+ * A {@link RuntimeException} which wraps a checked exception. This is necessary when dealing with streams, since the
+ * API does not allow catching or propagating a checked exception.
  */
 public class WrappedException extends RuntimeException {
     private final Exception exception;
 
     /**
      * Mandatory constructor.
+     * 
      * @param wrappedException the checked exception being passed in
      */
     public WrappedException(Exception wrappedException) {

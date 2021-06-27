@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.component.cm.test;
+
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,26 +23,24 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import org.apache.camel.component.cm.CMConfiguration;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.Assert;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@CamelSpringTest
 @ContextConfiguration(classes = { ValidatorConfiguration.class })
 // @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 // @DisableJmx(false)
 // @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
+public class CMConfigurationTest {
 
     @Autowired
     private Validator validator;
 
-    @Before
+    @BeforeEach
     public void beforeTest() throws Exception {
     }
 
@@ -60,7 +59,7 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 
     @Test
@@ -76,7 +75,7 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 
     @Test
@@ -92,7 +91,7 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 
     @Test
@@ -108,7 +107,7 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 
     @Test
@@ -122,7 +121,7 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 
     @Test
@@ -136,6 +135,6 @@ public class CMConfigurationTest extends AbstractJUnit4SpringContextTests {
         configuration.setTestConnectionOnStartup(false);
 
         final Set<ConstraintViolation<CMConfiguration>> constraintViolations = validator.validate(configuration);
-        Assert.isTrue(1 == constraintViolations.size());
+        Assert.isTrue(1 == constraintViolations.size(), "Unexpected number of constraint violations");
     }
 }

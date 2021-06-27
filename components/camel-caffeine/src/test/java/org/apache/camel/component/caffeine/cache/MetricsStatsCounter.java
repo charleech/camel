@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -78,8 +78,10 @@ public class MetricsStatsCounter implements StatsCounter {
 
     @Override
     public CacheStats snapshot() {
-        return new CacheStats(hitCount.getCount(), missCount.getCount(), loadSuccessCount.getCount(), loadFailureCount.getCount(), totalLoadTime.getCount(),
-                              evictionCount.getCount(), evictionWeight.getCount());
+        return new CacheStats(
+                hitCount.getCount(), missCount.getCount(), loadSuccessCount.getCount(), loadFailureCount.getCount(),
+                totalLoadTime.getCount(),
+                evictionCount.getCount(), evictionWeight.getCount());
     }
 
     @Override

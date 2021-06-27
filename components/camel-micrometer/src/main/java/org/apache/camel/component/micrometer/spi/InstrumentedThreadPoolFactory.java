@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,17 +20,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
-import org.apache.camel.impl.DefaultThreadPoolFactory;
 import org.apache.camel.spi.ThreadPoolFactory;
 import org.apache.camel.spi.ThreadPoolProfile;
+import org.apache.camel.support.DefaultThreadPoolFactory;
 import org.apache.camel.util.ObjectHelper;
 
 /**
- * This implements a {@link ThreadPoolFactory} and generates an Instrumented versions of ExecutorService used to
- * monitor performance of each thread using Metrics.
+ * This implements a {@link ThreadPoolFactory} and generates an Instrumented versions of ExecutorService used to monitor
+ * performance of each thread using Metrics.
  */
 public class InstrumentedThreadPoolFactory implements ThreadPoolFactory {
 

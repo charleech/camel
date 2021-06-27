@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.ribbon.cloud;
 
 import java.util.Collections;
@@ -42,7 +41,7 @@ public class RibbonServiceDefinition extends Server implements ServiceDefinition
         this(name, host, port, null, health);
     }
 
-    public RibbonServiceDefinition(String name, String host, int port,  Map<String, String> meta) {
+    public RibbonServiceDefinition(String name, String host, int port, Map<String, String> meta) {
         this(name, host, port, meta, DEFAULT_SERVICE_HEALTH);
     }
 
@@ -55,12 +54,11 @@ public class RibbonServiceDefinition extends Server implements ServiceDefinition
 
     public RibbonServiceDefinition(ServiceDefinition definition) {
         this(
-            definition.getName(),
-            definition.getHost(),
-            definition.getPort(),
-            definition.getMetadata(),
-            definition.getHealth()
-        );
+             definition.getName(),
+             definition.getHost(),
+             definition.getPort(),
+             definition.getMetadata(),
+             definition.getHealth());
     }
 
     @Override

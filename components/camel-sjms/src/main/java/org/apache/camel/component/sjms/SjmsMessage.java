@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,13 +52,31 @@ public class SjmsMessage extends DefaultMessage {
         setBinding(binding);
     }
 
+    public void init(Exchange exchange, Message jmsMessage, Session jmsSession, JmsBinding binding) {
+        setExchange(exchange);
+        setJmsMessage(jmsMessage);
+        setJmsSession(jmsSession);
+        setBinding(binding);
+        // need to populate initial headers when we use pooled exchanges
+        populateInitialHeaders(getHeaders());
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        setExchange(null);
+        jmsMessage = null;
+        jmsSession = null;
+        binding = null;
+    }
+
     @Override
     public String toString() {
         // do not print jmsMessage as there could be sensitive details
         if (jmsMessage != null) {
             try {
                 return "SjmsMessage[JmsMessageID: " + jmsMessage.getJMSMessageID() + "]";
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 // ignore
             }
         }
@@ -96,16 +114,10 @@ public class SjmsMessage extends DefaultMessage {
 
         // copy body and fault flag
         setBody(that.getBody());
-        setFault(that.isFault());
 
         // we have already cleared the headers
         if (that.hasHeaders()) {
             getHeaders().putAll(that.getHeaders());
-        }
-
-        getAttachments().clear();
-        if (that.hasAttachments()) {
-            getAttachmentObjects().putAll(that.getAttachmentObjects());
         }
     }
 
@@ -162,6 +174,7 @@ public class SjmsMessage extends DefaultMessage {
         }
     }
 
+    @Override
     public Object getHeader(String name) {
         Object answer = null;
 
@@ -223,8 +236,7 @@ public class SjmsMessage extends DefaultMessage {
     }
 
     /**
-     * Ensure that the headers have been populated from the underlying JMS message
-     * before we start mutating the headers
+     * Ensure that the headers have been populated from the underlying JMS message before we start mutating the headers
      */
     protected void ensureInitialHeaders() {
         if (jmsMessage != null && !hasPopulatedHeaders()) {

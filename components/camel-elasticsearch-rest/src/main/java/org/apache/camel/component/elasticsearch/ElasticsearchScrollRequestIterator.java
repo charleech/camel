@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.apache.camel.component.elasticsearch;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
+
 import org.apache.camel.Exchange;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -32,7 +33,6 @@ import org.elasticsearch.search.SearchHit;
 
 import static org.apache.camel.component.elasticsearch.ElasticsearchConstants.PROPERTY_SCROLL_ES_QUERY_COUNT;
 
-
 public class ElasticsearchScrollRequestIterator implements Iterator<SearchHit>, Closeable {
     private final SearchRequest searchRequest;
     private final RestHighLevelClient restHighLevelClient;
@@ -43,7 +43,8 @@ public class ElasticsearchScrollRequestIterator implements Iterator<SearchHit>, 
     private boolean closed;
     private int requestCount;
 
-    public ElasticsearchScrollRequestIterator(SearchRequest searchRequest, RestHighLevelClient restHighLevelClient, int scrollKeepAliveMs, Exchange exchange) throws IOException {
+    public ElasticsearchScrollRequestIterator(SearchRequest searchRequest, RestHighLevelClient restHighLevelClient,
+                                              int scrollKeepAliveMs, Exchange exchange) throws IOException {
         this.searchRequest = searchRequest;
         this.restHighLevelClient = restHighLevelClient;
         this.scrollKeepAliveMs = scrollKeepAliveMs;
@@ -118,6 +119,7 @@ public class ElasticsearchScrollRequestIterator implements Iterator<SearchHit>, 
         return searchResponse;
     }
 
+    @Override
     public void close() {
         if (!closed) {
             try {

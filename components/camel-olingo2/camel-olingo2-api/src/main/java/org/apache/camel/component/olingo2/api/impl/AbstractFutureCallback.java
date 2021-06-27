@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,9 +35,9 @@ import org.apache.olingo.odata2.api.processor.ODataErrorContext;
 import static org.apache.camel.component.olingo2.api.impl.Olingo2Helper.getContentTypeHeader;
 
 /**
-* Helper implementation of {@link org.apache.http.concurrent.FutureCallback}
- * for {@link org.apache.camel.component.olingo2.api.impl.Olingo2AppImpl}
-*/
+ * Helper implementation of {@link org.apache.http.concurrent.FutureCallback} for
+ * {@link org.apache.camel.component.olingo2.api.impl.Olingo2AppImpl}
+ */
 public abstract class AbstractFutureCallback<T> implements FutureCallback<HttpResponse> {
 
     public static final Pattern ODATA_MIME_TYPE = Pattern.compile("application/((atom)|(json)|(xml)).*");
@@ -56,12 +56,12 @@ public abstract class AbstractFutureCallback<T> implements FutureCallback<HttpRe
                     final ContentType responseContentType = getContentTypeHeader(response);
 
                     if (responseContentType != null && ODATA_MIME_TYPE.matcher(responseContentType.getMimeType()).matches()) {
-                        final ODataErrorContext errorContext = EntityProvider.readErrorDocument(
-                            response.getEntity().getContent(),
-                            responseContentType.toString());
-                        throw new ODataApplicationException(errorContext.getMessage(),
-                            errorContext.getLocale(), httpStatusCode, errorContext.getErrorCode(),
-                            errorContext.getException());
+                        final ODataErrorContext errorContext = EntityProvider
+                                .readErrorDocument(response.getEntity().getContent(), responseContentType.toString());
+                        throw new ODataApplicationException(
+                                errorContext.getMessage(), errorContext.getLocale(), httpStatusCode,
+                                errorContext.getErrorCode(),
+                                errorContext.getException());
                     }
                 } catch (EntityProviderException e) {
                     throw new ODataApplicationException(e.getMessage(), response.getLocale(), httpStatusCode, e);

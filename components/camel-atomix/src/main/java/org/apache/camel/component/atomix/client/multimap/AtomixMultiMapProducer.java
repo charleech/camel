@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,23 +21,22 @@ import java.time.Duration;
 import io.atomix.collections.DistributedMultiMap;
 import io.atomix.resource.ReadConsistency;
 import org.apache.camel.AsyncCallback;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.atomix.client.AbstractAtomixClientProducer;
+import org.apache.camel.spi.InvokeOnHeader;
 import org.apache.camel.util.ObjectHelper;
 
-import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_ACTION;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_KEY;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_NAME;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_READ_CONSISTENCY;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_TTL;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_VALUE;
 
-final class AtomixMultiMapProducer extends AbstractAtomixClientProducer<AtomixMultiMapEndpoint, DistributedMultiMap> {
+public final class AtomixMultiMapProducer extends AbstractAtomixClientProducer<AtomixMultiMapEndpoint, DistributedMultiMap> {
     private final AtomixMultiMapConfiguration configuration;
 
     protected AtomixMultiMapProducer(AtomixMultiMapEndpoint endpoint) {
-        super(endpoint);
+        super(endpoint, endpoint.getConfiguration().getDefaultAction().name());
         this.configuration = endpoint.getConfiguration();
     }
 
@@ -45,177 +44,155 @@ final class AtomixMultiMapProducer extends AbstractAtomixClientProducer<AtomixMu
     // Handlers
     // *********************************
 
+    private long getResourceTtl(Message message) {
+        Duration ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, Duration.class);
+        return ttl != null ? ttl.toMillis() : 0;
+    }
+
     @InvokeOnHeader("PUT")
-    boolean onPut(Message message, AsyncCallback callback) throws Exception {
+    void onPut(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
         final Object key = message.getHeader(RESOURCE_KEY, configuration::getKey, Object.class);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
-        final long ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, long.class);
+        final long ttl = getResourceTtl(message);
 
         ObjectHelper.notNull(key, RESOURCE_KEY);
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         if (ttl > 0) {
             map.put(key, val, Duration.ofMillis(ttl)).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             map.put(key, val).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("GET")
-    boolean onGet(Message message, AsyncCallback callback) throws Exception {
+    void onGet(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
         final Object key = message.getHeader(RESOURCE_KEY, configuration::getKey, Object.class);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         ObjectHelper.notNull(key, RESOURCE_KEY);
 
         if (consistency != null) {
             map.get(key, consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             map.get(key).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("CLEAR")
-    boolean onClear(Message message, AsyncCallback callback) throws Exception {
+    void onClear(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
 
         map.clear().thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("SIZE")
-    boolean onSize(Message message, AsyncCallback callback) throws Exception {
+    void onSize(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
         final Object key = message.getHeader(RESOURCE_KEY, message::getBody, Object.class);
 
         if (consistency != null) {
             if (key != null) {
                 map.size(key, consistency).thenAccept(
-                    result -> processResult(message, callback, result)
-                );
+                        result -> processResult(message, callback, result));
             } else {
                 map.size(consistency).thenAccept(
-                    result -> processResult(message, callback, result)
-                );
+                        result -> processResult(message, callback, result));
             }
         } else {
             if (key != null) {
                 map.size(key).thenAccept(
-                    result -> processResult(message, callback, result)
-                );
+                        result -> processResult(message, callback, result));
             } else {
                 map.size().thenAccept(
-                    result -> processResult(message, callback, result)
-                );
+                        result -> processResult(message, callback, result));
             }
         }
-
-        return false;
     }
 
     @InvokeOnHeader("IS_EMPTY")
-    boolean onIsEmpty(Message message, AsyncCallback callback) throws Exception {
+    void onIsEmpty(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             map.isEmpty(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             map.isEmpty().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("CONTAINS_KEY")
-    boolean onContainsKey(Message message, AsyncCallback callback) throws Exception {
+    void onContainsKey(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
         final Object key = message.getHeader(RESOURCE_KEY, message::getBody, Object.class);
 
         ObjectHelper.notNull(key, RESOURCE_KEY);
 
         if (consistency != null) {
             map.containsKey(key, consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             map.containsKey(key).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
-//    @InvokeOnHeader("CONTAINS_VALUE")
-//    boolean onContainsValue(Message message, AsyncCallback callback) throws Exception {
-//        final DistributedMultiMap<Object, Object> map = getResource(message);
-//        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
-//        final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
-//
-//        ObjectHelper.notNull(value, RESOURCE_VALUE);
-//
-//        if (consistency != null) {
-//            map.containsValue(value, consistency).thenAccept(
-//                result -> processResult(message, callback, result)
-//            );
-//        } else {
-//            map.containsValue(value).thenAccept(
-//                result -> processResult(message, callback, result)
-//            );
-//        }
-//
-//        return false;
-//    }
+    @InvokeOnHeader("CONTAINS_VALUE")
+    void onContainsValue(Message message, AsyncCallback callback) throws Exception {
+        final DistributedMultiMap<Object, Object> map = getResource(message);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
+        final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
-//    @InvokeOnHeader("CONTAINS_ENTRY")
-//    boolean onContainsEntry(Message message, AsyncCallback callback) throws Exception {
-//        final DistributedMultiMap<Object, Object> map = getResource(message);
-//        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
-//        final Object key = message.getHeader(RESOURCE_KEY, message::getBody, Object.class);
-//        final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
-//
-//        ObjectHelper.notNull(key, RESOURCE_VALUE);
-//        ObjectHelper.notNull(value, RESOURCE_KEY);
-//
-//        if (consistency != null) {
-//            map.containsEntry(key, value, consistency).thenAccept(
-//                result -> processResult(message, callback, result)
-//            );
-//        } else {
-//            map.containsEntry(key, value).thenAccept(
-//                result -> processResult(message, callback, result)
-//            );
-//        }
-//
-//        return false;
-//    }
+        ObjectHelper.notNull(value, RESOURCE_VALUE);
+
+        if (consistency != null) {
+            map.containsValue(value, consistency).thenAccept(
+                    result -> processResult(message, callback, result));
+        } else {
+            map.containsValue(value).thenAccept(
+                    result -> processResult(message, callback, result));
+        }
+    }
+
+    @InvokeOnHeader("CONTAINS_ENTRY")
+    void onContainsEntry(Message message, AsyncCallback callback) throws Exception {
+        final DistributedMultiMap<Object, Object> map = getResource(message);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
+        final Object key = message.getHeader(RESOURCE_KEY, message::getBody, Object.class);
+        final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
+
+        ObjectHelper.notNull(key, RESOURCE_VALUE);
+        ObjectHelper.notNull(value, RESOURCE_KEY);
+
+        if (consistency != null) {
+            map.containsEntry(key, value, consistency).thenAccept(
+                    result -> processResult(message, callback, result));
+        } else {
+            map.containsEntry(key, value).thenAccept(
+                    result -> processResult(message, callback, result));
+        }
+    }
 
     @InvokeOnHeader("REMOVE")
-    boolean onRemove(Message message, AsyncCallback callback) throws Exception {
+    void onRemove(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
         final Object key = message.getHeader(RESOURCE_KEY, message::getBody, Object.class);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
@@ -224,40 +201,27 @@ final class AtomixMultiMapProducer extends AbstractAtomixClientProducer<AtomixMu
 
         if (value != null) {
             map.remove(key, value).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             map.remove(key).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("REMOVE_VALUE")
-    boolean onRemoveValue(Message message, AsyncCallback callback) throws Exception {
+    void onRemoveValue(Message message, AsyncCallback callback) throws Exception {
         final DistributedMultiMap<Object, Object> map = getResource(message);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(value, RESOURCE_VALUE);
 
         map.removeValue(value).thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     // *********************************
     // Implementation
     // *********************************
-
-
-    @Override
-    protected String getProcessorKey(Message message) {
-        return message.getHeader(RESOURCE_ACTION, configuration::getDefaultAction, String.class);
-    }
 
     @Override
     protected String getResourceName(Message message) {
@@ -267,11 +231,11 @@ final class AtomixMultiMapProducer extends AbstractAtomixClientProducer<AtomixMu
     @Override
     protected DistributedMultiMap<Object, Object> createResource(String resourceName) {
         return getAtomixEndpoint()
-            .getAtomix()
-            .getMultiMap(
-                resourceName,
-                new DistributedMultiMap.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedMultiMap.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
+                .getAtomix()
+                .getMultiMap(
+                        resourceName,
+                        new DistributedMultiMap.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedMultiMap.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
     }
 }

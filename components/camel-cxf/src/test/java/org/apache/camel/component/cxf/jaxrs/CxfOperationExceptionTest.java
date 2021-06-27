@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.cxf.jaxrs;
 
 import org.apache.camel.CamelExecutionException;
 import org.apache.camel.Exchange;
 import org.apache.camel.component.cxf.CXFTestSupport;
 import org.apache.camel.component.cxf.jaxrs.testbean.Customer;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CxfOperationExceptionTest extends CamelSpringTestSupport {
     private static final int PORT1 = CXFTestSupport.getPort1();
@@ -34,17 +37,17 @@ public class CxfOperationExceptionTest extends CamelSpringTestSupport {
         return new ClassPathXmlApplicationContext("org/apache/camel/component/cxf/jaxrs/CxfOperationException.xml");
     }
 
-    @Test(expected = CamelExecutionException.class)
+    @Test
     public void testRestServerDirectlyAddCustomer() {
         Customer input = new Customer();
         input.setName("Donald Duck");
 
         // we cannot convert directly to Customer as we need camel-jaxb
-        String response = template.requestBodyAndHeader("cxfrs:http://localhost:" + PORT1 + "/CxfOperationExceptionTest/customerservice/customers?throwExceptionOnFailure=true", input,
-            Exchange.HTTP_METHOD, "POST", String.class);
-
-        assertNotNull(response);
-        assertTrue(response.endsWith("<name>Donald Duck</name></Customer>"));
+        assertThrows(CamelExecutionException.class, () -> template
+                .requestBodyAndHeader("cxfrs:http://localhost:" + PORT1
+                                      + "/CxfOperationExceptionTest/customerservice/customers?throwExceptionOnFailure=true",
+                        input,
+                        Exchange.HTTP_METHOD, "POST", String.class));
     }
 
     @Test
@@ -54,9 +57,9 @@ public class CxfOperationExceptionTest extends CamelSpringTestSupport {
 
         // we cannot convert directly to Customer as we need camel-jaxb
         String response = template.requestBodyAndHeader("cxfrs:bean:rsClient?throwExceptionOnFailure=false", input,
-            Exchange.HTTP_METHOD, "POST", String.class);
+                Exchange.HTTP_METHOD, "POST", String.class);
 
         assertNotNull(response);
-        assertTrue(response.contains("Problem accessing /CxfOperationExceptionTest/rest"));
+        assertTrue(response.contains("CxfOperationExceptionTest/rest"));
     }
 }

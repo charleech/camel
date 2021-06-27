@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,8 @@ public class ConnectionSettingsFactory {
     public ConnectionSettings parseUri(final String remaining) throws IllegalArgumentException {
         final Matcher m = HOST_PORT_TUBE_RE.matcher(remaining);
         if (!m.matches()) {
-            throw new IllegalArgumentException(String.format("Invalid path format: %s - should be [<hostName>[:<port>]/][<tubes>]", remaining));
+            throw new IllegalArgumentException(
+                    String.format("Invalid path format: %s - should be [<hostName>[:<port>]/][<tubes>]", remaining));
         }
 
         final String host = m.group(2) != null ? m.group(2) : Client.DEFAULT_HOST;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,25 +26,23 @@ import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
 import net.sf.saxon.value.StringValue;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 public class XQueryWithExtensionTest extends CamelTestSupport {
 
     private Configuration conf;
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
+    @BindToRegistry("saxonConf")
+    public Configuration loadConf() throws Exception {
 
         conf = new Configuration();
         conf.registerExtensionFunction(new SimpleExtension());
 
-        jndi.bind("saxonConf", conf);
-        return jndi;
+        return conf;
     }
 
     @Test
@@ -63,18 +61,17 @@ public class XQueryWithExtensionTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("direct:start")
-                    .to("xquery:org/apache/camel/component/xquery/transformWithExtension.xquery?configuration=#saxonConf")
-                    .to("mock:result");
+                        .to("xquery:org/apache/camel/component/xquery/transformWithExtension.xquery?configuration=#saxonConf")
+                        .to("mock:result");
             }
         };
     }
 
     /**
-     * This is a very simple example of a saxon extension function. We will use
-     * this for testing purposes.
+     * This is a very simple example of a saxon extension function. We will use this for testing purposes.
      * <p/>
-     * Example: <code>efx:simple('some text')</code> will be rendered to
-     * <code>arg1[some text]</code> and returned in the XQuery response.
+     * Example: <code>efx:simple('some text')</code> will be rendered to <code>arg1[some text]</code> and returned in
+     * the XQuery response.
      */
     public static final class SimpleExtension extends ExtensionFunctionDefinition {
 
@@ -82,7 +79,7 @@ public class XQueryWithExtensionTest extends CamelTestSupport {
 
         @Override
         public SequenceType[] getArgumentTypes() {
-            return new SequenceType[]{SequenceType.SINGLE_STRING};
+            return new SequenceType[] { SequenceType.SINGLE_STRING };
         }
 
         @Override

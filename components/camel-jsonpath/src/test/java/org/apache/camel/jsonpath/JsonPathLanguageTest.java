@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,12 +25,22 @@ import com.jayway.jsonpath.Option;
 import org.apache.camel.Exchange;
 import org.apache.camel.Expression;
 import org.apache.camel.Predicate;
-import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.spi.Language;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.support.DefaultExchange;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonPathLanguageTest extends CamelTestSupport {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JsonPathLanguageTest.class);
 
     @Override
     public boolean isUseRouteBuilder() {
@@ -45,16 +55,17 @@ public class JsonPathLanguageTest extends CamelTestSupport {
         Language lan = context.resolveLanguage("jsonpath");
         Expression exp = lan.createExpression("$.store.book[*].author");
         List<?> authors = exp.evaluate(exchange, List.class);
-        log.debug("Authors {}", authors);
+        LOG.debug("Authors {}", authors);
 
         assertNotNull(authors);
-        assertEquals(2, authors.size());
+        assertEquals(3, authors.size());
         assertEquals("Nigel Rees", authors.get(0));
         assertEquals("Evelyn Waugh", authors.get(1));
+        assertEquals("John O'Niel", authors.get(2));
 
         exp = lan.createExpression("$.store.bicycle.price");
         String price = exp.evaluate(exchange, String.class);
-        assertEquals("Got a wrong result", "19.95", price);
+        assertEquals("19.95", price, "Got a wrong result");
     }
 
     @Test
@@ -105,11 +116,11 @@ public class JsonPathLanguageTest extends CamelTestSupport {
         Language lan = context.resolveLanguage("jsonpath");
         Predicate pre = lan.createPredicate("$.store.book[?(@.price < 10)]");
         boolean cheap = pre.matches(exchange);
-        assertTrue("Should have cheap books", cheap);
+        assertTrue(cheap, "Should have cheap books");
 
         pre = lan.createPredicate("$.store.book[?(@.price > 30)]");
         boolean expensive = pre.matches(exchange);
-        assertFalse("Should not have expensive books", expensive);
+        assertFalse(expensive, "Should not have expensive books");
     }
 
     @Test
@@ -118,7 +129,7 @@ public class JsonPathLanguageTest extends CamelTestSupport {
         exchange.getIn().setBody(new File("src/test/resources/type.json"));
 
         JsonPathLanguage lan = (JsonPathLanguage) context.resolveLanguage("jsonpath");
-        lan.setOption(Option.SUPPRESS_EXCEPTIONS);
+        lan.setOptions(Option.SUPPRESS_EXCEPTIONS);
 
         Expression exp = lan.createExpression("$.foo");
         String nofoo = exp.evaluate(exchange, String.class);

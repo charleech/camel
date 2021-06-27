@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,14 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.vm.AbstractVmTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DisruptorVmWaitForTaskCompleteTest extends AbstractVmTestSupport {
 
     @Test
-    public void testInOut() throws Exception {
+    void testInOut() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Bye World");
 
         String out = template2.requestBody("direct:start", "Hello World", String.class);
@@ -36,7 +37,7 @@ public class DisruptorVmWaitForTaskCompleteTest extends AbstractVmTestSupport {
     }
 
     @Test
-    public void testInOnly() throws Exception {
+    void testInOnly() throws Exception {
         getMockEndpoint("mock:result").expectedBodiesReceived("Bye World");
 
         // we send an in only but we use Always to wait for it to complete
@@ -53,10 +54,10 @@ public class DisruptorVmWaitForTaskCompleteTest extends AbstractVmTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("disruptor-vm:foo?waitForTaskToComplete=Always").transform(constant("Bye World"))
                         .to("mock:result");
             }
@@ -64,10 +65,10 @@ public class DisruptorVmWaitForTaskCompleteTest extends AbstractVmTestSupport {
     }
 
     @Override
-    protected RouteBuilder createRouteBuilderForSecondContext() throws Exception {
+    protected RouteBuilder createRouteBuilderForSecondContext() {
         return new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:start").to("disruptor-vm:foo?waitForTaskToComplete=Always");
             }
         };

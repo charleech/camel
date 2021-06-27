@@ -1,7 +1,18 @@
 [[stax-component]]
-== StAX Component
+= StAX Component
+//THIS FILE IS COPIED: EDIT THE SOURCE FILE:
+:page-source: components/camel-stax/src/main/docs/stax-component.adoc
+:docTitle: StAX
+:artifactId: camel-stax
+:description: Process XML payloads by a SAX ContentHandler.
+:since: 2.9
+:supportLevel: Stable
+:component-header: Only producer is supported
+include::{cq-version}@camel-quarkus:ROOT:partial$reference/components/stax.adoc[opts=optional]
 
-*Available as of Camel version 2.9*
+*Since Camel {since}*
+
+*{component-header}*
 
 The StAX component allows messages to be process through a SAX
 http://download.oracle.com/javase/6/docs/api/org/xml/sax/ContentHandler.html[ContentHandler]. +
@@ -22,7 +33,7 @@ for this component:
 </dependency>
 ------------------------------------------------------------
 
-### URI format
+== URI format
 
 [source,java]
 --------------------------
@@ -36,8 +47,7 @@ example:
 stax:org.superbiz.FooContentHandler
 -----------------------------------
 
-From *Camel 2.11.1* onwards you can lookup a
-`org.xml.sax.ContentHandler` bean from the Registry
+You can lookup a `org.xml.sax.ContentHandler` bean from the Registry
 using the # syntax as shown:
 
 [source,java]
@@ -45,11 +55,20 @@ using the # syntax as shown:
 stax:#myHandler
 ---------------
 
-### Options
+== Options
 
 
 // component options: START
-The StAX component has no options.
+The StAX component supports 2 options, which are listed below.
+
+
+
+[width="100%",cols="2,5,^1,2",options="header"]
+|===
+| Name | Description | Default | Type
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
+| *autowiredEnabled* (advanced) | Whether autowiring is enabled. This is used for automatic autowiring options (the option must be marked as autowired) by looking up in the registry to find if there is a single instance of matching type, which then gets configured on the component. This can be used for automatic configuring JDBC data sources, JMS connection factories, AWS Clients, etc. | true | boolean
+|===
 // component options: END
 
 
@@ -63,7 +82,7 @@ stax:contentHandlerClass
 
 with the following path and query parameters:
 
-==== Path Parameters (1 parameters):
+=== Path Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
@@ -73,34 +92,19 @@ with the following path and query parameters:
 |===
 
 
-==== Query Parameters (1 parameters):
+=== Query Parameters (1 parameters):
 
 
 [width="100%",cols="2,5,^1,2",options="header"]
 |===
 | Name | Description | Default | Type
-| *synchronous* (advanced) | Sets whether synchronous processing should be strictly used, or Camel is allowed to use asynchronous processing (if supported). | false | boolean
+| *lazyStartProducer* (producer) | Whether the producer should be started lazy (on the first message). By starting lazy you can use this to allow CamelContext and routes to startup in situations where a producer may otherwise fail during starting and cause the route to fail being started. By deferring this startup to be lazy then the startup failure can be handled during routing messages via Camel's routing error handlers. Beware that when the first message is processed then creating and starting the producer may take a little time and prolong the total processing time of the processing. | false | boolean
 |===
 // endpoint options: END
-// spring-boot-auto-configure options: START
-=== Spring Boot Auto-Configuration
-
-
-The component supports 2 options, which are listed below.
 
 
 
-[width="100%",cols="2,5,^1,2",options="header"]
-|===
-| Name | Description | Default | Type
-| *camel.component.stax.enabled* | Enable stax component | true | Boolean
-| *camel.component.stax.resolve-property-placeholders* | Whether the component should resolve property placeholders on itself when starting. Only properties which are of String type can use property placeholders. | true | Boolean
-|===
-// spring-boot-auto-configure options: END
-
-
-
-### Usage of a content handler as StAX parser
+== Usage of a content handler as StAX parser
 
 The message body after the handling is the handler itself.
 
@@ -120,7 +124,7 @@ from("file:target/in")
   });
 --------------------------------------------------------------------------------------------------------
 
-### Iterate over a collection using JAXB and StAX
+== Iterate over a collection using JAXB and StAX
 
 First we suppose you have JAXB objects.
 
@@ -214,7 +218,7 @@ from("file:target/in")
 Where `stax` is a static method on
 `org.apache.camel.component.stax.StAXBuilder` which you can static
 import in the Java code. The stax builder is by default namespace aware
-on the XMLReader it uses. From *Camel 2.11.1* onwards you can turn this
+on the XMLReader it uses. You can turn this
 off by setting the boolean parameter to false, as shown below:
 
 [source,java]
@@ -224,13 +228,9 @@ from("file:target/in")
         .to("mock:records");
 -------------------------------------------------
 
-#### The previous example with XML DSL
+=== The previous example with XML DSL
 
 The example above could be implemented as follows in XML DSL
 
-### See Also
 
-* Configuring Camel
-* Component
-* Endpoint
-* Getting Started
+include::{page-component-version}@camel-spring-boot::page$stax-starter.adoc[]

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * A message that is exchanged with the Telegram network.
@@ -36,6 +37,7 @@ public class IncomingMessage implements Serializable {
     private Long messageId;
 
     @JsonDeserialize(using = UnixTimestampDeserializer.class)
+    @JsonSerialize(using = UnixTimestampSerializer.class)
     private Instant date;
 
     private User from;
@@ -51,6 +53,23 @@ public class IncomingMessage implements Serializable {
     private IncomingAudio audio;
 
     private IncomingDocument document;
+
+    private IncomingSticker sticker;
+
+    @JsonProperty("location")
+    private Location location;
+
+    private List<IncomingMessageEntity> entities;
+
+    @JsonProperty("caption_entities")
+    private List<IncomingMessageEntity> captionEntities;
+
+    @JsonProperty("reply_markup")
+    private InlineKeyboardMarkup replyMarkup;
+
+    private String caption;
+
+    private IncomingGame game;
 
     public IncomingMessage() {
     }
@@ -127,6 +146,61 @@ public class IncomingMessage implements Serializable {
         this.document = document;
     }
 
+    public IncomingSticker getSticker() {
+        return sticker;
+    }
+
+    public void setSticker(IncomingSticker sticker) {
+        this.sticker = sticker;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
+
+    public List<IncomingMessageEntity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(List<IncomingMessageEntity> entities) {
+        this.entities = entities;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public List<IncomingMessageEntity> getCaptionEntities() {
+        return captionEntities;
+    }
+
+    public void setCaptionEntities(List<IncomingMessageEntity> captionEntities) {
+        this.captionEntities = captionEntities;
+    }
+
+    public InlineKeyboardMarkup getReplyMarkup() {
+        return replyMarkup;
+    }
+
+    public void setReplyMarkup(InlineKeyboardMarkup replyMarkup) {
+        this.replyMarkup = replyMarkup;
+    }
+
+    public IncomingGame getGame() {
+        return game;
+    }
+
+    public void setGame(IncomingGame game) {
+        this.game = game;
+    }
 
     @Override
     public String toString() {
@@ -140,6 +214,13 @@ public class IncomingMessage implements Serializable {
         sb.append(", video=").append(video);
         sb.append(", audio=").append(audio);
         sb.append(", document=").append(document);
+        sb.append(", sticker=").append(sticker);
+        sb.append(", location=").append(location);
+        sb.append(", entities=").append(entities);
+        sb.append(", caption=").append(caption);
+        sb.append(", captionEntities=").append(captionEntities);
+        sb.append(", replyMarkup=").append(replyMarkup);
+        sb.append(", game=").append(game);
         sb.append('}');
         return sb.toString();
     }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,33 +16,23 @@
  */
 package org.apache.camel.component.servlet.rest;
 
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
-import com.meterware.servletunit.ServletUnitClient;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.servlet.ServletCamelRouterTestSupport;
 import org.apache.camel.component.servlet.ServletRestHttpBinding;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RestServletGetTest extends ServletCamelRouterTestSupport {
-    
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("myBinding", new ServletRestHttpBinding());
-        return jndi;
-    }
+
+    @BindToRegistry("myBinding")
+    private ServletRestHttpBinding restHttpBinding = new ServletRestHttpBinding();
 
     @Test
     public void testServletProducerGet() throws Exception {
-        WebRequest req = new GetMethodWebRequest(CONTEXT_URL + "/services/users/123/basic");
-        ServletUnitClient client = newClient();
-        client.setExceptionsThrownOnErrorStatus(false);
-        WebResponse response = client.getResponse(req);
+        WebRequest req = new GetMethodWebRequest(contextUrl + "/services/users/123/basic");
+        WebResponse response = query(req, false);
 
         assertEquals(200, response.getResponseCode());
 
@@ -56,18 +46,12 @@ public class RestServletGetTest extends ServletCamelRouterTestSupport {
             public void configure() throws Exception {
                 // configure to use servlet on localhost
                 restConfiguration().component("servlet").host("localhost").endpointProperty("httpBinding", "#myBinding");
-                
+
                 // use the rest DSL to define the rest services
-                rest("/users/")
-                    .get("{id}/basic")
-                        .route()
-                        .to("mock:input")
-                        .process(new Processor() {
-                            public void process(Exchange exchange) throws Exception {
-                                String id = exchange.getIn().getHeader("id", String.class);
-                                exchange.getOut().setBody(id + ";Donald Duck");
-                            }
-                        });
+                rest("/users/").get("{id}/basic").route().to("mock:input").process(exchange -> {
+                    String id = exchange.getIn().getHeader("id", String.class);
+                    exchange.getMessage().setBody(id + ";Donald Duck");
+                });
             }
         };
     }

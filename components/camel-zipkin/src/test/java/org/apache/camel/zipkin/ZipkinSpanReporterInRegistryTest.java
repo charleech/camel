@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,10 +17,14 @@
 package org.apache.camel.zipkin;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.support.SimpleRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 import zipkin2.reporter.Reporter;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class ZipkinSpanReporterInRegistryTest extends CamelTestSupport {
 
@@ -37,8 +41,8 @@ public class ZipkinSpanReporterInRegistryTest extends CamelTestSupport {
     }
 
     @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
+    protected Registry createCamelRegistry() throws Exception {
+        Registry registry = new SimpleRegistry();
         registry.bind("span", Reporter.NOOP);
         return registry;
     }
@@ -46,7 +50,7 @@ public class ZipkinSpanReporterInRegistryTest extends CamelTestSupport {
     @Test
     public void testZipkinConfiguration() throws Exception {
         assertNotNull(zipkin.getSpanReporter());
-        assertTrue(zipkin.getSpanReporter() == Reporter.NOOP);
+        assertSame(Reporter.NOOP, zipkin.getSpanReporter());
     }
 
 }

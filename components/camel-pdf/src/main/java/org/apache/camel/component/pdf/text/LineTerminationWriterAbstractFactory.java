@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,8 +22,8 @@ import java.util.Collection;
 import org.apache.camel.component.pdf.PdfConfiguration;
 
 /**
- * Builds set of classes for line-termination writing strategy. Text getting sliced by line termination symbol (\n)
- * and then it will be written regardless it fits in the line or not.
+ * Builds set of classes for line-termination writing strategy. Text getting sliced by line termination symbol (\n) and
+ * then it will be written regardless it fits in the line or not.
  */
 public class LineTerminationWriterAbstractFactory implements TextProcessingAbstractFactory {
 

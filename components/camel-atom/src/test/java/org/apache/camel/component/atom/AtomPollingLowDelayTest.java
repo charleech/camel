@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,26 +18,30 @@ package org.apache.camel.component.atom;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 /**
  * Unit test for fast polling using a low delay
  */
+@DisabledOnOs(OS.AIX)
 public class AtomPollingLowDelayTest extends CamelTestSupport {
 
     @Test
-    public void testLowDelay() throws Exception {
+    void testLowDelay() throws Exception {
         MockEndpoint mock = getMockEndpoint("mock:result");
         mock.expectedMessageCount(7);
         mock.setResultWaitTime(3000L);
         mock.assertIsSatisfied();
     }
 
-    protected RouteBuilder createRouteBuilder() throws Exception {
+    @Override
+    protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
-            public void configure() throws Exception {
-                from("atom:file:src/test/data/feed.atom?splitEntries=true&consumer.delay=100&consumer.initialDelay=0").to("mock:result");
+            public void configure() {
+                from("atom:file:src/test/data/feed.atom?splitEntries=true&delay=100&initialDelay=0").to("mock:result");
             }
         };
     }

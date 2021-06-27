@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,19 +16,8 @@
  */
 package org.apache.camel.component.file.remote;
 
-import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.BeforeClass;
+import org.apache.camel.test.junit5.CamelTestSupport;
 
 public class BaseServerTestSupport extends CamelTestSupport {
-    protected static int port;
-
-    @BeforeClass
-    public static void initPort() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(21000);
-    }
-
-    protected int getPort() {
-        return port;
-    }
+    protected static final String LS = System.lineSeparator();
 }

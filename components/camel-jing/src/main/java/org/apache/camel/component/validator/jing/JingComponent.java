@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,8 @@ import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
 
 /**
- * A component for validating XML payloads using the
- * <a href="http://www.thaiopensource.com/relaxng/jing.html">Jing library</a>
+ * A component for validating XML payloads using the <a href="http://www.thaiopensource.com/relaxng/jing.html">Jing
+ * library</a>
  */
 @Component("jing")
 public class JingComponent extends DefaultComponent {
@@ -32,6 +32,7 @@ public class JingComponent extends DefaultComponent {
     public JingComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         JingEndpoint answer = new JingEndpoint(uri, this);
         answer.setResourceUri(remaining);

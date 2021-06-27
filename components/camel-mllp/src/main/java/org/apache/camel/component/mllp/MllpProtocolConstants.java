@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.mllp;
 
 import java.nio.charset.Charset;
@@ -57,7 +56,7 @@ public final class MllpProtocolConstants {
 
         /*
           // These are defined in the HL7 Spec, but I don't know how to map them to Java charset names
-
+        
           MSH18_VALUES.put("JAS2020", "????");
           MSH18_VALUES.put("JIS X 0202", "????");
           MSH18_VALUES.put("JIS X 0201-1976", "????");

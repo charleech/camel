@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Hystrix Command the Camel Hystrix EIP when executing fallback.
- * The fallback may require networking and therefore should run in another Hystrix Command
+ * Hystrix Command the Camel Hystrix EIP when executing fallback. The fallback may require networking and therefore
+ * should run in another Hystrix Command
  */
 public class HystrixProcessorCommandFallbackViaNetwork extends HystrixCommand<Message> {
 
@@ -63,6 +63,6 @@ public class HystrixProcessorCommandFallbackViaNetwork extends HystrixCommand<Me
 
         LOG.debug("Running fallback processor: {} with exchange: {} done", processor, exchange);
         // no fallback then we are done
-        return exchange.hasOut() ? exchange.getOut() : exchange.getIn();
+        return exchange.getMessage();
     }
 }

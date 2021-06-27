@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,13 @@ package org.apache.camel.component.salesforce;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalRequest;
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalResult;
-import org.apache.camel.impl.JndiRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ApprovalExamplesIntegrationTest extends AbstractApprovalIntegrationTest {
 
@@ -41,7 +43,7 @@ public class ApprovalExamplesIntegrationTest extends AbstractApprovalIntegration
         final ApprovalResult result = template.requestBody("direct:example1", body, ApprovalResult.class);
         // end::example1Usage
 
-        assertNotNull("Result should be received", result);
+        assertNotNull(result, "Result should be received");
     }
 
     @Test
@@ -54,12 +56,11 @@ public class ApprovalExamplesIntegrationTest extends AbstractApprovalIntegration
         final ApprovalResult result = template.requestBody("direct:example2", body, ApprovalResult.class);
         // end::example2Usage
 
-        assertNotNull("Result should be received", result);
+        assertNotNull(result, "Result should be received");
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        final JndiRegistry jndi = super.createRegistry();
+    @BindToRegistry("approvalTemplate")
+    public ApprovalRequest approvalReq() throws Exception {
 
         final ApprovalRequest approvalTemplate = new ApprovalRequest();
         approvalTemplate.setActionType(ApprovalRequest.Action.Submit);
@@ -67,9 +68,7 @@ public class ApprovalExamplesIntegrationTest extends AbstractApprovalIntegration
         approvalTemplate.setProcessDefinitionNameOrId("Test_Account_Process");
         approvalTemplate.setSkipEntryCriteria(true);
 
-        jndi.bind("approvalTemplate", approvalTemplate);
-
-        return jndi;
+        return approvalTemplate;
     }
 
     @Override

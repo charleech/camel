@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.smpp;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 import org.apache.camel.spi.ExceptionHandler;
 import org.jsmpp.bean.AlertNotification;
@@ -33,24 +34,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MessageReceiverListenerImpl implements MessageReceiverListener {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(MessageReceiverListenerImpl.class);
 
     private MessageIDGenerator messageIDGenerator = new RandomMessageIDGenerator();
+    private SmppConsumer consumer;
     private SmppEndpoint endpoint;
     private Processor processor;
     private ExceptionHandler exceptionHandler;
-    
-    public MessageReceiverListenerImpl(SmppEndpoint endpoint, Processor processor, ExceptionHandler exceptionHandler) {
+
+    public MessageReceiverListenerImpl(SmppConsumer consumer, SmppEndpoint endpoint, Processor processor,
+                                       ExceptionHandler exceptionHandler) {
+        this.consumer = consumer;
         this.endpoint = endpoint;
         this.processor = processor;
         this.exceptionHandler = exceptionHandler;
     }
 
+    @Override
     public void onAcceptAlertNotification(AlertNotification alertNotification) {
         LOG.debug("Received an alertNotification {}", alertNotification);
 
-        Exchange exchange = endpoint.createOnAcceptAlertNotificationExchange(alertNotification);
+        Exchange exchange = createOnAcceptAlertNotificationExchange(alertNotification);
         try {
             processor.process(exchange);
         } catch (Exception e) {
@@ -58,10 +63,13 @@ public class MessageReceiverListenerImpl implements MessageReceiverListener {
         }
 
         if (exchange.getException() != null) {
-            exceptionHandler.handleException("Cannot process exchange. This exception will be ignored.", exchange, exchange.getException());
+            exceptionHandler.handleException("Cannot process exchange. This exception will be ignored.", exchange,
+                    exchange.getException());
         }
+        consumer.releaseExchange(exchange, false);
     }
 
+    @Override
     public void onAcceptDeliverSm(DeliverSm deliverSm) throws ProcessRequestException {
         LOG.debug("Received a deliverSm {}", deliverSm);
 
@@ -88,6 +96,7 @@ public class MessageReceiverListenerImpl implements MessageReceiverListener {
         }
     }
 
+    @Override
     public DataSmResult onAcceptDataSm(DataSm dataSm, Session session) throws ProcessRequestException {
         LOG.debug("Received a dataSm {}", dataSm);
 
@@ -113,4 +122,19 @@ public class MessageReceiverListenerImpl implements MessageReceiverListener {
     public void setMessageIDGenerator(MessageIDGenerator messageIDGenerator) {
         this.messageIDGenerator = messageIDGenerator;
     }
+
+    /**
+     * Create a new exchange for communicating with this endpoint from a SMSC with the specified {@link ExchangePattern}
+     * such as whether its going to be an {@link ExchangePattern#InOnly} or {@link ExchangePattern#InOut} exchange
+     *
+     * @param  alertNotification the received message from the SMSC
+     * @return                   a new exchange
+     */
+    public Exchange createOnAcceptAlertNotificationExchange(AlertNotification alertNotification) {
+        Exchange exchange = consumer.createExchange(false);
+        exchange.setProperty(Exchange.BINDING, endpoint.getBinding());
+        exchange.setIn(endpoint.getBinding().createSmppMessage(endpoint.getCamelContext(), alertNotification));
+        return exchange;
+    }
+
 }

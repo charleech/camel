@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,10 +26,12 @@ import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandMetrics;
 import org.apache.camel.AsyncCallback;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePropertyKey;
 import org.apache.camel.Navigate;
 import org.apache.camel.Processor;
 import org.apache.camel.api.management.ManagedAttribute;
 import org.apache.camel.api.management.ManagedResource;
+import org.apache.camel.spi.CircuitBreakerConstants;
 import org.apache.camel.spi.IdAware;
 import org.apache.camel.support.AsyncProcessorSupport;
 
@@ -37,7 +39,8 @@ import org.apache.camel.support.AsyncProcessorSupport;
  * Implementation of the Hystrix EIP.
  */
 @ManagedResource(description = "Managed Hystrix Processor")
-public class HystrixProcessor extends AsyncProcessorSupport implements Navigate<Processor>, org.apache.camel.Traceable, IdAware {
+public class HystrixProcessor extends AsyncProcessorSupport
+        implements Navigate<Processor>, org.apache.camel.Traceable, IdAware {
 
     private String id;
     private final HystrixCommandGroupKey groupKey;
@@ -185,14 +188,15 @@ public class HystrixProcessor extends AsyncProcessorSupport implements Navigate<
     @Override
     public boolean process(Exchange exchange, AsyncCallback callback) {
         // run this as if we run inside try .. catch so there is no regular Camel error handler
-        exchange.setProperty(Exchange.TRY_ROUTE_BLOCK, true);
+        exchange.setProperty(ExchangePropertyKey.TRY_ROUTE_BLOCK, true);
 
         try {
             HystrixProcessorCommandFallbackViaNetwork fallbackCommand = null;
             if (fallbackViaNetwork) {
                 fallbackCommand = new HystrixProcessorCommandFallbackViaNetwork(fallbackSetter, exchange, fallback);
             }
-            HystrixProcessorCommand command = new HystrixProcessorCommand(setter, exchange, processor, fallback, fallbackCommand);
+            HystrixProcessorCommand command
+                    = new HystrixProcessorCommand(setter, exchange, processor, fallback, fallbackCommand);
             command.execute();
 
             // enrich exchange with details from hystrix about the command execution
@@ -202,17 +206,17 @@ public class HystrixProcessor extends AsyncProcessorSupport implements Navigate<
             exchange.setException(e);
         }
 
-        exchange.removeProperty(Exchange.TRY_ROUTE_BLOCK);
+        exchange.removeProperty(ExchangePropertyKey.TRY_ROUTE_BLOCK);
         callback.done(true);
         return true;
     }
 
     private void commandResponse(Exchange exchange, HystrixCommand command) {
-        exchange.setProperty(HystrixConstants.HYSTRIX_RESPONSE_SUCCESSFUL_EXECUTION, command.isSuccessfulExecution());
-        exchange.setProperty(HystrixConstants.HYSTRIX_RESPONSE_FROM_FALLBACK, command.isResponseFromFallback());
-        exchange.setProperty(HystrixConstants.HYSTRIX_RESPONSE_SHORT_CIRCUITED, command.isResponseShortCircuited());
-        exchange.setProperty(HystrixConstants.HYSTRIX_RESPONSE_TIMED_OUT, command.isResponseTimedOut());
-        exchange.setProperty(HystrixConstants.HYSTRIX_RESPONSE_REJECTED, command.isResponseRejected());
+        exchange.setProperty(CircuitBreakerConstants.RESPONSE_SUCCESSFUL_EXECUTION, command.isSuccessfulExecution());
+        exchange.setProperty(CircuitBreakerConstants.RESPONSE_FROM_FALLBACK, command.isResponseFromFallback());
+        exchange.setProperty(CircuitBreakerConstants.RESPONSE_SHORT_CIRCUITED, command.isResponseShortCircuited());
+        exchange.setProperty(CircuitBreakerConstants.RESPONSE_TIMED_OUT, command.isResponseTimedOut());
+        exchange.setProperty(CircuitBreakerConstants.RESPONSE_REJECTED, command.isResponseRejected());
     }
 
     @Override

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,13 +20,13 @@ import org.apache.camel.component.jms.DefaultJmsMessageListenerContainer;
 import org.apache.camel.component.jms.JmsEndpoint;
 
 /**
- * This {@link org.springframework.jms.listener.DefaultMessageListenerContainer} is used for reply queues
- * which are exclusive.
+ * This {@link org.springframework.jms.listener.DefaultMessageListenerContainer} is used for reply queues which are
+ * exclusive.
  * <p/>
- * Mind that exclusive reply queues is per producer, so if you run in a clustered environment then
- * each producer should use an unique reply queue destination name. If not then other nodes may steal reply
- * messages which was intended for another. For clustered environments it may be safer to use shared queues
- * as each node will only consume reply messages which are intended for itself.
+ * Mind that exclusive reply queues is per producer, so if you run in a clustered environment then each producer should
+ * use an unique reply queue destination name. If not then other nodes may steal reply messages which was intended for
+ * another. For clustered environments it may be safer to use shared queues as each node will only consume reply
+ * messages which are intended for itself.
  * <p/>
  * See more details at <a href="http://camel.apache.org/jms">camel-jms</a>.
  *

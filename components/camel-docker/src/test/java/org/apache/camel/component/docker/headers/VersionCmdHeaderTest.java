@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,8 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.VersionCmd;
-
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -34,7 +33,7 @@ public class VersionCmdHeaderTest extends BaseDockerHeaderTest<VersionCmd> {
     private VersionCmd mockObject;
 
     @Test
-    public void pingHeaderTest() {
+    void pingHeaderTest() {
 
         Map<String, Object> headers = getDefaultParameters();
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-
 /**
  * LineItem
  * <p>
@@ -31,9 +30,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "itemId",
-    "amount",
-    "cost"
+        "itemId",
+        "amount",
+        "cost"
 })
 public class LineItem {
 
@@ -46,8 +45,7 @@ public class LineItem {
 
     /**
      * 
-     * @return
-     *     The itemId
+     * @return The itemId
      */
     @JsonProperty("itemId")
     public String getItemId() {
@@ -56,8 +54,7 @@ public class LineItem {
 
     /**
      * 
-     * @param itemId
-     *     The itemId
+     * @param itemId The itemId
      */
     @JsonProperty("itemId")
     public void setItemId(String itemId) {
@@ -66,8 +63,7 @@ public class LineItem {
 
     /**
      * 
-     * @return
-     *     The amount
+     * @return The amount
      */
     @JsonProperty("amount")
     public int getAmount() {
@@ -76,8 +72,7 @@ public class LineItem {
 
     /**
      * 
-     * @param amount
-     *     The amount
+     * @param amount The amount
      */
     @JsonProperty("amount")
     public void setAmount(int amount) {
@@ -86,8 +81,7 @@ public class LineItem {
 
     /**
      * 
-     * @return
-     *     The cost
+     * @return The cost
      */
     @JsonProperty("cost")
     public double getCost() {
@@ -96,8 +90,7 @@ public class LineItem {
 
     /**
      * 
-     * @param cost
-     *     The cost
+     * @param cost The cost
      */
     @JsonProperty("cost")
     public void setCost(double cost) {

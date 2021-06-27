@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.apache.camel.component.freemarker;
 
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test with the body as a Domain object.
@@ -41,12 +41,13 @@ public class FreemarkerBodyAsDomainObjectTest extends CamelTestSupport {
         mock.assertIsSatisfied();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
                 from("direct:in")
-                    .to("freemarker:org/apache/camel/component/freemarker/BodyAsDomainObject.ftl")
-                    .to("mock:result");
+                        .to("freemarker:org/apache/camel/component/freemarker/BodyAsDomainObject.ftl")
+                        .to("mock:result");
             }
         };
     }
@@ -71,13 +72,14 @@ public class FreemarkerBodyAsDomainObjectTest extends CamelTestSupport {
             this.familyName = familyName;
         }
 
+        @Override
         public String toString() {
             return "MyPerson{"
-                + "givenName='"
-                + givenName + '\''
-                + ", familyName='"
-                + familyName + '\''
-                + '}';
+                   + "givenName='"
+                   + givenName + '\''
+                   + ", familyName='"
+                   + familyName + '\''
+                   + '}';
         }
     }
 

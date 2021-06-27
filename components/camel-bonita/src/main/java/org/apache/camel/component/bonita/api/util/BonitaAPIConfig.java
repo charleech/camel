@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.bonita.api.util;
 
 public class BonitaAPIConfig {
@@ -25,7 +24,6 @@ public class BonitaAPIConfig {
     private String password;
 
     public BonitaAPIConfig(String hostname, String port, String username, String password) {
-        super();
         this.hostname = hostname;
         this.port = port;
         this.username = username;
@@ -38,7 +36,7 @@ public class BonitaAPIConfig {
 
     public String getProcessFileUploadBaseURI(String processName, String processVersion) {
         return getBaseBonitaURI() + "portal/resource/process/" + processName + "/" + processVersion
-                + "/API/formFileUpload";
+               + "/API/formFileUpload";
     }
 
     public String getHostname() {

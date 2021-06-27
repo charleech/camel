@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,14 +23,13 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
-
 import org.apache.camel.component.salesforce.api.dto.XStreamFieldOrder;
 import org.apache.camel.component.salesforce.api.dto.composite.SObjectComposite.Method;
 
 @XStreamAlias("compositeRequest")
-@XStreamFieldOrder({"method", "url", "referenceId", "body"})
+@XStreamFieldOrder({ "method", "url", "referenceId", "body" })
 @JsonInclude(Include.NON_NULL)
-@JsonPropertyOrder({"method", "url", "referenceId", "body"})
+@JsonPropertyOrder({ "method", "url", "referenceId", "body" })
 final class CompositeRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,18 +26,21 @@ import org.apache.camel.Header;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.reactive.streams.util.UnwrapStreamProcessor;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 
+import static org.apache.camel.test.junit5.TestSupport.assertListSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BeanCallTest extends CamelTestSupport {
+@SuppressWarnings("unused")
+public class BeanCallTest extends BaseReactiveTest {
 
     @Test
     public void beanCallTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 
@@ -69,7 +72,7 @@ public class BeanCallTest extends CamelTestSupport {
     public void beanCallWithErrorTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 
@@ -100,7 +103,7 @@ public class BeanCallTest extends CamelTestSupport {
     public void beanCallHeaderMappingTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 
@@ -131,7 +134,7 @@ public class BeanCallTest extends CamelTestSupport {
     public void beanCallEmptyPublisherTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 
@@ -157,14 +160,14 @@ public class BeanCallTest extends CamelTestSupport {
 
         Exchange exchange = mock.getExchanges().get(0);
         Object body = exchange.getIn().getBody();
-        assertEquals(new Integer(1), body); // unchanged
+        assertEquals(1, body); // unchanged
     }
 
     @Test
     public void beanCallTwoElementsTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 
@@ -202,7 +205,7 @@ public class BeanCallTest extends CamelTestSupport {
     public void beanCallStdReturnTypeTest() throws Exception {
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
 
                 onException(Throwable.class).to("direct:handle").handled(true);
 

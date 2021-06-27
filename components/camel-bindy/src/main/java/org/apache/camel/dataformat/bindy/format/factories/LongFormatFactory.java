@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ public class LongFormatFactory extends AbstractFormatFactory {
         supportedClasses.add(long.class);
         supportedClasses.add(Long.class);
     }
+
     @Override
     public boolean canBuild(FormattingOptions formattingOptions) {
         return super.canBuild(formattingOptions)
@@ -42,12 +43,14 @@ public class LongFormatFactory extends AbstractFormatFactory {
 
     private static class LongFormat extends AbstractNumberFormat<Long> {
 
+        @Override
         public String format(Long object) throws Exception {
             return object.toString();
         }
 
+        @Override
         public Long parse(String string) throws Exception {
-            return new Long(string);
+            return Long.valueOf(string);
         }
 
     }

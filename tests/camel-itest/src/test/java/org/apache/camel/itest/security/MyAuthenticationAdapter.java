@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,9 +24,9 @@ import org.apache.camel.component.spring.security.DefaultAuthenticationAdapter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-
 public class MyAuthenticationAdapter extends DefaultAuthenticationAdapter {
-    
+
+    @Override
     protected Authentication convertToAuthentication(Subject subject) {
         Authentication answer = null;
         for (Principal principal : subject.getPrincipals()) {
@@ -40,14 +40,15 @@ public class MyAuthenticationAdapter extends DefaultAuthenticationAdapter {
 
     private String getName(Principal p) {
         try {
-            return (String)p.getClass().getMethod("getName").invoke(p);
+            return (String) p.getClass().getMethod("getName").invoke(p);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
     private String getPassword(Principal p) {
         try {
-            return (String)p.getClass().getMethod("getPassword").invoke(p);
+            return (String) p.getClass().getMethod("getPassword").invoke(p);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

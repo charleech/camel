@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,8 +21,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Optional.ofNullable;
-
 import org.apache.camel.component.salesforce.internal.SalesforceSession;
 import org.apache.camel.component.salesforce.internal.client.SalesforceHttpRequest;
 import org.apache.camel.component.salesforce.internal.client.SalesforceSecurityHandler;
@@ -34,6 +32,8 @@ import org.eclipse.jetty.client.ProtocolHandler;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+
+import static java.util.Optional.ofNullable;
 
 /**
  * Custom Salesforce HTTP Client that creates {@link SalesforceHttpRequest} requests.
@@ -81,7 +81,8 @@ public class SalesforceHttpClient extends HttpClient {
 
             getProtocolHandlersMethod = HttpClient.class.getMethod("getProtocolHandlers");
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException("Found no method of adding SalesforceSecurityHandler as ProtocolHandler to Jetty HttpClient. You need Jetty 9.2 or newer on the classpath.");
+            throw new IllegalStateException(
+                    "Found no method of adding SalesforceSecurityHandler as ProtocolHandler to Jetty HttpClient. You need Jetty 9.2 or newer on the classpath.");
         }
     }
 

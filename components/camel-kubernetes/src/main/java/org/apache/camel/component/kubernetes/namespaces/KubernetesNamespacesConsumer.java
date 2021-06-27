@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,13 @@ package org.apache.camel.component.kubernetes.namespaces;
 
 import java.util.concurrent.ExecutorService;
 
-import io.fabric8.kubernetes.api.model.DoneableNamespace;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
@@ -34,8 +32,12 @@ import org.apache.camel.component.kubernetes.KubernetesConstants;
 import org.apache.camel.component.kubernetes.consumer.common.NamespaceEvent;
 import org.apache.camel.support.DefaultConsumer;
 import org.apache.camel.util.ObjectHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KubernetesNamespacesConsumer extends DefaultConsumer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(KubernetesNamespacesConsumer.class);
 
     private final Processor processor;
     private ExecutorService executor;
@@ -55,7 +57,7 @@ public class KubernetesNamespacesConsumer extends DefaultConsumer {
     protected void doStart() throws Exception {
         super.doStart();
         executor = getEndpoint().createExecutor();
-        
+
         nsWatcher = new NamespacesConsumerTask();
         executor.submit(nsWatcher);
     }
@@ -63,8 +65,8 @@ public class KubernetesNamespacesConsumer extends DefaultConsumer {
     @Override
     protected void doStop() throws Exception {
         super.doStop();
-        
-        log.debug("Stopping Kubernetes Namespace Consumer");
+
+        LOG.debug("Stopping Kubernetes Namespace Consumer");
         if (executor != null) {
             if (getEndpoint() != null && getEndpoint().getCamelContext() != null) {
                 if (nsWatcher != null) {
@@ -80,24 +82,24 @@ public class KubernetesNamespacesConsumer extends DefaultConsumer {
         }
         executor = null;
     }
-    
+
     class NamespacesConsumerTask implements Runnable {
 
         private Watch watch;
-        
+
         @Override
         public void run() {
-            NonNamespaceOperation<Namespace, NamespaceList, DoneableNamespace, Resource<Namespace, DoneableNamespace>> w = getEndpoint().getKubernetesClient().namespaces();
+            NonNamespaceOperation<Namespace, NamespaceList, Resource<Namespace>> w
+                    = getEndpoint().getKubernetesClient().namespaces();
             if (ObjectHelper.isNotEmpty(getEndpoint().getKubernetesConfiguration().getNamespace())) {
                 w.withName(getEndpoint().getKubernetesConfiguration().getNamespace());
             }
             watch = w.watch(new Watcher<Namespace>() {
 
                 @Override
-                public void eventReceived(io.fabric8.kubernetes.client.Watcher.Action action,
-                    Namespace resource) {
+                public void eventReceived(io.fabric8.kubernetes.client.Watcher.Action action, Namespace resource) {
                     NamespaceEvent ne = new NamespaceEvent(action, resource);
-                    Exchange exchange = getEndpoint().createExchange();
+                    Exchange exchange = createExchange(false);
                     exchange.getIn().setBody(ne.getNamespace());
                     exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_EVENT_ACTION, ne.getAction());
                     exchange.getIn().setHeader(KubernetesConstants.KUBERNETES_EVENT_TIMESTAMP, System.currentTimeMillis());
@@ -105,25 +107,26 @@ public class KubernetesNamespacesConsumer extends DefaultConsumer {
                         processor.process(exchange);
                     } catch (Exception e) {
                         getExceptionHandler().handleException("Error during processing", exchange, e);
-                    }                                   
+                    } finally {
+                        releaseExchange(exchange, false);
+                    }
                 }
 
                 @Override
-                public void onClose(KubernetesClientException cause) {
+                public void onClose(WatcherException cause) {
                     if (cause != null) {
-                        log.error(cause.getMessage(), cause);
-                    }                            
+                        LOG.error(cause.getMessage(), cause);
+                    }
                 }
             });
         }
-        
+
         public Watch getWatch() {
             return watch;
         }
 
         public void setWatch(Watch watch) {
             this.watch = watch;
-        } 
+        }
     }
 }
-

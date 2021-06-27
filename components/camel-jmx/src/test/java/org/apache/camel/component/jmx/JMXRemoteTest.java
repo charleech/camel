@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,16 +27,14 @@ import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.apache.camel.test.AvailablePortFinder;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 /**
- * Tests against a "remote" JMX server. Creates an RMI Registry on or near port 39000
- * and registers the simple mbean
+ * Tests against a "remote" JMX server. Creates an RMI Registry on or near port 39000 and registers the simple mbean
  * <p/>
- * Only test here is the notification test since everything should work the
- * same as the platform server. May want to refactor the existing tests to
- * run the full suite on the local platform and this "remote" setup.
+ * Only test here is the notification test since everything should work the same as the platform server. May want to
+ * refactor the existing tests to run the full suite on the local platform and this "remote" setup.
  */
 public class JMXRemoteTest extends SimpleBeanFixture {
 
@@ -44,7 +42,8 @@ public class JMXRemoteTest extends SimpleBeanFixture {
     JMXConnectorServer connector;
     Registry registry;
 
-    @After
+    @Override
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         connector.stop();
@@ -52,14 +51,14 @@ public class JMXRemoteTest extends SimpleBeanFixture {
 
     @Override
     protected void initServer() throws Exception {
-        int port = AvailablePortFinder.getNextAvailable(39000);
+        int port = AvailablePortFinder.getNextAvailable();
         registry = LocateRegistry.createRegistry(port);
 
         url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" + port + "/" + DOMAIN);
         // create MBean server
         server = MBeanServerFactory.createMBeanServer(DOMAIN);
         // create JMXConnectorServer MBean
-        connector = JMXConnectorServerFactory.newJMXConnectorServer(url, Collections.<String, Object>emptyMap(), server);
+        connector = JMXConnectorServerFactory.newJMXConnectorServer(url, Collections.<String, Object> emptyMap(), server);
         connector.start();
     }
 

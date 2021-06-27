@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,23 +17,34 @@
 package org.apache.camel.component.micrometer.messagehistory;
 
 import java.util.Set;
+
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.core.instrument.util.HierarchicalNameMapper;
 import io.micrometer.jmx.JmxMeterRegistry;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.micrometer.CamelJmxConfig;
 import org.apache.camel.component.micrometer.MicrometerConstants;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ManagedMessageHistoryTest extends CamelTestSupport {
 
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    @BindToRegistry(MicrometerConstants.METRICS_REGISTRY_NAME)
     private CompositeMeterRegistry meterRegistry;
 
     @Override
@@ -44,22 +55,17 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
     protected MBeanServer getMBeanServer() {
         return context.getManagementStrategy().getManagementAgent().getMBeanServer();
     }
-    
-    // Setup the common MetricsRegistry for MetricsComponent and MetricsMessageHistoryFactory to use
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
+
+    public void addRegistry() throws Exception {
         meterRegistry = new CompositeMeterRegistry();
         meterRegistry.add(new SimpleMeterRegistry());
         meterRegistry.add(new JmxMeterRegistry(CamelJmxConfig.DEFAULT, Clock.SYSTEM, HierarchicalNameMapper.DEFAULT));
-        registry.bind(MicrometerConstants.METRICS_REGISTRY_NAME, meterRegistry);
-        return registry;
     }
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext context = super.createCamelContext();
-
+        addRegistry();
         MicrometerMessageHistoryFactory factory = new MicrometerMessageHistoryFactory();
         factory.setPrettyPrint(true);
         factory.setMeterRegistry(meterRegistry);
@@ -90,24 +96,24 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
         assertEquals(3, meterRegistry.getMeters().size());
 
         // there should be 3 mbeans
-        Set<ObjectName> set = getMBeanServer().queryNames(new ObjectName("org.apache.camel.micrometer:name=CamelMessageHistory.*"), null);
+        Set<ObjectName> set
+                = getMBeanServer().queryNames(new ObjectName("org.apache.camel.micrometer:name=CamelMessageHistory.*"), null);
         assertEquals(3, set.size());
 
-        ObjectName fooMBean = set.stream()
-                .filter(on -> on.getCanonicalName().contains("foo"))
-                .findFirst()
+        ObjectName fooMBean = set.stream().filter(on -> on.getCanonicalName().contains("foo")).findFirst()
                 .orElseThrow(() -> new AssertionError("Expected MBean with node Id foo"));
 
-        Long testCount = (Long)getMBeanServer().getAttribute(fooMBean, "Count");
+        Long testCount = (Long) getMBeanServer().getAttribute(fooMBean, "Count");
         assertEquals(count / 2, testCount.longValue());
 
         // get the message history service using JMX
-        String name = String.format("org.apache.camel:context=%s,type=services,name=MicrometerMessageHistoryService", context.getManagementName());
+        String name = String.format("org.apache.camel:context=%s,type=services,name=MicrometerMessageHistoryService",
+                context.getManagementName());
         ObjectName on = ObjectName.getInstance(name);
         String json = (String) getMBeanServer().invoke(on, "dumpStatisticsAsJson", null, null);
         assertNotNull(json);
         log.info(json);
-        
+
         assertTrue(json.contains("\"nodeId\" : \"foo\""));
         assertTrue(json.contains("\"nodeId\" : \"bar\""));
         assertTrue(json.contains("\"nodeId\" : \"baz\""));
@@ -119,12 +125,9 @@ public class ManagedMessageHistoryTest extends CamelTestSupport {
         return new RouteBuilder() {
             @Override
             public void configure() {
-                from("seda:foo").routeId("route1")
-                        .to("mock:foo").id("foo");
+                from("seda:foo").routeId("route1").to("mock:foo").id("foo");
 
-                from("seda:bar").routeId("route2")
-                        .to("mock:bar").id("bar")
-                        .to("mock:baz").id("baz");
+                from("seda:bar").routeId("route2").to("mock:bar").id("bar").to("mock:baz").id("baz");
             }
         };
     }

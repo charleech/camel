@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,14 +30,12 @@ import org.apache.camel.cdi.CdiCamelExtension;
 import org.apache.camel.cdi.ImportResource;
 import org.apache.camel.cdi.Uri;
 import org.apache.camel.component.mock.MockEndpoint;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,8 +48,8 @@ public class XmlErrorHandlerTest {
     @Named
     @Produces
     private Processor processor = exchange -> exchange.getIn()
-        .setHeader("header",
-            exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class).getMessage());
+            .setHeader("header",
+                    exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class).getMessage());
 
     @Named
     @Produces
@@ -72,14 +70,14 @@ public class XmlErrorHandlerTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test Camel XML
-            .addAsResource(
-                Paths.get("src/test/resources/camel-context-errorHandler.xml").toFile(),
-                "imported-context.xml")
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test Camel XML
+                .addAsResource(
+                        Paths.get("src/test/resources/camel-context-errorHandler.xml").toFile(),
+                        "imported-context.xml")
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test

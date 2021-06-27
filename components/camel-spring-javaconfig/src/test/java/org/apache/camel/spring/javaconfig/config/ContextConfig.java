@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ContextConfig extends SingleRouteCamelConfiguration {
 
+    @Override
     @Bean
     public RouteBuilder route() {
         return new RouteBuilder() {

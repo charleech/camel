@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,6 +50,7 @@ public class SObjectDescription extends SObject {
         this.fields = fields;
     }
 
+    @Override
     public SObjectDescriptionUrls getUrls() {
         return urls;
     }
@@ -93,6 +94,7 @@ public class SObjectDescription extends SObject {
         pruned.setLabelPlural(getLabelPlural());
         pruned.fields = fields;
         pruned.urls = urls;
+        pruned.setChildRelationships(childRelationships);
 
         return pruned;
     }

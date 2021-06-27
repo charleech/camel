@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,23 +22,23 @@ import java.sql.SQLException;
 
 import com.impossibl.postgres.api.jdbc.PGConnection;
 import com.impossibl.postgres.jdbc.PGDataSource;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.pgevent.InvalidStateException;
 import org.apache.camel.component.pgevent.PgEventEndpoint;
 import org.apache.camel.component.pgevent.PgEventProducer;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PgEventProducerTest {
 
     private PgEventEndpoint endpoint = mock(PgEventEndpoint.class);
@@ -72,7 +72,7 @@ public class PgEventProducerTest {
         assertTrue(producer.isStopped());
     }
 
-    @Test(expected = InvalidStateException.class)
+    @Test
     public void testPgEventProducerProcessDbThrowsInvalidStateException() throws Exception {
         when(endpoint.getDatasource()).thenReturn(dataSource);
         when(dataSource.getConnection()).thenReturn(connection);
@@ -80,7 +80,8 @@ public class PgEventProducerTest {
 
         PgEventProducer producer = new PgEventProducer(endpoint);
         producer.start();
-        producer.process(exchange);
+        assertThrows(InvalidStateException.class,
+                () -> producer.process(exchange));
     }
 
     @Test

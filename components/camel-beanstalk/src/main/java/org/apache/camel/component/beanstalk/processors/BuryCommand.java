@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,14 +34,14 @@ public class BuryCommand extends DefaultCommand {
 
     @Override
     public void act(final Client client, final Exchange exchange) throws NoSuchHeaderException {
-        final Long jobId = BeanstalkExchangeHelper.getJobID(exchange);
+        final long jobId = BeanstalkExchangeHelper.getJobID(exchange);
         final long priority = BeanstalkExchangeHelper.getPriority(endpoint, exchange.getIn());
         final boolean result = client.bury(jobId, priority);
 
         if (!result && LOG.isWarnEnabled()) {
-            LOG.warn(String.format("Failed to bury job %d (with priority %d)", jobId, priority));
+            LOG.warn("Failed to bury job {} (with priority {})", jobId, priority);
         } else if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Job %d buried with priority %d. Result is %b", jobId, priority, result));
+            LOG.debug("Job {} buried with priority {}. Result is {}", jobId, priority, result);
         }
 
         answerWith(exchange, Headers.RESULT, result);

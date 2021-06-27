@@ -41,10 +41,10 @@
     <bean id="prepareRequest" class="org.apache.camel.itest.greeter.PrepareRequest"/>
     <bean id="prepareResponse" class="org.apache.camel.itest.greeter.PrepareResponse"/>
 
-    <bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
+    <bean id="jms" class="org.apache.camel.component.activemq.ActiveMQComponent">
       <property name="connectionFactory">
         <bean class="org.apache.activemq.spring.ActiveMQConnectionFactory">
-          <property name="brokerURL" value="vm://localhost?broker.persistent=false"/>
+          <property name="brokerURL" value="vm://localhost?broker.persistent=false&amp;create=false"/>
           <property name="trustAllPackages" value="true"/>
         </bean>
       </property>

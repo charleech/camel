@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,8 +24,8 @@ import org.apache.camel.spi.annotations.Component;
 import org.apache.camel.support.DefaultComponent;
 
 /**
- * Represents the component that manages {@link ExecEndpoint}. With the
- * component it is possible to execute system commands.
+ * Represents the component that manages {@link ExecEndpoint}. With the component it is possible to execute system
+ * commands.
  */
 @Component("exec")
 public class ExecComponent extends DefaultComponent {

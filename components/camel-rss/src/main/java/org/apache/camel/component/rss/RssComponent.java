@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,7 @@ import org.apache.camel.util.URISupport;
 /**
  * An <a href="http://camel.apache.org/rss.html">RSS Component</a>.
  * <p/>
- * Camel uses <a href="https://rome.dev.java.net/">ROME</a> as the RSS implementation.  
+ * Camel uses <a href="https://rome.dev.java.net/">ROME</a> as the RSS implementation.
  */
 @Component("rss")
 public class RssComponent extends FeedComponent {
@@ -36,12 +36,14 @@ public class RssComponent extends FeedComponent {
     public RssComponent() {
     }
 
+    @Override
     protected FeedEndpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         return new RssEndpoint(uri, this, null);
     }
 
     @Override
-    protected void afterConfiguration(String uri, String remaining, Endpoint endpoint, Map<String, Object> parameters) throws Exception {
+    protected void afterConfiguration(String uri, String remaining, Endpoint endpoint, Map<String, Object> parameters)
+            throws Exception {
         RssEndpoint rss = (RssEndpoint) endpoint;
         if (rss.getFeedUri() != null) {
             // already set so do not change it

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.atom;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -37,11 +38,14 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Credential;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@DisabledOnOs(OS.AIX)
 public final class JettyTestServer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JettyTestServer.class);
@@ -88,13 +92,13 @@ public final class JettyTestServer {
 
         HashLoginService l = new HashLoginService();
         UserStore us = new UserStore();
-        us.addUser(username, Credential.getCredential(password), new String[]{"user"});
+        us.addUser(username, Credential.getCredential(password), new String[] { "user" });
         l.setUserStore(us);
         l.setName(realm);
 
         Constraint constraint = new Constraint();
         constraint.setName(Constraint.__BASIC_AUTH);
-        constraint.setRoles(new String[]{"user"});
+        constraint.setRoles(new String[] { "user" });
         constraint.setAuthenticate(true);
 
         ConstraintMapping cm = new ConstraintMapping();
@@ -124,7 +128,8 @@ public final class JettyTestServer {
 
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.getWriter().write(FileUtils.readFileToString(new File("src/test/data/feed.atom")));
+            resp.getWriter().write(FileUtils.readFileToString(new File("src/test/data/feed.atom"),
+                    StandardCharsets.UTF_8));
         }
     }
 

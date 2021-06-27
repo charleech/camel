@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,11 +19,16 @@ package org.apache.camel.builder.saxon;
 import javax.xml.xpath.XPathFactory;
 
 import net.sf.saxon.xpath.XPathFactoryImpl;
-import org.apache.camel.builder.xml.XPathBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.language.xpath.XPathBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ResourceLock(Resources.SYSTEM_PROPERTIES)
 public class XPathTest extends CamelTestSupport {
 
     @Test
@@ -70,12 +75,13 @@ public class XPathTest extends CamelTestSupport {
         // END SNIPPET: e1
     }
 
-    @Ignore("See http://www.saxonica.com/documentation/index.html#!xpath-api/jaxp-xpath/factory")
+    @Disabled("See http://www.saxonica.com/documentation/index.html#!xpath-api/jaxp-xpath/factory")
     @Test
     public void testXPathFunctionTokenizeUsingObjectModel() throws Exception {
         // START SNIPPET: e2
         // create a builder to evaluate the xpath using saxon based on its object model uri
-        XPathBuilder builder = XPathBuilder.xpath("tokenize(/foo/bar, '_')[2]").objectModel("http://saxon.sf.net/jaxp/xpath/om");
+        XPathBuilder builder
+                = XPathBuilder.xpath("tokenize(/foo/bar, '_')[2]").objectModel("http://saxon.sf.net/jaxp/xpath/om");
 
         // evaluate as a String result
         String result = builder.evaluate(context, "<foo><bar>abc_def_ghi</bar></foo>");
@@ -99,7 +105,8 @@ public class XPathTest extends CamelTestSupport {
     public void testXPathFunctionTokenizeUsingSystemProperty() throws Exception {
         // START SNIPPET: e4
         // set system property with the XPath factory to use which is Saxon 
-        System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME + ":" + "http://saxon.sf.net/jaxp/xpath/om", "net.sf.saxon.xpath.XPathFactoryImpl");
+        System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME + ":" + "http://saxon.sf.net/jaxp/xpath/om",
+                "net.sf.saxon.xpath.XPathFactoryImpl");
 
         // create a builder to evaluate the xpath using saxon
         XPathBuilder builder = XPathBuilder.xpath("tokenize(/foo/bar, '_')[2]");

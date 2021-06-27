@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,8 @@ import org.apache.camel.support.DefaultComponent;
 
 /**
  * The <a href="http://camel.apache.org/browse.html">Browse Component</a> provides a simple
- * <a href="http://camel.apache.org/browsableendpoint.html">BrowsableEndpoint</a> for testing visualization or debugging.
+ * <a href="http://camel.apache.org/browsableendpoint.html">BrowsableEndpoint</a> for testing visualization or
+ * debugging.
  */
 @org.apache.camel.spi.annotations.Component("browse")
 public class BrowseComponent extends DefaultComponent {
@@ -31,6 +32,7 @@ public class BrowseComponent extends DefaultComponent {
     public BrowseComponent() {
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         BrowseEndpoint endpoint = new BrowseEndpoint(uri, this);
         endpoint.setName(remaining);

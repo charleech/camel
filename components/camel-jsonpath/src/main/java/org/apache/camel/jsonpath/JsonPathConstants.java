@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,12 @@
 package org.apache.camel.jsonpath;
 
 public final class JsonPathConstants {
-    
+
     /** Header name for the encoding of the JSON document. */
     public static final String HEADER_JSON_ENCODING = "CamelJsonPathJsonEncoding";
 
     private JsonPathConstants() {
         // no instance
     }
-
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.apache.camel.Category;
 import org.apache.camel.Component;
 import org.apache.camel.Consumer;
 import org.apache.camel.Expression;
@@ -33,28 +34,26 @@ import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriEndpoint;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriPath;
+import org.apache.camel.support.CamelContextHelper;
+import org.apache.camel.support.EndpointHelper;
 import org.apache.camel.support.ResourceHelper;
 import org.apache.camel.util.IOHelper;
-import org.apache.camel.util.ObjectHelper;
 
 /**
- * The language component allows you to send a message to an endpoint which executes a script by any of the supported Languages in Camel.
+ * Execute scripts in any of the languages supported by Camel.
  *
- * By having a component to execute language scripts, it allows more dynamic routing capabilities.
- * For example by using the Routing Slip or Dynamic Router EIPs you can send messages to language endpoints
- * where the script is dynamic defined as well.
- *
- * This component is provided out of the box in camel-core and hence no additional JARs is needed.
- * You only have to include additional Camel components if the language of choice mandates it,
- * such as using Groovy or JavaScript languages.
+ * By having a component to execute language scripts, it allows more dynamic routing capabilities. For example by using
+ * the Routing Slip or Dynamic Router EIPs you can send messages to language endpoints where the script is dynamic
+ * defined as well.
  */
-@UriEndpoint(firstVersion = "2.5.0", scheme = "language", title = "Language", syntax = "language:languageName:resourceUri", producerOnly = true, label = "core,script")
+@UriEndpoint(firstVersion = "2.5.0", scheme = "language", title = "Language", syntax = "language:languageName:resourceUri",
+             producerOnly = true, category = { Category.CORE, Category.SCRIPT })
 public class LanguageEndpoint extends ResourceEndpoint {
     private Language language;
     private Expression expression;
     private boolean contentResolvedFromResource;
     @UriPath(enums = "bean,constant,exchangeProperty,file,groovy,header,javascript,jsonpath,mvel,ognl,"
-            + ",ref,simple,spel,sql,terser,tokenize,xpath,xquery,xtokenize")
+                     + ",ref,simple,spel,sql,terser,tokenize,xpath,xquery,xtokenize")
     @Metadata(required = true)
     private String languageName;
     // resourceUri is optional in the language endpoint
@@ -69,13 +68,16 @@ public class LanguageEndpoint extends ResourceEndpoint {
     private boolean binary;
     @UriParam
     private boolean cacheScript;
+    @UriParam(defaultValue = "true", description = "Sets whether to use resource content cache or not")
+    private boolean contentCache;
 
     public LanguageEndpoint() {
         // enable cache by default
         setContentCache(true);
     }
 
-    public LanguageEndpoint(String endpointUri, Component component, Language language, Expression expression, String resourceUri) {
+    public LanguageEndpoint(String endpointUri, Component component, Language language, Expression expression,
+                            String resourceUri) {
         super(endpointUri, component, resourceUri);
         this.language = language;
         this.expression = expression;
@@ -83,14 +85,23 @@ public class LanguageEndpoint extends ResourceEndpoint {
         setContentCache(true);
     }
 
-    public Producer createProducer() throws Exception {
-        ObjectHelper.notNull(getCamelContext(), "CamelContext", this);
-
+    @Override
+    protected void doInit() throws Exception {
         if (language == null && languageName != null) {
             language = getCamelContext().resolveLanguage(languageName);
         }
+        if (cacheScript && expression == null && script != null) {
+            boolean external = script.startsWith("file:") || script.startsWith("http:");
+            if (!external) {
+                // we can pre optimize this as the script can be loaded from classpath or registry etc
+                script = resolveScript(script);
+                expression = language.createExpression(script);
+            }
+        }
+    }
 
-        ObjectHelper.notNull(language, "language", this);
+    @Override
+    public Producer createProducer() throws Exception {
         if (cacheScript && expression == null && script != null) {
             script = resolveScript(script);
             expression = language.createExpression(script);
@@ -99,6 +110,7 @@ public class LanguageEndpoint extends ResourceEndpoint {
         return new LanguageProducer(this);
     }
 
+    @Override
     public Consumer createConsumer(Processor processor) throws Exception {
         throw new RuntimeCamelException("Cannot consume to a LanguageEndpoint: " + getEndpointUri());
     }
@@ -106,25 +118,24 @@ public class LanguageEndpoint extends ResourceEndpoint {
     /**
      * Resolves the script.
      *
-     * @param script script or uri for a script to load
-     * @return the script
+     * @param  script      script or uri for a script to load
+     * @return             the script
      * @throws IOException is thrown if error loading the script
      */
     protected String resolveScript(String script) throws IOException {
         String answer;
+
         if (ResourceHelper.hasScheme(script)) {
             InputStream is = loadResource(script);
             answer = getCamelContext().getTypeConverter().convertTo(String.class, is);
             IOHelper.close(is);
+        } else if (EndpointHelper.isReferenceParameter(script)) {
+            answer = CamelContextHelper.mandatoryLookup(getCamelContext(), script, String.class);
         } else {
             answer = script;
         }
 
         return answer;
-    }
-
-    public boolean isSingleton() {
-        return true;
     }
 
     @Override
@@ -162,7 +173,8 @@ public class LanguageEndpoint extends ResourceEndpoint {
      * <p/>
      * This options is default <tt>true</tt>.
      *
-     * @param transform <tt>true</tt> to use result as new message body, <tt>false</tt> to keep the existing message body
+     * @param transform <tt>true</tt> to use result as new message body, <tt>false</tt> to keep the existing message
+     *                  body
      */
     public void setTransform(boolean transform) {
         this.transform = transform;
@@ -195,7 +207,7 @@ public class LanguageEndpoint extends ResourceEndpoint {
     /**
      * Path to the resource, or a reference to lookup a bean in the Registry to use as the resource
      *
-     * @param resourceUri  the resource path
+     * @param resourceUri the resource path
      */
     @Override
     public void setResourceUri(String resourceUri) {
@@ -235,13 +247,14 @@ public class LanguageEndpoint extends ResourceEndpoint {
     /**
      * Whether to cache the compiled script and reuse
      * <p/>
-     * Notice reusing the script can cause side effects from processing one Camel
-     * {@link org.apache.camel.Exchange} to the next {@link org.apache.camel.Exchange}.
+     * Notice reusing the script can cause side effects from processing one Camel {@link org.apache.camel.Exchange} to
+     * the next {@link org.apache.camel.Exchange}.
      */
     public void setCacheScript(boolean cacheScript) {
         this.cacheScript = cacheScript;
     }
 
+    @Override
     public void clearContentCache() {
         super.clearContentCache();
         // must also clear expression and script

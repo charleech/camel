@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.docker.headers;
 import java.util.Map;
 
 import com.github.dockerjava.api.command.ListImagesCmd;
-
 import org.apache.camel.component.docker.DockerConstants;
 import org.apache.camel.component.docker.DockerOperation;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -33,12 +32,11 @@ import static org.mockito.ArgumentMatchers.eq;
  */
 public class ListImagesCmdHeaderTest extends BaseDockerHeaderTest<ListImagesCmd> {
 
-
     @Mock
     private ListImagesCmd mockObject;
 
     @Test
-    public void listImageHeaderTest() {
+    void listImageHeaderTest() {
 
         String filter = "{\"dangling\":[\"true\"]}";
         Boolean showAll = true;
@@ -46,7 +44,6 @@ public class ListImagesCmdHeaderTest extends BaseDockerHeaderTest<ListImagesCmd>
         Map<String, Object> headers = getDefaultParameters();
         headers.put(DockerConstants.DOCKER_FILTER, filter);
         headers.put(DockerConstants.DOCKER_SHOW_ALL, showAll);
-
 
         template.sendBodyAndHeaders("direct:in", "", headers);
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,16 @@
  */
 package org.apache.camel.converter.crypto;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore("Requires JCE unlimited strength jurisdiction policy files on CI server")
+@Disabled("Requires JCE unlimited strength jurisdiction policy files on CI server")
 public class PGPDataFormatElGamalTest extends PGPDataFormatTest {
+    @Override
     protected String getKeyFileName() {
         return "org/apache/camel/component/crypto/pubring-ElGamal.gpg";
     }
-    
+
+    @Override
     protected String getKeyFileNameSec() {
         return "org/apache/camel/component/crypto/secring-ElGamal.gpg";
     }

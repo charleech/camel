@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.apache.camel.component.sap.netweaver;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
 import org.apache.camel.Producer;
@@ -25,9 +26,12 @@ import org.apache.camel.support.DefaultProducer;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.support.service.ServiceHelper;
 import org.apache.camel.util.URISupport;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NetWeaverProducer extends DefaultProducer {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NetWeaverProducer.class);
 
     private Producer http;
 
@@ -50,7 +54,7 @@ public class NetWeaverProducer extends DefaultProducer {
             httpExchange.getIn().setHeader("Accept", "application/json");
         }
 
-        log.debug("Calling SAP Net-Weaver {} with command {}", http, command);
+        LOG.debug("Calling SAP Net-Weaver {} with command {}", http, command);
         http.process(httpExchange);
 
         String data = httpExchange.getOut().getBody(String.class);
@@ -74,9 +78,10 @@ public class NetWeaverProducer extends DefaultProducer {
 
     @Override
     protected void doStart() throws Exception {
-        String url = getEndpoint().getUrl() + "?authUsername=" + getEndpoint().getUsername() + "&authPassword=" + getEndpoint().getPassword() + "&authMethod=Basic";
-        if (log.isInfoEnabled()) {
-            log.info("Creating NetWeaverProducer using url: {}", URISupport.sanitizeUri(url));
+        String url = getEndpoint().getUrl() + "?authUsername=" + getEndpoint().getUsername() + "&authPassword="
+                     + getEndpoint().getPassword() + "&authMethod=Basic";
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Creating NetWeaverProducer using url: {}", URISupport.sanitizeUri(url));
         }
 
         http = getEndpoint().getCamelContext().getEndpoint(url).createProducer();

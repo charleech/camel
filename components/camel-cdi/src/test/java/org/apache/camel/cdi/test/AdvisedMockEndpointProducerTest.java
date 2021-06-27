@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.cdi.test;
 
 import java.util.concurrent.TimeUnit;
+
 import javax.inject.Inject;
 
 import org.apache.camel.CamelContext;
@@ -56,12 +57,12 @@ public class AdvisedMockEndpointProducerTest {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-            // Camel CDI
-            .addPackage(CdiCamelExtension.class.getPackage())
-            // Test class
-            .addClass(ManualStartupCamelContext.class)
-            // Bean archive deployment descriptor
-            .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                // Camel CDI
+                .addPackage(CdiCamelExtension.class.getPackage())
+                // Test class
+                .addClass(ManualStartupCamelContext.class)
+                // Bean archive deployment descriptor
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
@@ -71,9 +72,9 @@ public class AdvisedMockEndpointProducerTest {
             @Override
             public void configure() {
                 interceptSendToEndpoint("mock:outbound")
-                    .skipSendToOriginalEndpoint()
-                    .log("Intercepting message [${body}] from mock endpoint")
-                    .to("mock:intercepted");
+                        .skipSendToOriginalEndpoint()
+                        .log("Intercepting message [${body}] from mock endpoint")
+                        .to("mock:intercepted");
 
                 from("direct:inbound").to("mock:outbound");
             }

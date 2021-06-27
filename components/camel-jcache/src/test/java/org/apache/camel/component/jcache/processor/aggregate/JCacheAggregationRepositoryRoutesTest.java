@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,8 +23,7 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 
 public class JCacheAggregationRepositoryRoutesTest extends JCacheAggregationRepositoryTestSupport {
 
@@ -32,13 +31,13 @@ public class JCacheAggregationRepositoryRoutesTest extends JCacheAggregationRepo
     private static final String DIRECT_ONE = "direct:one";
     private static final String DIRECT_TWO = "direct:two";
 
-    @EndpointInject(uri = MOCK_GOTCHA)
+    @EndpointInject(MOCK_GOTCHA)
     private MockEndpoint mock;
 
-    @Produce(uri = DIRECT_ONE)
+    @Produce(DIRECT_ONE)
     private ProducerTemplate produceOne;
 
-    @Produce(uri = DIRECT_TWO)
+    @Produce(DIRECT_TWO)
     private ProducerTemplate produceTwo;
 
     @Test
@@ -52,11 +51,11 @@ public class JCacheAggregationRepositoryRoutesTest extends JCacheAggregationRepo
             @Override
             public void configure() throws Exception {
                 from(DIRECT_ONE).routeId("AggregatingRouteOne")
-                    .aggregate(header(correlator))
-                    .aggregationRepository(repoOne)
-                    .aggregationStrategy(new MyAggregationStrategy())
-                    .completionSize(completionSize)
-                    .to(MOCK_GOTCHA);
+                        .aggregate(header(correlator))
+                        .aggregationRepository(repoOne)
+                        .aggregationStrategy(new MyAggregationStrategy())
+                        .completionSize(completionSize)
+                        .to(MOCK_GOTCHA);
             }
         };
 
@@ -64,11 +63,11 @@ public class JCacheAggregationRepositoryRoutesTest extends JCacheAggregationRepo
             @Override
             public void configure() throws Exception {
                 from(DIRECT_TWO).routeId("AggregatingRouteTwo")
-                    .aggregate(header(correlator))
-                    .aggregationRepository(repoTwo)
-                    .aggregationStrategy(new MyAggregationStrategy())
-                    .completionSize(completionSize)
-                    .to(MOCK_GOTCHA);
+                        .aggregate(header(correlator))
+                        .aggregationRepository(repoTwo)
+                        .aggregationStrategy(new MyAggregationStrategy())
+                        .completionSize(completionSize)
+                        .to(MOCK_GOTCHA);
             }
         };
 

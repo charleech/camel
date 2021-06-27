@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ public class PullRequestConsumer extends AbstractGitHubConsumer {
 
         LOG.info("GitHub PullRequestConsumer: Indexing current pull requests...");
         List<PullRequest> pullRequests = pullRequestService.getPullRequests(getRepository(), "open");
-        if (pullRequests.size() > 0) {
+        if (!pullRequests.isEmpty()) {
             lastOpenPullRequest = pullRequests.get(0).getNumber();
         }
     }
@@ -70,13 +70,13 @@ public class PullRequestConsumer extends AbstractGitHubConsumer {
             }
         }
 
-        if (newPullRequests.size() > 0) {
+        if (!newPullRequests.isEmpty()) {
             lastOpenPullRequest = openPullRequests.get(0).getNumber();
         }
 
         while (!newPullRequests.empty()) {
             PullRequest newPullRequest = newPullRequests.pop();
-            Exchange e = getEndpoint().createExchange();
+            Exchange e = createExchange(true);
 
             e.getIn().setBody(newPullRequest);
 

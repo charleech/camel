@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,19 +17,24 @@
 package org.apache.camel.component.rabbitmq;
 
 import com.rabbitmq.client.ConnectionFactory;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.support.SimpleRegistry;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 public class RabbitMQLookupConnectionFactoryTest extends CamelTestSupport {
 
     private ConnectionFactory myConnectionFactory;
 
-    protected JndiRegistry createRegistry() throws Exception {
+    @Override
+    protected Registry createCamelRegistry() throws Exception {
+        SimpleRegistry registry = new SimpleRegistry();
         myConnectionFactory = new ConnectionFactory();
         myConnectionFactory.setHost("myhost");
 
-        JndiRegistry registry = super.createRegistry();
         registry.bind("myConnectionFactory", myConnectionFactory);
         return registry;
     }

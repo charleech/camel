@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,21 +15,25 @@
  * limitations under the License.
  */
 package org.apache.camel.component.mail;
+
 import java.util.Date;
 
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.Store;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.SearchTerm;
 
 import com.sun.mail.imap.SortTerm;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.mock_javamail.Mailbox;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This is a test that checks integration of the sort term in Camel. The actual sorting logic is tested in the
@@ -37,20 +41,20 @@ import org.jvnet.mock_javamail.Mailbox;
  */
 public class MailSortTermThreeTest extends CamelTestSupport {
 
+    @BindToRegistry("sortAscendingDate")
+    private SortTerm[] termAscDate = new SortTerm[] { SortTerm.DATE };
+
+    @BindToRegistry("sortDescendingDate")
+    private SortTerm[] termDescDate = new SortTerm[] { SortTerm.REVERSE, SortTerm.DATE };
+
+    @BindToRegistry("searchTerm")
+    private SearchTerm searchTerm = new SearchTermBuilder().subject("Camel").build();
+
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         prepareMailbox();
         super.setUp();
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("sortAscendingDate", new SortTerm[]{SortTerm.DATE});
-        jndi.bind("sortDescendingDate", new SortTerm[]{SortTerm.REVERSE, SortTerm.DATE});
-        jndi.bind("searchTerm", new SearchTermBuilder().subject("Camel").build());
-        return jndi;
     }
 
     @Test
@@ -77,7 +81,8 @@ public class MailSortTermThreeTest extends CamelTestSupport {
         folder.open(Folder.READ_WRITE);
         folder.expunge();
 
-        // inserts 3 messages, one with earlier, one with later sent date and one with invalid subject (not returned in search)
+        // inserts 3 messages, one with earlier, one with later sent date and
+        // one with invalid subject (not returned in search)
         Message[] messages = new Message[3];
         messages[0] = new MimeMessage(sender.getSession());
         messages[0].setText("Earlier date");
@@ -101,12 +106,14 @@ public class MailSortTermThreeTest extends CamelTestSupport {
         folder.close(true);
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 context.setAutoStartup(false);
 
-                from("imap://bill@localhost?password=secret&sortTerm=#sortDescendingDate&consumer.initialDelay=100&consumer.delay=100").to("mock:resultDescendingImap");
+                from("imap://bill@localhost?password=secret&sortTerm=#sortDescendingDate&initialDelay=100&delay=100")
+                        .to("mock:resultDescendingImap");
             }
         };
     }

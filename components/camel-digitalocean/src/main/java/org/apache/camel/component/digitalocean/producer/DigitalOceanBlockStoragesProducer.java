@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,39 +41,40 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
         super(endpoint, configuration);
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
 
         switch (determineOperation(exchange)) {
 
-        case list:
-            getVolumes(exchange);
-            break;
-        case get:
-            getVolume(exchange);
-            break;
-        case listSnapshots:
-            getVolumeSnapshots(exchange);
-            break;
-        case create:
-            createVolume(exchange);
-            break;
-        case delete:
-            deleteVolume(exchange);
-            break;
-        case attach:
-            attachVolumeToDroplet(exchange);
-            break;
-        case detach:
-            detachVolumeToDroplet(exchange);
-            break;
-        case resize:
-            resizeVolume(exchange);
-            break;
-        case listActions:
-            getVolumeActions(exchange);
-            break;
-        default:
-            throw new IllegalArgumentException("Unsupported operation");
+            case list:
+                getVolumes(exchange);
+                break;
+            case get:
+                getVolume(exchange);
+                break;
+            case listSnapshots:
+                getVolumeSnapshots(exchange);
+                break;
+            case create:
+                createVolume(exchange);
+                break;
+            case delete:
+                deleteVolume(exchange);
+                break;
+            case attach:
+                attachVolumeToDroplet(exchange);
+                break;
+            case detach:
+                detachVolumeToDroplet(exchange);
+                break;
+            case resize:
+                resizeVolume(exchange);
+                break;
+            case listActions:
+                getVolumeActions(exchange);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported operation");
         }
     }
 
@@ -95,7 +96,7 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
         Volume volume = new Volume();
 
         if (ObjectHelper.isNotEmpty(exchange.getIn().getHeader(DigitalOceanHeaders.VOLUME_SIZE_GIGABYTES))) {
-            volume.setSize(in.getHeader(DigitalOceanHeaders.VOLUME_SIZE_GIGABYTES, Double.class));
+            volume.setSize(in.getHeader(DigitalOceanHeaders.VOLUME_SIZE_GIGABYTES, Integer.class));
         } else {
             throw new IllegalArgumentException(DigitalOceanHeaders.VOLUME_SIZE_GIGABYTES + " must be specified");
         }
@@ -131,11 +132,13 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
             String region = exchange.getIn().getHeader(DigitalOceanHeaders.REGION, String.class);
 
             if (ObjectHelper.isEmpty(name) && ObjectHelper.isEmpty(region)) {
-                throw new IllegalArgumentException(DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.NAME + " and " + DigitalOceanHeaders.REGION + " must be specified");
+                throw new IllegalArgumentException(
+                        DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.NAME + " and " + DigitalOceanHeaders.REGION
+                                                   + " must be specified");
             }
 
             List<Volume> volumes = getEndpoint().getDigitalOceanClient().getVolumeInfo(name, region).getVolumes();
-            if (volumes.size() > 0) {
+            if (!volumes.isEmpty()) {
                 volume = volumes.get(1);
             }
         } else {
@@ -153,7 +156,8 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
             throw new IllegalArgumentException(DigitalOceanHeaders.ID + " must be specified");
         }
 
-        Snapshots snapshots = getEndpoint().getDigitalOceanClient().getVolumeSnapshots(volumeId, configuration.getPage(), configuration.getPerPage());
+        Snapshots snapshots = getEndpoint().getDigitalOceanClient().getVolumeSnapshots(volumeId, configuration.getPage(),
+                configuration.getPerPage());
         LOG.trace("All Snapshots for volume {} [{}] ", volumeId, snapshots.getSnapshots());
         exchange.getOut().setBody(snapshots.getSnapshots());
     }
@@ -166,7 +170,9 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
             String region = exchange.getIn().getHeader(DigitalOceanHeaders.REGION, String.class);
 
             if (ObjectHelper.isEmpty(name) && ObjectHelper.isEmpty(region)) {
-                throw new IllegalArgumentException(DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.NAME + " and " + DigitalOceanHeaders.REGION + " must be specified");
+                throw new IllegalArgumentException(
+                        DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.NAME + " and " + DigitalOceanHeaders.REGION
+                                                   + " must be specified");
             }
 
             delete = getEndpoint().getDigitalOceanClient().deleteVolume(name, region);
@@ -203,12 +209,12 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
             action = getEndpoint().getDigitalOceanClient().attachVolume(dropletId, volumeId, region);
             LOG.trace("Attach Volume {} to Droplet {} [{}] ", volumeId, dropletId, action);
         } else {
-            throw new IllegalArgumentException(DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.VOLUME_NAME + " must be specified");
+            throw new IllegalArgumentException(
+                    DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.VOLUME_NAME + " must be specified");
         }
 
         exchange.getOut().setBody(action);
     }
-
 
     private void detachVolumeToDroplet(Exchange exchange) throws Exception {
         String volumeId = exchange.getIn().getHeader(DigitalOceanHeaders.ID, String.class);
@@ -233,7 +239,8 @@ public class DigitalOceanBlockStoragesProducer extends DigitalOceanProducer {
             action = getEndpoint().getDigitalOceanClient().detachVolume(dropletId, volumeId, region);
             LOG.trace("Detach Volume {} to Droplet {} [{}] ", volumeId, dropletId, action);
         } else {
-            throw new IllegalArgumentException(DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.VOLUME_NAME + " must be specified");
+            throw new IllegalArgumentException(
+                    DigitalOceanHeaders.ID + " or " + DigitalOceanHeaders.VOLUME_NAME + " must be specified");
         }
 
         exchange.getOut().setBody(action);

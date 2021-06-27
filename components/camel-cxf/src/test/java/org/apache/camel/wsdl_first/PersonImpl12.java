@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,12 +19,11 @@ package org.apache.camel.wsdl_first;
 import javax.jws.WebService;
 
 @WebService(serviceName = "PersonService12",
-        targetNamespace = "http://camel.apache.org/wsdl-first",
-        endpointInterface = "org.apache.camel.wsdl_first.Person",
-        wsdlLocation = "classpath:/person.wsdl")
-        
-@javax.xml.ws.BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/")                  
-public class PersonImpl12 extends PersonImpl {
+            targetNamespace = "http://camel.apache.org/wsdl-first",
+            endpointInterface = "org.apache.camel.wsdl_first.Person",
+            wsdlLocation = "classpath:/person.wsdl")
 
+@javax.xml.ws.BindingType(value = "http://www.w3.org/2003/05/soap/bindings/HTTP/")
+public class PersonImpl12 extends PersonImpl {
 
 }

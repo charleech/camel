@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,21 +21,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Swagger;
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.DefaultClassResolver;
-import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.impl.engine.DefaultClassResolver;
 import org.apache.camel.model.rest.RestParamType;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RestSwaggerReaderEnableVendorExtensionTest extends CamelTestSupport {
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry jndi = super.createRegistry();
-        jndi.bind("dummy-rest", new DummyRestConsumerFactory());
-        return jndi;
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(RestSwaggerReaderEnableVendorExtensionTest.class);
+
+    @BindToRegistry("dummy-rest")
+    private DummyRestConsumerFactory factory = new DummyRestConsumerFactory();
+
+    @BindToRegistry("userService")
+    private Object dummy = new Object();
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
@@ -46,20 +53,20 @@ public class RestSwaggerReaderEnableVendorExtensionTest extends CamelTestSupport
                 restConfiguration().apiVendorExtension(true);
 
                 // this user REST service is json only
-                rest("/user").tag("dude").description("User rest service")
-                    .consumes("application/json").produces("application/json")
+                rest("/user").tag("dude").description("User rest service").consumes("application/json")
+                        .produces("application/json")
 
-                    .get("/{id}").description("Find user by id").outType(User.class)
-                        .responseMessage().message("The user returned").endResponseMessage()
-                        .param().name("id").type(RestParamType.path).description("The id of the user to get").dataType("integer").endParam()
+                        .get("/{id}").description("Find user by id").outType(User.class).responseMessage()
+                        .message("The user returned").endResponseMessage().param().name("id")
+                        .type(RestParamType.path).description("The id of the user to get").dataType("integer").endParam()
                         .to("bean:userService?method=getUser(${header.id})")
 
-                    .put().description("Updates or create a user").type(User.class)
-                        .param().name("body").type(RestParamType.body).description("The user to update or create").endParam()
-                        .to("bean:userService?method=updateUser")
+                        .put().description("Updates or create a user").type(User.class).param().name("body")
+                        .type(RestParamType.body).description("The user to update or create")
+                        .endParam().to("bean:userService?method=updateUser")
 
-                    .get("/findAll").description("Find all users").outType(User[].class)
-                        .responseMessage().message("All the found users").endResponseMessage()
+                        .get("/findAll").description("Find all users").outType(User[].class).responseMessage()
+                        .message("All the found users").endResponseMessage()
                         .to("bean:userService?method=listUsers");
             }
         };
@@ -69,14 +76,15 @@ public class RestSwaggerReaderEnableVendorExtensionTest extends CamelTestSupport
     public void testEnableVendorExtension() throws Exception {
         BeanConfig config = new BeanConfig();
         config.setHost("localhost:8080");
-        config.setSchemes(new String[]{"http"});
+        config.setSchemes(new String[] { "http" });
         config.setBasePath("/api");
         config.setTitle("Camel User store");
         config.setLicense("Apache 2.0");
         config.setLicenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html");
         RestSwaggerReader reader = new RestSwaggerReader();
 
-        Swagger swagger = reader.read(context.getRestDefinitions(), null, config, context.getName(), new DefaultClassResolver());
+        Swagger swagger
+                = reader.read(context.getRestDefinitions(), null, config, context.getName(), new DefaultClassResolver());
         assertNotNull(swagger);
 
         ObjectMapper mapper = new ObjectMapper();
@@ -84,7 +92,7 @@ public class RestSwaggerReaderEnableVendorExtensionTest extends CamelTestSupport
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String json = mapper.writeValueAsString(swagger);
 
-        log.info(json);
+        LOG.info(json);
 
         String camelId = context.getName();
         String routeId = context.getRouteDefinitions().get(0).getId();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.apache.camel.dataformat.univocity;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * This class tests the options of {@link org.apache.camel.dataformat.univocity.UniVocityCsvDataFormat}.
@@ -80,11 +80,11 @@ public final class UniVocityCsvDataFormatTest {
     @Test
     public void shouldConfigureHeaders() {
         UniVocityCsvDataFormat dataFormat = new UniVocityCsvDataFormat()
-                .setHeaders(new String[]{"A", "B", "C"});
+                .setHeaders(new String[] { "A", "B", "C" });
 
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.getHeaders());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.createAndConfigureWriterSettings().getHeaders());
-        assertArrayEquals(new String[]{"A", "B", "C"}, dataFormat.createAndConfigureParserSettings().getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.createAndConfigureWriterSettings().getHeaders());
+        assertArrayEquals(new String[] { "A", "B", "C" }, dataFormat.createAndConfigureParserSettings().getHeaders());
     }
 
     @Test

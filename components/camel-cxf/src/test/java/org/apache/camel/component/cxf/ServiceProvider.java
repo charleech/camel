@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,7 @@ import javax.xml.ws.WebServiceProvider;
 @ServiceMode(Mode.PAYLOAD)
 public class ServiceProvider implements Provider<Source> {
 
+    @Override
     public Source invoke(Source m) {
         throw new UnsupportedOperationException("Place holder method");
     }

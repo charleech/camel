@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,32 +16,41 @@
  */
 package org.apache.camel.zipkin;
 
-import java.util.Stack;
+import java.util.Deque;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import brave.Span;
-
 import org.apache.camel.Exchange;
+import org.apache.camel.SafeCopyProperty;
 
 /**
  * The state of the zipkin trace which we store on the {@link Exchange}
  * <p/>
- * This is needed to keep track of of correlating when an existing span
- * is calling downstream service(s) and therefore must be able to correlate
- * those service calls with the parent span.
+ * This is needed to keep track of of correlating when an existing span is calling downstream service(s) and therefore
+ * must be able to correlate those service calls with the parent span.
  */
-public final class ZipkinState {
+public final class ZipkinState implements SafeCopyProperty {
 
     public static final String KEY = "CamelZipkinState";
 
-    private final Stack<Span> clientSpans = new Stack<>();
-    private final Stack<Span> serverSpans = new Stack<>();
+    private final Deque<Span> clientSpans = new ConcurrentLinkedDeque<>();
+    private final Deque<Span> serverSpans = new ConcurrentLinkedDeque<>();
+
+    public ZipkinState() {
+
+    }
+
+    private ZipkinState(ZipkinState state) {
+        this.clientSpans.addAll(state.clientSpans);
+        this.serverSpans.addAll(state.serverSpans);
+    }
 
     public void pushClientSpan(Span span) {
         clientSpans.push(span);
     }
 
     public Span popClientSpan() {
-        if (!clientSpans.empty()) {
+        if (!clientSpans.isEmpty()) {
             return clientSpans.pop();
         } else {
             return null;
@@ -53,7 +62,7 @@ public final class ZipkinState {
     }
 
     public Span popServerSpan() {
-        if (!serverSpans.empty()) {
+        if (!serverSpans.isEmpty()) {
             return serverSpans.pop();
         } else {
             return null;
@@ -61,11 +70,16 @@ public final class ZipkinState {
     }
 
     public Span peekServerSpan() {
-        if (!serverSpans.empty()) {
+        if (!serverSpans.isEmpty()) {
             return serverSpans.peek();
         } else {
             return null;
         }
+    }
+
+    @Override
+    public ZipkinState safeCopy() {
+        return new ZipkinState(this);
     }
 
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,11 +18,9 @@ package org.apache.camel.cdi.bean;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import org.apache.camel.cdi.ContextName;
 import org.apache.camel.impl.DefaultCamelContext;
 
 @ApplicationScoped
-@ContextName("first")
 public class FirstCamelContextBean extends DefaultCamelContext {
 
 }

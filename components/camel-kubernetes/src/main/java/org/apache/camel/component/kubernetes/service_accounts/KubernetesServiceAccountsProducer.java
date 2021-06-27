@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,15 +18,11 @@ package org.apache.camel.component.kubernetes.service_accounts;
 
 import java.util.Map;
 
-import io.fabric8.kubernetes.api.model.DoneableServiceAccount;
 import io.fabric8.kubernetes.api.model.ServiceAccount;
 import io.fabric8.kubernetes.api.model.ServiceAccountList;
-import io.fabric8.kubernetes.client.Watch;
-import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.dsl.FilterWatchListMultiDeletable;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConstants;
@@ -39,8 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class KubernetesServiceAccountsProducer extends DefaultProducer {
 
-    private static final Logger LOG = LoggerFactory
-            .getLogger(KubernetesServiceAccountsProducer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(KubernetesServiceAccountsProducer.class);
 
     public KubernetesServiceAccountsProducer(AbstractKubernetesEndpoint endpoint) {
         super(endpoint);
@@ -55,145 +50,121 @@ public class KubernetesServiceAccountsProducer extends DefaultProducer {
     public void process(Exchange exchange) throws Exception {
         String operation;
 
-        if (ObjectHelper.isEmpty(getEndpoint().getKubernetesConfiguration()
-                .getOperation())) {
-            operation = exchange.getIn().getHeader(
-                    KubernetesConstants.KUBERNETES_OPERATION, String.class);
+        if (ObjectHelper.isEmpty(getEndpoint().getKubernetesConfiguration().getOperation())) {
+            operation = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_OPERATION, String.class);
         } else {
-            operation = getEndpoint().getKubernetesConfiguration()
-                    .getOperation();
+            operation = getEndpoint().getKubernetesConfiguration().getOperation();
         }
 
         switch (operation) {
 
-        case KubernetesOperations.LIST_SERVICE_ACCOUNTS:
-            doList(exchange, operation);
-            break;
+            case KubernetesOperations.LIST_SERVICE_ACCOUNTS:
+                doList(exchange, operation);
+                break;
 
-        case KubernetesOperations.LIST_SERVICE_ACCOUNTS_BY_LABELS_OPERATION:
-            doListServiceAccountsByLabels(exchange, operation);
-            break;
+            case KubernetesOperations.LIST_SERVICE_ACCOUNTS_BY_LABELS_OPERATION:
+                doListServiceAccountsByLabels(exchange, operation);
+                break;
 
-        case KubernetesOperations.GET_SECRET_OPERATION:
-            doGetServiceAccount(exchange, operation);
-            break;
+            case KubernetesOperations.GET_SECRET_OPERATION:
+                doGetServiceAccount(exchange, operation);
+                break;
 
-        case KubernetesOperations.CREATE_SERVICE_ACCOUNT_OPERATION:
-            doCreateServiceAccount(exchange, operation);
-            break;
+            case KubernetesOperations.CREATE_SERVICE_ACCOUNT_OPERATION:
+                doCreateServiceAccount(exchange, operation);
+                break;
 
-        case KubernetesOperations.DELETE_SERVICE_ACCOUNT_OPERATION:
-            doDeleteServiceAccount(exchange, operation);
-            break;
+            case KubernetesOperations.DELETE_SERVICE_ACCOUNT_OPERATION:
+                doDeleteServiceAccount(exchange, operation);
+                break;
 
-        default:
-            throw new IllegalArgumentException("Unsupported operation "
-                    + operation);
+            default:
+                throw new IllegalArgumentException("Unsupported operation " + operation);
         }
     }
 
     protected void doList(Exchange exchange, String operation) throws Exception {
-        ServiceAccountList saList = getEndpoint().getKubernetesClient().serviceAccounts().inAnyNamespace()
-                .list();
+        ServiceAccountList saList = getEndpoint().getKubernetesClient().serviceAccounts().inAnyNamespace().list();
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(saList.getItems());
     }
 
-    protected void doListServiceAccountsByLabels(Exchange exchange, String operation)
-            throws Exception {
+    protected void doListServiceAccountsByLabels(Exchange exchange, String operation) throws Exception {
         ServiceAccountList saList = null;
-        Map<String, String> labels = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_SERVICE_ACCOUNTS_LABELS, Map.class);
-        String namespaceName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
+        Map<String, String> labels
+                = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_SERVICE_ACCOUNTS_LABELS, Map.class);
+        String namespaceName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
         if (!ObjectHelper.isEmpty(namespaceName)) {
-            NonNamespaceOperation<ServiceAccount, ServiceAccountList, DoneableServiceAccount, Resource<ServiceAccount, DoneableServiceAccount>> serviceAccounts; 
-            serviceAccounts = getEndpoint().getKubernetesClient().serviceAccounts()
-                    .inNamespace(namespaceName);
+            NonNamespaceOperation<ServiceAccount, ServiceAccountList, Resource<ServiceAccount>> serviceAccounts
+                    = getEndpoint().getKubernetesClient().serviceAccounts().inNamespace(namespaceName);
             for (Map.Entry<String, String> entry : labels.entrySet()) {
                 serviceAccounts.withLabel(entry.getKey(), entry.getValue());
             }
             saList = serviceAccounts.list();
         } else {
-            FilterWatchListMultiDeletable<ServiceAccount, ServiceAccountList, Boolean, Watch, Watcher<ServiceAccount>> serviceAccounts; 
-            serviceAccounts = getEndpoint().getKubernetesClient().serviceAccounts().inAnyNamespace();
+            FilterWatchListMultiDeletable<ServiceAccount, ServiceAccountList> serviceAccounts
+                    = getEndpoint().getKubernetesClient().serviceAccounts().inAnyNamespace();
             for (Map.Entry<String, String> entry : labels.entrySet()) {
                 serviceAccounts.withLabel(entry.getKey(), entry.getValue());
             }
             saList = serviceAccounts.list();
         }
-        
+
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(saList.getItems());
     }
 
-    protected void doGetServiceAccount(Exchange exchange, String operation)
-            throws Exception {
+    protected void doGetServiceAccount(Exchange exchange, String operation) throws Exception {
         ServiceAccount sa = null;
-        String saName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT_NAME, String.class);
-        String namespaceName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
+        String saName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT_NAME, String.class);
+        String namespaceName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
         if (ObjectHelper.isEmpty(saName)) {
             LOG.error("Get a specific Service Account require specify a Service Account name");
-            throw new IllegalArgumentException(
-                    "Get a specific Service Account require specify a Service Account name");
+            throw new IllegalArgumentException("Get a specific Service Account require specify a Service Account name");
         }
         if (ObjectHelper.isEmpty(namespaceName)) {
             LOG.error("Get a specific Service Account require specify a namespace name");
-            throw new IllegalArgumentException(
-                    "Get a specific Service Account require specify a namespace name");
+            throw new IllegalArgumentException("Get a specific Service Account require specify a namespace name");
         }
-        sa = getEndpoint().getKubernetesClient().serviceAccounts()
-                .inNamespace(namespaceName).withName(saName).get();
-        
+        sa = getEndpoint().getKubernetesClient().serviceAccounts().inNamespace(namespaceName).withName(saName).get();
+
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(sa);
     }
 
-    protected void doCreateServiceAccount(Exchange exchange, String operation)
-            throws Exception {
+    protected void doCreateServiceAccount(Exchange exchange, String operation) throws Exception {
         ServiceAccount sa = null;
-        String namespaceName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
-        ServiceAccount saToCreate = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT, ServiceAccount.class);
+        String namespaceName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
+        ServiceAccount saToCreate
+                = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT, ServiceAccount.class);
         if (ObjectHelper.isEmpty(namespaceName)) {
             LOG.error("Create a specific Service Account require specify a namespace name");
-            throw new IllegalArgumentException(
-                    "Create a specific Service Account require specify a namespace name");
+            throw new IllegalArgumentException("Create a specific Service Account require specify a namespace name");
         }
         if (ObjectHelper.isEmpty(saToCreate)) {
             LOG.error("Create a specific Service Account require specify a Service Account bean");
-            throw new IllegalArgumentException(
-                    "Create a specific Service Account require specify a Service Account bean");
+            throw new IllegalArgumentException("Create a specific Service Account require specify a Service Account bean");
         }
-        sa = getEndpoint().getKubernetesClient().serviceAccounts()
-                .inNamespace(namespaceName).create(saToCreate);
-        
+        sa = getEndpoint().getKubernetesClient().serviceAccounts().inNamespace(namespaceName).create(saToCreate);
+
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(sa);
     }
 
-    protected void doDeleteServiceAccount(Exchange exchange, String operation)
-            throws Exception {
-        String saName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT_NAME, String.class);
-        String namespaceName = exchange.getIn().getHeader(
-                KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
+    protected void doDeleteServiceAccount(Exchange exchange, String operation) throws Exception {
+        String saName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_SERVICE_ACCOUNT_NAME, String.class);
+        String namespaceName = exchange.getIn().getHeader(KubernetesConstants.KUBERNETES_NAMESPACE_NAME, String.class);
         if (ObjectHelper.isEmpty(saName)) {
             LOG.error("Delete a specific Service Account require specify a Service Account name");
-            throw new IllegalArgumentException(
-                    "Delete a specific Service Account require specify a Service Account name");
+            throw new IllegalArgumentException("Delete a specific Service Account require specify a Service Account name");
         }
         if (ObjectHelper.isEmpty(namespaceName)) {
             LOG.error("Delete a specific Service Account require specify a namespace name");
-            throw new IllegalArgumentException(
-                    "Delete a specific Service Account require specify a namespace name");
+            throw new IllegalArgumentException("Delete a specific Service Account require specify a namespace name");
         }
-        boolean saDeleted = getEndpoint().getKubernetesClient().serviceAccounts()
-                .inNamespace(namespaceName).withName(saName).delete();
-        
+        boolean saDeleted
+                = getEndpoint().getKubernetesClient().serviceAccounts().inNamespace(namespaceName).withName(saName).delete();
+
         MessageHelper.copyHeaders(exchange.getIn(), exchange.getOut(), true);
         exchange.getOut().setBody(saDeleted);
     }

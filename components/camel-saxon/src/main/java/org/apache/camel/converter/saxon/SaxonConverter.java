@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,11 +34,10 @@ import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.type.Type;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
-import org.apache.camel.FallbackConverter;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.spi.TypeConverterRegistry;
 
-@Converter
+@Converter(generateLoader = true)
 public final class SaxonConverter {
 
     private SaxonConverter() {
@@ -47,16 +46,16 @@ public final class SaxonConverter {
     @Converter
     public static Document toDOMDocument(NodeInfo node) throws XPathException {
         switch (node.getNodeKind()) {
-        case Type.DOCUMENT:
-            // DOCUMENT type nodes can be wrapped directly
-            return (Document) NodeOverNodeInfo.wrap(node);
-        case Type.ELEMENT:
-            // ELEMENT nodes need to build a new DocumentInfo before wrapping
-            Configuration config = node.getConfiguration();
-            DocumentInfo documentInfo = config.buildDocument(node);
-            return (Document) NodeOverNodeInfo.wrap(documentInfo);
-        default:
-            return null;
+            case Type.DOCUMENT:
+                // DOCUMENT type nodes can be wrapped directly
+                return (Document) NodeOverNodeInfo.wrap(node);
+            case Type.ELEMENT:
+                // ELEMENT nodes need to build a new DocumentInfo before wrapping
+                Configuration config = node.getConfiguration();
+                DocumentInfo documentInfo = config.buildDocument(node);
+                return (Document) NodeOverNodeInfo.wrap(documentInfo);
+            default:
+                return null;
         }
     }
 
@@ -81,7 +80,7 @@ public final class SaxonConverter {
         return new DOMNodeList(domNodeList);
     }
 
-    @FallbackConverter
+    @Converter(fallback = true)
     public static <T> T convertTo(Class<T> type, Exchange exchange, Object value, TypeConverterRegistry registry) {
         if (NodeInfo.class.isAssignableFrom(value.getClass())) {
             // use a fallback type converter so we can convert the embedded body if the value is NodeInfo
@@ -109,7 +108,7 @@ public final class SaxonConverter {
                         lion.add((NodeInfo) o);
                     }
                 }
-                if (lion.size() > 0) {
+                if (!lion.isEmpty()) {
                     NodeList nl = toDOMNodeList(lion);
                     return tc.convertTo(type, exchange, nl);
                 }

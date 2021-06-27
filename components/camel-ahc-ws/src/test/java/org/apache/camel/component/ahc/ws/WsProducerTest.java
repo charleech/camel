@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.ServerConnector;
 
 public class WsProducerTest extends WsProducerTestBase {
-    
+
     @Override
     protected void setUpComponent() throws Exception {
     }
@@ -29,7 +29,7 @@ public class WsProducerTest extends WsProducerTestBase {
     protected Connector getConnector() throws Exception {
         return new ServerConnector(server);
     }
-    
+
     @Override
     protected String getTargetURL() {
         return "ahc-ws://localhost:" + PORT;

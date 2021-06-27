@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,22 +21,21 @@ import java.time.Duration;
 import io.atomix.collections.DistributedSet;
 import io.atomix.resource.ReadConsistency;
 import org.apache.camel.AsyncCallback;
-import org.apache.camel.InvokeOnHeader;
 import org.apache.camel.Message;
 import org.apache.camel.component.atomix.client.AbstractAtomixClientProducer;
+import org.apache.camel.spi.InvokeOnHeader;
 import org.apache.camel.util.ObjectHelper;
 
-import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_ACTION;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_NAME;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_READ_CONSISTENCY;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_TTL;
 import static org.apache.camel.component.atomix.client.AtomixClientConstants.RESOURCE_VALUE;
 
-final class AtomixSetProducer extends AbstractAtomixClientProducer<AtomixSetEndpoint, DistributedSet> {
+public final class AtomixSetProducer extends AbstractAtomixClientProducer<AtomixSetEndpoint, DistributedSet> {
     private final AtomixSetConfiguration configuration;
 
     protected AtomixSetProducer(AtomixSetEndpoint endpoint) {
-        super(endpoint);
+        super(endpoint, endpoint.getConfiguration().getDefaultAction().name());
         this.configuration = endpoint.getConfiguration();
     }
 
@@ -44,117 +43,98 @@ final class AtomixSetProducer extends AbstractAtomixClientProducer<AtomixSetEndp
     // Handlers
     // *********************************
 
+    private long getResourceTtl(Message message) {
+        Duration ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, Duration.class);
+        return ttl != null ? ttl.toMillis() : 0;
+    }
+
     @InvokeOnHeader("ADD")
-    boolean onAdd(Message message, AsyncCallback callback) throws Exception {
+    void onAdd(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
-        final long ttl = message.getHeader(RESOURCE_TTL, configuration::getTtl, long.class);
+        final long ttl = getResourceTtl(message);
         final Object val = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(val, RESOURCE_VALUE);
 
         if (ttl > 0) {
             set.add(val, Duration.ofMillis(ttl)).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             set.add(val).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("CLEAR")
-    boolean onClear(Message message, AsyncCallback callback) throws Exception {
+    void onClear(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
 
         set.clear().thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("CONTAINS")
-    boolean onContains(Message message, AsyncCallback callback) throws Exception {
+    void onContains(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(value, RESOURCE_VALUE);
 
         if (consistency != null) {
             set.contains(value, consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             set.contains(value).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("IS_EMPTY")
-    boolean onIsEmpty(Message message, AsyncCallback callback) throws Exception {
+    void onIsEmpty(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             set.isEmpty(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             set.isEmpty().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     @InvokeOnHeader("REMOVE")
-    boolean onRemove(Message message, AsyncCallback callback) throws Exception {
+    void onRemove(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
         final Object value = message.getHeader(RESOURCE_VALUE, message::getBody, Object.class);
 
         ObjectHelper.notNull(value, RESOURCE_VALUE);
 
         set.remove(value).thenAccept(
-            result -> processResult(message, callback, result)
-        );
-
-        return false;
+                result -> processResult(message, callback, result));
     }
 
     @InvokeOnHeader("SIZE")
-    boolean onSize(Message message, AsyncCallback callback) throws Exception {
+    void onSize(Message message, AsyncCallback callback) throws Exception {
         final DistributedSet<Object> set = getResource(message);
-        final ReadConsistency consistency = message.getHeader(RESOURCE_READ_CONSISTENCY,  configuration::getReadConsistency, ReadConsistency.class);
+        final ReadConsistency consistency
+                = message.getHeader(RESOURCE_READ_CONSISTENCY, configuration::getReadConsistency, ReadConsistency.class);
 
         if (consistency != null) {
             set.size(consistency).thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         } else {
             set.size().thenAccept(
-                result -> processResult(message, callback, result)
-            );
+                    result -> processResult(message, callback, result));
         }
-
-        return false;
     }
 
     // *********************************
     // Implementation
     // *********************************
-
-    @Override
-    protected String getProcessorKey(Message message) {
-        return message.getHeader(RESOURCE_ACTION, configuration::getDefaultAction, String.class);
-    }
 
     @Override
     protected String getResourceName(Message message) {
@@ -164,11 +144,11 @@ final class AtomixSetProducer extends AbstractAtomixClientProducer<AtomixSetEndp
     @Override
     protected DistributedSet<Object> createResource(String resourceName) {
         return getAtomixEndpoint()
-            .getAtomix()
-            .getSet(
-                resourceName,
-                new DistributedSet.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedSet.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
+                .getAtomix()
+                .getSet(
+                        resourceName,
+                        new DistributedSet.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedSet.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
     }
 }

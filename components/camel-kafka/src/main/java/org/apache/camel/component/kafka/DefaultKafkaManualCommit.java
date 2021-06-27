@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,8 @@ public class DefaultKafkaManualCommit implements KafkaManualCommit {
     private final long recordOffset;
 
     public DefaultKafkaManualCommit(KafkaConsumer consumer, String topicName, String threadId,
-                                    StateRepository<String, String> offsetRepository, TopicPartition partition, long recordOffset) {
+                                    StateRepository<String, String> offsetRepository, TopicPartition partition,
+                                    long recordOffset) {
         this.consumer = consumer;
         this.topicName = topicName;
         this.threadId = threadId;

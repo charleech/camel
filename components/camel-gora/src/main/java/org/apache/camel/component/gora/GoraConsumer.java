@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.apache.camel.component.gora;
 
 import java.lang.reflect.InvocationTargetException;
+
 import org.apache.camel.Consumer;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
@@ -53,7 +54,6 @@ public class GoraConsumer extends ScheduledPollConsumer {
      */
     private boolean firstRun;
 
-
     /**
      * Consumer Constructor
      *
@@ -65,7 +65,8 @@ public class GoraConsumer extends ScheduledPollConsumer {
     public GoraConsumer(final Endpoint endpoint,
                         final Processor processor,
                         final GoraConfiguration configuration,
-                        final DataStore<Object, Persistent> dataStore) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                        final DataStore<Object, Persistent> dataStore) throws ClassNotFoundException, NoSuchMethodException,
+                                                                       InvocationTargetException, IllegalAccessException {
 
         super(endpoint, processor);
         this.configuration = configuration;
@@ -75,7 +76,7 @@ public class GoraConsumer extends ScheduledPollConsumer {
 
     @Override
     protected int poll() throws Exception {
-        final Exchange exchange = this.getEndpoint().createExchange();
+        final Exchange exchange = createExchange(true);
 
         // compute time (approx) since last update
         if (firstRun) {
@@ -87,17 +88,8 @@ public class GoraConsumer extends ScheduledPollConsumer {
         //proceed with query
         final Result result = query.execute();
 
-        log.trace("Processing exchange [{}]...", exchange);
-
-        try {
-            getProcessor().process(exchange);
-        } finally {
-            if (exchange.getException() != null) {
-                getExceptionHandler().handleException("Error processing exchange", exchange, exchange.getException());
-            }
-        }
+        getProcessor().process(exchange);
 
         return Long.valueOf(result.getOffset()).intValue();
     }
 }
-

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ class RestDefinitionEmitter implements CodeEmitter<RestsDefinition> {
             final Method declaredMethod = type.getMethod(method, parameterTypesOf(arguments));
 
             variable = declaredMethod.invoke(variable, arguments);
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {

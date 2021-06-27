@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,6 @@ package org.apache.camel.component.bean.validator;
 import javax.validation.GroupSequence;
 import javax.validation.groups.Default;
 
-@GroupSequence({Default.class, OptionalChecks.class})
+@GroupSequence({ Default.class, OptionalChecks.class })
 public interface OrderedChecks {
 }

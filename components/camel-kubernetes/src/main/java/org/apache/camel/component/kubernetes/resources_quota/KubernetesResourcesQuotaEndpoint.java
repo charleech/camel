@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,24 @@
  */
 package org.apache.camel.component.kubernetes.resources_quota;
 
+import org.apache.camel.Category;
 import org.apache.camel.Consumer;
 import org.apache.camel.Processor;
 import org.apache.camel.Producer;
 import org.apache.camel.component.kubernetes.AbstractKubernetesEndpoint;
 import org.apache.camel.component.kubernetes.KubernetesConfiguration;
 import org.apache.camel.spi.UriEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * The Kubernetes Resources Quota component provides a producer to execute kubernetes resources quota operations.
+ * Perform operations on Kubernetes Resources Quotas.
  */
 @UriEndpoint(firstVersion = "2.17.0", scheme = "kubernetes-resources-quota", title = "Kubernetes Resources Quota",
-    syntax = "kubernetes-resources-quota:masterUrl", producerOnly = true, label = "container,cloud,paas")
+             syntax = "kubernetes-resources-quota:masterUrl", producerOnly = true,
+             category = { Category.CONTAINER, Category.CLOUD, Category.PAAS })
 public class KubernetesResourcesQuotaEndpoint extends AbstractKubernetesEndpoint {
 
-    public KubernetesResourcesQuotaEndpoint(String uri, KubernetesResourcesQuotaComponent component, KubernetesConfiguration config) {
+    public KubernetesResourcesQuotaEndpoint(String uri, KubernetesResourcesQuotaComponent component,
+                                            KubernetesConfiguration config) {
         super(uri, component, config);
     }
 

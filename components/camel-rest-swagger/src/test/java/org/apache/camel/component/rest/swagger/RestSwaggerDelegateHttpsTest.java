@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,20 +19,27 @@ package org.apache.camel.component.rest.swagger;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Component;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.support.IntrospectionSupport;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.apache.camel.support.PropertyBindingSupport;
 
-@RunWith(Parameterized.class)
 public class RestSwaggerDelegateHttpsTest extends HttpsTest {
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
         final CamelContext camelContext = super.createCamelContext();
 
+        // since camel context is not started, then we need to manually initialize the delegate
         final Component delegate = ((DefaultCamelContext) camelContext).getComponentResolver()
-            .resolveComponent(componentName, camelContext);
-        IntrospectionSupport.setProperty(delegate, "sslContextParameters", createHttpsParameters(camelContext));
+                .resolveComponent(componentName, camelContext);
+        delegate.setCamelContext(camelContext);
+        delegate.init();
+
+        // and configure the ssl context parameters via binding
+        new PropertyBindingSupport.Builder()
+                .withCamelContext(camelContext)
+                .withProperty("sslContextParameters", createHttpsParameters(camelContext))
+                .withTarget(delegate)
+                .withConfigurer(delegate.getComponentPropertyConfigurer())
+                .bind();
         camelContext.addComponent(componentName, delegate);
 
         return camelContext;

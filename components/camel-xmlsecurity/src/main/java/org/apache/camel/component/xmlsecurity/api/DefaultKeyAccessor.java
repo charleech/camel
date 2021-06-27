@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,10 +33,9 @@ import org.w3c.dom.Node;
 
 import org.apache.camel.Message;
 
-
 /**
- * Accesses the public key from a key-store and returns a KeyInfo which
- * contains the X.509 certificate chain corresponding to the public key.
+ * Accesses the public key from a key-store and returns a KeyInfo which contains the X.509 certificate chain
+ * corresponding to the public key.
  */
 public class DefaultKeyAccessor extends DefaultKeySelector implements KeyAccessor {
 

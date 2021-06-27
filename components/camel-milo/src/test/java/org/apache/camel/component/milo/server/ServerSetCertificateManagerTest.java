@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,10 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 import org.apache.camel.component.milo.AbstractMiloServerTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /**
  * Test setting the certificate manager
@@ -38,10 +38,10 @@ public class ServerSetCertificateManagerTest extends AbstractMiloServerTest {
         final Path trusted = baseDir.resolve("trusted");
 
         Files.createDirectories(trusted);
-        Files.copy(Paths.get("src/test/resources/cert/certificate.der"), trusted.resolve("certificate.der"), REPLACE_EXISTING);
+        Files.copy(Paths.get("src/test/resources/ca/cacert.pem"), trusted.resolve("cacert.pem"), REPLACE_EXISTING);
 
-        server.setServerCertificate(loadDefaultTestKey());
-        server.setDefaultCertificateValidator(baseDir.toFile());
+        server.loadServerCertificate(loadDefaultTestKey());
+        server.setDefaultCertificateValidator(baseDir.toFile().toString());
     }
 
     @Test

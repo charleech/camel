@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,20 +24,23 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import org.apache.camel.Exchange;
-import org.apache.camel.FailedToCreateRouteException;
+import org.apache.camel.FailedToStartRouteException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class BasicPublisherTest extends CamelTestSupport {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class BasicPublisherTest extends BaseReactiveTest {
 
     @Test
     public void testWorking() throws Exception {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("timer:tick?period=5&repeatCount=30")
                         .setBody().header(Exchange.TIMER_COUNTER)
                         .to("reactive-streams:pub");
@@ -67,7 +70,7 @@ public class BasicPublisherTest extends CamelTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("timer:tick?period=50")
                         .setBody().header(Exchange.TIMER_COUNTER)
                         .to("reactive-streams:unbounded");
@@ -104,12 +107,12 @@ public class BasicPublisherTest extends CamelTestSupport {
         disp3.dispose();
     }
 
-    @Test(expected = FailedToCreateRouteException.class)
+    @Test
     public void testOnlyOneCamelProducerPerPublisher() throws Exception {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:one")
                         .to("reactive-streams:stream");
 
@@ -118,7 +121,8 @@ public class BasicPublisherTest extends CamelTestSupport {
             }
         }.addRoutesToCamelContext(context);
 
-        context.start();
+        assertThrows(FailedToStartRouteException.class,
+                () -> context.start());
     }
 
     @Override

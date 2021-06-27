@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,6 @@ import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
-import org.apache.camel.CamelException;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.component.sip.SipSubscriber;
@@ -48,32 +47,35 @@ public class SipSubscriptionListener implements SipListener {
         this.setSipSubscriber(sipSubscriber);
     }
 
-    private void dispatchExchange(Object response) throws CamelException {
+    private void dispatchExchange(Object response) {
         LOG.debug("Consumer Dispatching the received notification along the route");
-        Exchange exchange = sipSubscriber.getEndpoint().createExchange(ExchangePattern.InOnly);
+        Exchange exchange = sipSubscriber.createExchange(true);
+        exchange.setPattern(ExchangePattern.InOnly);
         exchange.getIn().setBody(response);
         try {
             sipSubscriber.getProcessor().process(exchange);
         } catch (Exception e) {
-            throw new CamelException("Error in consumer while dispatching exchange", e);
+            sipSubscriber.getExceptionHandler().handleException("Error in consumer while dispatching exchange", e);
         }
     }
-    
+
+    @Override
     public void processRequest(RequestEvent requestReceivedEvent) {
         Request request = requestReceivedEvent.getRequest();
         ServerTransaction serverTransactionId = requestReceivedEvent
                 .getServerTransaction();
-        String viaBranch = ((ViaHeader)(request.getHeaders(ViaHeader.NAME).next())).getParameter("branch");
-        LOG.debug("Request: {}", request.getMethod()); 
+        String viaBranch = ((ViaHeader) (request.getHeaders(ViaHeader.NAME).next())).getParameter("branch");
+        LOG.debug("Request: {}", request.getMethod());
         LOG.debug("Server Transaction Id: {}", serverTransactionId);
         LOG.debug("Received From Branch: {}", viaBranch);
 
         if (request.getMethod().equals(Request.NOTIFY)) {
             processNotify(requestReceivedEvent, serverTransactionId);
-        } 
+        }
     }
 
-    public synchronized void processNotify(RequestEvent requestEvent,
+    public synchronized void processNotify(
+            RequestEvent requestEvent,
             ServerTransaction serverTransactionId) {
         LOG.debug("Notification received at Subscriber");
         SipProvider provider = (SipProvider) requestEvent.getSource();
@@ -90,9 +92,9 @@ public class SipSubscriptionListener implements SipListener {
             }
             //Dispatch the response along the route
             dispatchExchange(notify.getContent());
-            
+
             // Send back an success response
-            Response response = sipSubscriber.getConfiguration().getMessageFactory().createResponse(200, notify);            
+            Response response = sipSubscriber.getConfiguration().getMessageFactory().createResponse(200, notify);
             response.addHeader(sipSubscriber.getConfiguration().getContactHeader());
             serverTransactionId.sendResponse(response);
 
@@ -108,7 +110,8 @@ public class SipSubscriptionListener implements SipListener {
             LOG.error("Exception thrown during Notify processing in the SipSubscriptionListener.", e);
         }
     }
-    
+
+    @Override
     public void processResponse(ResponseEvent responseReceivedEvent) {
         LOG.debug("Response received at Subscriber");
         Response response = responseReceivedEvent.getResponse();
@@ -123,12 +126,14 @@ public class SipSubscriptionListener implements SipListener {
         }
     }
 
+    @Override
     public void processIOException(IOExceptionEvent exceptionEvent) {
         if (LOG.isWarnEnabled()) {
             LOG.warn("IOExceptionEvent received at Sip Subscription Listener");
         }
     }
 
+    @Override
     public void processTransactionTerminated(
             TransactionTerminatedEvent transactionTerminatedEvent) {
         if (LOG.isWarnEnabled()) {
@@ -136,6 +141,7 @@ public class SipSubscriptionListener implements SipListener {
         }
     }
 
+    @Override
     public void processDialogTerminated(
             DialogTerminatedEvent dialogTerminatedEvent) {
         if (LOG.isWarnEnabled()) {
@@ -143,6 +149,7 @@ public class SipSubscriptionListener implements SipListener {
         }
     }
 
+    @Override
     public void processTimeout(javax.sip.TimeoutEvent timeoutEvent) {
         if (LOG.isWarnEnabled()) {
             LOG.warn("TimeoutEvent received at Sip Subscription Listener");

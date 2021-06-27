@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,14 +33,13 @@ import org.apache.camel.component.jmx.beans.ISimpleMXBean;
 import org.apache.camel.component.jmx.beans.SimpleBean;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.SimpleRegistry;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.camel.support.SimpleRegistry;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
- * MBean that is registered for the unit tests. The fixture will register a bean
- * and provide access to the mxbean so tests can invoke methods on the mxbean
- * to trigger notifications.
+ * MBean that is registered for the unit tests. The fixture will register a bean and provide access to the mxbean so
+ * tests can invoke methods on the mxbean to trigger notifications.
  */
 public class SimpleBeanFixture {
 
@@ -68,8 +67,7 @@ public class SimpleBeanFixture {
      */
     private MockEndpointFixture mMockEndpoint;
 
-
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         initServer();
         initBean();
@@ -82,7 +80,7 @@ public class SimpleBeanFixture {
         mContext.start();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         if (!mContext.isStopped()) {
             mContext.stop();
@@ -118,8 +116,8 @@ public class SimpleBeanFixture {
                 ISimpleMXBean.class,
                 false);
         // revert the above change to the below when we move to JDK 1.6
-//        ISimpleMXBean simpleBean = JMX.newMXBeanProxy(server, aObjectName, ISimpleMXBean.class);
-//        return simpleBean;
+        //        ISimpleMXBean simpleBean = JMX.newMXBeanProxy(server, aObjectName, ISimpleMXBean.class);
+        //        return simpleBean;
     }
 
     /**
@@ -137,10 +135,9 @@ public class SimpleBeanFixture {
         return objectName;
     }
 
-
     /**
-     * Creates the bean and registers it within the mbean server.
-     * Note that we're using a fixed timestamp here to simplify the assertions in the tests
+     * Creates the bean and registers it within the mbean server. Note that we're using a fixed timestamp here to
+     * simplify the assertions in the tests
      */
     protected void initBean() throws Exception {
         registerBean(createSimpleBean(), makeObjectName("simpleBean"));
@@ -156,8 +153,7 @@ public class SimpleBeanFixture {
     }
 
     /**
-     * Initializes the camel context by creating a simple route from our mbean
-     * to the mock endpoint.
+     * Initializes the camel context by creating a simple route from our mbean to the mock endpoint.
      */
     protected void initContext() throws Exception {
         final MockEndpoint mock = mContext.getEndpoint("mock:sink", MockEndpoint.class);
@@ -182,8 +178,8 @@ public class SimpleBeanFixture {
     }
 
     /**
-     * Override this to put stuff into the registry so it's available to be
-     * referenced. (i.e. NotificationFilter or Hashtable<String,String> for ObjectProperties
+     * Override this to put stuff into the registry so it's available to be referenced. (i.e. NotificationFilter or
+     * Hashtable<String,String> for ObjectProperties
      */
     protected void initRegistry() {
     }

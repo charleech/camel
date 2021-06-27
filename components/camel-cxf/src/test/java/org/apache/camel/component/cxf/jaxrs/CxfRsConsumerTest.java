@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.naming.Context;
 import javax.servlet.ServletRequest;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.WebApplicationException;
@@ -44,7 +43,8 @@ import org.apache.camel.component.cxf.CXFTestSupport;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.apache.camel.component.cxf.jaxrs.testbean.Customer;
 import org.apache.camel.component.cxf.jaxrs.testbean.CustomerService;
-import org.apache.camel.test.junit4.CamelTestSupport;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.test.junit5.CamelTestSupport;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
@@ -52,39 +52,39 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CxfRsConsumerTest extends CamelTestSupport {
     private static final String PUT_REQUEST = "<Customer><name>Mary</name><id>123</id></Customer>";
     private static final String CXT = CXFTestSupport.getPort1() + "/CxfRsConsumerTest";
     // START SNIPPET: example
-    private static final String CXF_RS_ENDPOINT_URI = 
-            "cxfrs://http://localhost:" + CXT + "/rest?resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerServiceResource";
-    private static final String CXF_RS_ENDPOINT_URI2 = 
-            "cxfrs://http://localhost:" + CXT + "/rest2?resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerService";
-    private static final String CXF_RS_ENDPOINT_URI3 = 
-            "cxfrs://http://localhost:" + CXT + "/rest3?"
-            + "resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerServiceNoAnnotations&"
-            + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceModel.xml";
-    private static final String CXF_RS_ENDPOINT_URI4 = 
-            "cxfrs://http://localhost:" + CXT + "/rest4?"
-            + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceDefaultHandlerModel.xml";
-    private static final String CXF_RS_ENDPOINT_URI5 = 
-            "cxfrs://http://localhost:" + CXT + "/rest5?"
-            + "propagateContexts=true&"
-            + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceDefaultHandlerModel.xml";
-    private static final String CXF_RS_ENDPOINT_URI6 =
-            "cxfrs://http://localhost:" + CXT + "/rest6?"
-            + "performInvocation=true&serviceBeans=#serviceBean";
+    private static final String CXF_RS_ENDPOINT_URI
+            = "cxfrs://http://localhost:" + CXT
+              + "/rest?resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerServiceResource";
+    private static final String CXF_RS_ENDPOINT_URI2
+            = "cxfrs://http://localhost:" + CXT
+              + "/rest2?resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerService";
+    private static final String CXF_RS_ENDPOINT_URI3 = "cxfrs://http://localhost:" + CXT + "/rest3?"
+                                                       + "resourceClasses=org.apache.camel.component.cxf.jaxrs.testbean.CustomerServiceNoAnnotations&"
+                                                       + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceModel.xml";
+    private static final String CXF_RS_ENDPOINT_URI4 = "cxfrs://http://localhost:" + CXT + "/rest4?"
+                                                       + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceDefaultHandlerModel.xml";
+    private static final String CXF_RS_ENDPOINT_URI5 = "cxfrs://http://localhost:" + CXT + "/rest5?"
+                                                       + "propagateContexts=true&"
+                                                       + "modelRef=classpath:/org/apache/camel/component/cxf/jaxrs/CustomerServiceDefaultHandlerModel.xml";
+    private static final String CXF_RS_ENDPOINT_URI6 = "cxfrs://http://localhost:" + CXT + "/rest6?"
+                                                       + "performInvocation=true&serviceBeans=#myServiceBean";
 
     @Override
-    protected Context createJndiContext() throws Exception {
-        Context ctx = super.createJndiContext();
-        ctx.bind("serviceBean", new CustomerService());
-        return ctx;
+    protected void bindToRegistry(Registry registry) throws Exception {
+        registry.bind("myServiceBean", new CustomerService());
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         final Processor testProcessor = new TestProcessor();
         final Processor testProcessor2 = new TestProcessor2();
@@ -102,7 +102,7 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         };
     }
     // END SNIPPET: example
-    
+
     private void invokeGetCustomer(String uri, String expect) throws Exception {
         HttpGet get = new HttpGet(uri);
         get.addHeader("Accept", "application/json");
@@ -112,49 +112,54 @@ public class CxfRsConsumerTest extends CamelTestSupport {
             HttpResponse response = httpclient.execute(get);
             assertEquals(200, response.getStatusLine().getStatusCode());
             assertEquals(expect,
-                         EntityUtils.toString(response.getEntity()));
+                    EntityUtils.toString(response.getEntity()));
         } finally {
             httpclient.close();
         }
     }
-    
+
     @Test
     public void testGetCustomerInterface() throws Exception {
         doTestGetCustomer("rest");
     }
+
     @Test
     public void testGetCustomerImpl() throws Exception {
         doTestGetCustomer("rest2");
     }
+
     @Test
     public void testGetCustomerInterfaceAndModel() throws Exception {
         doTestGetCustomer("rest3");
     }
+
     @Test
     public void testGetCustomerDefaultHandlerAndModel() throws Exception {
         doTestGetCustomer("rest4");
     }
+
     @Test
     public void testEchoCustomerDefaultHandlerAndModel() throws Exception {
-        WebTarget target = 
-            ClientBuilder.newClient().target("http://localhost:" + CXT + "/" + "rest4" + "/customerservice/customers");
-        Customer c = 
-            target.request(MediaType.APPLICATION_JSON).post(Entity.json(new Customer(333, "Barry")), Customer.class);
+        WebTarget target
+                = ClientBuilder.newClient().target("http://localhost:" + CXT + "/" + "rest4" + "/customerservice/customers");
+        Customer c = target.request(MediaType.APPLICATION_JSON).post(Entity.json(new Customer(333, "Barry")), Customer.class);
         assertEquals(333L, c.getId());
         assertEquals("Barry", c.getName());
     }
+
     @Test
     public void testGetCustomerDefaultHandlerAndModelAndContexts() throws Exception {
         doTestGetCustomer("rest5");
     }
+
     private void doTestGetCustomer(String contextUri) throws Exception {
         invokeGetCustomer("http://localhost:" + CXT + "/" + contextUri + "/customerservice/customers/126",
-                          "{\"Customer\":{\"id\":126,\"name\":\"Willem\"}}");
+                "{\"Customer\":{\"id\":126,\"name\":\"Willem\"}}");
         invokeGetCustomer("http://localhost:" + CXT + "/" + contextUri + "/customerservice/customers/123",
-                          "customer response back!");
+                "customer response back!");
         invokeGetCustomer("http://localhost:" + CXT + "/" + contextUri + "/customerservice/customers/400",
-            "The remoteAddress is 127.0.0.1");
-        
+                "The remoteAddress is 127.0.0.1");
+
     }
 
     @Test
@@ -162,11 +167,11 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         invokeGetCustomer("http://localhost:" + CXT + "/rest6/customerservice/customers/123",
                 "{\"Customer\":{\"id\":123,\"name\":\"John\"}}");
     }
-    
+
     @Test
     public void testGetWrongCustomer() throws Exception {
         URL url;
-        
+
         url = new URL("http://localhost:" + CXT + "/rest/customerservice/customers/789");
         try {
             url.openStream();
@@ -174,7 +179,7 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         } catch (IOException exception) {
             // expect the Internal error exception
         }
-        
+
         url = new URL("http://localhost:" + CXT + "/rest/customerservice/customers/456");
         try {
             url.openStream();
@@ -182,7 +187,7 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         } catch (FileNotFoundException exception) {
             // do nothing here
         }
-        
+
         url = new URL("http://localhost:" + CXT + "/rest/customerservice/customers/234");
         try {
             url.openStream();
@@ -190,7 +195,7 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         } catch (FileNotFoundException exception) {
             // do nothing here
         }
-        
+
         url = new URL("http://localhost:" + CXT + "/rest/customerservice/customers/256");
         try {
             url.openStream();
@@ -198,9 +203,9 @@ public class CxfRsConsumerTest extends CamelTestSupport {
         } catch (IOException exception) {
             // expect the Internal error exception
         }
-        
+
     }
-    
+
     @Test
     public void testPutConsumer() throws Exception {
         HttpPut put = new HttpPut("http://localhost:" + CXT + "/rest/customerservice/customers");
@@ -218,84 +223,87 @@ public class CxfRsConsumerTest extends CamelTestSupport {
             httpclient.close();
         }
     }
-     
+
     private abstract static class AbstractTestProcessor implements Processor {
         public void processGetCustomer(Exchange exchange) throws Exception {
-            Message inMessage = exchange.getIn();                        
+            Message inMessage = exchange.getIn();
             String httpMethod = inMessage.getHeader(Exchange.HTTP_METHOD, String.class);
-            assertEquals("Get a wrong http method", "GET", httpMethod);
+            assertEquals("GET", httpMethod, "Get a wrong http method");
             String path = inMessage.getHeader(Exchange.HTTP_PATH, String.class);
             // The parameter of the invocation is stored in the body of in message
             String id = inMessage.getBody(String.class);
-            if ("/customerservice/customers/126".equals(path)) {                            
+            if ("/customerservice/customers/126".equals(path)) {
                 Customer customer = new Customer();
                 customer.setId(Long.parseLong(id));
                 customer.setName("Willem");
                 // We just put the response Object into the out message body
-                exchange.getOut().setBody(customer);
+                exchange.getMessage().setBody(customer);
             } else {
                 if ("/customerservice/customers/400".equals(path)) {
                     // We return the remote client IP address this time
-                    org.apache.cxf.message.Message cxfMessage = inMessage.getHeader(CxfConstants.CAMEL_CXF_MESSAGE, org.apache.cxf.message.Message.class);
+                    org.apache.cxf.message.Message cxfMessage
+                            = inMessage.getHeader(CxfConstants.CAMEL_CXF_MESSAGE, org.apache.cxf.message.Message.class);
                     ServletRequest request = (ServletRequest) cxfMessage.get("HTTP.REQUEST");
                     // Just make sure the request object is not null
-                    assertNotNull("The request object should not be null", request);
+                    assertNotNull(request, "The request object should not be null");
                     Response r = Response.status(200).entity("The remoteAddress is 127.0.0.1").build();
-                    exchange.getOut().setBody(r);
+                    exchange.getMessage().setBody(r);
                     return;
                 }
                 if ("/customerservice/customers/123".equals(path)) {
                     // send a customer response back
                     Response r = Response.status(200).entity("customer response back!").build();
-                    exchange.getOut().setBody(r);
+                    exchange.getMessage().setBody(r);
                     return;
                 }
                 if ("/customerservice/customers/456".equals(path)) {
                     Response r = Response.status(404).entity("Can't found the customer with uri " + path)
-                        .header("Content-Type", "text/plain").build();
+                            .header("Content-Type", "text/plain").build();
                     throw new WebApplicationException(r);
                 } else if ("/customerservice/customers/234".equals(path)) {
                     Response r = Response.status(404).entity("Can't found the customer with uri " + path)
-                        .header("Content-Type", "text/plain").build();
-                    exchange.getOut().setBody(r);
-                    exchange.getOut().setFault(true);
+                            .header("Content-Type", "text/plain").build();
+                    exchange.getMessage().setBody(r);
                 } else if ("/customerservice/customers/789".equals(path)) {
-                    exchange.getOut().setBody("Can't found the customer with uri " + path);
-                    exchange.getOut().setHeader(Exchange.CONTENT_TYPE, "text/plain");
-                    exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, "404");                    
-                    exchange.getOut().setFault(true);
+                    exchange.getMessage().setBody("Can't found the customer with uri " + path);
+                    exchange.getMessage().setHeader(Exchange.CONTENT_TYPE, "text/plain");
+                    exchange.getMessage().setHeader(Exchange.HTTP_RESPONSE_CODE, "404");
                 } else {
                     throw new RuntimeCamelException("Can't found the customer with uri " + path);
                 }
             }
         }
-            
+
     }
+
     private static class TestProcessor extends AbstractTestProcessor {
+        @Override
         public void process(Exchange exchange) throws Exception {
-            Message inMessage = exchange.getIn();                        
+            Message inMessage = exchange.getIn();
             // Get the operation name from in message
             String operationName = inMessage.getHeader(CxfConstants.OPERATION_NAME, String.class);
             if ("getCustomer".equals(operationName)) {
                 processGetCustomer(exchange);
             } else if ("updateCustomer".equals(operationName)) {
-                assertEquals("Get a wrong customer message header", "header1;header2", inMessage.getHeader("test"));
+                assertEquals("header1;header2", inMessage.getHeader("test"), "Get a wrong customer message header");
                 String httpMethod = inMessage.getHeader(Exchange.HTTP_METHOD, String.class);
-                assertEquals("Get a wrong http method", "PUT", httpMethod);
+                assertEquals("PUT", httpMethod, "Get a wrong http method");
                 Customer customer = inMessage.getBody(Customer.class);
-                assertNotNull("The customer should not be null.", customer);
+                assertNotNull(customer, "The customer should not be null.");
                 // Now you can do what you want on the customer object
-                assertEquals("Get a wrong customer name.", "Mary", customer.getName());
+                assertEquals("Mary", customer.getName(), "Get a wrong customer name.");
                 // set the response back
-                exchange.getOut().setBody(Response.ok().build());
+                exchange.getMessage().setBody(Response.ok().build());
             }
-            
+
         }
-            
+
     }
+
     private static class TestProcessor2 extends AbstractTestProcessor {
+        @Override
         public void process(Exchange exchange) throws Exception {
-            Message inMessage = exchange.getIn();                        
+            Message inMessage = exchange.getIn();
             // Get the operation name from in message
             String path = inMessage.getHeader(Exchange.HTTP_PATH, String.class);
             if (path.startsWith("/customerservice/customers")) {
@@ -304,24 +312,26 @@ public class CxfRsConsumerTest extends CamelTestSupport {
                     processGetCustomer(exchange);
                 } else if (HttpMethod.POST.equals(httpMethod)) {
                     InputStream inBody = exchange.getIn().getBody(InputStream.class);
-                    exchange.getOut().setBody(Response.ok(inBody).build());
-                } 
+                    exchange.getMessage().setBody(Response.ok(inBody).build());
+                }
             }
         }
-            
+
     }
+
     private static class TestProcessor3 extends AbstractTestProcessor {
+        @Override
         public void process(Exchange exchange) throws Exception {
             UriInfo ui = exchange.getProperty(UriInfo.class.getName(), UriInfo.class);
             String path = ui.getPath();
-            
+
             Request req = exchange.getProperty(Request.class.getName(), Request.class);
             String httpMethod = req.getMethod();
-            
+
             if (path.startsWith("customerservice/customers") && HttpMethod.GET.equals(httpMethod)) {
                 processGetCustomer(exchange);
             }
         }
-            
+
     }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,9 @@ import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class AtomixSetConsumer extends AbstractAtomixClientConsumer<AtomixSetEndpoint> {
+public final class AtomixSetConsumer extends AbstractAtomixClientConsumer<AtomixSetEndpoint> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AtomixSetConsumer.class);
 
     private final List<Listener<DistributedSet.ValueEvent<Object>>> listeners;
     private final String resourceName;
@@ -47,15 +49,14 @@ final class AtomixSetConsumer extends AbstractAtomixClientConsumer<AtomixSetEndp
         super.doStart();
 
         this.set = getAtomixEndpoint()
-            .getAtomix()
-            .getSet(
-                resourceName,
-                new DistributedSet.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedSet.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
+                .getAtomix()
+                .getSet(
+                        resourceName,
+                        new DistributedSet.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedSet.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
 
-
-        log.debug("Subscribe to events for set: {}", resourceName);
+        LOG.debug("Subscribe to events for set: {}", resourceName);
         this.listeners.add(this.set.onAdd(this::onEvent).join());
         this.listeners.add(this.set.onRemove(this::onEvent).join());
     }
@@ -65,7 +66,7 @@ final class AtomixSetConsumer extends AbstractAtomixClientConsumer<AtomixSetEndp
         // close listeners
         listeners.forEach(Listener::close);
 
-        super.doStart();
+        super.doStop();
     }
 
     // ********************************************
@@ -73,7 +74,7 @@ final class AtomixSetConsumer extends AbstractAtomixClientConsumer<AtomixSetEndp
     // ********************************************
 
     private void onEvent(DistributedSet.ValueEvent<Object> event) {
-        Exchange exchange = getEndpoint().createExchange();
+        Exchange exchange = createExchange(true);
         exchange.getIn().setHeader(AtomixClientConstants.EVENT_TYPE, event.type());
 
         if (resultHeader == null) {

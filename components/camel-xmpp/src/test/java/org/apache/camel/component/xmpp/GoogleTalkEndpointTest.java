@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.apache.camel.builder.RouteBuilder;
 
 public class GoogleTalkEndpointTest extends GoogleTalkTest {
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() throws Exception {
@@ -34,9 +35,7 @@ public class GoogleTalkEndpointTest extends GoogleTalkTest {
 
                 context.addEndpoint("talk", endpoint);
 
-                from("direct:start").
-                    to("talk").
-                    to("mock:result");
+                from("direct:start").to("talk").to("mock:result");
             }
         };
     }

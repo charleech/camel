@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,8 +42,9 @@ public class MockPullRequestService extends PullRequestService {
     private Map<Long, List<CommitComment>> allComments = new HashMap<>();
     private Map<Integer, List<CommitFile>> files = new HashMap<>();
 
+    @Override
     public List<CommitComment> getComments(IRepositoryIdProvider repository, int pullRequestId) {
-        Long id = new Long(pullRequestId);
+        Long id = Long.valueOf(pullRequestId);
         if (allComments.containsKey(id)) {
             List<CommitComment> comments = allComments.get(id);
             return comments;

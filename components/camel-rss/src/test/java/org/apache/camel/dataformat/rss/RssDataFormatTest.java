@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,13 @@
  */
 package org.apache.camel.dataformat.rss;
 
-import com.sun.syndication.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndFeed;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.component.rss.RssUtils;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RssDataFormatTest extends CamelTestSupport {
     private String feedXml;
@@ -43,23 +43,25 @@ public class RssDataFormatTest extends CamelTestSupport {
         mock.message(0).body().isInstanceOf(SyndFeed.class);
         mock.message(0).body(SyndFeed.class).equals(feed);
         mock.assertIsSatisfied();
-    }    
-    
+    }
+
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         feed = RssUtils.createFeed("file:src/test/data/rss20.xml");
         feedXml = RssConverter.feedToXml(feed);
         super.setUp();
     }
 
+    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             public void configure() throws Exception {
                 // START SNIPPET: ex
-                from("rss:file:src/test/data/rss20.xml?splitEntries=false&consumer.delay=1000").marshal().rss().to("mock:marshal");
+                from("rss:file:src/test/data/rss20.xml?splitEntries=false&delay=1000").marshal().rss().to("mock:marshal");
                 // END SNIPPET: ex
-                from("rss:file:src/test/data/rss20.xml?splitEntries=false&consumer.delay=1500").marshal().rss().unmarshal().rss().to("mock:unmarshal");
+                from("rss:file:src/test/data/rss20.xml?splitEntries=false&delay=1500").marshal().rss().unmarshal().rss()
+                        .to("mock:unmarshal");
             }
         };
     }

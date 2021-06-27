@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,51 +18,49 @@ package org.apache.camel.component.jms.issues;
 
 import javax.jms.ConnectionFactory;
 
+import org.apache.camel.BindToRegistry;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.CamelJmsTestHelper;
-import org.apache.camel.impl.JndiRegistry;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test from an user request on the forum.
  */
 public class JmsInOutPipelineWithBeanTest extends CamelTestSupport {
 
+    @BindToRegistry("dummyBean")
+    private MyDummyBean bean = new MyDummyBean();
+
     @Test
     public void testA() throws Exception {
         Object response = template.requestBody("activemq:testA", "Hello World");
-        assertEquals("Reply", "Hello World,From Bean,From A,From B", response);
+        assertEquals("Hello World,From Bean,From A,From B", response, "Reply");
     }
 
     @Test
     public void testB() throws Exception {
         Object response = template.requestBody("activemq:testB", "Hello World");
-        assertEquals("Reply", "Hello World,From A,From Bean,From B", response);
+        assertEquals("Hello World,From A,From Bean,From B", response, "Reply");
     }
 
     @Test
     public void testC() throws Exception {
         Object response = template.requestBody("activemq:testC", "Hello World");
-        assertEquals("Reply", "Hello World,From A,From B,From Bean", response);
+        assertEquals("Hello World,From A,From B,From Bean", response, "Reply");
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
         camelContext.addComponent("activemq", jmsComponentAutoAcknowledge(connectionFactory));
         return camelContext;
-    }
-
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry reg = super.createRegistry();
-        reg.bind("dummyBean", new MyDummyBean());
-        return reg;
     }
 
     @Override
@@ -73,18 +71,14 @@ public class JmsInOutPipelineWithBeanTest extends CamelTestSupport {
                 from("activemq:testB").to("activemq:a").to("bean:dummyBean").to("activemq:b");
                 from("activemq:testC").to("activemq:a").to("activemq:b").to("bean:dummyBean");
 
-                from("activemq:a").process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        String body = exchange.getIn().getBody(String.class);
-                        exchange.getOut().setBody(body + ",From A");
-                    }
+                from("activemq:a").process(exchange -> {
+                    String body = exchange.getIn().getBody(String.class);
+                    exchange.getMessage().setBody(body + ",From A");
                 });
 
-                from("activemq:b").process(new Processor() {
-                    public void process(Exchange exchange) throws Exception {
-                        String body = exchange.getIn().getBody(String.class);
-                        exchange.getOut().setBody(body + ",From B");
-                    }
+                from("activemq:b").process(exchange -> {
+                    String body = exchange.getIn().getBody(String.class);
+                    exchange.getMessage().setBody(body + ",From B");
                 });
             }
         };
@@ -93,7 +87,7 @@ public class JmsInOutPipelineWithBeanTest extends CamelTestSupport {
     public static class MyDummyBean {
         public void doSomething(Exchange exchange) {
             String body = exchange.getIn().getBody(String.class);
-            exchange.getOut().setBody(body + ",From Bean");
+            exchange.getMessage().setBody(body + ",From Bean");
         }
     }
 

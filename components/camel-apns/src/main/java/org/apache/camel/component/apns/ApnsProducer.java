@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,6 +60,7 @@ public class ApnsProducer extends DefaultProducer {
         return tokenList != null;
     }
 
+    @Override
     public void process(Exchange exchange) throws Exception {
         notify(exchange);
     }
@@ -107,7 +108,7 @@ public class ApnsProducer extends DefaultProducer {
     }
 
     public MessageType getHeaderMessageType(Exchange exchange, MessageType defaultMessageType) {
-        String messageTypeStr = (String)exchange.getIn().getHeader(ApnsConstants.HEADER_MESSAGE_TYPE);
+        String messageTypeStr = (String) exchange.getIn().getHeader(ApnsConstants.HEADER_MESSAGE_TYPE);
 
         if (messageTypeStr == null) {
             return defaultMessageType;

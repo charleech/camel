@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,22 +16,24 @@
  */
 package org.apache.camel.component.paho;
 
-import org.apache.activemq.broker.BrokerService;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.JndiRegistry;
 import org.apache.camel.test.AvailablePortFinder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.junit.After;
-import org.junit.Test;
+import org.apache.camel.test.infra.activemq.services.ActiveMQEmbeddedService;
+import org.apache.camel.test.infra.activemq.services.ActiveMQEmbeddedServiceBuilder;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 public class PahoOverrideTopicTest extends CamelTestSupport {
 
-    MqttConnectOptions connectOptions = new MqttConnectOptions();
+    static int mqttPort = AvailablePortFinder.getNextAvailable();
 
-    BrokerService broker;
-
-    int mqttPort = AvailablePortFinder.getNextAvailable();
+    @RegisterExtension
+    public static ActiveMQEmbeddedService service = ActiveMQEmbeddedServiceBuilder
+            .bare()
+            .withPersistent(false)
+            .withMqttTransport(mqttPort)
+            .build();
 
     @Override
     protected boolean useJmx() {
@@ -39,38 +41,18 @@ public class PahoOverrideTopicTest extends CamelTestSupport {
     }
 
     @Override
-    public void doPreSetup() throws Exception {
-        super.doPreSetup();
-        broker = new BrokerService();
-        broker.setPersistent(false);
-        broker.addConnector("mqtt://localhost:" + mqttPort);
-        broker.start();
-    }
-
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        broker.stop();
-    }
-
-    @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
         return new RouteBuilder() {
             @Override
             public void configure() throws Exception {
-                from("direct:test").to("paho:queue?brokerUrl=tcp://localhost:" + mqttPort);
-                from("paho:myoverride?brokerUrl=tcp://localhost:" + mqttPort).to("mock:test");
+                PahoComponent paho = context.getComponent("paho", PahoComponent.class);
+                paho.getConfiguration().setBrokerUrl("tcp://localhost:" + mqttPort);
 
+                from("direct:test").to("paho:queue").log("Message sent");
+
+                from("paho:myoverride").log("Message received").to("mock:test");
             }
         };
-    }
-
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("connectOptions", connectOptions);
-        return registry;
     }
 
     // Tests

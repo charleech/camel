@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,8 @@ import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxp.XmlConverter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * A unit test for testing reading SOAP body in PAYLOAD mode.
@@ -36,6 +38,7 @@ public class CxfPayLoadMessageRouterTest extends CxfSimpleRouterTest {
     private String routerEndpointURI = "cxf://" + getRouterAddress() + "?" + SERVICE_CLASS + "&dataFormat=PAYLOAD";
     private String serviceEndpointURI = "cxf://" + getServiceAddress() + "?" + SERVICE_CLASS + "&dataFormat=PAYLOAD";
 
+    @Override
     protected RouteBuilder createRouteBuilder() {
         return new RouteBuilder() {
             public void configure() {
@@ -44,14 +47,15 @@ public class CxfPayLoadMessageRouterTest extends CxfSimpleRouterTest {
                     public void process(Exchange exchange) throws Exception {
                         CxfPayload<?> payload = exchange.getIn().getBody(CxfPayload.class);
                         List<Source> elements = payload.getBodySources();
-                        assertNotNull("We should get the elements here", elements);
-                        assertEquals("Get the wrong elements size", elements.size(), 1);
+                        assertNotNull(elements, "We should get the elements here");
+                        assertEquals(1, elements.size(), "Get the wrong elements size");
                         Element el = new XmlConverter().toDOMElement(elements.get(0));
-                        assertEquals("Get the wrong namespace URI", el.getNamespaceURI(), "http://cxf.component.camel.apache.org/");
+                        assertEquals("http://cxf.component.camel.apache.org/", el.getNamespaceURI(),
+                                "Get the wrong namespace URI");
                     }
-                    
+
                 })
-                .to(serviceEndpointURI);
+                        .to(serviceEndpointURI);
                 // END SNIPPET: payload
             }
         };

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,12 +23,15 @@ import javax.jms.ConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.camel.component.jms.JmsComponent.jmsComponentAutoAcknowledge;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  *
@@ -56,20 +59,16 @@ public class JmsInOutBeanReturnNullTest extends CamelTestSupport {
 
     @Test
     public void testReturnNullExchange() throws Exception {
-        Exchange reply = template.request("activemq:queue:foo", new Processor() {
-            @Override
-            public void process(Exchange exchange) throws Exception {
-                exchange.getIn().setBody("foo");
-            }
-        });
+        Exchange reply = template.request("activemq:queue:foo", exchange -> exchange.getIn().setBody("foo"));
         assertNotNull(reply);
-        assertTrue(reply.hasOut());
-        Message out = reply.getOut();
+        assertNotEquals("foo", reply.getMessage().getBody(), "There shouldn't be an out message");
+        Message out = reply.getMessage();
         assertNotNull(out);
         Object body = out.getBody();
-        assertNull("Should be a null body", body);
+        assertNull(body, "Should be a null body");
     }
 
+    @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext camelContext = super.createCamelContext();
         ConnectionFactory connectionFactory = CamelJmsTestHelper.createConnectionFactory();
@@ -83,7 +82,7 @@ public class JmsInOutBeanReturnNullTest extends CamelTestSupport {
             @Override
             public void configure() throws Exception {
                 from("activemq:queue:foo")
-                    .bean(JmsInOutBeanReturnNullTest.class, "doSomething");
+                        .bean(JmsInOutBeanReturnNullTest.class, "doSomething");
             }
         };
     }

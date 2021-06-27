@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,7 @@ public interface TwitterConstants {
     String TWITTER_KEYWORDS = "CamelTwitterKeywords";
     String TWITTER_SEARCH_LANGUAGE = "CamelTwitterSearchLanguage";
     String TWITTER_COUNT = "CamelTwitterCount";
-    String TWITTER_NUMBER_OF_PAGES = "CamelTwitterNumberOfPages";    
+    String TWITTER_NUMBER_OF_PAGES = "CamelTwitterNumberOfPages";
     String TWITTER_SINCEID = "CamelTwitterSinceId";
     String TWITTER_MAXID = "CamelTwitterMaxId";
     String TWITTER_USER = "CamelTwitterUser";

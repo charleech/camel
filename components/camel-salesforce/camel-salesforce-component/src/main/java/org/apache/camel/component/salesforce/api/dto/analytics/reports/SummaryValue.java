@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 package org.apache.camel.component.salesforce.api.dto.analytics.reports;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-
 import org.apache.camel.component.salesforce.api.dto.AbstractDTOBase;
 
 /**
@@ -45,15 +44,15 @@ public class SummaryValue extends AbstractDTOBase {
 
     /**
      * Helper method for JSON un-marshaling.
-     * @param name field name, MUST be "value"
+     * 
+     * @param name  field name, MUST be "value"
      * @param value field value
-     * @throws java.lang.IllegalArgumentException if field name is not "value"
      */
     @JsonAnySetter
-    public void setAny(String name, Object value) throws IllegalArgumentException {
-        if (!VALUE_FIELD.equals(name)) {
-            throw new IllegalArgumentException(name);
+    public void setAny(String name, Object value) {
+        // we only want the value field so ignore others
+        if (VALUE_FIELD.equals(name)) {
+            this.value = value;
         }
-        this.value = value;
     }
 }

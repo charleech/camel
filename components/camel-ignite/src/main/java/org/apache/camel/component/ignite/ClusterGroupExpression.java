@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@ import org.apache.ignite.Ignite;
 import org.apache.ignite.cluster.ClusterGroup;
 
 /**
- * Implement this interface to create an expression that returns a {@link ClusterGroup} from the
- * {@link Ignite} instance that was passed in.
+ * Implement this interface to create an expression that returns a {@link ClusterGroup} from the {@link Ignite} instance
+ * that was passed in.
  */
 public interface ClusterGroupExpression {
 

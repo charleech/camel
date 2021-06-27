@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,15 +22,14 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 /**
- * <code>DataChangedOperation</code> is an watch driven operation. It will wait
- * for an watched event indicating that the data contained in a given
- * node has changed before optionally retrieving the changed data.
+ * <code>DataChangedOperation</code> is an watch driven operation. It will wait for an watched event indicating that the
+ * data contained in a given node has changed before optionally retrieving the changed data.
  */
 @SuppressWarnings("rawtypes")
 public class DataChangedOperation extends FutureEventDrivenOperation<byte[]> {
 
-    protected static final Class[] CONSTRUCTOR_ARGS = {ZooKeeper.class, String.class, boolean.class, boolean.class};
-    
+    protected static final Class[] CONSTRUCTOR_ARGS = { ZooKeeper.class, String.class, boolean.class, boolean.class };
+
     private boolean getChangedData;
     private boolean sendEmptyMessageOnDelete;
 
@@ -52,10 +51,11 @@ public class DataChangedOperation extends FutureEventDrivenOperation<byte[]> {
         }, null);
     }
 
+    @Override
     public OperationResult<byte[]> getResult() {
         OperationResult<byte[]> answer;
         if (EventType.NodeDeleted.equals(getWatchedEvent().getType()) && sendEmptyMessageOnDelete) {
-            answer = new OperationResult<>((byte[])null, null);
+            answer = new OperationResult<>((byte[]) null, null);
         } else if (getChangedData) {
             answer = new GetDataOperation(connection, getNode()).getResult();
         } else {
@@ -66,6 +66,7 @@ public class DataChangedOperation extends FutureEventDrivenOperation<byte[]> {
 
     @Override
     public ZooKeeperOperation<?> createCopy() throws Exception {
-        return getClass().getConstructor(CONSTRUCTOR_ARGS).newInstance(new Object[] {connection, node, getChangedData, sendEmptyMessageOnDelete});
+        return getClass().getConstructor(CONSTRUCTOR_ARGS)
+                .newInstance(new Object[] { connection, node, getChangedData, sendEmptyMessageOnDelete });
     }
 }

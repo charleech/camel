@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.camel.component.kubernetes.cloud;
 
-import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.spring.junit5.CamelSpringTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-@Ignore("Manual test")
+@Disabled("Manual test")
 public class SpringServiceCallDnsRouteTest extends CamelSpringTestSupport {
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("org/apache/camel/component/kubernetes/cloud/SpringServiceCallDnsRouteTest.xml");
+        return new ClassPathXmlApplicationContext(
+                "org/apache/camel/component/kubernetes/cloud/SpringServiceCallDnsRouteTest.xml");
     }
 
     @Test

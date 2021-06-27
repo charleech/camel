@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -86,9 +86,9 @@ public class AbstractCamelContextBeanDefinitionParaser extends AbstractSingleBea
                 String name = n.getLocalName();
                 if ("camelContext".equals(name)) {
                     // Parser the camel context
-                    BeanDefinition bd = ctx.getDelegate().parseCustomElement((Element)n);
+                    BeanDefinition bd = ctx.getDelegate().parseCustomElement((Element) n);
                     // Get the inner camel context id
-                    String contextId = (String)bd.getPropertyValues().getPropertyValue("id").getValue();
+                    String contextId = (String) bd.getPropertyValues().getPropertyValue("id").getValue();
                     wireCamelContext(bean, getContextId(contextId));
                 } else if ("camelContextRef".equals(name)) {
                     String contextId = n.getTextContent();
@@ -98,6 +98,7 @@ public class AbstractCamelContextBeanDefinitionParaser extends AbstractSingleBea
         }
     }
 
+    @Override
     protected void doParse(Element element, ParserContext ctx, BeanDefinitionBuilder bean) {
         parseAttributes(element, ctx, bean);
         parseCamelContext(element, ctx, bean);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,9 @@ package org.apache.camel.component.amqp;
 import org.apache.camel.CamelContext;
 import org.apache.camel.spi.PropertiesComponent;
 
+import static org.apache.camel.spi.PropertiesComponent.PREFIX_TOKEN;
+import static org.apache.camel.spi.PropertiesComponent.SUFFIX_TOKEN;
+
 public class AMQPConnectionDetails {
 
     public static final String AMQP_HOST = "AMQP_SERVICE_HOST";
@@ -28,7 +31,7 @@ public class AMQPConnectionDetails {
     public static final String AMQP_USERNAME = "AMQP_SERVICE_USERNAME";
 
     public static final String AMQP_PASSWORD = "AMQP_SERVICE_PASSWORD";
-    
+
     public static final String AMQP_SET_TOPIC_PREFIX = "AMQP_SET_TOPIC_PREFIX";
 
     private final String uri;
@@ -36,16 +39,16 @@ public class AMQPConnectionDetails {
     private final String username;
 
     private final String password;
-    
+
     private final boolean setTopicPrefix;
 
     public AMQPConnectionDetails(String uri, String username, String password) {
         this.uri = uri;
         this.username = username;
         this.password = password;
-        this.setTopicPrefix = true; 
+        this.setTopicPrefix = true;
     }
-    
+
     public AMQPConnectionDetails(String uri, String username, String password, boolean setTopicPrefix) {
         this.uri = uri;
         this.username = username;
@@ -59,7 +62,7 @@ public class AMQPConnectionDetails {
 
     public static AMQPConnectionDetails discoverAMQP(CamelContext camelContext) {
         try {
-            PropertiesComponent propertiesComponent = camelContext.getComponent("properties", PropertiesComponent.class);
+            PropertiesComponent propertiesComponent = camelContext.getPropertiesComponent();
 
             String host = property(propertiesComponent, AMQP_HOST, "localhost");
             int port = Integer.parseInt(property(propertiesComponent, AMQP_PORT, "5672"));
@@ -84,7 +87,7 @@ public class AMQPConnectionDetails {
     public String password() {
         return password;
     }
-    
+
     public boolean setTopicPrefix() {
         return setTopicPrefix;
     }
@@ -93,7 +96,7 @@ public class AMQPConnectionDetails {
 
     private static String property(PropertiesComponent propertiesComponent, String key, String defaultValue) {
         try {
-            return propertiesComponent.parseUri(propertiesComponent.getPrefixToken() + key + propertiesComponent.getSuffixToken());
+            return propertiesComponent.parseUri(PREFIX_TOKEN + key + SUFFIX_TOKEN);
         } catch (IllegalArgumentException e) {
             return defaultValue;
         } catch (Exception e) {

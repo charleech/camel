@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,18 +29,17 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import org.apache.camel.Converter;
 import org.apache.camel.Exchange;
-import org.apache.camel.FallbackConverter;
 import org.apache.camel.TypeConverter;
 import org.apache.camel.WrappedFile;
-import org.apache.camel.converter.stream.StreamSourceCache;
 import org.apache.camel.spi.TypeConverterRegistry;
 import org.apache.camel.support.ExchangeHelper;
 import org.apache.camel.util.ObjectHelper;
+import org.apache.camel.util.xml.StreamSourceCache;
 import org.jclouds.io.Payload;
 import org.jclouds.io.payloads.ByteSourcePayload;
 import org.jclouds.io.payloads.InputStreamPayload;
 
-@Converter
+@Converter(generateLoader = true)
 public final class JcloudsPayloadConverter {
 
     private JcloudsPayloadConverter() {
@@ -56,7 +55,7 @@ public final class JcloudsPayloadConverter {
     public static Payload toPayload(String str, Exchange ex) throws UnsupportedEncodingException {
         return toPayload(str.getBytes(ExchangeHelper.getCharsetName(ex)));
     }
-    
+
     public static Payload toPayload(String str) throws UnsupportedEncodingException {
         return toPayload(str, null);
     }
@@ -65,35 +64,35 @@ public final class JcloudsPayloadConverter {
     public static Payload toPayload(File file) {
         return new ByteSourcePayload(Files.asByteSource(file));
     }
-    
+
     protected static Payload setContentMetadata(Payload payload, Exchange exchange) {
         // Just add an NPE check on the payload
         if (exchange == null) {
             return payload;
         }
-        
+
         String contentType = exchange.getIn().getHeader(Exchange.CONTENT_TYPE, String.class);
         String contentEncoding = exchange.getIn().getHeader(Exchange.CONTENT_ENCODING, String.class);
         String contentDisposition = exchange.getIn().getHeader(JcloudsConstants.CONTENT_DISPOSITION, String.class);
         String contentLanguage = exchange.getIn().getHeader(JcloudsConstants.CONTENT_LANGUAGE, String.class);
         Date payloadExpires = exchange.getIn().getHeader(JcloudsConstants.PAYLOAD_EXPIRES, Date.class);
-        
+
         if (ObjectHelper.isNotEmpty(contentType)) {
             payload.getContentMetadata().setContentType(contentType);
         }
-        
+
         if (ObjectHelper.isNotEmpty(contentEncoding)) {
             payload.getContentMetadata().setContentEncoding(contentEncoding);
         }
-        
+
         if (ObjectHelper.isNotEmpty(contentDisposition)) {
             payload.getContentMetadata().setContentDisposition(contentDisposition);
         }
-        
+
         if (ObjectHelper.isNotEmpty(contentLanguage)) {
             payload.getContentMetadata().setContentLanguage(contentLanguage);
         }
-        
+
         if (ObjectHelper.isNotEmpty(payloadExpires)) {
             payload.getContentMetadata().setExpires(payloadExpires);
         }
@@ -127,9 +126,9 @@ public final class JcloudsPayloadConverter {
         return payload;
     }
 
-    @FallbackConverter
+    @Converter(fallback = true)
     @SuppressWarnings("unchecked")
-    public static <T extends Payload> T convertTo(Class<T> type, Exchange exchange, Object value, TypeConverterRegistry registry) throws IOException {
+    public static <T> T convertTo(Class<T> type, Exchange exchange, Object value, TypeConverterRegistry registry) {
         Class<?> sourceType = value.getClass();
         if (type == Payload.class && WrappedFile.class.isAssignableFrom(sourceType)) {
             // attempt to convert to JClouds Payload from a file

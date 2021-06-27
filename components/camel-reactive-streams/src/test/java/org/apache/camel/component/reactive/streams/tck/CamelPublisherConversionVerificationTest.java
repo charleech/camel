@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.DefaultShutdownStrategy;
+import org.apache.camel.impl.engine.DefaultShutdownStrategy;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.tck.PublisherVerification;
 import org.reactivestreams.tck.TestEnvironment;
@@ -34,14 +34,13 @@ public class CamelPublisherConversionVerificationTest extends PublisherVerificat
         super(new TestEnvironment(2000L));
     }
 
-
     @Override
     public Publisher<Long> createPublisher(long l) {
         init();
 
         RouteBuilder builder = new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("timer:tick?delay=500&period=50&repeatCount=" + l)
                         .setBody().simple("${random(1000)}")
                         .to("reactive-streams:prod");

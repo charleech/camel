@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,17 +25,20 @@ import java.util.function.Consumer;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.component.reactive.streams.BaseReactiveTest;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreams;
 import org.apache.camel.component.reactive.streams.api.CamelReactiveStreamsService;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public abstract class AbstractPlatformTestSupport extends CamelTestSupport {
+public abstract class AbstractPlatformTestSupport extends BaseReactiveTest {
 
     @Test
     public void testPublisher() throws Exception {
@@ -44,7 +47,7 @@ public abstract class AbstractPlatformTestSupport extends CamelTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("direct:endpoint")
                         .to("reactive-streams:integers");
             }
@@ -74,7 +77,6 @@ public abstract class AbstractPlatformTestSupport extends CamelTestSupport {
 
     }
 
-
     @Test
     public void testSubscriber() throws Exception {
 
@@ -82,7 +84,7 @@ public abstract class AbstractPlatformTestSupport extends CamelTestSupport {
 
         new RouteBuilder() {
             @Override
-            public void configure() throws Exception {
+            public void configure() {
                 from("reactive-streams:integers")
                         .to("mock:endpoint");
             }
@@ -109,7 +111,6 @@ public abstract class AbstractPlatformTestSupport extends CamelTestSupport {
         }
 
     }
-
 
     @Override
     public boolean isUseRouteBuilder() {

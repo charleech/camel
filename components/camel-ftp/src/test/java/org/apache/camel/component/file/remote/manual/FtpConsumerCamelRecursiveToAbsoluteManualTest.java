@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,21 +15,14 @@
  * limitations under the License.
  */
 package org.apache.camel.component.file.remote.manual;
+
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Run this test manually")
+@Disabled("Run this test manually")
 public class FtpConsumerCamelRecursiveToAbsoluteManualTest extends CamelTestSupport {
-
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        deleteDirectory("target/ftptest");
-        super.setUp();
-    }
 
     @Test
     public void testFtpConsumerManual() throws Exception {
@@ -43,8 +36,7 @@ public class FtpConsumerCamelRecursiveToAbsoluteManualTest extends CamelTestSupp
             @Override
             public void configure() throws Exception {
                 from("ftp:localhost/one/two?username=camel&password=camel&recursive=true&noop=true")
-                    .to("file:E:/temp/sample/file2ftp")
-                    .to("mock:result");
+                        .to("file:E:/temp/sample/file2ftp").to("mock:result");
             }
         };
     }

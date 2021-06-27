@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,11 @@ import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 /**
- * A publisher that extracts the item from the payload as soon as it is delivered to the subscriber.
- * It calls the dispatch callback if defined.
+ * A publisher that extracts the item from the payload as soon as it is delivered to the subscriber. It calls the
+ * dispatch callback if defined.
  */
 public class UnwrappingPublisher implements Publisher<Exchange> {
-    private Publisher<Exchange> delegate;
+    private final Publisher<Exchange> delegate;
 
     public UnwrappingPublisher(Publisher<Exchange> delegate) {
         Objects.requireNonNull(delegate, "delegate publisher cannot be null");
@@ -64,7 +64,7 @@ public class UnwrappingPublisher implements Publisher<Exchange> {
                 Throwable error = null;
                 try {
                     subscriber.onNext(payload);
-                } catch (Throwable t) {
+                } catch (Exception t) {
                     error = t;
                 }
 

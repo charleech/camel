@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,6 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 import org.apache.camel.component.salesforce.api.dto.RestError;
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalResult.ApprovalResultDeserializer;
 import org.apache.camel.component.salesforce.api.dto.approval.ApprovalResult.Result;
@@ -80,11 +79,10 @@ public final class ApprovalResult implements Serializable, Iterable<Result> {
 
         @JsonCreator
         Result(@JsonProperty("actorIds") final List<String> actorIds, @JsonProperty("entityId") final String entityId,
-                @JsonProperty("errors") final List<RestError> errors,
-                @JsonProperty("instanceId") final String instanceId,
-                @JsonProperty("instanceStatus") final String instanceStatus,
-                @JsonProperty("newWorkitemIds") final List<String> newWorkitemIds,
-                @JsonProperty("success") final boolean success) {
+               @JsonProperty("errors") final List<RestError> errors, @JsonProperty("instanceId") final String instanceId,
+               @JsonProperty("instanceStatus") final String instanceStatus,
+               @JsonProperty("newWorkitemIds") final List<String> newWorkitemIds,
+               @JsonProperty("success") final boolean success) {
             this.actorIds = actorIds;
             this.entityId = entityId;
             this.errors = errors;

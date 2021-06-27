@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import org.apache.camel.component.as2.api.AS2EncryptionAlgorithm;
 import org.apache.camel.component.as2.api.AS2MessageStructure;
 import org.apache.camel.component.as2.api.AS2SignatureAlgorithm;
 import org.apache.camel.component.as2.internal.AS2ApiName;
+import org.apache.camel.spi.Configurer;
 import org.apache.camel.spi.Metadata;
 import org.apache.camel.spi.UriParam;
 import org.apache.camel.spi.UriParams;
@@ -35,90 +36,67 @@ import org.apache.http.entity.ContentType;
  * Component configuration for AS2 component.
  */
 @UriParams
+@Configurer(extended = true)
 public class AS2Configuration {
 
     @UriPath
-    @Metadata(required = true)
+    @Metadata(required = true, enums = "client,server")
     private AS2ApiName apiName;
-
-    @UriParam
+    @UriPath
     @Metadata(required = true)
     private String methodName;
-
     @UriParam(defaultValue = "1.1", enums = "1.0,1.1")
     private String as2Version = "1.1";
-
     @UriParam(defaultValue = "Camel AS2 Client Endpoint")
     private String userAgent = "Camel AS2 Client Endpoint";
-
     @UriParam(defaultValue = "Camel AS2 Server Endpoint")
     private String server = "Camel AS2 Server Endpoint";
-
     @UriParam(defaultValue = "camel.apache.org")
     private String serverFqdn = "camel.apache.org";
-
     @UriParam
     private String targetHostname;
-
     @UriParam
-    private Integer targetPortNumber;
-
+    private Integer targetPortNumber = 80;
     @UriParam(defaultValue = "camel.apache.org")
     private String clientFqdn = "camel.apache.org";
-
     @UriParam
     private Integer serverPortNumber;
-
     @UriParam(defaultValue = "/")
     private String requestUri = "/";
-
     @UriParam
     private ContentType ediMessageType;
-
     @UriParam
     private String ediMessageTransferEncoding;
-
     @UriParam
     private AS2MessageStructure as2MessageStructure;
-
     @UriParam
     private String subject;
-
     @UriParam
     private String from;
-
     @UriParam
     private String as2From;
-
     @UriParam
     private String as2To;
-
     @UriParam
     private AS2SignatureAlgorithm signingAlgorithm;
-
     @UriParam
     private Certificate[] signingCertificateChain;
-
     @UriParam
     private PrivateKey signingPrivateKey;
-
     @UriParam
     private AS2CompressionAlgorithm compressionAlgorithm;
-
     @UriParam
     private String dispositionNotificationTo;
-
     @UriParam
     private String[] signedReceiptMicAlgorithms;
-
     @UriParam
     private AS2EncryptionAlgorithm encryptingAlgorithm;
-
     @UriParam
     private Certificate[] encryptingCertificateChain;
-
     @UriParam
     private PrivateKey decryptingPrivateKey;
+    @UriParam
+    private String mdnMessageTemplate;
 
     public AS2ApiName getApiName() {
         return apiName;
@@ -151,8 +129,9 @@ public class AS2Configuration {
      */
     public void setAs2Version(String as2Version) {
         if (!as2Version.equals("1.0") && !as2Version.equals("1.1")) {
-            throw new IllegalArgumentException(String.format(
-                    "Value '%s' of configuration parameter 'as2Version' must be either '1.0' or '1.1'", as2Version));
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Value '%s' of configuration parameter 'as2Version' must be either '1.0' or '1.1'", as2Version));
         }
         this.as2Version = as2Version;
     }
@@ -162,8 +141,7 @@ public class AS2Configuration {
     }
 
     /**
-     * The value included in the User-Agent message header identifying
-     * the AS2 user agent.
+     * The value included in the User-Agent message header identifying the AS2 user agent.
      */
     public void setUserAgent(String userAgent) {
         this.userAgent = userAgent;
@@ -174,8 +152,7 @@ public class AS2Configuration {
     }
 
     /**
-     * The value included in the Server message header identifying the
-     * AS2 Server.
+     * The value included in the Server message header identifying the AS2 Server.
      */
     public void setServer(String server) {
         this.server = server;
@@ -186,11 +163,10 @@ public class AS2Configuration {
     }
 
     /**
-     * The Server Fully Qualified Domain Name (FQDN).
-     * Used in message ids sent by endpoint.
+     * The Server Fully Qualified Domain Name (FQDN). Used in message ids sent by endpoint.
      */
     public void setServerFqdn(String serverFqdn) {
-        if (clientFqdn == null) {
+        if (serverFqdn == null) {
             throw new RuntimeCamelException("Parameter 'serverFqdn' can not be null");
         }
         this.serverFqdn = serverFqdn;
@@ -204,22 +180,14 @@ public class AS2Configuration {
      * The host name (IP or DNS name) of target host.
      */
     public void setTargetHostname(String targetHostname) {
+        if (targetHostname == null) {
+            throw new RuntimeCamelException("Parameter 'targetHostname' can not be null");
+        }
         this.targetHostname = targetHostname;
     }
 
     public int getTargetPortNumber() {
         return targetPortNumber;
-    }
-
-    /**
-     * The port number of target host. -1 indicates the scheme default port.
-     */
-    public void setTargetPortNumber(String targetPortNumber) {
-        try {
-            this.targetPortNumber = Integer.valueOf(targetPortNumber);
-        } catch (NumberFormatException e) {
-            throw new RuntimeCamelException(String.format("Invalid target port number: %s", targetPortNumber));
-        }
     }
 
     /**
@@ -234,8 +202,7 @@ public class AS2Configuration {
     }
 
     /**
-     * The Client Fully Qualified Domain Name (FQDN).
-     * Used in message ids sent by endpoint.
+     * The Client Fully Qualified Domain Name (FQDN). Used in message ids sent by endpoint.
      */
     public void setClientFqdn(String clientFqdn) {
         if (clientFqdn == null) {
@@ -246,17 +213,6 @@ public class AS2Configuration {
 
     public Integer getServerPortNumber() {
         return serverPortNumber;
-    }
-
-    /**
-     * The port number of server.
-     */
-    public void setServerPortNumber(String serverPortNumber) {
-        try {
-            this.serverPortNumber = Integer.valueOf(serverPortNumber);
-        } catch (NumberFormatException e) {
-            throw new RuntimeCamelException(String.format("Invalid target port number: %s", targetPortNumber));
-        }
     }
 
     /**
@@ -282,8 +238,7 @@ public class AS2Configuration {
     }
 
     /**
-     * The content type of EDI message.
-     * One of application/edifact, application/edi-x12, application/edi-consent
+     * The content type of EDI message. One of application/edifact, application/edi-x12, application/edi-consent
      */
     public void setEdiMessageType(ContentType ediMessageType) {
         this.ediMessageType = ediMessageType;
@@ -305,11 +260,8 @@ public class AS2Configuration {
     }
 
     /**
-     * The structure of AS2 Message. One of:
-     * PLAIN - No encryption, no signature,
-     * SIGNED - No encryption, signature,
-     * ENCRYPTED - Encryption, no signature,
-     * ENCRYPTED_SIGNED - Encryption, signature
+     * The structure of AS2 Message. One of: PLAIN - No encryption, no signature, SIGNED - No encryption, signature,
+     * ENCRYPTED - Encryption, no signature, ENCRYPTED_SIGNED - Encryption, signature
      */
     public void setAs2MessageStructure(AS2MessageStructure as2MessageStructure) {
         this.as2MessageStructure = as2MessageStructure;
@@ -410,8 +362,7 @@ public class AS2Configuration {
     /**
      * The value of the Disposition-Notification-To header.
      * 
-     * Assigning a value to this parameter requests a message disposition
-     * notification (MDN) for the AS2 message.
+     * Assigning a value to this parameter requests a message disposition notification (MDN) for the AS2 message.
      */
     public void setDispositionNotificationTo(String dispositionNotificationTo) {
         this.dispositionNotificationTo = dispositionNotificationTo;
@@ -422,9 +373,8 @@ public class AS2Configuration {
     }
 
     /**
-     * The list of algorithms, in order of preference, requested to generate a
-     * message integrity check (MIC) returned in message dispostion notification
-     * (MDN)
+     * The list of algorithms, in order of preference, requested to generate a message integrity check (MIC) returned in
+     * message dispostion notification (MDN)
      */
     public void setSignedReceiptMicAlgorithms(String[] signedReceiptMicAlgorithms) {
         this.signedReceiptMicAlgorithms = signedReceiptMicAlgorithms;
@@ -462,4 +412,16 @@ public class AS2Configuration {
     public void setDecryptingPrivateKey(PrivateKey signingPrivateKey) {
         this.decryptingPrivateKey = signingPrivateKey;
     }
+
+    public String getMdnMessageTemplate() {
+        return mdnMessageTemplate;
+    }
+
+    /**
+     * The template used to format MDN message
+     */
+    public void setMdnMessageTemplate(String mdnMessageTemplate) {
+        this.mdnMessageTemplate = mdnMessageTemplate;
+    }
+
 }

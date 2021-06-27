@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,8 @@ package org.apache.camel.component.yammer.model;
 
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Meta {
@@ -125,9 +125,11 @@ public class Meta {
 
     @Override
     public String toString() {
-        return "Meta [feedDesc=" + feedDesc + ", currentUserId=" + currentUserId + ", requestedPollInterval=" + requestedPollInterval + ", olderAvailable=" + olderAvailable + ", followedReferences="
-                + followedReferences + ", ymodules=" + ymodules + ", likedMessageIds=" + likedMessageIds + ", feedName=" + feedName + ", realtime=" + realtime + ", directFromBody=" + directFromBody
-                + "]";
+        return "Meta [feedDesc=" + feedDesc + ", currentUserId=" + currentUserId + ", requestedPollInterval="
+               + requestedPollInterval + ", olderAvailable=" + olderAvailable + ", followedReferences="
+               + followedReferences + ", ymodules=" + ymodules + ", likedMessageIds=" + likedMessageIds + ", feedName="
+               + feedName + ", realtime=" + realtime + ", directFromBody=" + directFromBody
+               + "]";
     }
 
 }

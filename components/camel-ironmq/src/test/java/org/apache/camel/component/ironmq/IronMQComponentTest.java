@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,15 +27,17 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class IronMQComponentTest extends CamelTestSupport {
 
     private IronMQEndpoint endpoint;
 
-    @EndpointInject(uri = "mock:result")
+    @EndpointInject("mock:result")
     private MockEndpoint result;
 
     @Test
@@ -46,9 +48,9 @@ public class IronMQComponentTest extends CamelTestSupport {
 
         assertMockEndpointsSatisfied();
         Message in = mock.getExchanges().get(0).getIn();
-        Assert.assertNotNull(in.getHeader(IronMQConstants.MESSAGE_ID));
-        Assert.assertNotNull(in.getHeader(IronMQConstants.MESSAGE_RESERVATION_ID));
-        Assert.assertNotNull(in.getHeader(IronMQConstants.MESSAGE_RESERVED_COUNT));
+        assertNotNull(in.getHeader(IronMQConstants.MESSAGE_ID));
+        assertNotNull(in.getHeader(IronMQConstants.MESSAGE_RESERVATION_ID));
+        assertNotNull(in.getHeader(IronMQConstants.MESSAGE_RESERVED_COUNT));
     }
 
     @Test
@@ -87,18 +89,19 @@ public class IronMQComponentTest extends CamelTestSupport {
         assertEquals("This is my message text.", resultExchange.getIn().getBody());
         assertNotNull(resultExchange.getIn().getHeader(IronMQConstants.MESSAGE_ID));
 
-        assertEquals("This is my message text.", exchange.getOut().getBody());
-        assertNotNull(exchange.getOut().getHeader(IronMQConstants.MESSAGE_ID));
+        assertEquals("This is my message text.", exchange.getMessage().getBody());
+        assertNotNull(exchange.getMessage().getHeader(IronMQConstants.MESSAGE_ID));
     }
 
     @Override
     protected CamelContext createCamelContext() throws Exception {
         CamelContext context = super.createCamelContext();
         IronMQComponent component = new IronMQComponent(context);
+        component.init();
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("projectId", "dummy");
         parameters.put("token", "dummy");
-        endpoint = (IronMQEndpoint)component.createEndpoint("ironmq", "testqueue", parameters);
+        endpoint = (IronMQEndpoint) component.createEndpoint("ironmq", "testqueue", parameters);
         endpoint.setClient(new IronMQClientMock("dummy", "dummy"));
         context.addComponent("ironmq", component);
         return context;

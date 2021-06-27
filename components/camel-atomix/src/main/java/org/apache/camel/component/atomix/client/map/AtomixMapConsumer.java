@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,7 +28,9 @@ import org.apache.camel.component.atomix.client.AtomixClientConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class AtomixMapConsumer extends AbstractAtomixClientConsumer<AtomixMapEndpoint> {
+public final class AtomixMapConsumer extends AbstractAtomixClientConsumer<AtomixMapEndpoint> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AtomixMapConsumer.class);
 
     private final List<Listener<DistributedMap.EntryEvent<Object, Object>>> listeners;
     private final String resourceName;
@@ -47,22 +49,21 @@ final class AtomixMapConsumer extends AbstractAtomixClientConsumer<AtomixMapEndp
         super.doStart();
 
         this.map = getAtomixEndpoint()
-            .getAtomix()
-            .getMap(
-                resourceName,
-                new DistributedMap.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
-                new DistributedMap.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
-            .join();
-
+                .getAtomix()
+                .getMap(
+                        resourceName,
+                        new DistributedMap.Config(getAtomixEndpoint().getConfiguration().getResourceOptions(resourceName)),
+                        new DistributedMap.Options(getAtomixEndpoint().getConfiguration().getResourceConfig(resourceName)))
+                .join();
 
         Object key = getAtomixEndpoint().getConfiguration().getKey();
         if (key == null) {
-            log.debug("Subscribe to events for map: {}", resourceName);
+            LOG.debug("Subscribe to events for map: {}", resourceName);
             this.listeners.add(this.map.onAdd(this::onEvent).join());
             this.listeners.add(this.map.onRemove(this::onEvent).join());
             this.listeners.add(this.map.onUpdate(this::onEvent).join());
         } else {
-            log.debug("Subscribe to events for map: {}, key: {}", resourceName, key);
+            LOG.debug("Subscribe to events for map: {}, key: {}", resourceName, key);
             this.listeners.add(this.map.onAdd(key, this::onEvent).join());
             this.listeners.add(this.map.onRemove(key, this::onEvent).join());
             this.listeners.add(this.map.onUpdate(key, this::onEvent).join());
@@ -74,7 +75,7 @@ final class AtomixMapConsumer extends AbstractAtomixClientConsumer<AtomixMapEndp
         // close listeners
         listeners.forEach(Listener::close);
 
-        super.doStart();
+        super.doStop();
     }
 
     // ********************************************
@@ -82,7 +83,7 @@ final class AtomixMapConsumer extends AbstractAtomixClientConsumer<AtomixMapEndp
     // ********************************************
 
     private void onEvent(DistributedMap.EntryEvent<Object, Object> event) {
-        Exchange exchange = getEndpoint().createExchange();
+        Exchange exchange = createExchange(true);
         exchange.getIn().setHeader(AtomixClientConstants.EVENT_TYPE, event.type());
         exchange.getIn().setHeader(AtomixClientConstants.RESOURCE_KEY, event.entry().getKey());
 

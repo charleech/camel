@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,7 +43,6 @@ public class EventComponent extends DefaultComponent implements ApplicationConte
     }
 
     public EventComponent(ApplicationContext applicationContext) {
-        super();
         setApplicationContext(applicationContext);
     }
 
@@ -54,6 +53,7 @@ public class EventComponent extends DefaultComponent implements ApplicationConte
     /**
      * The Spring ApplicationContext
      */
+    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
@@ -61,12 +61,15 @@ public class EventComponent extends DefaultComponent implements ApplicationConte
     public ConfigurableApplicationContext getConfigurableApplicationContext() {
         ApplicationContext applicationContext = getApplicationContext();
         if (applicationContext instanceof ConfigurableApplicationContext) {
-            return (ConfigurableApplicationContext)applicationContext;
+            return (ConfigurableApplicationContext) applicationContext;
         } else {
-            throw new IllegalArgumentException("Class: " + applicationContext.getClass().getName() + " is not an instanceof ConfigurableApplicationContext.");
+            throw new IllegalArgumentException(
+                    "Class: " + applicationContext.getClass().getName()
+                                               + " is not an instanceof ConfigurableApplicationContext.");
         }
     }
 
+    @Override
     protected EventEndpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         EventEndpoint answer = new EventEndpoint(uri, this, remaining);
         setProperties(answer, parameters);
@@ -87,7 +90,7 @@ public class EventComponent extends DefaultComponent implements ApplicationConte
             try {
                 endpoint.onApplicationEvent(event);
             } catch (Exception e) {
-                LOG.warn("Error on application event " + event + ". This exception will be ignored.", e);
+                LOG.warn("Error on application event {}. This exception will be ignored.", event, e);
             }
         }
     }

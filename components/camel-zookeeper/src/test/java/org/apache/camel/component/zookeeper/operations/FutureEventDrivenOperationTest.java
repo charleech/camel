@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,9 @@ package org.apache.camel.component.zookeeper.operations;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.data.Stat;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FutureEventDrivenOperationTest {
     private String data = "Event Received";
@@ -30,17 +29,18 @@ public class FutureEventDrivenOperationTest {
 
     @Test
     public void shouldWaitForEvents() throws Exception {
-        final FutureEventDrivenOperation<String> future = new FutureEventDrivenOperation<String>(null, "somepath", EventType.NodeCreated) {
+        final FutureEventDrivenOperation<String> future
+                = new FutureEventDrivenOperation<String>(null, "somepath", EventType.NodeCreated) {
 
-            @Override
-            protected void installWatch() {
-            }
+                    @Override
+                    protected void installWatch() {
+                    }
 
-            @Override
-            public OperationResult<String> getResult() {
-                return new OperationResult<>(data, statistics);
-            }
-        };
+                    @Override
+                    public OperationResult<String> getResult() {
+                        return new OperationResult<>(data, statistics);
+                    }
+                };
 
         WatchedEvent event = new WatchedEvent(EventType.NodeCreated, null, "somepath");
         fireEventIn(future, event, 100);
@@ -49,7 +49,8 @@ public class FutureEventDrivenOperationTest {
         assertEquals(event, future.getWatchedEvent());
     }
 
-    private void fireEventIn(final FutureEventDrivenOperation<String> future, final WatchedEvent event, final int millisecondsTillFire) {
+    private void fireEventIn(
+            final FutureEventDrivenOperation<String> future, final WatchedEvent event, final int millisecondsTillFire) {
         new Thread(new Runnable() {
 
             public void run() {
